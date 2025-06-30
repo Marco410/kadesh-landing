@@ -54,7 +54,7 @@ export default function ProblemSolution() {
                 transition={{ type: "spring", stiffness: 200, damping: 18 }}
                 style={{ borderRadius: rem(24) }}
               >
-                <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: '#fff', minWidth: 260, maxWidth: 320, border: 'none', position: 'relative' }}>
+                <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: '#fff', minWidth: 260, maxWidth: 320, border: 'none', position: 'relative', minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   {/* Círculo de acento */}
                   <div style={{
                     position: 'absolute',
@@ -81,7 +81,7 @@ export default function ProblemSolution() {
                 transition={{ type: "spring", stiffness: 200, damping: 18 }}
                 style={{ borderRadius: rem(24) }}
               >
-                <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: '#FFF4EC', minWidth: 260, maxWidth: 320, border: 'none', position: 'relative' }}>
+                <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: '#FFF4EC', minWidth: 260, maxWidth: 320, border: 'none', position: 'relative', minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   {/* Círculo de acento */}
                   <div style={{
                     position: 'absolute',

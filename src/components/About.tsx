@@ -26,14 +26,18 @@ export default function About() {
             zIndex: 1,
           }} />
           <Stack gap={rem(24)} align="flex-start" style={{ position: 'relative', zIndex: 2 }}>
-            <Title order={2} style={{ fontSize: rem(40), fontWeight: 700, color: '#171717' }}>
-              ¿Qué es KADESH?
+            <Text style={{ color: '#f7945e', fontWeight: 700, fontSize: rem(18), letterSpacing: 1, textTransform: 'uppercase' }}>
+              Bienestar animal real, comunidad real
+            </Text>
+            <Title order={2} style={{ fontSize: rem(40), fontWeight: 800, color: '#171717', lineHeight: 1.1 }}>
+              KADESH conecta vidas y multiplica oportunidades para animales y humanos
             </Title>
             <Text style={{ fontSize: rem(20), color: '#3B2C23', maxWidth: 600 }}>
-              KADESH es un santuario digital que une tecnología, espiritualidad y comunidad para proteger y dar hogar a los animales. Nuestra misión es conectar corazones y voluntades para crear un mundo más compasivo, donde cada ser tenga un lugar seguro y digno.
+              Somos la plataforma digital que une adoptantes, rescatistas, veterinarias y tiendas para transformar el bienestar animal en México. Más que una app: somos un movimiento, una comunidad y un puente para quienes quieren ayudar y quienes lo necesitan.
             </Text>
-            <Text style={{ fontSize: rem(18), color: '#f7945e', maxWidth: 600 }}>
-              Creemos en el poder de la conexión espiritual y emocional para transformar vidas, tanto humanas como animales.
+           
+            <Text style={{ fontSize: rem(18), color: '#f7945e', maxWidth: 600, fontWeight: 700 }}>
+              Únete, apoya, comparte. Porque cada vida importa.
             </Text>
           </Stack>
         </Paper>

@@ -20,9 +20,6 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Kadesh</title>
         <meta name="description" content="KADESH es una plataforma digital diseñada para transformar el bienestar animal en México. Conectamos personas que buscan adoptar, rescatar, o reunirse con sus mascotas perdidas, con refugios, veterinarias y tiendas especializadas en su zona." />
-        <script async
-          src="https://js.stripe.com/v3/buy-button.js">
-        </script>
       </head>
       <body style={{ fontFamily: 'Poppins, Inter, sans-serif', background: '#fff', color: '#3B2C23' }}>
         <MantineProvider

@@ -1,45 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { Button, Container, Stack, Text, Title, rem, Paper } from '@mantine/core';
 import { motion } from 'framer-motion';
 
-const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'stripe-buy-button': any;
-    }
-  }
-}
-
 export default function Donate() {
-  const stripeRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!document.querySelector("#stripe-buy-button-script")) {
-      const script = document.createElement("script");
-      script.id = "stripe-buy-button-script";
-      script.src = "https://js.stripe.com/v3/buy-button.js";
-      script.async = true;
-      document.body.appendChild(script);
-    }
-
-    const interval = setInterval(() => {
-      // @ts-ignore
-      if (window.StripeBuyButton) {
-        if (stripeRef.current && !stripeRef.current.querySelector("stripe-buy-button")) {
-          const stripeButton = document.createElement("stripe-buy-button");
-          stripeButton.setAttribute("buy-button-id", "buy_btn_1RfavTGPbYpK0LVQr1zcHyqI");
-          stripeButton.setAttribute("publishable-key", STRIPE_PUBLISHABLE_KEY!);
-          stripeRef.current.appendChild(stripeButton);
-        }
-        clearInterval(interval);
-      }
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <motion.div
@@ -69,11 +33,18 @@ export default function Donate() {
             <Text style={{ fontSize: rem(18), color: '#3B2C23', maxWidth: 600 }}>
               Tu aporte ayuda a rescatar, alimentar y dar hogar a más animales. ¡Gracias por ser parte de KADESH!
             </Text>
-            <motion.div
-              whileHover={{ scale: 1.08 }}
-              transition={{ type: "spring", stiffness: 300, damping: 18 }}
-              ref={stripeRef}
-            />
+            <Button
+              size="lg"
+              color="#f7945e"
+              radius="xl"
+              style={{ fontWeight: 700, fontSize: rem(18), padding: '0 2rem', background: '#f7945e', color: '#fff', marginBottom: rem(8) }}
+              component="a"
+              href="https://donate.stripe.com/6oU7sL6467dtdrY9FZgUM00"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Donar
+            </Button>
           </Stack>
         </Paper>
       </Container>

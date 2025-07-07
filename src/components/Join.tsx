@@ -33,7 +33,7 @@ export default function Join() {
               Únete a nuestra red de aliados y multiplica tu impacto. Juntos podemos salvar más vidas y fortalecer la comunidad animalista.
             </Text>
             <motion.div whileHover={{ scale: 1.08, boxShadow: "0 4px 24px #f7945e33" }} transition={{ type: "spring", stiffness: 300, damping: 18 }}>
-              <Button size="lg" color="#f7945e" radius="xl" style={{ fontWeight: 700, fontSize: rem(18), padding: '0 2rem', background: '#f7945e' }} component="a" href="#contacto">
+              <Button size="lg" target='_blank' color="#f7945e" radius="xl" style={{ fontWeight: 700, fontSize: rem(18), padding: '0 2rem', background: '#f7945e' }} component="a" href="https://wa.me/524439382330?text=Hola!%20me%20gustar%C3%ADa%20ser%20parte%20de%20Kadesh.">
                 Quiero unirme
               </Button>
             </motion.div>

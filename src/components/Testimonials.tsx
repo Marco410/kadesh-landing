@@ -11,12 +11,12 @@ export default function Testimonials() {
       viewport={{ once: true, amount: 0.5 }}
       transition={{ duration: 0.7, ease: 'easeOut' }}
     >
-      <Container size="md" py={rem(64)}>
+      <Container size="md" py={rem(64)} >
         <Stack gap={rem(32)} align="center">
           <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717' }}>
             Testimonios
           </Title>
-          <Text style={{ fontSize: rem(18), color: '#3B2C23', maxWidth: 600, textAlign: 'center' }}>
+          <Text style={{ fontSize: rem(18), color: '#3B2C23', maxWidth: 600, textAlign: 'center', marginRight:10, marginLeft:10 }}>
             Pronto compartiremos historias de rescate y transformación. ¡Tú puedes ser parte de la próxima historia!
           </Text>
           <motion.div
@@ -24,8 +24,7 @@ export default function Testimonials() {
             transition={{ type: "spring", stiffness: 200, damping: 18 }}
             style={{ borderRadius: rem(24) }}
           >
-            <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: '#FFF4EC', maxWidth: 420, border: 'none', position: 'relative' }}>
-              {/* Círculo de acento */}
+            <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: '#FFF4EC', maxWidth: 420, border: 'none', position: 'relative', marginLeft:15, marginRight:15 }}>
               <div style={{
                 position: 'absolute',
                 left: rem(-24),

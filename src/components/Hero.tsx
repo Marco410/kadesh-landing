@@ -1,34 +1,81 @@
 "use client";
-import { Button, Container, Group, Stack, Text, Title, rem, Modal } from '@mantine/core';
+import { Button, Container, Group, Stack, Text, Title, rem, Modal, Box } from '@mantine/core';
 import Image from 'next/image';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
-import { useRef, useState } from 'react';
-
-const NAV_LINKS = [
-  { label: 'Inicio', href: '#' },
-  { label: '¿Qué es?', href: '#about' },
-  { label: 'Cómo funciona', href: '#how' },
-  { label: 'Tienda', href: '#shop' },
-  { label: 'Testimonios', href: '#testimonials' },
-  { label: 'Donar', href: '#donar' },
-];
+import { motion, useScroll } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
+import Navigation from './Navigation';
 
 const SOCIAL_LINKS = [
-  //{ label: 'Instagram', href: 'https://instagram.com', icon: '📸' },
-  //{ label: 'Twitter', href: 'https://twitter.com', icon: '🐦' },
-  { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61576878181992', icon: '📘' },
+  { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61576878181992', icon: '/icons/fb.svg' },
 ];
+
+const MOCKUP_IMAGES = [
+  { src: '/images/ss/splash.png', alt: 'KADESH App - Mapa de rescates' },
+  { src: '/images/ss/map.png', alt: 'KADESH App - Pantalla de inicio' },
+  { src: '/images/ss/husky.png', alt: 'KADESH App - Perfil de mascota' },
+  { src: '/images/ss/bunny.png', alt: 'KADESH App - Perfil de refugio' },
+  { src: '/images/ss/cat.png', alt: 'KADESH App - Perfil de veterinaria' },
+  { src: '/images/ss/parrot.png', alt: 'KADESH App - Perfil de rescate' },
+];
+
+function useResponsiveMargin() {
+  const [margin, setMargin] = useState(100);
+  useEffect(() => {
+    const updateMargin = () => setMargin(window.innerWidth <= 700 ? 10 : 100);
+    updateMargin();
+    window.addEventListener('resize', updateMargin);
+    return () => window.removeEventListener('resize', updateMargin);
+  }, []);
+  return margin;
+}
 
 export default function Hero() {
   const [modalOpened, setModalOpened] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const marginTop = useResponsiveMargin();
   
-  // Parallax para los trazos
   const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({ target: ref, offset: ["start start", "end start"] });
 
   const handleDownloadClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setModalOpened(true);
+  };
+
+  const handleSlideChange = (newSlide: number) => {
+    setCurrentSlide(newSlide);
+    const container = document.querySelector('.carousel-container') as HTMLElement;
+    if (container) {
+      const slideWidth = 100 / MOCKUP_IMAGES.length;
+      container.style.transform = `translateX(-${newSlide * slideWidth}%)`;
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    const startX = touch.clientX;
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      const currentX = touch.clientX;
+      const diff = startX - currentX;
+      
+      if (Math.abs(diff) > 50) {
+        if (diff > 0 && currentSlide < MOCKUP_IMAGES.length - 1) {
+          handleSlideChange(currentSlide + 1);
+        } else if (diff < 0 && currentSlide > 0) {
+          handleSlideChange(currentSlide - 1);
+        }
+      }
+    };
+    
+    const handleTouchEnd = () => {
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+    
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleTouchEnd);
   };
 
   return (
@@ -48,48 +95,65 @@ export default function Hero() {
           position: 'relative',
           overflow: 'hidden',
           marginBottom: rem(64),
+          flexDirection: 'column',
         }}
       >
-        <nav style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          padding: `${rem(24)} ${rem(40)}`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          zIndex: 10,
-        }}>
-          <Image src="/logo.png" alt="KADESH logo" width={48} height={48} style={{ borderRadius: 12, background: 'transparent' }} />
-          <Group gap={rem(32)}>
-            {NAV_LINKS.map(link => (
-              <a
-                key={link.label}
-                href={link.href}
-                style={{ color: '#fff', fontWeight: 600, fontSize: rem(16), textDecoration: 'none', opacity: 0.92, transition: 'opacity 0.2s' }}
-                onMouseOver={e => (e.currentTarget.style.opacity = '1')}
-                onMouseOut={e => (e.currentTarget.style.opacity = '0.92')}
-              >
-                {link.label}
-              </a>
-            ))}
-          </Group>
-          <Button size="md" color="#fff" style={{ color: '#f7945e', fontWeight: 700, fontSize: rem(16), background: '#fff', borderRadius: rem(24), padding: `0 ${rem(28)}` }}>
-            Ingresar
-          </Button>
-        </nav>
+        <Navigation />
 
-        <Container size="lg" style={{ zIndex: 2 }}>
-          <Group justify="space-between" align="center" wrap="nowrap">
-            <Stack align="flex-start" gap={rem(32)} style={{ maxWidth: 520 }}>
-              <Title order={1} style={{ fontSize: rem(58), fontWeight: 900, lineHeight: 1.1, color: '#fff', letterSpacing: -2 }}>
+        <Container size="lg" style={{ zIndex: 2, width: '100%', padding: 0, marginTop }}>
+          <div
+            className="hero-columns"
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              gap: rem(32),
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <div
+              className="hero-text-col"
+              style={{
+                flex: '1 1 340px',
+                minWidth: 0,
+                maxWidth: 520,
+                width: '100%',
+                padding: `0 ${rem(16)}`,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                order: 1,
+              }}
+            >
+              <Title
+                order={1}
+                style={{
+                  fontSize: 'clamp(2.2rem, 6vw, 58px)',
+                  fontWeight: 900,
+                  lineHeight: 1.1,
+                  color: '#fff',
+                  letterSpacing: -2,
+                  marginBottom: rem(8),
+                  wordBreak: 'break-word',
+                }}
+              >
                 Conectando vidas, rescatando almas<br />
               </Title>
-              <Text style={{ fontSize: rem(20), color: '#fff', maxWidth: 480, lineHeight: 1.3, opacity: 0.92 }}>
+              <Text
+                style={{
+                  fontSize: 'clamp(1.1rem, 3vw, 20px)',
+                  color: '#fff',
+                  maxWidth: 480,
+                  lineHeight: 1.3,
+                  opacity: 0.92,
+                  marginBottom: rem(16),
+                }}
+              >
                 Estoy construyendo KADESH; la plataforma para conectar adoptantes, rescatistas, veterinarias y tiendas para el bienestar animal real.
               </Text>
-              <Group gap={rem(20)}>
+              <Group gap={rem(20)} style={{ flexWrap: 'wrap', marginBottom: rem(16) }}>
                 <motion.a
                   href="#"
                   onClick={handleDownloadClick}
@@ -109,86 +173,203 @@ export default function Hero() {
                   <Image src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" width={120} height={48} />
                 </motion.a>
               </Group>
-            </Stack>
-            <div style={{ position: 'relative', width: rem(520), height: rem(580), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <motion.div
-                initial={{ opacity: 0, y: 60 }}
-                animate={{ 
-                  opacity: 1, 
-                  y: [0, -15, 0],
-                  rotate: [-2, 2, -2]
-                }}
-                transition={{ 
-                  opacity: { duration: 1, delay: 0.3, ease: "easeOut" },
-                  y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
-                  rotate: { duration: 8, repeat: Infinity, ease: "easeInOut" }
-                }}
-                style={{ position: 'absolute', left: rem(40), top: rem(80), zIndex: 2 }}
-                whileHover={{ scale: 1.04, rotate: -2 }}
-              >
-                <Image
-                  src="/images/ss/map.png"
-                  alt="KADESH App - Pantalla de inicio"
-                  width={210}
-                  height={420}
-                  style={{ borderRadius: rem(32), boxShadow: '0 12px 40px rgba(0,0,0,0.15)' }}
-                  priority
-                />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 60 }}
-                animate={{ 
-                  opacity: 1, 
-                  y: [0, 12, 0],
-                  rotate: [2, -1, 2]
-                }}
-                transition={{ 
-                  opacity: { duration: 1, delay: 0.5, ease: "easeOut" },
-                  y: { duration: 7, repeat: Infinity, ease: "easeInOut" },
-                  rotate: { duration: 9, repeat: Infinity, ease: "easeInOut" }
-                }}
-                style={{ position: 'absolute', left: rem(180), top: rem(20), zIndex: 3 }}
-                whileHover={{ scale: 1.04, rotate: 2 }}
-              >
-                <Image
-                  src="/images/ss/splash.png"
-                  alt="KADESH App - Mapa de rescates"
-                  width={210}
-                  height={420}
-                  style={{ borderRadius: rem(32), boxShadow: '0 12px 40px rgba(0,0,0,0.15)' }}
-                  priority
-                />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 60 }}
-                animate={{ 
-                  opacity: 1, 
-                  y: [0, -8, 0],
-                  rotate: [1, -2, 1]
-                }}
-                transition={{ 
-                  opacity: { duration: 1, delay: 0.7, ease: "easeOut" },
-                  y: { duration: 5, repeat: Infinity, ease: "easeInOut" },
-                  rotate: { duration: 6, repeat: Infinity, ease: "easeInOut" }
-                }}
-                style={{ position: 'absolute', left: rem(320), top: rem(60), zIndex: 1 }}
-                whileHover={{ scale: 1.04, rotate: 1 }}
-              >
-                <Image
-                  src="/images/ss/husky.png"
-                  alt="KADESH App - Perfil de mascota"
-                  width={210}
-                  height={420}
-                  style={{ borderRadius: rem(32), boxShadow: '0 12px 40px rgba(0,0,0,0.15)' }}
-                  priority
-                />
-              </motion.div>
             </div>
-          </Group>
+            <div
+              className="hero-img-col"
+              style={{
+                flex: '1 1 340px',
+                minWidth: 0,
+                maxWidth: 520,
+                width: '100%',
+                height: 'min(90vw, 520px)',
+                minHeight: 280,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto',
+                order: 2,
+                position: 'relative',
+                paddingBottom: rem(16),
+              }}
+            >
+              <Box className="hero-mockups-wrapper"
+              style={{ 
+                width: '100%', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'flex-end', 
+                gap: rem(16), 
+                position: 'relative',
+              }} visibleFrom="sm">
+                <motion.div
+                  initial={{ opacity: 0, y: 60 }}
+                  animate={{
+                    opacity: 1,
+                    y: [0, -15, 0],
+                    rotate: [-2, 2, -2],
+                  }}
+                  transition={{
+                    opacity: { duration: 1, delay: 0.3, ease: 'easeOut' },
+                    y: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
+                    rotate: { duration: 8, repeat: Infinity, ease: 'easeInOut' },
+                  }}
+                  style={{
+                    zIndex: 2,
+                    width: '35vw',
+                    maxWidth: 180,
+                    minWidth: 100,
+                  }}
+                  whileHover={{ scale: 1.04, rotate: -2 }}
+                >
+                  <Image
+                    src="/images/ss/map.png"
+                    alt="KADESH App - Pantalla de inicio"
+                    width={210}
+                    height={420}
+                    style={{ borderRadius: rem(24), boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
+                    priority
+                  />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 60 }}
+                  animate={{
+                    opacity: 1,
+                    y: [0, 12, 0],
+                    rotate: [2, -1, 2],
+                  }}
+                  transition={{
+                    opacity: { duration: 1, delay: 0.5, ease: 'easeOut' },
+                    y: { duration: 7, repeat: Infinity, ease: 'easeInOut' },
+                    rotate: { duration: 9, repeat: Infinity, ease: 'easeInOut' },
+                  }}
+                  style={{
+                    zIndex: 3,
+                    width: '35vw',
+                    maxWidth: 200,
+                    minWidth: 100,
+                  }}
+                  whileHover={{ scale: 1.04, rotate: 2 }}
+                >
+                  <Image
+                    src="/images/ss/splash.png"
+                    alt="KADESH App - Mapa de rescates"
+                    width={210}
+                    height={420}
+                    style={{ borderRadius: rem(24), boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
+                    priority
+                  />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 60 }}
+                  animate={{
+                    opacity: 1,
+                    y: [0, -8, 0],
+                    rotate: [1, -2, 1],
+                  }}
+                  transition={{
+                    opacity: { duration: 1, delay: 0.7, ease: 'easeOut' },
+                    y: { duration: 5, repeat: Infinity, ease: 'easeInOut' },
+                    rotate: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
+                  }}
+                  style={{
+                    zIndex: 1,
+                    width: '35vw',
+                    maxWidth: 180,
+                    minWidth: 100,
+                  }}
+                  whileHover={{ scale: 1.04, rotate: 1 }}
+                >
+                  <Image
+                    src="/images/ss/husky.png"
+                    alt="KADESH App - Perfil de mascota"
+                    width={210}
+                    height={420}
+                    style={{ borderRadius: rem(24), boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
+                    priority
+                  />
+                </motion.div>
+              </Box>
+
+              <Box className="hero-mobile-carousel" style={{ 
+                width: '100%', 
+                height: '50vh',
+                display: 'block',
+                position: 'relative',
+                overflow: 'hidden',
+              }} hiddenFrom="sm">
+                <div className="carousel-container" style={{
+                  display: 'flex',
+                  width: `${MOCKUP_IMAGES.length * 100}%`,
+                  height: '100%',
+                  transition: 'transform 0.5s ease-in-out',
+                  transform: `translateX(-${currentSlide * (100 / MOCKUP_IMAGES.length)}%)`,
+                }} onTouchStart={handleTouchStart}>
+                  {MOCKUP_IMAGES.map((image, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.8, delay: index * 0.2, ease: 'easeOut' }}
+                      style={{
+                        width: `${100 / MOCKUP_IMAGES.length}%`,
+                        height: '100%',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: rem(16),
+                      }}
+                    >
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        width={280}
+                        height={800}
+                        style={{ 
+                          borderRadius: rem(24), 
+                          boxShadow: '0 12px 32px rgba(0,0,0,0.15)', 
+                          width: 'auto',
+                          height: '100%',
+                          objectFit: 'contain'
+                        }}
+                        priority
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+                
+                {/* carrusel dots */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: rem(16),
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  gap: rem(8),
+                  zIndex: 10,
+                }}>
+                  {MOCKUP_IMAGES.map((_, index) => (
+                    <button
+                      key={index}
+                      className="carousel-indicator"
+                      onClick={() => handleSlideChange(index)}
+                      style={{
+                        width: rem(8),
+                        height: rem(8),
+                        borderRadius: '50%',
+                        background: currentSlide === index ? '#f7945e' : 'rgba(255,255,255,0.5)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'background 0.3s',
+                      }}
+                    />
+                  ))}
+                </div>
+              </Box>
+            </div>
+          </div>
         </Container>
         
-        {/* Partes del logo flotantes dentro del Hero */}
-        <div style={{ 
+        <div className="hero-logo-bg" style={{ 
           position: 'absolute', 
           bottom: 0, 
           left: 0,
@@ -197,7 +378,7 @@ export default function Hero() {
           overflow: 'hidden',
           zIndex: 1
         }}>
-          {/* Parte 1 del logo */}
+          {/* Part 1 logo */}
           <motion.div
             style={{ 
               position: 'absolute', 
@@ -229,7 +410,7 @@ export default function Hero() {
             />
           </motion.div>
 
-          {/* Parte 2 del logo */}
+          {/* Part 2 logo */}
           <motion.div
             style={{ 
               position: 'absolute', 
@@ -261,7 +442,7 @@ export default function Hero() {
             />
           </motion.div>
 
-          {/* Parte 3 del logo */}
+          {/* Part 3 logo */}
           <motion.div
             style={{ 
               position: 'absolute', 
@@ -295,15 +476,14 @@ export default function Hero() {
         </div>
 
         <div style={{
-          position: 'absolute',
-          left: 0,
-          bottom: rem(24),
           width: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: rem(32),
           zIndex: 10,
+          marginTop:50,
+          marginBottom:30
         }}>
           {SOCIAL_LINKS.map(s => (
             <motion.a
@@ -315,13 +495,13 @@ export default function Hero() {
               transition={{ type: "spring", stiffness: 300, damping: 18 }}
               style={{ fontSize: rem(32), color: '#fff', opacity: 0.9, textDecoration: 'none', display: 'flex', alignItems: 'center' }}
             >
-              <span aria-label={s.label}>{s.icon}</span>
+              <Image src={s.icon} alt={s.label} width={32} height={32} style={{ display: 'block' }} />
             </motion.a>
           ))}
         </div>
       </motion.section>
 
-      {/* Modal de "Próximamente" */}
+      {/* Modal  "incomming" */}
       <Modal
         opened={modalOpened}
         onClose={() => setModalOpened(false)}
@@ -393,6 +573,68 @@ export default function Hero() {
           </Group>
         </Stack>
       </Modal>
+
+      {/* Media query to mobile */}
+      <style jsx global>{`
+      @media (max-width: 900px) {
+        .mantine-Container-root {
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+        }
+      }
+      @media (max-width: 700px) {
+        .hero-columns {
+          flex-direction: column !important;
+          gap: 0 !important;
+        }
+        .hero-text-col {
+          order: 1 !important;
+          max-width: 100% !important;
+          width: 100% !important;
+          align-items: center !important;
+          text-align: center !important;
+          margin-bottom: 24px;
+          padding: 0 12px !important;
+          padding-top: 90px !important;
+        }
+        .hero-text-col h1,
+        .hero-text-col h2,
+        .hero-text-col p,
+        .hero-text-col .mantine-Group-root {
+          text-align: center !important;
+          justify-content: center !important;
+          width: 100%;
+        }
+        .hero-img-col {
+          order: 2 !important;
+          max-width: 100% !important;
+          width: 100% !important;
+          min-height: 180px !important;
+          height: auto !important;
+          margin-bottom: 0;
+          padding-bottom: 0 !important;
+          justify-content: center !important;
+        }
+        .hero-mockups-wrapper {
+          flex-direction: column !important;
+          gap: 24px !important;
+          width: 100% !important;
+          justify-content: center !important;
+          align-items: center !important;
+        }
+        .hero-mockups-wrapper > div {
+          min-width: 120px !important;
+          max-width: 90vw !important;
+          width: 90vw !important;
+        }
+        .hero-logo-bg {
+          display: none !important;
+        }
+        .hero-ingresar-btn-mobile {
+          display: none !important;
+        }
+      }
+      `}</style>
     </>
   );
 } 

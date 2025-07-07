@@ -31,7 +31,6 @@ export default function KeyPoints() {
               shadow="md"
               radius="lg"
               p="xl"
-              withBorder
               style={{
                 textAlign: 'center',
                 transition: 'transform 0.18s',

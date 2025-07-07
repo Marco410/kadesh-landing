@@ -4,7 +4,7 @@ import Hero from '../components/Hero';
 import About from '../components/About';
 import ProblemSolution from '../components/ProblemSolution';
 import HowItWorks from '../components/HowItWorks';
-import Shop from '../components/Shop';
+import WorkingOn from '../components/WorkingOn';
 import Testimonials from '../components/Testimonials';
 import Join from '../components/Join';
 import Donate from '../components/Donate';
@@ -19,7 +19,7 @@ export default function Home() {
       <About />
       <ProblemSolution />
       <HowItWorks />
-      <Shop />
+      <WorkingOn />
       <Testimonials />
       <Join />
       <Donate />

@@ -2,12 +2,8 @@
 
 import { Anchor, Center, Container, Group, Stack, Text, rem } from '@mantine/core';
 import { motion } from 'framer-motion';
-
-const socialLinks = [
-  { label: 'Instagram', href: 'https://instagram.com', icon: '📸' },
-  { label: 'Facebook', href: 'https://facebook.com', icon: '📘' },
-  { label: 'X', href: 'https://x.com', icon: '🐦' },
-];
+import { SOCIAL_LINKS } from 'kadesh/constants/const';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -21,21 +17,30 @@ export default function Footer() {
       <Container size="lg">
         <Stack align="center" gap={rem(16)}>
           <Group gap={rem(24)}>
-            {socialLinks.map((s) => (
-              <Anchor key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" style={{ fontSize: rem(28), color: '#f7945e' }}>
-                <span aria-label={s.label}>{s.icon}</span>
-              </Anchor>
-            ))}
+          {SOCIAL_LINKS.map(s => (
+            <motion.a
+              key={s.label}
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.2 }}
+              transition={{ type: "spring", stiffness: 300, damping: 18 }}
+              style={{ fontSize: rem(32), color: '#fff', opacity: 0.9, textDecoration: 'none', display: 'flex', alignItems: 'center' }}
+            >
+              <Image src={s.icon} alt={s.label} width={32} height={32} style={{ display: 'block' }} />
+            </motion.a>
+          ))}
           </Group>
           <Group gap={rem(24)}>
-            <Anchor href="#contacto" style={{ color: '#f7945e', fontSize: rem(16) }}>Contacto</Anchor>
-            <Anchor href="#" style={{ color: '#f7945e', fontSize: rem(16) }}>Términos</Anchor>
+            <Anchor href="https://wa.me/524439382330?text=Me%20podr%C3%ADa%20dar%20m%C3%A1s%20informaci%C3%B3n.%20Saludos!" target='_blank' style={{ color: '#f7945e', fontSize: rem(16) }}>Contacto</Anchor>
+            <Anchor href="/terminos" style={{ color: '#f7945e', fontSize: rem(16) }}>Términos y Condiciones</Anchor>
           </Group>
           <Center>
             <Text style={{ color: '#3B2C23', fontSize: rem(14) }}>
               © {new Date().getFullYear()} KADESH. Hecho con ❤️ para los animales.
             </Text>
           </Center>
+
         </Stack>
       </Container>
     </motion.footer>

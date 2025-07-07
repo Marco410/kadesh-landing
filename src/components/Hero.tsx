@@ -4,10 +4,9 @@ import Image from 'next/image';
 import { motion, useScroll } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
 import Navigation from './Navigation';
+import { SOCIAL_LINKS } from 'kadesh/constants/const';
 
-const SOCIAL_LINKS = [
-  { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61576878181992', icon: '/icons/fb.svg' },
-];
+
 
 const MOCKUP_IMAGES = [
   { src: '/images/ss/splash.png', alt: 'KADESH App - Mapa de rescates' },

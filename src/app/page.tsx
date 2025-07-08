@@ -8,6 +8,7 @@ import Join from '../components/Join';
 import Donate from '../components/Donate';
 import Footer from '../components/Footer';
 import KeyPoints from '../components/KeyPoints';
+import CommunityMembers from 'kadesh/components/CommunityMembers';
 
 export default function Home() {
   return (
@@ -21,6 +22,7 @@ export default function Home() {
       <Testimonials />
       <Join />
       <Donate />
+      <CommunityMembers />
       <Footer />
     </>
   );

@@ -12,7 +12,7 @@ export default function About() {
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 0.7, ease: 'easeOut' }}
       >
-        <Container size="md" px={{ base: 8, sm: 0 }} py={{ base: rem(24), sm: rem(64) }}>
+        <Container size="md" px={{ base: 8, sm: 0 }} py={{ base: rem(24), sm: rem(64) }} id='acerca-de'>
           <Paper
             shadow="md"
             radius="lg"

@@ -25,8 +25,20 @@ export default function RootLayout({
         <MantineProvider
           theme={{
             fontFamily: 'Poppins, Inter, sans-serif',
-            primaryColor: 'green',
+            primaryColor: 'orange',
             colors: {
+              orange: [
+                '#FFF3EB', // 0
+                '#FFE0CC', // 1
+                '#FFD1B3', // 2
+                '#FFB47E', // 3
+                '#FFA366', // 4
+                '#f7945e', // 5 (principal)
+                '#E07C3A', // 6
+                '#C96B2C', // 7
+                '#A8561F', // 8
+                '#7A3A0F', // 9
+              ],
               green: [
                 '#E6F4EA', '#CDE9D5', '#A8D5BA', '#7FC39C', '#5BAA7B',
                 '#3B8C5A', '#2C6B44', '#1D4A2E', '#11301B', '#06170A',

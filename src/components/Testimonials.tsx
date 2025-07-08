@@ -11,7 +11,7 @@ export default function Testimonials() {
       viewport={{ once: true, amount: 0.5 }}
       transition={{ duration: 0.7, ease: 'easeOut' }}
     >
-      <Container size="md" py={rem(64)} >
+      <Container size="md" py={rem(64)} id='testimonios' >
         <Stack gap={rem(32)} align="center">
           <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717' }}>
             Testimonios

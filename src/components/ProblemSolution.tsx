@@ -41,7 +41,7 @@ export default function ProblemSolution() {
       viewport={{ once: true, amount: 0.5 }}
       transition={{ duration: 0.7, ease: 'easeOut' }}
     >
-      <Container size="lg" py={rem(64)}>
+      <Container size="lg" py={rem(64)} id='solucion'>
         <Stack gap={rem(48)}>
           <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717', marginBottom: rem(8), padding:20 }}>
             El Problema y Nuestra Solución

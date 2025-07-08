@@ -87,6 +87,7 @@ export default function Hero() {
         style={{
           width: '100%',
           minHeight: '90vh',
+          height: 'auto',
           background: '#f7945e',
           display: 'flex',
           alignItems: 'center',
@@ -194,6 +195,7 @@ export default function Hero() {
               <Box className="hero-mockups-wrapper"
               style={{ 
                 width: '100%', 
+                minHeight: 420,
                 display: 'flex', 
                 justifyContent: 'center', 
                 alignItems: 'flex-end', 
@@ -292,9 +294,11 @@ export default function Hero() {
               <Box className="hero-mobile-carousel" style={{ 
                 width: '100%', 
                 height: '50vh',
+                minHeight: 320,
                 display: 'block',
                 position: 'relative',
                 overflow: 'hidden',
+                overflowX: 'hidden',
               }} hiddenFrom="sm">
                 <div className="carousel-container" style={{
                   display: 'flex',
@@ -316,6 +320,7 @@ export default function Hero() {
                         justifyContent: 'center',
                         alignItems: 'center',
                         padding: rem(16),
+                        boxSizing: 'border-box',
                       }}
                     >
                       <Image

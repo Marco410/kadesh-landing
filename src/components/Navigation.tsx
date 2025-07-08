@@ -7,10 +7,11 @@ import { motion } from 'framer-motion';
 
 const NAV_LINKS = [
   { label: 'Inicio', href: '#' },
-  { label: '¿Qué es?', href: '#about' },
-  { label: 'Cómo funciona', href: '#how' },
-  { label: 'Tienda', href: '#shop' },
-  { label: 'Testimonios', href: '#testimonials' },
+  { label: 'Acerca de', href: '#acerca-de' },
+  { label: 'Nuestra solucion', href: '#solucion' },
+  { label: 'Como funciona', href: '#como-funciona' },
+  { label: 'Progreso', href: '#progreso' },
+  { label: 'Testimonios', href: '#testimonios' },
   { label: 'Donar', href: '#donar' },
 ];
 
@@ -62,6 +63,15 @@ export default function Navigation() {
               onMouseOut={e => (e.currentTarget.style.opacity = '0.92')}
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300, damping: 18 }}
+              onClick={e => {
+                if (link.href.startsWith('#')) {
+                  e.preventDefault();
+                  const el = document.querySelector(link.href);
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }
+              }}
             >
               {link.label}
             </motion.a>
@@ -69,21 +79,8 @@ export default function Navigation() {
         </Group>
 
         {/* Desktop Button */}
-        <Button 
-          size="md" 
-          color="#fff" 
-          style={{ 
-            color: '#f7945e', 
-            fontWeight: 700, 
-            fontSize: rem(16), 
-            background: '#fff', 
-            borderRadius: rem(24), 
-            padding: `0 ${rem(28)}` 
-          }}
-          visibleFrom="sm"
-        >
-          Ingresar
-        </Button>
+        <div></div>
+  
 
         {/* Mobile Burger Menu */}
         <Burger
@@ -147,28 +144,6 @@ export default function Navigation() {
             </motion.a>
           ))}
           
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: NAV_LINKS.length * 0.1 }}
-            style={{ marginTop: rem(32) }}
-          >
-            <Button 
-              size="lg" 
-              fullWidth
-              style={{ 
-                color: '#f7945e', 
-                fontWeight: 700, 
-                fontSize: rem(18), 
-                background: '#fff', 
-                borderRadius: rem(24), 
-                padding: `${rem(16)} ${rem(32)}`,
-                height: rem(56),
-              }}
-            >
-              Ingresar
-            </Button>
-          </motion.div>
         </Stack>
       </Drawer>
     </>

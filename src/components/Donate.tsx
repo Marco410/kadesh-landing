@@ -4,6 +4,7 @@ import { Button, Container, Stack, Text, Title, rem, Paper } from '@mantine/core
 import { motion } from 'framer-motion';
 
 export default function Donate() {
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 60 }}
@@ -32,11 +33,18 @@ export default function Donate() {
             <Text style={{ fontSize: rem(18), color: '#3B2C23', maxWidth: 600 }}>
               Tu aporte ayuda a rescatar, alimentar y dar hogar a más animales. ¡Gracias por ser parte de KADESH!
             </Text>
-            <motion.div whileHover={{ scale: 1.08, boxShadow: "0 4px 24px #f7945e33" }} transition={{ type: "spring", stiffness: 300, damping: 18 }}>
-            <Button size="lg" color="#f7945e" radius="xl" style={{ fontWeight: 700, fontSize: rem(18), padding: '0 2rem', background: '#f7945e' }} component="a" href="#unete">
-            Donar con Stripe (próximamente)
+            <Button
+              size="lg"
+              color="#f7945e"
+              radius="xl"
+              style={{ fontWeight: 700, fontSize: rem(18), padding: '0 2rem', background: '#f7945e', color: '#fff', marginBottom: rem(8) }}
+              component="a"
+              href="https://donate.stripe.com/6oU7sL6467dtdrY9FZgUM00"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Donar
             </Button>
-            </motion.div>
           </Stack>
         </Paper>
       </Container>

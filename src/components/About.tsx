@@ -5,43 +5,100 @@ import { motion } from 'framer-motion';
 
 export default function About() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 60 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.5 }}
-      transition={{ duration: 0.7, ease: 'easeOut' }}
-    >
-      <Container size="md" py={rem(64)}>
-        <Paper shadow="md" radius="xl" p={rem(40)} style={{ background: '#fff', border: 'none', position: 'relative', overflow: 'visible' }}>
-          {/* Círculo de acento */}
-          <div style={{
-            position: 'absolute',
-            right: rem(-48),
-            top: rem(-48),
-            width: rem(120),
-            height: rem(120),
-            background: '#f7945e',
-            borderRadius: '50%',
-            opacity: 0.18,
-            zIndex: 1,
-          }} />
-          <Stack gap={rem(24)} align="flex-start" style={{ position: 'relative', zIndex: 2 }}>
-            <Text style={{ color: '#f7945e', fontWeight: 700, fontSize: rem(18), letterSpacing: 1, textTransform: 'uppercase' }}>
-              Bienestar animal real, comunidad real
-            </Text>
-            <Title order={2} style={{ fontSize: rem(40), fontWeight: 800, color: '#171717', lineHeight: 1.1 }}>
-              KADESH conecta vidas y multiplica oportunidades para animales y humanos
-            </Title>
-            <Text style={{ fontSize: rem(20), color: '#3B2C23', maxWidth: 600 }}>
-              Somos la plataforma digital que une adoptantes, rescatistas, veterinarias y tiendas para transformar el bienestar animal en México. Más que una app: somos un movimiento, una comunidad y un puente para quienes quieren ayudar y quienes lo necesitan.
-            </Text>
-           
-            <Text style={{ fontSize: rem(18), color: '#f7945e', maxWidth: 600, fontWeight: 700 }}>
-              Únete, apoya, comparte. Porque cada vida importa.
-            </Text>
-          </Stack>
-        </Paper>
-      </Container>
-    </motion.div>
+    <div style={{ background: '#f8f9fa', width: '100%', padding:20 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 60 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: 0.7, ease: 'easeOut' }}
+      >
+        <Container size="md" px={{ base: 8, sm: 0 }} py={{ base: rem(24), sm: rem(64) }} id='acerca-de'>
+          <Paper
+            shadow="md"
+            radius="lg"
+            p={{ base: rem(20), sm: rem(40) }}
+            style={{
+              background: '#fff',
+              border: 'none',
+              position: 'relative',
+              overflow: 'visible',
+              minHeight: 0,
+              margin: '0 auto',
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                background: '#f7945e',
+                borderRadius: '50%',
+                opacity: 0.16,
+                filter: 'blur(12px)',
+                zIndex: 1,
+                display: 'none',
+              }}
+              className="about-accent-circle"
+            />
+            <Stack gap={rem(20)} align="flex-start" style={{ position: 'relative', zIndex: 2 }}>
+              <Text style={{ color: '#f7945e', fontWeight: 700, fontSize: rem(16), letterSpacing: 1, textTransform: 'uppercase' }}>
+                Bienestar animal real, comunidad real
+              </Text>
+              <Title
+                order={2}
+                style={{
+                  fontSize: 'clamp(1.3rem, 6vw, 2.2rem)',
+                  fontWeight: 800,
+                  lineHeight: 1.1,
+                  background: 'linear-gradient(90deg, #f7945e 0%, #ffb47e 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  color: 'transparent',
+                  marginBottom: rem(8),
+                  textAlign: 'left',
+                }}
+              >
+                KADESH conecta vidas y multiplica oportunidades para animales y humanos
+              </Title>
+              <Text style={{ fontSize: rem(18), color: '#3B2C23', maxWidth: '100%' }}>
+                Somos la plataforma digital que une adoptantes, rescatistas, veterinarias y tiendas para transformar el bienestar animal en México. Más que una app: somos un movimiento, una comunidad y un puente para quienes quieren ayudar y quienes lo necesitan.
+              </Text>
+              <Text
+                style={{
+                  fontSize: rem(17),
+                  color: '#f7945e',
+                  fontWeight: 700,
+                  width: '100%',
+                  textAlign: 'center',
+                  marginTop: rem(10),
+                  wordBreak: 'break-word',
+                  lineHeight: 1.3,
+                }}
+              >
+                Únete, apoya, comparte. Porque cada vida importa.
+              </Text>
+            </Stack>
+          </Paper>
+        </Container>
+        <style jsx global>{`
+          @media (min-width: 600px) {
+            .about-accent-circle {
+              display: block !important;
+              right: -50px !important;
+              top: -50px !important;
+            }
+            .mantine-Paper-root {
+              border-radius: 32px !important;
+            }
+          }
+        `}</style>
+      </motion.div>
+    </div>
   );
 } 

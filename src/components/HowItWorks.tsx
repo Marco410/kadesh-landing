@@ -1,6 +1,6 @@
 "use client";
 
-import { Container, Group, Paper, Stack, Text, Title, rem } from '@mantine/core';
+import { Container, Group, Paper, Stack, Text, Title, rem, SimpleGrid } from '@mantine/core';
 import { motion } from 'framer-motion';
 
 const steps = [
@@ -26,20 +26,20 @@ export default function HowItWorks() {
       viewport={{ once: true, amount: 0.5 }}
       transition={{ duration: 0.7, ease: 'easeOut' }}
     >
-      <Container size="lg" py={rem(64)}>
+      <Container size="lg" py={rem(64)} id="como-funciona">
         <Stack gap={rem(48)}>
           <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717', marginBottom: rem(8) }}>
             ¿Cómo funciona KADESH?
           </Title>
-          <Group justify="center" gap={rem(32)}>
+          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={20}>
             {steps.map((s, i) => (
               <motion.div
                 key={s.title}
-                whileHover={{ scale: 1.04, boxShadow: "0 8px 32px #f7945e22" }}
+                whileHover={{ scale: 1.04 }}
                 transition={{ type: "spring", stiffness: 200, damping: 18 }}
-                style={{ borderRadius: rem(24) }}
+                style={{ borderRadius: rem(24), height: '100%' }}
               >
-                <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: i === 1 ? '#FFF4EC' : '#fff', minWidth: 260, maxWidth: 320, border: 'none', position: 'relative' }}>
+                <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: i === 1 ? '#FFF4EC' : '#fff', minWidth: 260, maxWidth: 320, border: 'none', position: 'relative', display: 'flex', flexDirection: 'column', height: '100%' }}>
                   {/* Círculo de acento */}
                   <div style={{
                     position: 'absolute',
@@ -57,7 +57,7 @@ export default function HowItWorks() {
                 </Paper>
               </motion.div>
             ))}
-          </Group>
+          </SimpleGrid>
         </Stack>
       </Container>
     </motion.div>

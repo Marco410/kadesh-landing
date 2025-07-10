@@ -1,5 +1,5 @@
 "use client";
-import { Button, Container, Group, Stack, Text, Title, rem, Modal, Box } from '@mantine/core';
+import { Button, Container, Group, Stack, Text, Title, rem, Modal, Box, Anchor } from '@mantine/core';
 import Image from 'next/image';
 import { motion, useScroll } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
@@ -560,10 +560,12 @@ export default function Hero() {
             >
               Entendido
             </Button>
-            <Button 
+            <Anchor
+              href='https://wa.link/jr33zy' 
               size="lg" 
               variant="outline" 
               color="#f7945e"
+              
               style={{ 
                 borderColor: '#f7945e',
                 color: '#f7945e',
@@ -573,7 +575,7 @@ export default function Hero() {
               }}
             >
               Notificarme
-            </Button>
+            </Anchor>
           </Group>
         </Stack>
       </Modal>

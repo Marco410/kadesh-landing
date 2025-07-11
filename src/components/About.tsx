@@ -6,12 +6,7 @@ import { motion } from 'framer-motion';
 export default function About() {
   return (
     <div style={{ background: '#f8f9fa', width: '100%', padding:20 }}>
-      <motion.div
-        initial={{ opacity: 0, y: 60 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.7, ease: 'easeOut' }}
-      >
+     
         <Container size="md" px={{ base: 8, sm: 0 }} py={{ base: rem(24), sm: rem(64) }} id='acerca-de'>
           <Paper
             shadow="md"
@@ -98,7 +93,6 @@ export default function About() {
             }
           }
         `}</style>
-      </motion.div>
     </div>
   );
 } 

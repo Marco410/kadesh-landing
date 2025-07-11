@@ -7,28 +7,22 @@ import Image from 'next/image';
 
 export default function Footer() {
   return (
-    <motion.footer
-      initial={{ opacity: 0, y: 60 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.7, ease: 'easeOut' }}
+    <div
       style={{ background: '#fff', borderTop: '1px solid #E6F4EA', marginTop: rem(64), padding: `${rem(32)} 0` }}
     >
       <Container size="lg">
         <Stack align="center" gap={rem(16)}>
           <Group gap={rem(24)}>
           {SOCIAL_LINKS.map(s => (
-            <motion.a
+            <Anchor
               key={s.label}
               href={s.href}
               target="_blank"
               rel="noopener noreferrer"
-              whileHover={{ scale: 1.2 }}
-              transition={{ type: "spring", stiffness: 300, damping: 18 }}
               style={{ fontSize: rem(32), color: '#fff', opacity: 0.9, textDecoration: 'none', display: 'flex', alignItems: 'center' }}
             >
               <Image src={s.icon} alt={s.label} width={32} height={32} style={{ display: 'block' }} />
-            </motion.a>
+            </Anchor>
           ))}
           </Group>
           <Group gap={rem(24)}>
@@ -43,6 +37,6 @@ export default function Footer() {
 
         </Stack>
       </Container>
-    </motion.footer>
+    </div>
   );
 } 

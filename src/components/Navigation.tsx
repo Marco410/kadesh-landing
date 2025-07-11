@@ -21,9 +21,6 @@ export default function Navigation() {
   return (
     <>
       <nav style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
         width: '100%',
         padding: `${rem(24)} ${rem(40)}`,
         display: 'flex',

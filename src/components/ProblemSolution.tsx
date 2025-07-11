@@ -35,12 +35,7 @@ const solutions = [
 
 export default function ProblemSolution() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 60 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.5 }}
-      transition={{ duration: 0.7, ease: 'easeOut' }}
-    >
+ 
       <Container size="lg" py={rem(64)} id='solucion'>
         <Stack gap={rem(48)}>
           <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717', marginBottom: rem(8), padding:20 }}>
@@ -48,14 +43,11 @@ export default function ProblemSolution() {
           </Title>
           <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={20} style={{ marginBottom: 10 }}>
             {problems.map((p) => (
-              <motion.div
+              <div
                 key={p.title}
-                whileHover={{ scale: 1.04 }}
-                transition={{ type: "spring", stiffness: 200, damping: 18 }}
                 style={{ borderRadius: rem(24), height: '100%' }}
               >
                 <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: '#fff', minWidth: 260, maxWidth: 320, border: 'none', position: 'relative', minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-                  {/* Círculo de acento */}
                   <div style={{
                     position: 'absolute',
                     left: rem(-32),
@@ -70,15 +62,13 @@ export default function ProblemSolution() {
                   <Title order={4} style={{ color: '#f7945e', fontSize: rem(20), marginBottom: rem(8), position: 'relative', zIndex: 2 }}>{p.title}</Title>
                   <Text style={{ color: '#3B2C23', position: 'relative', zIndex: 2 }}>{p.desc}</Text>
                 </Paper>
-              </motion.div>
+              </div>
             ))}
           </SimpleGrid>
           <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={20}>
             {solutions.map((s) => (
-              <motion.div
+              <div
                 key={s.title}
-                whileHover={{ scale: 1.04 }}
-                transition={{ type: "spring", stiffness: 200, damping: 18 }}
                 style={{ borderRadius: rem(24), height: '100%' }}
               >
                 <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: '#FFF4EC', minWidth: 260, maxWidth: 320, border: 'none', position: 'relative', minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
@@ -96,11 +86,10 @@ export default function ProblemSolution() {
                   <Title order={4} style={{ color: '#f7945e', fontSize: rem(20), marginBottom: rem(8), position: 'relative', zIndex: 2 }}>{s.title}</Title>
                   <Text style={{ color: '#3B2C23', position: 'relative', zIndex: 2 }}>{s.desc}</Text>
                 </Paper>
-              </motion.div>
+              </div>
             ))}
           </SimpleGrid>
         </Stack>
       </Container>
-    </motion.div>
   );
 } 

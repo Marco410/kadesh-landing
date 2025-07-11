@@ -79,11 +79,7 @@ export default function Hero() {
 
   return (
     <>
-      <motion.section
-        ref={ref}
-        initial={{ opacity: 0, y: 60 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+      <div
         style={{
           width: '100%',
           minHeight: '90vh',
@@ -92,8 +88,6 @@ export default function Hero() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          position: 'relative',
-          overflow: 'hidden',
           marginBottom: rem(64),
           flexDirection: 'column',
         }}
@@ -382,7 +376,6 @@ export default function Hero() {
           overflow: 'hidden',
           zIndex: 1
         }}>
-          {/* Part 1 logo */}
           <motion.div
             style={{ 
               position: 'absolute', 
@@ -490,20 +483,18 @@ export default function Hero() {
           marginBottom:30
         }}>
           {SOCIAL_LINKS.map(s => (
-            <motion.a
+            <Anchor
               key={s.label}
               href={s.href}
               target="_blank"
               rel="noopener noreferrer"
-              whileHover={{ scale: 1.2 }}
-              transition={{ type: "spring", stiffness: 300, damping: 18 }}
               style={{ fontSize: rem(32), color: '#fff', opacity: 0.9, textDecoration: 'none', display: 'flex', alignItems: 'center' }}
             >
               <Image src={s.icon} alt={s.label} width={32} height={32} style={{ display: 'block' }} />
-            </motion.a>
+            </Anchor>
           ))}
         </div>
-      </motion.section>
+      </div>
 
       {/* Modal  "incomming" */}
       <Modal

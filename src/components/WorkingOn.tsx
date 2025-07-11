@@ -44,61 +44,54 @@ const products = [
 
 export default function WorkingOn() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 60 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.5 }}
-      transition={{ duration: 0.7, ease: 'easeOut' }}
-    >
-      <Container size="lg" py={rem(64)} id='progreso'>
-        <Stack gap={rem(40)} align="center">
-          <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717' }}>
-            ¡Nuevas funciones en camino!
-          </Title>
-          <Text style={{ fontSize: rem(18), color: '#3B2C23', maxWidth: 600, textAlign: 'center' }}>
-            Estamos desarrollando nuevas herramientas y mejoras para que tu experiencia con KADESH sea cada vez más completa. ¡Muy pronto podrás disfrutar de más formas de ayudar, conectar y transformar vidas!
-          </Text>
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={20}>
-            {products.map((product, idx) => (
-              <Paper
-                key={product.name}
-                shadow="xs"
-                radius="lg"
-                p={rem(28)}
+    <Container size="lg" py={rem(64)} id='progreso'>
+      <Stack gap={rem(40)} align="center">
+        <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717' }}>
+          ¡Nuevas funciones en camino!
+        </Title>
+        <Text style={{ fontSize: rem(18), color: '#3B2C23', maxWidth: 600, textAlign: 'center' }}>
+          Estamos desarrollando nuevas herramientas y mejoras para que tu experiencia con KADESH sea cada vez más completa. ¡Muy pronto podrás disfrutar de más formas de ayudar, conectar y transformar vidas!
+        </Text>
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={20}>
+          {products.map((product, idx) => (
+            <Paper
+              key={product.name}
+              shadow="xs"
+              radius="lg"
+              p={rem(28)}
+              style={{
+                background: idx % 2 === 0 ? '#fff' : '#FFF4EC',
+                minWidth: 220,
+                maxWidth: 340,
+                border: 'none',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                justifyContent: 'center',
+                margin: '0 auto',
+              }}
+            >
+              <Title order={4} style={{ color: '#f7945e', fontSize: rem(20), marginBottom: rem(8), textAlign: 'left' }}>{product.name}</Title>
+              <Text style={{ color: '#3B2C23', fontSize: rem(16), textAlign: 'left', marginBottom:10 }}>{product.desc}</Text>
+              <Badge
+                color="blue"
+                variant="light"
                 style={{
-                  background: idx % 2 === 0 ? '#fff' : '#FFF4EC',
-                  minWidth: 220,
-                  maxWidth: 340,
-                  border: 'none',
-                  position: 'relative',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '100%',
-                  justifyContent: 'center',
-                  margin: '0 auto',
+                  bottom: 16,
+                  right: 16,
+                  zIndex: 2,
+                  fontWeight: 600,
+                  fontSize: 12,
+                  letterSpacing: 0.5,
                 }}
               >
-                <Title order={4} style={{ color: '#f7945e', fontSize: rem(20), marginBottom: rem(8), textAlign: 'left' }}>{product.name}</Title>
-                <Text style={{ color: '#3B2C23', fontSize: rem(16), textAlign: 'left', marginBottom:10 }}>{product.desc}</Text>
-                <Badge
-                  color="blue"
-                  variant="light"
-                  style={{
-                    bottom: 16,
-                    right: 16,
-                    zIndex: 2,
-                    fontWeight: 600,
-                    fontSize: 12,
-                    letterSpacing: 0.5,
-                  }}
-                >
-                  En desarrollo
-                </Badge>
-              </Paper>
-            ))}
-          </SimpleGrid>
-        </Stack>
-      </Container>
-    </motion.div>
+                En desarrollo
+              </Badge>
+            </Paper>
+          ))}
+        </SimpleGrid>
+      </Stack>
+    </Container>
   );
 } 

@@ -57,11 +57,11 @@ export default function CommunityMembers() {
           Aquí aparecerán las personas y aliados que forman parte de la comunidad KADESH: donadores, refugios, veterinarias y tiendas.
         </Text>
       </Stack>
-      <SimpleGrid cols={{ base: 2, sm: 2, md: 3, lg: 6 }} spacing={8} px={0} mt={140} >
+      <SimpleGrid cols={{ base: 3, sm: 3, md: 4, lg: 6, xl:8 }} spacing={10} px={0} mt={140} p={25} >
         {members.map((m, i) => (
           <Paper
             key={i}
-            shadow="xs"
+            shadow="md"
             radius="lg"
             p={8}
             style={{
@@ -71,15 +71,14 @@ export default function CommunityMembers() {
               justifyContent: 'center',
               background: '#fff',
               width: '100%',
-              maxWidth: 110,
               minWidth: 90,
-              height: 140,
-              minHeight: 140,
+              height: 150,
+              minHeight: 150,
               margin: '0 auto',
               position: 'relative',
             }}
           >
-            <Avatar size={32} radius={32} style={{ marginBottom: rem(6), fontSize: rem(16), background: '#FFF4EC', color: '#f7945e' }}>
+            <Avatar size={40} radius={32} style={{ marginBottom: rem(6), fontSize: rem(16), background: '#FFF4EC', color: '#f7945e' }}>
               {m.emoji}
             </Avatar>
             <Text fw={700} fz={12} c="#f7945e" mb={1} style={{ textAlign: 'center' }}>{m.name}</Text>

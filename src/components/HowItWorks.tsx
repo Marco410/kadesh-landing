@@ -23,10 +23,10 @@ export default function HowItWorks() {
   
     <Container size="lg" py={rem(64)} id="como-funciona">
       <Stack gap={rem(48)}>
-        <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717', marginBottom: rem(8) }}>
+        <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717', marginBottom: rem(8), paddingLeft:30 }}>
           ¿Cómo funciona KADESH?
         </Title>
-        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={20}>
+        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={20} style={{paddingLeft:30, gap:30}}>
           {steps.map((s, i) => (
             <div
               key={s.title}

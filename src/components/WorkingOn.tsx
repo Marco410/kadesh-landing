@@ -46,10 +46,10 @@ export default function WorkingOn() {
   return (
     <Container size="lg" py={rem(64)} id='progreso'>
       <Stack gap={rem(40)} align="center">
-        <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717' }}>
+        <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717', padding:25, textAlign:'center' }}>
           ¡Nuevas funciones en camino!
         </Title>
-        <Text style={{ fontSize: rem(18), color: '#3B2C23', maxWidth: 600, textAlign: 'center' }}>
+        <Text style={{ fontSize: rem(18), color: '#3B2C23', maxWidth: 600, textAlign: 'center', padding:15 }}>
           Estamos desarrollando nuevas herramientas y mejoras para que tu experiencia con KADESH sea cada vez más completa. ¡Muy pronto podrás disfrutar de más formas de ayudar, conectar y transformar vidas!
         </Text>
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={20}>

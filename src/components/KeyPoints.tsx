@@ -24,6 +24,7 @@ export default function KeyPoints() {
         <SimpleGrid
           cols={{ base: 1, sm: 3 }}
           spacing={{ base: 24, sm: 32, md: 48 }}
+          p={30}
         >
           {keyPoints.map((point, idx) => (
             <Paper

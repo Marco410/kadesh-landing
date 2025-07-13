@@ -41,7 +41,7 @@ export default function ProblemSolution() {
           <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717', marginBottom: rem(8), padding:20 }}>
             El Problema y Nuestra Solución
           </Title>
-          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={20} style={{ marginBottom: 10 }}>
+          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={20} style={{ marginBottom: 10, padding:30}}>
             {problems.map((p) => (
               <div
                 key={p.title}
@@ -65,7 +65,7 @@ export default function ProblemSolution() {
               </div>
             ))}
           </SimpleGrid>
-          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={20}>
+          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={20} style={{padding:30}}>
             {solutions.map((s) => (
               <div
                 key={s.title}

@@ -8,6 +8,7 @@ import '@fontsource/inter/400.css';
 import '@fontsource/inter/700.css';
 import ApolloProviderWrapper from '../components/ApolloProviderWrapper';
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 
 export default function RootLayout({
   children,
@@ -66,6 +67,7 @@ export default function RootLayout({
           <ApolloProviderWrapper>
             {children}
             <SpeedInsights />
+            <Analytics />
           </ApolloProviderWrapper>
         </MantineProvider>
       </body>

@@ -1,6 +1,5 @@
 "use client";
 
-import { Container, Group, Paper, Stack, Text, Title, rem, SimpleGrid } from '@mantine/core';
 import { motion } from 'framer-motion';
 
 const steps = [
@@ -20,38 +19,27 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-  
-    <Container size="lg" py={rem(64)} id="como-funciona">
-      <Stack gap={rem(48)}>
-        <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717', marginBottom: rem(8), paddingLeft:30 }}>
+    <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8" id="como-funciona">
+      <div className="flex flex-col gap-12">
+        <h2 className="text-4xl font-bold text-gray-900 mb-2 pl-8">
           ¿Cómo funciona KADESH?
-        </Title>
-        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={20} style={{paddingLeft:30, gap:30}}>
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 pl-8">
           {steps.map((s, i) => (
             <div
               key={s.title}
-              style={{ borderRadius: rem(24), height: '100%' }}
+              className="rounded-3xl h-full"
             >
-              <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: i === 1 ? '#FFF4EC' : '#fff', minWidth: 260, maxWidth: 320, border: 'none', position: 'relative', display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <div className={`shadow-md p-8 rounded-3xl min-w-[260px] max-w-[320px] border-none relative flex flex-col h-full mx-auto ${i === 1 ? 'bg-orange-50' : 'bg-white'}`}>
                 {/* Círculo de acento */}
-                <div style={{
-                  position: 'absolute',
-                  left: rem(-32),
-                  top: rem(-32),
-                  width: rem(64),
-                  height: rem(64),
-                  background: '#f7945e',
-                  borderRadius: '50%',
-                  opacity: 0.13,
-                  zIndex: 1,
-                }} />
-                <Title order={4} style={{ color: '#f7945e', fontSize: rem(20), marginBottom: rem(8), position: 'relative', zIndex: 2 }}>{s.title}</Title>
-                <Text style={{ color: '#3B2C23', position: 'relative', zIndex: 2 }}>{s.desc}</Text>
-              </Paper>
+                <div className="absolute -left-8 -top-8 w-16 h-16 bg-orange-500 rounded-full opacity-[0.13] z-[1]" />
+                <h4 className="text-orange-500 text-xl mb-2 relative z-[2] font-semibold">{s.title}</h4>
+                <p className="text-brown-700 relative z-[2]">{s.desc}</p>
+              </div>
             </div>
           ))}
-        </SimpleGrid>
-      </Stack>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
-} 
+}

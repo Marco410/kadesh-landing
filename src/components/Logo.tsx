@@ -1,17 +1,15 @@
 "use client";
 
-import { rem } from '@mantine/core';
-
 export default function Logo({ size = 64 }: { size?: number }) {
   return (
     <svg
-      width={rem(size)}
-      height={rem(size)}
+      width={size}
+      height={size}
       viewBox="0 0 64 64"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-label="KADESH logo"
-      style={{ display: 'block' }}
+      className="block"
     >
       <rect width="20" height="20" rx="16" fill="#A8D5BA" />
       <path
@@ -20,4 +18,4 @@ export default function Logo({ size = 64 }: { size?: number }) {
       />
     </svg>
   );
-} 
+}

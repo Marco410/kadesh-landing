@@ -1,7 +1,5 @@
 "use client";
 
-import { Container, SimpleGrid, Paper, Group, Text, rem } from '@mantine/core';
-
 const keyPoints = [
   {
     icon: '🐶',
@@ -19,52 +17,26 @@ const keyPoints = [
 
 export default function KeyPoints() {
   return (
-    <div style={{  width: '100%', padding: `${rem(48)} 0 ${rem(100)} 0` }}>
-      <Container size="lg">
-        <SimpleGrid
-          cols={{ base: 1, sm: 3 }}
-          spacing={{ base: 24, sm: 32, md: 48 }}
-          p={30}
-        >
+    <div className="w-full py-12 pb-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 md:gap-12 p-8">
           {keyPoints.map((point, idx) => (
-            <Paper
+            <div
               key={idx}
-              shadow="md"
-              radius="lg"
-              p="xl"
-              style={{
-                textAlign: 'center',
-                transition: 'transform 0.18s',
-                background: '#fff',
-                cursor: 'default',
-              }}
-              onMouseOver={e => (e.currentTarget.style.transform = 'translateY(-6px) scale(1.03)')}
-              onMouseOut={e => (e.currentTarget.style.transform = 'none')}
+              className="text-center transition-transform duration-200 bg-white rounded-2xl p-8 shadow-md cursor-default hover:-translate-y-1.5 hover:scale-[1.03]"
             >
-              <Group justify="center" mb={rem(12)}>
-                <div
-                  style={{
-                    fontSize: rem(48),
-                    background: '#f7e5d7',
-                    borderRadius: '50%',
-                    width: rem(72),
-                    height: rem(72),
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto',
-                  }}
-                >
+              <div className="flex justify-center mb-3">
+                <div className="text-5xl bg-orange-50 rounded-full w-18 h-18 flex items-center justify-center mx-auto min-w-[72px] min-h-[72px]">
                   {point.icon}
                 </div>
-              </Group>
-              <Text fw={700} fz={20} c="#f7945e" mb={4}>
+              </div>
+              <h3 className="font-bold text-xl text-orange-500 mb-1">
                 {point.title}
-              </Text>
-            </Paper>
+              </h3>
+            </div>
           ))}
-        </SimpleGrid>
-      </Container>
+        </div>
+      </div>
     </div>
   );
-} 
+}

@@ -1,39 +1,26 @@
 "use client";
 
-import { Container, Paper, Stack, Text, Title, rem } from '@mantine/core';
 import { motion } from 'framer-motion';
 
 export default function Testimonials() {
   return (
-    <Container size="md" py={rem(64)} id='testimonios' >
-      <Stack gap={rem(32)} align="center">
-        <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717' }}>
+    <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8" id='testimonios'>
+      <div className="flex flex-col gap-8 items-center">
+        <h2 className="text-4xl font-bold text-gray-900">
           Testimonios
-        </Title>
-        <Text style={{ fontSize: rem(18), color: '#3B2C23', maxWidth: 600, textAlign: 'center', marginRight:10, marginLeft:10 }}>
+        </h2>
+        <p className="text-lg text-brown-700 max-w-[600px] text-center mx-2.5">
           Pronto compartiremos historias de rescate y transformación. ¡Tú puedes ser parte de la próxima historia!
-        </Text>
-        <div
-          style={{ borderRadius: rem(24) }}
-        >
-          <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: '#FFF4EC', maxWidth: 420, border: 'none', position: 'relative', marginLeft:15, marginRight:15 }}>
-            <div style={{
-              position: 'absolute',
-              left: rem(-24),
-              top: rem(-24),
-              width: rem(48),
-              height: rem(48),
-              background: '#f7945e',
-              borderRadius: '50%',
-              opacity: 0.13,
-              zIndex: 1,
-            }} />
-            <Text style={{ color: '#f7945e', fontSize: rem(18), textAlign: 'center', position: 'relative', zIndex: 2 }}>
-              “KADESH es un puente de esperanza para quienes no tienen voz.”
-            </Text>
-          </Paper>
+        </p>
+        <div className="rounded-3xl">
+          <div className="bg-orange-50 shadow-md p-8 rounded-3xl max-w-[420px] border-none relative mx-4">
+            <div className="absolute -left-6 -top-6 w-12 h-12 bg-orange-500 rounded-full opacity-[0.13] z-[1]" />
+            <p className="text-orange-500 text-lg text-center relative z-[2]">
+              "KADESH es un puente de esperanza para quienes no tienen voz."
+            </p>
+          </div>
         </div>
-      </Stack>
-    </Container>
+      </div>
+    </div>
   );
-} 
+}

@@ -1,84 +1,82 @@
-import { Container, Title, Text, Stack, rem, Paper } from '@mantine/core';
-
 export default function TermsPage() {
   return (
-    <Container size="md" py={rem(48)}>
-      <Paper shadow="md" radius="xl" p={rem(32)} style={{ background: '#fff', border: 'none' }}>
-        <Stack gap={rem(24)}>
-          <Title order={1} style={{ fontSize: rem(32), fontWeight: 800, color: '#f7945e', textAlign: 'center' }}>
+    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <div className="bg-white shadow-md rounded-3xl p-8 border-none">
+        <div className="flex flex-col gap-6">
+          <h1 className="text-3xl font-extrabold text-orange-500 text-center">
             Términos y Condiciones
-          </Title>
-          <Text style={{ fontSize: rem(18), color: '#3B2C23', textAlign: 'center' }}>
+          </h1>
+          <p className="text-lg text-brown-700 text-center">
             Por favor, lee cuidadosamente estos términos y condiciones antes de utilizar KADESH.
-          </Text>
+          </p>
 
-          <Title order={2} style={{ fontSize: rem(22), color: '#f7945e', marginTop: rem(16) }}>
+          <h2 className="text-2xl text-orange-500 mt-4 font-semibold">
             1. Identidad de la plataforma
-          </Title>
-          <Text style={{ fontSize: rem(16), color: '#3B2C23' }}>
+          </h2>
+          <p className="text-base text-brown-700">
             KADESH es una plataforma operada y gestionada por el Ing. Marco Castañeda, con sede en México.
-          </Text>
+          </p>
 
-          <Title order={2} style={{ fontSize: rem(22), color: '#f7945e', marginTop: rem(16) }}>
+          <h2 className="text-2xl text-orange-500 mt-4 font-semibold">
             2. Objeto de la plataforma
-          </Title>
-          <Text style={{ fontSize: rem(16), color: '#3B2C23' }}>
+          </h2>
+          <p className="text-base text-brown-700">
             KADESH tiene como objetivo conectar adoptantes, rescatistas, veterinarias y tiendas para el bienestar animal, así como intermediar en procesos de adopción y facilitar pagos y donaciones.
-          </Text>
+          </p>
 
-          <Title order={2} style={{ fontSize: rem(22), color: '#f7945e', marginTop: rem(16) }}>
+          <h2 className="text-2xl text-orange-500 mt-4 font-semibold">
             3. Registro y cuentas
-          </Title>
-          <Text style={{ fontSize: rem(16), color: '#3B2C23' }}>
+          </h2>
+          <p className="text-base text-brown-700">
             Cualquier persona mayor de 13 años puede registrarse en KADESH. Para crear una cuenta, se solicitarán los siguientes datos personales: nombre, correo electrónico, teléfono y sexo.
-          </Text>
+          </p>
 
-          <Title order={2} style={{ fontSize: rem(22), color: '#f7945e', marginTop: rem(16) }}>
+          <h2 className="text-2xl text-orange-500 mt-4 font-semibold">
             4. Uso permitido y prohibido
-          </Title>
-          <Text style={{ fontSize: rem(16), color: '#3B2C23' }}>
+          </h2>
+          <p className="text-base text-brown-700">
             No está permitido publicar contenido que promueva el maltrato animal, spam, información falsa, ni ningún otro contenido que vaya en contra de la ley o de los valores de la comunidad. KADESH se reserva el derecho de moderar y eliminar contenido inapropiado.
-          </Text>
+          </p>
 
-          <Title order={2} style={{ fontSize: rem(22), color: '#f7945e', marginTop: rem(16) }}>
+          <h2 className="text-2xl text-orange-500 mt-4 font-semibold">
             5. Donaciones y pagos
-          </Title>
-          <Text style={{ fontSize: rem(16), color: '#3B2C23' }}>
+          </h2>
+          <p className="text-base text-brown-700">
             Las donaciones realizadas a través de la plataforma se depositan en una cuenta de KADESH y son destinadas a apoyar casos y necesidades de animales. KADESH solo facilita el proceso de pago y no cobra comisión adicional. Si requieres un reembolso, puedes solicitarlo a través de los canales de contacto.
-          </Text>
+          </p>
 
-          <Title order={2} style={{ fontSize: rem(22), color: '#f7945e', marginTop: rem(16) }}>
+          <h2 className="text-2xl text-orange-500 mt-4 font-semibold">
             6. Privacidad y protección de datos
-          </Title>
-          <Text style={{ fontSize: rem(16), color: '#3B2C23' }}>
+          </h2>
+          <p className="text-base text-brown-700">
             Los datos personales solicitados (nombre, correo electrónico, teléfono y sexo) se utilizan únicamente para identificarte en la plataforma y enviarte notificaciones relevantes. KADESH no comparte tus datos con terceros bajo ninguna circunstancia.
-          </Text>
+          </p>
 
-          <Title order={2} style={{ fontSize: rem(22), color: '#f7945e', marginTop: rem(16) }}>
+          <h2 className="text-2xl text-orange-500 mt-4 font-semibold">
             7. Responsabilidad
-          </Title>
-          <Text style={{ fontSize: rem(16), color: '#3B2C23' }}>
+          </h2>
+          <p className="text-base text-brown-700">
             KADESH no es responsable de los animales, adopciones, rescates ni pagos realizados a través de la plataforma. Solo facilitamos el proceso y la conexión entre usuarios. El uso de la plataforma es bajo tu propio riesgo.
-          </Text>
+          </p>
 
-          <Title order={2} style={{ fontSize: rem(22), color: '#f7945e', marginTop: rem(16) }}>
+          <h2 className="text-2xl text-orange-500 mt-4 font-semibold">
             8. Propiedad intelectual
-          </Title>
-          <Text style={{ fontSize: rem(16), color: '#3B2C23' }}>
+          </h2>
+          <p className="text-base text-brown-700">
             Todo el contenido subido a la plataforma (fotos, textos, etc.) pasa a ser propiedad de KADESH. El uso del logo, nombre y marca de KADESH está restringido únicamente a personas autorizadas y no puede utilizarse para fines lucrativos o sin permiso expreso.
-          </Text>
+          </p>
 
-          <Title order={2} style={{ fontSize: rem(22), color: '#f7945e', marginTop: rem(16) }}>
+          <h2 className="text-2xl text-orange-500 mt-4 font-semibold">
             9. Modificaciones y contacto
-          </Title>
-          <Text style={{ fontSize: rem(16), color: '#3B2C23' }}>
+          </h2>
+          <p className="text-base text-brown-700">
             KADESH se reserva el derecho de modificar estos términos y condiciones en cualquier momento. Los cambios serán notificados a través de la plataforma. Para cualquier duda o aclaración, puedes contactarnos por correo electrónico o WhatsApp.
-          </Text>
-          <Text style={{ fontSize: rem(15), color: '#888', marginTop: rem(32), textAlign: 'center' }}>
+          </p>
+          <p className="text-[15px] text-gray-500 mt-8 text-center">
             Última actualización: Julio 2025
-          </Text>
-        </Stack>
-      </Paper>
-    </Container>
+          </p>
+        </div>
+      </div>
+    </div>
   );
-} 
+}

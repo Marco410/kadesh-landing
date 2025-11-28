@@ -1,6 +1,5 @@
 "use client";
 
-import { Container, Group, Paper, Stack, Text, Title, rem, SimpleGrid } from '@mantine/core';
 import { motion } from 'framer-motion';
 
 const problems = [
@@ -35,61 +34,40 @@ const solutions = [
 
 export default function ProblemSolution() {
   return (
- 
-      <Container size="lg" py={rem(64)} id='solucion'>
-        <Stack gap={rem(48)}>
-          <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717', marginBottom: rem(8), padding:20 }}>
-            El Problema y Nuestra Solución
-          </Title>
-          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={20} style={{ marginBottom: 10, padding:30}}>
-            {problems.map((p) => (
-              <div
-                key={p.title}
-                style={{ borderRadius: rem(24), height: '100%' }}
-              >
-                <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: '#fff', minWidth: 260, maxWidth: 320, border: 'none', position: 'relative', minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-                  <div style={{
-                    position: 'absolute',
-                    left: rem(-32),
-                    top: rem(-32),
-                    width: rem(64),
-                    height: rem(64),
-                    background: '#f7945e',
-                    borderRadius: '50%',
-                    opacity: 0.13,
-                    zIndex: 1,
-                  }} />
-                  <Title order={4} style={{ color: '#f7945e', fontSize: rem(20), marginBottom: rem(8), position: 'relative', zIndex: 2 }}>{p.title}</Title>
-                  <Text style={{ color: '#3B2C23', position: 'relative', zIndex: 2 }}>{p.desc}</Text>
-                </Paper>
+    <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8" id='solucion'>
+      <div className="flex flex-col gap-12">
+        <h2 className="text-4xl font-bold text-gray-900 mb-2 px-5">
+          El Problema y Nuestra Solución
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-2.5 px-8">
+          {problems.map((p) => (
+            <div
+              key={p.title}
+              className="rounded-3xl h-full"
+            >
+              <div className="bg-white shadow-md p-8 rounded-3xl min-w-[260px] max-w-[320px] border-none relative min-h-[180px] flex flex-col justify-center h-full mx-auto">
+                <div className="absolute -left-8 -top-8 w-16 h-16 bg-orange-500 rounded-full opacity-[0.13] z-[1]" />
+                <h4 className="text-orange-500 text-xl mb-2 relative z-[2] font-semibold">{p.title}</h4>
+                <p className="text-brown-700 relative z-[2]">{p.desc}</p>
               </div>
-            ))}
-          </SimpleGrid>
-          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={20} style={{padding:30}}>
-            {solutions.map((s) => (
-              <div
-                key={s.title}
-                style={{ borderRadius: rem(24), height: '100%' }}
-              >
-                <Paper shadow="md" p={rem(32)} radius="xl" style={{ background: '#FFF4EC', minWidth: 260, maxWidth: 320, border: 'none', position: 'relative', minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-                  <div style={{
-                    position: 'absolute',
-                    right: rem(-32),
-                    bottom: rem(-32),
-                    width: rem(64),
-                    height: rem(64),
-                    background: '#f7945e',
-                    borderRadius: '50%',
-                    opacity: 0.13,
-                    zIndex: 1,
-                  }} />
-                  <Title order={4} style={{ color: '#f7945e', fontSize: rem(20), marginBottom: rem(8), position: 'relative', zIndex: 2 }}>{s.title}</Title>
-                  <Text style={{ color: '#3B2C23', position: 'relative', zIndex: 2 }}>{s.desc}</Text>
-                </Paper>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 px-8">
+          {solutions.map((s) => (
+            <div
+              key={s.title}
+              className="rounded-3xl h-full"
+            >
+              <div className="bg-orange-50 shadow-md p-8 rounded-3xl min-w-[260px] max-w-[320px] border-none relative min-h-[180px] flex flex-col justify-center h-full mx-auto">
+                <div className="absolute -right-8 -bottom-8 w-16 h-16 bg-orange-500 rounded-full opacity-[0.13] z-[1]" />
+                <h4 className="text-orange-500 text-xl mb-2 relative z-[2] font-semibold">{s.title}</h4>
+                <p className="text-brown-700 relative z-[2]">{s.desc}</p>
               </div>
-            ))}
-          </SimpleGrid>
-        </Stack>
-      </Container>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
-} 
+}

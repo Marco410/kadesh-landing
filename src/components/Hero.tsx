@@ -1,12 +1,9 @@
 "use client";
-import { Button, Container, Group, Stack, Text, Title, rem, Modal, Box, Anchor } from '@mantine/core';
 import Image from 'next/image';
-import { motion, useScroll } from 'framer-motion';
-import { useRef, useState, useEffect } from 'react';
+import { motion, useScroll, AnimatePresence } from 'framer-motion';
+import { useRef, useState } from 'react';
 import Navigation from './Navigation';
 import { SOCIAL_LINKS } from 'kadesh/constants/const';
-
-
 
 const MOCKUP_IMAGES = [
   { src: '/images/ss/splash.png', alt: 'KADESH App - Mapa de rescates' },
@@ -17,21 +14,9 @@ const MOCKUP_IMAGES = [
   { src: '/images/ss/parrot.png', alt: 'KADESH App - Perfil de rescate' },
 ];
 
-function useResponsiveMargin() {
-  const [margin, setMargin] = useState(100);
-  useEffect(() => {
-    const updateMargin = () => setMargin(window.innerWidth <= 700 ? 10 : 100);
-    updateMargin();
-    window.addEventListener('resize', updateMargin);
-    return () => window.removeEventListener('resize', updateMargin);
-  }, []);
-  return margin;
-}
-
 export default function Hero() {
   const [modalOpened, setModalOpened] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const marginTop = useResponsiveMargin();
   
   const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({ target: ref, offset: ["start start", "end start"] });
@@ -80,80 +65,31 @@ export default function Hero() {
   return (
     <>
       <div
-        style={{
-          width: '100%',
-          minHeight: '90vh',
-          height: 'auto',
-          background: '#f7945e',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: rem(64),
-          flexDirection: 'column',
-        }}
+        ref={ref}
+        className="w-full min-h-[90vh] h-auto bg-orange-400 flex items-center justify-center mb-16 flex-col relative overflow-hidden"
       >
         <Navigation />
 
-        <Container size="lg" style={{ zIndex: 2, width: '100%', padding: 0, marginTop }}>
-          <div
-            className="hero-columns"
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              gap: rem(32),
-              width: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <div
-              className="hero-text-col"
-              style={{
-                flex: '1 1 340px',
-                minWidth: 0,
-                maxWidth: 520,
-                width: '100%',
-                padding: `0 ${rem(16)}`,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                order: 1,
-              }}
-            >
-              <Title
-                order={1}
-                style={{
-                  fontSize: 'clamp(2.2rem, 6vw, 58px)',
-                  fontWeight: 900,
-                  lineHeight: 1.1,
-                  color: '#fff',
-                  letterSpacing: -2,
-                  marginBottom: rem(8),
-                  wordBreak: 'break-word',
-                }}
+        <div className="z-[2] w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mt-24 sm:mt-0">
+          <div className="flex flex-row flex-wrap gap-8 w-full items-center justify-center">
+            <div className="flex-1 min-w-0 max-w-[520px] w-full px-4 flex flex-col items-start order-1">
+              <h1
+                className="text-[clamp(2.2rem,6vw,58px)] font-black leading-[1.1] text-white tracking-[-2px] mb-2 break-words"
               >
                 Conectando vidas, rescatando almas<br />
-              </Title>
-              <Text
-                style={{
-                  fontSize: 'clamp(1.1rem, 3vw, 20px)',
-                  color: '#fff',
-                  maxWidth: 480,
-                  lineHeight: 1.3,
-                  opacity: 0.92,
-                  marginBottom: rem(16),
-                }}
+              </h1>
+              <p
+                className="text-[clamp(1.1rem,3vw,20px)] text-white max-w-[480px] leading-[1.3] opacity-92 mb-4"
               >
                 Estoy construyendo KADESH; la plataforma para conectar adoptantes, rescatistas, veterinarias y tiendas para el bienestar animal real.
-              </Text>
-              <Group gap={rem(20)} style={{ flexWrap: 'wrap', marginBottom: rem(16) }}>
+              </p>
+              <div className="flex flex-wrap gap-5 mb-4">
                 <motion.a
                   href="#"
                   onClick={handleDownloadClick}
                   whileHover={{ scale: 1.08}}
                   transition={{ type: "spring", stiffness: 300, damping: 18 }}
-                  style={{ display: 'inline-block' }}
+                  className="inline-block"
                 >
                   <Image src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="App Store" width={115} height={48} />
                 </motion.a>
@@ -162,40 +98,14 @@ export default function Hero() {
                   onClick={handleDownloadClick}
                   whileHover={{ scale: 1.08}}
                   transition={{ type: "spring", stiffness: 300, damping: 18 }}
-                  style={{ display: 'inline-block' }}
+                  className="inline-block"
                 >
                   <Image src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" width={120} height={48} />
                 </motion.a>
-              </Group>
+              </div>
             </div>
-            <div
-              className="hero-img-col"
-              style={{
-                flex: '1 1 340px',
-                minWidth: 0,
-                maxWidth: 520,
-                width: '100%',
-                height: 'min(90vw, 520px)',
-                minHeight: 280,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto',
-                order: 2,
-                position: 'relative',
-                paddingBottom: rem(16),
-              }}
-            >
-              <Box className="hero-mockups-wrapper"
-              style={{ 
-                width: '100%', 
-                minHeight: 420,
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'flex-end', 
-                gap: rem(16), 
-                position: 'relative',
-              }} visibleFrom="sm">
+            <div className="flex-1 min-w-0 max-w-[520px] w-full h-[min(90vw,520px)] min-h-[280px] flex items-center justify-center mx-auto order-2 relative pb-4">
+              <div className="hidden sm:flex w-full min-h-[420px] justify-center items-end gap-4 relative">
                 <motion.div
                   initial={{ opacity: 0, y: 60 }}
                   animate={{
@@ -208,12 +118,7 @@ export default function Hero() {
                     y: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
                     rotate: { duration: 8, repeat: Infinity, ease: 'easeInOut' },
                   }}
-                  style={{
-                    zIndex: 2,
-                    width: '35vw',
-                    maxWidth: 180,
-                    minWidth: 100,
-                  }}
+                  className="z-[2] w-[35vw] max-w-[180px] min-w-[100px]"
                   whileHover={{ scale: 1.04, rotate: -2 }}
                 >
                   <Image
@@ -221,7 +126,7 @@ export default function Hero() {
                     alt="KADESH App - Pantalla de inicio"
                     width={210}
                     height={420}
-                    style={{ borderRadius: rem(24), boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
+                    className="rounded-3xl shadow-xl"
                     priority
                   />
                 </motion.div>
@@ -237,12 +142,7 @@ export default function Hero() {
                     y: { duration: 7, repeat: Infinity, ease: 'easeInOut' },
                     rotate: { duration: 9, repeat: Infinity, ease: 'easeInOut' },
                   }}
-                  style={{
-                    zIndex: 3,
-                    width: '35vw',
-                    maxWidth: 200,
-                    minWidth: 100,
-                  }}
+                  className="z-[3] w-[35vw] max-w-[200px] min-w-[100px]"
                   whileHover={{ scale: 1.04, rotate: 2 }}
                 >
                   <Image
@@ -250,7 +150,7 @@ export default function Hero() {
                     alt="KADESH App - Mapa de rescates"
                     width={210}
                     height={420}
-                    style={{ borderRadius: rem(24), boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
+                    className="rounded-3xl shadow-xl"
                     priority
                   />
                 </motion.div>
@@ -266,12 +166,7 @@ export default function Hero() {
                     y: { duration: 5, repeat: Infinity, ease: 'easeInOut' },
                     rotate: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
                   }}
-                  style={{
-                    zIndex: 1,
-                    width: '35vw',
-                    maxWidth: 180,
-                    minWidth: 100,
-                  }}
+                  className="z-[1] w-[35vw] max-w-[180px] min-w-[100px]"
                   whileHover={{ scale: 1.04, rotate: 1 }}
                 >
                   <Image
@@ -279,56 +174,33 @@ export default function Hero() {
                     alt="KADESH App - Perfil de mascota"
                     width={210}
                     height={420}
-                    style={{ borderRadius: rem(24), boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
+                    className="rounded-3xl shadow-xl"
                     priority
                   />
                 </motion.div>
-              </Box>
+              </div>
 
-              <Box className="hero-mobile-carousel" style={{ 
-                width: '100%', 
-                height: '50vh',
-                minHeight: 320,
-                display: 'block',
-                position: 'relative',
-                overflow: 'hidden',
-                overflowX: 'hidden',
-              }} hiddenFrom="sm">
-                <div className="carousel-container" style={{
-                  display: 'flex',
-                  width: `${MOCKUP_IMAGES.length * 100}%`,
-                  height: '100%',
-                  transition: 'transform 0.5s ease-in-out',
-                  transform: `translateX(-${currentSlide * (100 / MOCKUP_IMAGES.length)}%)`,
-                }} onTouchStart={handleTouchStart}>
+              <div className="block sm:hidden w-full h-[50vh] min-h-[320px] relative overflow-hidden">
+                <div 
+                  className="carousel-container flex w-full h-full transition-transform duration-500 ease-in-out"
+                  style={{ transform: `translateX(-${currentSlide * (100 / MOCKUP_IMAGES.length)}%)` }}
+                  onTouchStart={handleTouchStart}
+                >
                   {MOCKUP_IMAGES.map((image, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.8, delay: index * 0.2, ease: 'easeOut' }}
-                      style={{
-                        width: `${100 / MOCKUP_IMAGES.length}%`,
-                        height: '100%',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        padding: rem(16),
-                        boxSizing: 'border-box',
-                      }}
+                      className="w-full h-full flex justify-center items-center p-4 box-border"
+                      style={{ width: `${100 / MOCKUP_IMAGES.length}%` }}
                     >
                       <Image
                         src={image.src}
                         alt={image.alt}
                         width={280}
                         height={800}
-                        style={{ 
-                          borderRadius: rem(24), 
-                          boxShadow: '0 12px 32px rgba(0,0,0,0.15)', 
-                          width: 'auto',
-                          height: '100%',
-                          objectFit: 'contain'
-                        }}
+                        className="rounded-3xl shadow-2xl w-auto h-full object-contain"
                         priority
                       />
                     </motion.div>
@@ -336,54 +208,25 @@ export default function Hero() {
                 </div>
                 
                 {/* carrusel dots */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: rem(16),
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  display: 'flex',
-                  gap: rem(8),
-                  zIndex: 10,
-                }}>
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                   {MOCKUP_IMAGES.map((_, index) => (
                     <button
                       key={index}
-                      className="carousel-indicator"
                       onClick={() => handleSlideChange(index)}
-                      style={{
-                        width: rem(8),
-                        height: rem(8),
-                        borderRadius: '50%',
-                        background: currentSlide === index ? '#f7945e' : 'rgba(255,255,255,0.5)',
-                        border: 'none',
-                        cursor: 'pointer',
-                        transition: 'background 0.3s',
-                      }}
+                      className={`w-2 h-2 rounded-full border-none cursor-pointer transition-colors duration-300 ${
+                        currentSlide === index ? 'bg-orange-500' : 'bg-white/50'
+                      }`}
                     />
                   ))}
                 </div>
-              </Box>
+              </div>
             </div>
           </div>
-        </Container>
+        </div>
         
-        <div className="hero-logo-bg" style={{ 
-          position: 'absolute', 
-          bottom: 0, 
-          left: 0,
-          width: '100%', 
-          height: '100%', 
-          overflow: 'hidden',
-          zIndex: 1
-        }}>
+        <div className="absolute bottom-0 left-0 w-full h-full overflow-hidden z-[1]">
           <motion.div
-            style={{ 
-              position: 'absolute', 
-              left: '3%', 
-              top: rem(120), 
-              zIndex: 1,
-              opacity: 0.7
-            }}
+            className="absolute left-[3%] top-[120px] z-[1] opacity-70"
             animate={{ 
               y: [0, -30, 0],
               rotate: [0, 5, 0],
@@ -400,22 +243,12 @@ export default function Hero() {
               alt="Logo KADESH parte 1"
               width={200}
               height={200}
-              style={{ 
-                filter: 'brightness(0) invert(1)',
-                opacity: 0.25
-              }}
+              className="brightness-0 invert opacity-25"
             />
           </motion.div>
 
-          {/* Part 2 logo */}
           <motion.div
-            style={{ 
-              position: 'absolute', 
-              right: '5%', 
-              top: rem(50), 
-              zIndex: 2,
-              opacity: 0.7
-            }}
+            className="absolute right-[5%] top-[50px] z-[2] opacity-70"
             animate={{ 
               y: [0, 25, 0],
               rotate: [0, -3, 0],
@@ -432,22 +265,12 @@ export default function Hero() {
               alt="Logo KADESH parte 2"
               width={250}
               height={250}
-              style={{ 
-                filter: 'brightness(0) invert(1)',
-                opacity: 0.25
-              }}
+              className="brightness-0 invert opacity-25"
             />
           </motion.div>
 
-          {/* Part 3 logo */}
           <motion.div
-            style={{ 
-              position: 'absolute', 
-              left: '45%', 
-              bottom: rem(20), 
-              zIndex: 1,
-              opacity: 0.7
-            }}
+            className="absolute left-[45%] bottom-5 z-[1] opacity-70"
             animate={{ 
               y: [0, -20, 0],
               rotate: [0, 8, 0],
@@ -464,174 +287,93 @@ export default function Hero() {
               alt="Logo KADESH parte 3"
               width={180}
               height={180}
-              style={{ 
-                filter: 'brightness(0) invert(1)',
-                opacity: 0.25
-              }}
+              className="brightness-0 invert opacity-25"
             />
           </motion.div>
         </div>
 
-        <div style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: rem(32),
-          zIndex: 10,
-          marginTop:50,
-          marginBottom:30
-        }}>
+        <div className="w-full flex items-center justify-center gap-8 z-10 mt-12 mb-8">
           {SOCIAL_LINKS.map(s => (
-            <Anchor
+            <a
               key={s.label}
               href={s.href}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ fontSize: rem(32), color: '#fff', opacity: 0.9, textDecoration: 'none', display: 'flex', alignItems: 'center' }}
+              className="text-[32px] text-white opacity-90 no-underline flex items-center hover:opacity-100 transition-opacity"
             >
-              <Image src={s.icon} alt={s.label} width={32} height={32} style={{ display: 'block' }} />
-            </Anchor>
+              <Image src={s.icon} alt={s.label} width={32} height={32} className="block" />
+            </a>
           ))}
         </div>
       </div>
 
-      {/* Modal  "incomming" */}
-      <Modal
-        opened={modalOpened}
-        onClose={() => setModalOpened(false)}
-        centered
-        size="md"
-        title={
-          <Text size="xl" fw={700} c="#f7945e">
-            🚀 Próximamente
-          </Text>
-        }
-        styles={{
-          title: {
-            fontSize: rem(24),
-            fontWeight: 700,
-            color: '#f7945e',
-          },
-          header: {
-            borderBottom: '1px solid #e9ecef',
-            paddingBottom: rem(16),
-          },
-          body: {
-            padding: rem(32),
-          },
-        }}
-      >
-        <Stack gap={rem(24)} align="center" ta="center">
-          <div style={{ fontSize: rem(64), marginBottom: rem(16) }}>
-            🐾
-          </div>
-          <Title order={2} c="#2c3e50" size={rem(28)}>
-            ¡La app KADESH está en desarrollo!
-          </Title>
-          <Text size="lg" c="#6c757d" lh={1.6}>
-            Estamos trabajando arduamente para crear la mejor experiencia digital para conectar vidas y rescatar almas. 
-            La aplicación estará disponible muy pronto en App Store y Google Play.
-          </Text>
-          <Text size="md" c="#6c757d" fw={500}>
-            ¿Quieres ser de los primeros en saber cuando esté lista?
-          </Text>
-          <Group gap={rem(16)} mt={rem(16)}>
-            <Button 
-              size="lg" 
-              color="#f7945e" 
+      {/* Modal "incomming" */}
+      <AnimatePresence>
+        {modalOpened && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
               onClick={() => setModalOpened(false)}
-              style={{ 
-                background: '#f7945e', 
-                color: '#fff',
-                fontWeight: 600,
-                borderRadius: rem(12),
-                padding: `0 ${rem(32)}`
-              }}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed inset-0 z-[60] flex items-center justify-center p-4 pointer-events-none"
             >
-              Entendido
-            </Button>
-            <Anchor
-              href='https://wa.link/jr33zy' 
-              size="lg" 
-              variant="outline" 
-              color="#f7945e"
-              
-              style={{ 
-                borderColor: '#f7945e',
-                color: '#f7945e',
-                fontWeight: 600,
-                borderRadius: rem(12),
-                padding: `0 ${rem(32)}`
-              }}
-            >
-              Notificarme
-            </Anchor>
-          </Group>
-        </Stack>
-      </Modal>
-
-      {/* Media query to mobile */}
-      <style jsx global>{`
-      @media (max-width: 900px) {
-        .mantine-Container-root {
-          padding-left: 0 !important;
-          padding-right: 0 !important;
-        }
-      }
-      @media (max-width: 700px) {
-        .hero-columns {
-          flex-direction: column !important;
-          gap: 0 !important;
-        }
-        .hero-text-col {
-          order: 1 !important;
-          max-width: 100% !important;
-          width: 100% !important;
-          align-items: center !important;
-          text-align: center !important;
-          margin-bottom: 24px;
-          padding: 0 12px !important;
-          padding-top: 90px !important;
-        }
-        .hero-text-col h1,
-        .hero-text-col h2,
-        .hero-text-col p,
-        .hero-text-col .mantine-Group-root {
-          text-align: center !important;
-          justify-content: center !important;
-          width: 100%;
-        }
-        .hero-img-col {
-          order: 2 !important;
-          max-width: 100% !important;
-          width: 100% !important;
-          min-height: 180px !important;
-          height: auto !important;
-          margin-bottom: 0;
-          padding-bottom: 0 !important;
-          justify-content: center !important;
-        }
-        .hero-mockups-wrapper {
-          flex-direction: column !important;
-          gap: 24px !important;
-          width: 100% !important;
-          justify-content: center !important;
-          align-items: center !important;
-        }
-        .hero-mockups-wrapper > div {
-          min-width: 120px !important;
-          max-width: 90vw !important;
-          width: 90vw !important;
-        }
-        .hero-logo-bg {
-          display: none !important;
-        }
-        .hero-ingresar-btn-mobile {
-          display: none !important;
-        }
-      }
-      `}</style>
+              <div 
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 pointer-events-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+                  <h2 className="text-2xl font-bold text-orange-500">
+                    🚀 Próximamente
+                  </h2>
+                  <button
+                    onClick={() => setModalOpened(false)}
+                    className="text-2xl font-bold text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="flex flex-col gap-6 items-center text-center">
+                  <div className="text-6xl mb-4">
+                    🐾
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    ¡La app KADESH está en desarrollo!
+                  </h3>
+                  <p className="text-lg text-gray-600 leading-relaxed">
+                    Estamos trabajando arduamente para crear la mejor experiencia digital para conectar vidas y rescatar almas. 
+                    La aplicación estará disponible muy pronto en App Store y Google Play.
+                  </p>
+                  <p className="text-base text-gray-600 font-medium">
+                    ¿Quieres ser de los primeros en saber cuando esté lista?
+                  </p>
+                  <div className="flex flex-wrap gap-4 mt-4">
+                    <button 
+                      onClick={() => setModalOpened(false)}
+                      className="px-8 py-3 bg-orange-500 text-white font-semibold text-lg rounded-xl hover:bg-orange-600 transition-colors"
+                    >
+                      Entendido
+                    </button>
+                    <a
+                      href='https://wa.link/jr33zy'
+                      className="px-8 py-3 border-2 border-orange-500 text-orange-500 font-semibold text-lg rounded-xl hover:bg-orange-50 transition-colors"
+                    >
+                      Notificarme
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
-} 
+}

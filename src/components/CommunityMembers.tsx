@@ -1,4 +1,4 @@
-import { SimpleGrid, Paper, Avatar, Text, Title, Badge, rem, Stack } from '@mantine/core';
+"use client";
 
 const members = [
   {
@@ -40,55 +40,40 @@ const members = [
 ];
 
 const typeColors: Record<string, string> = {
-  Donador: 'orange',
-  Refugio: 'green',
-  Veterinaria: 'blue',
-  Tienda: 'brown',
+  Donador: 'bg-orange-100 text-orange-700',
+  Refugio: 'bg-green-100 text-green-700',
+  Veterinaria: 'bg-blue-100 text-blue-700',
+  Tienda: 'bg-brown-100 text-brown-700',
 };
 
 export default function CommunityMembers() {
   return (
-    <div style={{ width: '100%', background: '#FFF4EC', padding: '48px 0' }}>
-      <Stack gap={rem(24)} align="center" mb={rem(50)} >
-        <Title order={2} style={{ color: '#f7945e', fontWeight: 800, fontSize: rem(28), textAlign: 'center' }}>
+    <div className="w-full bg-orange-50 py-12">
+      <div className="flex flex-col gap-6 items-center mb-12">
+        <h2 className="text-orange-500 font-extrabold text-[28px] text-center">
           Comunidad KADESH
-        </Title>
-        <Text style={{ color: '#3B2C23', fontSize: rem(18), textAlign: 'center', maxWidth: 600 }}>
+        </h2>
+        <p className="text-brown-700 text-lg text-center max-w-[600px] px-4">
           Aquí aparecerán las personas y aliados que forman parte de la comunidad KADESH: donadores, refugios, veterinarias y tiendas.
-        </Text>
-      </Stack>
-      <SimpleGrid cols={{ base: 3, sm: 3, md: 4, lg: 6, xl:8 }} spacing={10} px={0} mt={140} p={25} >
+        </p>
+      </div>
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 px-6 mt-12 sm:mt-36">
         {members.map((m, i) => (
-          <Paper
+          <div
             key={i}
-            shadow="md"
-            radius="lg"
-            p={8}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: '#fff',
-              width: '100%',
-              minWidth: 90,
-              height: 150,
-              minHeight: 150,
-              margin: '0 auto',
-              position: 'relative',
-            }}
+            className="flex flex-col items-center justify-center bg-white rounded-2xl p-2 w-full min-w-[90px] h-[150px] min-h-[150px] mx-auto relative shadow-md"
           >
-            <Avatar size={40} radius={32} style={{ marginBottom: rem(6), fontSize: rem(16), background: '#FFF4EC', color: '#f7945e' }}>
+            <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mb-1.5 text-base">
               {m.emoji}
-            </Avatar>
-            <Text fw={700} fz={12} c="#f7945e" mb={1} style={{ textAlign: 'center' }}>{m.name}</Text>
-            <Text fz={11} c="#3B2C23" mb={4} style={{ textAlign: 'center' }}>{m.role}</Text>
-            <Badge color={typeColors[m.type]} variant="light" size="xs" style={{ fontWeight: 600, fontSize: 10, marginTop: 1 }}>
+            </div>
+            <p className="font-bold text-xs text-orange-500 mb-1 text-center">{m.name}</p>
+            <p className="text-[11px] text-brown-700 mb-1 text-center">{m.role}</p>
+            <span className={`${typeColors[m.type]} text-[10px] font-semibold px-2 py-0.5 rounded mt-0.5`}>
               {m.type}
-            </Badge>
-          </Paper>
+            </span>
+          </div>
         ))}
-      </SimpleGrid>
+      </div>
     </div>
   );
-} 
+}

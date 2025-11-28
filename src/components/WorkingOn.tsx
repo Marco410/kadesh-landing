@@ -1,6 +1,5 @@
 "use client";
 
-import { Button, Card, Container, Group, Stack, Text, Title, rem, Paper, SimpleGrid, Badge } from '@mantine/core';
 import { motion } from 'framer-motion';
 
 const products = [
@@ -44,54 +43,31 @@ const products = [
 
 export default function WorkingOn() {
   return (
-    <Container size="lg" py={rem(64)} id='progreso'>
-      <Stack gap={rem(40)} align="center">
-        <Title order={2} style={{ fontSize: rem(36), fontWeight: 700, color: '#171717', padding:25, textAlign:'center' }}>
+    <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8" id='progreso'>
+      <div className="flex flex-col gap-10 items-center">
+        <h2 className="text-4xl font-bold text-gray-900 p-6 text-center">
           ¡Nuevas funciones en camino!
-        </Title>
-        <Text style={{ fontSize: rem(18), color: '#3B2C23', maxWidth: 600, textAlign: 'center', padding:15 }}>
+        </h2>
+        <p className="text-lg text-brown-700 max-w-[600px] text-center p-4">
           Estamos desarrollando nuevas herramientas y mejoras para que tu experiencia con KADESH sea cada vez más completa. ¡Muy pronto podrás disfrutar de más formas de ayudar, conectar y transformar vidas!
-        </Text>
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={20}>
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {products.map((product, idx) => (
-            <Paper
+            <div
               key={product.name}
-              shadow="xs"
-              radius="lg"
-              p={rem(28)}
-              style={{
-                background: idx % 2 === 0 ? '#fff' : '#FFF4EC',
-                minWidth: 220,
-                maxWidth: 340,
-                border: 'none',
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                height: '100%',
-                justifyContent: 'center',
-                margin: '0 auto',
-              }}
+              className={`shadow-sm rounded-2xl p-7 min-w-[220px] max-w-[340px] border-none relative flex flex-col h-full justify-center mx-auto ${
+                idx % 2 === 0 ? 'bg-white' : 'bg-orange-50'
+              }`}
             >
-              <Title order={4} style={{ color: '#f7945e', fontSize: rem(20), marginBottom: rem(8), textAlign: 'left' }}>{product.name}</Title>
-              <Text style={{ color: '#3B2C23', fontSize: rem(16), textAlign: 'left', marginBottom:10 }}>{product.desc}</Text>
-              <Badge
-                color="blue"
-                variant="light"
-                style={{
-                  bottom: 16,
-                  right: 16,
-                  zIndex: 2,
-                  fontWeight: 600,
-                  fontSize: 12,
-                  letterSpacing: 0.5,
-                }}
-              >
+              <h4 className="text-orange-500 text-xl mb-2 text-left font-semibold">{product.name}</h4>
+              <p className="text-brown-700 text-base text-left mb-2.5">{product.desc}</p>
+              <span className="absolute bottom-4 right-4 z-[2] font-semibold text-xs tracking-wide text-blue-600 bg-blue-50 px-2 py-1 rounded">
                 En desarrollo
-              </Badge>
-            </Paper>
+              </span>
+            </div>
           ))}
-        </SimpleGrid>
-      </Stack>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
-} 
+}

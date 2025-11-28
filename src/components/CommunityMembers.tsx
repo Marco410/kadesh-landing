@@ -40,20 +40,20 @@ const members = [
 ];
 
 const typeColors: Record<string, string> = {
-  Donador: 'bg-orange-100 text-orange-700',
-  Refugio: 'bg-green-100 text-green-700',
-  Veterinaria: 'bg-blue-100 text-blue-700',
-  Tienda: 'bg-brown-100 text-brown-700',
+  Donador: 'bg-[#f5f5f5] dark:bg-[#3a3a3a] text-[#f7945e] dark:text-[#f8a274]',
+  Refugio: 'bg-[#f5f5f5] dark:bg-[#3a3a3a] text-[#4caf50] dark:text-[#81c784]',
+  Veterinaria: 'bg-[#f5f5f5] dark:bg-[#3a3a3a] text-[#2196f3] dark:text-[#64b5f6]',
+  Tienda: 'bg-[#f5f5f5] dark:bg-[#3a3a3a] text-[#616161] dark:text-[#b0b0b0]',
 };
 
 export default function CommunityMembers() {
   return (
-    <div className="w-full bg-orange-50 py-12">
+    <div className="w-full bg-[#f5f5f5] dark:bg-[#121212] py-12">
       <div className="flex flex-col gap-6 items-center mb-12">
-        <h2 className="text-orange-500 font-extrabold text-[28px] text-center">
+        <h2 className="text-[#f7945e] font-extrabold text-[28px] text-center">
           Comunidad KADESH
         </h2>
-        <p className="text-brown-700 text-lg text-center max-w-[600px] px-4">
+        <p className="text-[#212121] dark:text-[#b0b0b0] text-lg text-center max-w-[600px] px-4">
           Aquí aparecerán las personas y aliados que forman parte de la comunidad KADESH: donadores, refugios, veterinarias y tiendas.
         </p>
       </div>
@@ -61,13 +61,13 @@ export default function CommunityMembers() {
         {members.map((m, i) => (
           <div
             key={i}
-            className="flex flex-col items-center justify-center bg-white rounded-2xl p-2 w-full min-w-[90px] h-[150px] min-h-[150px] mx-auto relative shadow-md"
+            className="flex flex-col items-center justify-center bg-[#ffffff] dark:bg-[#1e1e1e] rounded-2xl p-2 w-full min-w-[90px] h-[150px] min-h-[150px] mx-auto relative shadow-md"
           >
-            <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mb-1.5 text-base">
+            <div className="w-10 h-10 rounded-full bg-[#f5f5f5] dark:bg-[#3a3a3a] text-[#f7945e] flex items-center justify-center mb-1.5 text-base">
               {m.emoji}
             </div>
-            <p className="font-bold text-xs text-orange-500 mb-1 text-center">{m.name}</p>
-            <p className="text-[11px] text-brown-700 mb-1 text-center">{m.role}</p>
+            <p className="font-bold text-xs text-[#f7945e] mb-1 text-center">{m.name}</p>
+            <p className="text-[11px] text-[#212121] dark:text-[#b0b0b0] mb-1 text-center">{m.role}</p>
             <span className={`${typeColors[m.type]} text-[10px] font-semibold px-2 py-0.5 rounded mt-0.5`}>
               {m.type}
             </span>

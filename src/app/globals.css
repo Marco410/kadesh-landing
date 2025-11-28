@@ -47,13 +47,19 @@
     max-width: 100%;
     overflow-x: hidden;
     overflow-y: auto;
-    background: #fff;
-    color: #6B4B2C;
+    background: #ffffff;
+    color: #212121;
     min-height: 100vh;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Poppins', 'Inter', sans-serif;
+  }
+
+  html.dark,
+  html.dark body {
+    background: #121212;
+    color: #ffffff;
   }
 
   #root, #__next {
@@ -73,7 +79,11 @@
   }
 
   a:hover {
-    color: #A8D5BA;
+    color: #f8a274;
+  }
+
+  html.dark a:hover {
+    color: #f8a274;
   }
 }
 
@@ -90,8 +100,22 @@
   background: #ffa366;
 }
 
+html.dark ::-webkit-scrollbar {
+  background: #121212;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #e3824f;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #f7945e;
+}
+
 /* Firefox */
 html {
-  scrollbar-color: #f7945e #fff;
+  scrollbar-color: #f7945e #ffffff;
   scrollbar-width: thin;
+}
+
+html.dark {
+  scrollbar-color: #e3824f #121212;
 }

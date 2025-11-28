@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from 'next-themes';
 
 const NAV_LINKS = [
   { label: 'Inicio', href: '#' },
@@ -16,6 +17,31 @@ const NAV_LINKS = [
 
 export default function Navigation() {
   const [opened, setOpened] = useState(false);
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      const currentTheme = resolvedTheme || theme || 'light';
+      console.log('Theme state:', { theme, resolvedTheme, currentTheme });
+      console.log('HTML classList before:', document.documentElement.classList.toString());
+      
+      // Limpiar todas las clases de tema primero (incluyendo 'light' que next-themes podría agregar)
+      document.documentElement.classList.remove('dark', 'light');
+      
+      // Agregar solo la clase correcta
+      if (currentTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+      // Para light mode, simplemente no agregamos la clase 'dark'
+      
+      console.log('HTML classList after:', document.documentElement.classList.toString());
+    }
+  }, [theme, resolvedTheme, mounted]);
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
@@ -26,6 +52,14 @@ export default function Navigation() {
       }
     }
     setOpened(false);
+  };
+
+  const toggleTheme = () => {
+    if (!mounted) return;
+    const currentTheme = resolvedTheme || theme || 'light';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    console.log('Toggling theme from', currentTheme, 'to', newTheme);
+    setTheme(newTheme);
   };
 
   return (
@@ -45,7 +79,7 @@ export default function Navigation() {
             <motion.a
               key={link.label}
               href={link.href}
-              className="text-white font-semibold text-base no-underline opacity-92 hover:opacity-100 transition-opacity duration-200"
+              className="text-white dark:text-[#ffffff] font-semibold text-base no-underline opacity-92 hover:opacity-100 transition-opacity duration-200"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300, damping: 18 }}
               onClick={(e) => handleLinkClick(e, link.href)}
@@ -53,6 +87,25 @@ export default function Navigation() {
               {link.label}
             </motion.a>
           ))}
+          {/* Theme Toggle Button */}
+          {mounted && (
+            <button
+              onClick={toggleTheme}
+              type="button"
+              className="text-white dark:text-[#ffffff] opacity-92 hover:opacity-100 transition-opacity duration-200 p-2 rounded-lg hover:bg-white/10 dark:hover:bg-white/10"
+              aria-label="Toggle theme"
+            >
+              {(resolvedTheme || theme) === 'dark' ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Mobile Burger Menu */}
@@ -92,17 +145,38 @@ export default function Navigation() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-full bg-orange-500 z-50 sm:hidden overflow-y-auto"
+              className="fixed top-0 right-0 h-full w-full bg-[#f7945e] z-50 sm:hidden overflow-y-auto"
             >
               <div className="p-8">
                 <div className="flex justify-between items-center mb-12">
                   <h2 className="text-white text-2xl font-bold">KADESH</h2>
-                  <button
-                    onClick={() => setOpened(false)}
-                    className="text-white text-2xl font-bold"
-                  >
-                    ×
-                  </button>
+                  <div className="flex items-center gap-4">
+                    {/* Theme Toggle Button Mobile */}
+                    {mounted && (
+                      <button
+                        onClick={toggleTheme}
+                        type="button"
+                        className="text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+                        aria-label="Toggle theme"
+                      >
+                        {(resolvedTheme || theme) === 'dark' ? (
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                          </svg>
+                        )}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setOpened(false)}
+                      className="text-white text-2xl font-bold"
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-8">
                   {NAV_LINKS.map((link, index) => (

@@ -24,25 +24,6 @@ export default function Navigation() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (mounted) {
-      const currentTheme = resolvedTheme || theme || 'light';
-      console.log('Theme state:', { theme, resolvedTheme, currentTheme });
-      console.log('HTML classList before:', document.documentElement.classList.toString());
-      
-      // Limpiar todas las clases de tema primero (incluyendo 'light' que next-themes podría agregar)
-      document.documentElement.classList.remove('dark', 'light');
-      
-      // Agregar solo la clase correcta
-      if (currentTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      }
-      // Para light mode, simplemente no agregamos la clase 'dark'
-      
-      console.log('HTML classList after:', document.documentElement.classList.toString());
-    }
-  }, [theme, resolvedTheme, mounted]);
-
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
       e.preventDefault();
@@ -58,7 +39,6 @@ export default function Navigation() {
     if (!mounted) return;
     const currentTheme = resolvedTheme || theme || 'light';
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    console.log('Toggling theme from', currentTheme, 'to', newTheme);
     setTheme(newTheme);
   };
 

@@ -5,7 +5,7 @@ import '@fontsource/poppins/700.css';
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/700.css';
 import ApolloProviderWrapper from '../components/ApolloProviderWrapper';
-import { ThemeProvider } from '../components/ThemeProvider';
+import { ThemeProvider } from '../providers/ThemeProvider';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
 

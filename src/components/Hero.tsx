@@ -27,38 +27,42 @@ export default function Hero() {
   };
 
   const handleSlideChange = (newSlide: number) => {
-    setCurrentSlide(newSlide);
-    const container = document.querySelector('.carousel-container') as HTMLElement;
-    if (container) {
-      const slideWidth = 100 / MOCKUP_IMAGES.length;
-      container.style.transform = `translateX(-${newSlide * slideWidth}%)`;
+    if (newSlide >= 0 && newSlide < MOCKUP_IMAGES.length) {
+      setCurrentSlide(newSlide);
     }
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
     const startX = touch.clientX;
+    let moved = false;
     
     const handleTouchMove = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      const currentX = touch.clientX;
-      const diff = startX - currentX;
+      e.preventDefault();
+      moved = true;
+    };
+    
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!moved) return;
       
-      if (Math.abs(diff) > 50) {
+      const touch = e.changedTouches[0];
+      const endX = touch.clientX;
+      const diff = startX - endX;
+      const threshold = 50;
+      
+      if (Math.abs(diff) > threshold) {
         if (diff > 0 && currentSlide < MOCKUP_IMAGES.length - 1) {
           handleSlideChange(currentSlide + 1);
         } else if (diff < 0 && currentSlide > 0) {
           handleSlideChange(currentSlide - 1);
         }
       }
-    };
-    
-    const handleTouchEnd = () => {
+      
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
     
-    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd);
   };
 
@@ -180,41 +184,46 @@ export default function Hero() {
                 </motion.div>
               </div>
 
-              <div className="block sm:hidden w-full h-[50vh] min-h-[320px] relative overflow-hidden">
+              <div className="block sm:hidden w-full h-[60vh] min-h-[400px] max-h-[600px] relative overflow-hidden">
                 <div 
                   className="carousel-container flex w-full h-full transition-transform duration-500 ease-in-out"
-                  style={{ transform: `translateX(-${currentSlide * (100 / MOCKUP_IMAGES.length)}%)` }}
+                  style={{ transform: `translateX(-${currentSlide * 100}%)` }}
                   onTouchStart={handleTouchStart}
                 >
                   {MOCKUP_IMAGES.map((image, index) => (
                     <motion.div
                       key={index}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.8, delay: index * 0.2, ease: 'easeOut' }}
-                      className="w-full h-full flex justify-center items-center p-4 box-border"
-                      style={{ width: `${100 / MOCKUP_IMAGES.length}%` }}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ 
+                        opacity: currentSlide === index ? 1 : 0.7,
+                        scale: currentSlide === index ? 1 : 0.95
+                      }}
+                      transition={{ duration: 0.3, ease: 'easeOut' }}
+                      className="w-full h-full flex-shrink-0 flex justify-center items-center px-2 box-border"
                     >
                       <Image
                         src={image.src}
                         alt={image.alt}
                         width={280}
-                        height={800}
-                        className="rounded-3xl shadow-2xl w-auto h-full object-contain"
-                        priority
+                        height={560}
+                        className="rounded-3xl shadow-2xl w-auto h-full max-w-[85%] object-contain"
+                        priority={index === 0}
                       />
                     </motion.div>
                   ))}
                 </div>
                 
                 {/* carrusel dots */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                   {MOCKUP_IMAGES.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => handleSlideChange(index)}
-                      className={`w-2 h-2 rounded-full border-none cursor-pointer transition-colors duration-300 ${
-                        currentSlide === index ? 'bg-[#f7945e]' : 'bg-white/50'
+                      aria-label={`Ir a slide ${index + 1}`}
+                      className={`w-2.5 h-2.5 rounded-full border-none cursor-pointer transition-all duration-300 ${
+                        currentSlide === index 
+                          ? 'bg-[#f7945e] w-6' 
+                          : 'bg-white/50 hover:bg-white/70'
                       }`}
                     />
                   ))}

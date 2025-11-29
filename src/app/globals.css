@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Configurar dark mode para Tailwind v4 */
+@variant dark (.dark &);
+
 @theme {
   /* Colores Orange */
   --color-orange-50: #FFF3EB;

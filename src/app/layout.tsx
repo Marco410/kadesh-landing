@@ -5,6 +5,7 @@ import '@fontsource/poppins/700.css';
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/700.css';
 import ApolloProviderWrapper from '../components/ApolloProviderWrapper';
+import { ThemeProvider } from '../providers/ThemeProvider';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
 
@@ -14,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Kadesh</title>
@@ -31,12 +32,14 @@ export default function RootLayout({
         <meta name="twitter:description" content="KADESH es la plataforma para conectar adoptantes, rescatistas, veterinarias y tiendas para el bienestar animal real en México." />
         <meta name="twitter:image" content="https://www.kadesh.com.mx/og-image.png" />
       </head>
-      <body className="font-sans bg-white text-brown-700">
-        <ApolloProviderWrapper>
-          {children}
-          <SpeedInsights />
-          <Analytics />
-        </ApolloProviderWrapper>
+      <body className="font-sans bg-[#ffffff] dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] transition-colors duration-200">
+        <ThemeProvider>
+          <ApolloProviderWrapper>
+            {children}
+            <SpeedInsights />
+            <Analytics />
+          </ApolloProviderWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

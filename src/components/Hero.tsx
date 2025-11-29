@@ -27,38 +27,42 @@ export default function Hero() {
   };
 
   const handleSlideChange = (newSlide: number) => {
-    setCurrentSlide(newSlide);
-    const container = document.querySelector('.carousel-container') as HTMLElement;
-    if (container) {
-      const slideWidth = 100 / MOCKUP_IMAGES.length;
-      container.style.transform = `translateX(-${newSlide * slideWidth}%)`;
+    if (newSlide >= 0 && newSlide < MOCKUP_IMAGES.length) {
+      setCurrentSlide(newSlide);
     }
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
     const startX = touch.clientX;
+    let moved = false;
     
     const handleTouchMove = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      const currentX = touch.clientX;
-      const diff = startX - currentX;
+      e.preventDefault();
+      moved = true;
+    };
+    
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!moved) return;
       
-      if (Math.abs(diff) > 50) {
+      const touch = e.changedTouches[0];
+      const endX = touch.clientX;
+      const diff = startX - endX;
+      const threshold = 50;
+      
+      if (Math.abs(diff) > threshold) {
         if (diff > 0 && currentSlide < MOCKUP_IMAGES.length - 1) {
           handleSlideChange(currentSlide + 1);
         } else if (diff < 0 && currentSlide > 0) {
           handleSlideChange(currentSlide - 1);
         }
       }
-    };
-    
-    const handleTouchEnd = () => {
+      
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
     
-    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd);
   };
 
@@ -66,7 +70,7 @@ export default function Hero() {
     <>
       <div
         ref={ref}
-        className="w-full min-h-[90vh] h-auto bg-orange-400 flex items-center justify-center mb-16 flex-col relative overflow-hidden"
+        className="w-full min-h-[90vh] h-auto bg-orange-500 dark:bg-[#121212] flex items-center justify-center mb-16 flex-col relative overflow-hidden"
       >
         <Navigation />
 
@@ -180,41 +184,46 @@ export default function Hero() {
                 </motion.div>
               </div>
 
-              <div className="block sm:hidden w-full h-[50vh] min-h-[320px] relative overflow-hidden">
+              <div className="block sm:hidden w-full h-[60vh] min-h-[400px] max-h-[600px] relative overflow-hidden">
                 <div 
                   className="carousel-container flex w-full h-full transition-transform duration-500 ease-in-out"
-                  style={{ transform: `translateX(-${currentSlide * (100 / MOCKUP_IMAGES.length)}%)` }}
+                  style={{ transform: `translateX(-${currentSlide * 100}%)` }}
                   onTouchStart={handleTouchStart}
                 >
                   {MOCKUP_IMAGES.map((image, index) => (
                     <motion.div
                       key={index}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.8, delay: index * 0.2, ease: 'easeOut' }}
-                      className="w-full h-full flex justify-center items-center p-4 box-border"
-                      style={{ width: `${100 / MOCKUP_IMAGES.length}%` }}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ 
+                        opacity: currentSlide === index ? 1 : 0.7,
+                        scale: currentSlide === index ? 1 : 0.95
+                      }}
+                      transition={{ duration: 0.3, ease: 'easeOut' }}
+                      className="w-full h-full flex-shrink-0 flex justify-center items-center px-2 box-border"
                     >
                       <Image
                         src={image.src}
                         alt={image.alt}
                         width={280}
-                        height={800}
-                        className="rounded-3xl shadow-2xl w-auto h-full object-contain"
-                        priority
+                        height={560}
+                        className="rounded-3xl shadow-2xl w-auto h-full max-w-[85%] object-contain"
+                        priority={index === 0}
                       />
                     </motion.div>
                   ))}
                 </div>
                 
                 {/* carrusel dots */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                   {MOCKUP_IMAGES.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => handleSlideChange(index)}
-                      className={`w-2 h-2 rounded-full border-none cursor-pointer transition-colors duration-300 ${
-                        currentSlide === index ? 'bg-orange-500' : 'bg-white/50'
+                      aria-label={`Ir a slide ${index + 1}`}
+                      className={`w-2.5 h-2.5 rounded-full border-none cursor-pointer transition-all duration-300 ${
+                        currentSlide === index 
+                          ? 'bg-[#f7945e] w-6' 
+                          : 'bg-white/50 hover:bg-white/70'
                       }`}
                     />
                   ))}
@@ -326,16 +335,16 @@ export default function Hero() {
               className="fixed inset-0 z-[60] flex items-center justify-center p-4 pointer-events-none"
             >
               <div 
-                className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 pointer-events-auto"
+                className="bg-[#ffffff] dark:bg-[#1e1e1e] rounded-2xl shadow-2xl max-w-md w-full p-8 pointer-events-auto"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-                  <h2 className="text-2xl font-bold text-orange-500">
+                <div className="flex justify-between items-center mb-6 pb-4 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">
+                  <h2 className="text-2xl font-bold text-[#f7945e] dark:text-[#f7945e]">
                     🚀 Próximamente
                   </h2>
                   <button
                     onClick={() => setModalOpened(false)}
-                    className="text-2xl font-bold text-gray-400 hover:text-gray-600 transition-colors"
+                    className="text-2xl font-bold text-[#616161] dark:text-[#b0b0b0] hover:text-[#212121] dark:hover:text-[#ffffff] transition-colors"
                   >
                     ×
                   </button>
@@ -344,26 +353,26 @@ export default function Hero() {
                   <div className="text-6xl mb-4">
                     🐾
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800">
+                  <h3 className="text-2xl font-bold text-[#212121] dark:text-[#ffffff]">
                     ¡La app KADESH está en desarrollo!
                   </h3>
-                  <p className="text-lg text-gray-600 leading-relaxed">
+                  <p className="text-lg text-[#616161] dark:text-[#b0b0b0] leading-relaxed">
                     Estamos trabajando arduamente para crear la mejor experiencia digital para conectar vidas y rescatar almas. 
                     La aplicación estará disponible muy pronto en App Store y Google Play.
                   </p>
-                  <p className="text-base text-gray-600 font-medium">
+                  <p className="text-base text-[#616161] dark:text-[#b0b0b0] font-medium">
                     ¿Quieres ser de los primeros en saber cuando esté lista?
                   </p>
                   <div className="flex flex-wrap gap-4 mt-4">
                     <button 
                       onClick={() => setModalOpened(false)}
-                      className="px-8 py-3 bg-orange-500 text-white font-semibold text-lg rounded-xl hover:bg-orange-600 transition-colors"
+                      className="px-8 py-3 bg-[#f7945e] text-white font-semibold text-lg rounded-xl hover:bg-[#e3824f] transition-colors"
                     >
                       Entendido
                     </button>
                     <a
                       href='https://wa.link/jr33zy'
-                      className="px-8 py-3 border-2 border-orange-500 text-orange-500 font-semibold text-lg rounded-xl hover:bg-orange-50 transition-colors"
+                      className="px-8 py-3 border-2 border-[#f7945e] text-[#f7945e] font-semibold text-lg rounded-xl hover:bg-[#f5f5f5] dark:hover:bg-[#1e1e1e] transition-colors"
                     >
                       Notificarme
                     </a>

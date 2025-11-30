@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
+import Logo from '../shared/Logo';
 
 const NAV_LINKS = [
   { label: 'Inicio', href: '#' },
@@ -45,13 +46,7 @@ export default function Navigation() {
   return (
     <>
       <nav className="w-full px-6 sm:px-10 py-6 flex items-center justify-between z-10 flex-wrap">
-        <Image 
-          src="/logo.png" 
-          alt="KADESH logo" 
-          width={48} 
-          height={48} 
-          className="rounded-xl bg-transparent w-[clamp(32px,8vw,48px)] h-[clamp(32px,8vw,48px)]"
-        />
+        <Logo size={48} />
         
         {/* Desktop Navigation */}
         <div className="hidden sm:flex items-center gap-8">

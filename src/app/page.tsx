@@ -1,29 +1,30 @@
-import Hero from '../components/Hero';
-import About from '../components/About';
-import ProblemSolution from '../components/ProblemSolution';
-import HowItWorks from '../components/HowItWorks';
-import WorkingOn from '../components/WorkingOn';
-import Testimonials from '../components/Testimonials';
-import Join from '../components/Join';
-import Donate from '../components/Donate';
-import Footer from '../components/Footer';
-import KeyPoints from '../components/KeyPoints';
-import CommunityMembers from 'kadesh/components/CommunityMembers';
+import {
+  Navigation,
+  HeroSection,
+  WhatIsKadesh,
+  LostDogsSection,
+  VeterinariansSection,
+  StoriesSection,
+  DonationsSection,
+  HowItWorksSection,
+  RoadmapSection,
+  Footer,
+} from 'kadesh/components/home';
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <>
-      <Hero />
-      <KeyPoints />
-      <About />
-      <ProblemSolution />
-      <HowItWorks />
-      <WorkingOn />
-      <Testimonials />
-      <Join />
-      <Donate />
-      <CommunityMembers />
+    <main className="min-h-screen">
+      <Navigation />
+      <HeroSection />
+      <WhatIsKadesh />
+      <LostDogsSection />
+      <VeterinariansSection />
+      <StoriesSection />
+      <DonationsSection />
+      <HowItWorksSection />
+      <RoadmapSection />
       <Footer />
-    </>
+    </main>
   );
 }
+

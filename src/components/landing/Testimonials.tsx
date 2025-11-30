@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from 'framer-motion';
-
 export default function Testimonials() {
   return (
     <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8" id='testimonios'>

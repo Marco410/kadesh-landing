@@ -1,10 +1,11 @@
 "use client";
+
 import "./globals.css";
 import '@fontsource/poppins/400.css';
 import '@fontsource/poppins/700.css';
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/700.css';
-import ApolloProviderWrapper from '../components/ApolloProviderWrapper';
+import ApolloProviderWrapper from '../providers/ApolloProviderWrapper';
 import { ThemeProvider } from '../providers/ThemeProvider';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"

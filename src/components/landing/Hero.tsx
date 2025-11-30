@@ -2,8 +2,8 @@
 import Image from 'next/image';
 import { motion, useScroll, AnimatePresence } from 'framer-motion';
 import { useRef, useState } from 'react';
-import Navigation from './Navigation';
 import { SOCIAL_LINKS } from 'kadesh/constants/const';
+import Navigation from './Navigation';
 
 const MOCKUP_IMAGES = [
   { src: '/images/ss/splash.png', alt: 'KADESH App - Mapa de rescates' },

@@ -1,0 +1,11 @@
+export { default as Hero } from './Hero';
+export { default as KeyPoints } from './KeyPoints';
+export { default as About } from './About';
+export { default as ProblemSolution } from './ProblemSolution';
+export { default as HowItWorks } from './HowItWorks';
+export { default as WorkingOn } from './WorkingOn';
+export { default as Testimonials } from './Testimonials';
+export { default as Join } from './Join';
+export { default as Donate } from './Donate';
+export { default as CommunityMembers } from './CommunityMembers';
+export { default as Footer } from './Footer';

@@ -63,6 +63,16 @@
   resolved "https://registry.npmjs.org/@graphql-typed-document-node/core/-/core-3.2.0.tgz"
   integrity sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==
 
+"@hugeicons/core-free-icons@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@hugeicons/core-free-icons/-/core-free-icons-2.0.0.tgz#1b2f4d07e87eb425c3718f0702c7c32fd863db69"
+  integrity sha512-OSfv5k0iB0yG61dcfK7jcf00AIK8EXyQOgtcNJzSBFvm88n9VOelkxihZHJnNwDUFpO/jZI3vZSVp6i1dmRvJQ==
+
+"@hugeicons/react@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@hugeicons/react/-/react-1.1.1.tgz#e0700535799ddf94dd5d0b18e7e70a58d3306fdc"
+  integrity sha512-BAbFVtx0XZ/yF2poPLFn0N9Ji6ebV/MpI5+WRqooFp3smQDwpL+72m+BBs4KAM5djgWUpg12weyc5SJtTsOwsw==
+
 "@img/sharp-darwin-arm64@0.34.2":
   version "0.34.2"
   resolved "https://registry.npmjs.org/@img/sharp-darwin-arm64/-/sharp-darwin-arm64-0.34.2.tgz"

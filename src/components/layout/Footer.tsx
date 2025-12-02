@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import Logo from '../shared/Logo';
 
 const FOOTER_LINKS = {
   recursos: [
@@ -27,7 +28,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div>
-            <h3 className="text-2xl font-black text-white mb-4">KADESH</h3>
+            <Logo className="mb-4" />
             <p className="text-gray-400 text-sm leading-relaxed">
               Santuario digital para el bienestar animal. Tecnología, compasión y comunidad.
             </p>

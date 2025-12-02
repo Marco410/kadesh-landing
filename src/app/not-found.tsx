@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Logo from 'kadesh/components/shared/Logo';
+import { Routes } from 'kadesh/core/routes';
 
 export default function NotFound() {
   return (
@@ -31,17 +32,17 @@ export default function NotFound() {
             <Logo size={80} />
           </motion.div>
 
-          {/* 404 Number */}
-          <motion.h1
+          {/* Construction Icon/Number */}
+          <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.3, type: "spring", stiffness: 200 }}
             className="text-8xl sm:text-[12rem] lg:text-[14rem] font-black text-white/20 dark:text-white/10 leading-none"
           >
-            404
-          </motion.h1>
+            🚧
+          </motion.div>
 
-          {/* Error Message */}
+          {/* Construction Message */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -49,13 +50,13 @@ export default function NotFound() {
             className="space-y-4"
           >
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-4">
-              Página no encontrada
+              Página en construcción
             </h2>
             <p className="text-xl sm:text-2xl text-white/90 max-w-2xl mx-auto leading-relaxed">
-              Lo sentimos, la página que buscas no existe, esta en desarrollo o ha sido movida.
+              Estamos trabajando duro para traerte esta página. Pronto estará disponible.
             </p>
             <p className="text-lg text-white/80">
-              Pero no te preocupes, podemos ayudarte a encontrar el camino de regreso.
+              Mientras tanto, puedes explorar otras secciones de nuestro sitio.
             </p>
           </motion.div>
 
@@ -83,7 +84,7 @@ export default function NotFound() {
               whileTap={{ scale: 0.95 }}
             >
               <Link
-                href="/landing"
+                href={Routes.landing}
                 className="inline-block px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold text-lg rounded-xl border-2 border-white/30 hover:bg-white/20 transition-all duration-300"
               >
                 Ver landing page

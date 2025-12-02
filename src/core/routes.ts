@@ -10,7 +10,7 @@ export const Routes = {
   // Blog
   blog: {
     index: '/blog',
-    post: (id: string | number) => `/blog/${id}`,
+    post: (url: string) => `/blog/${url}`,
   },
   
   // Landing
@@ -32,9 +32,3 @@ export const Routes = {
   news: '/noticias',
   stories: '/historias',
 } as const;
-
-// Helper function to get blog post route
-export function getBlogPostRoute(id: string | number): string {
-  return Routes.blog.post(id);
-}
-

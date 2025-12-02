@@ -9,7 +9,7 @@ export interface Author {
   } | null;
 }
 
-export interface Category {
+export interface PostCategory {
   name: string;
 }
 
@@ -25,7 +25,7 @@ export interface BlogPost {
   id: string;
   image: Image;
   author: Author;
-  category: Category;
+  category: PostCategory;
   commentsCount: number;
   content: Content;
   createdAt: string;
@@ -58,5 +58,32 @@ export interface PostsQueryVariables {
 export interface PostsQueryResponse {
   posts: BlogPost[];
   postsCount: number;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  url: string;
+  image?: {
+    url: string;
+  } | null;
+  postsCount: number;
+}
+
+export interface CategoriesQueryResponse {
+  categories: Category[];
+}
+
+export interface BlogPostDetail extends BlogPost {
+  published: boolean;
+  updatedAt: string;
+}
+
+export interface PostByUrlQueryVariables {
+  url: string;
+}
+
+export interface PostByUrlQueryResponse {
+  posts: BlogPostDetail[];
 }
 

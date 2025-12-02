@@ -13,6 +13,7 @@ import {
 
 import { BlogPost } from './types';
 import { getCategoryLabel, getCategoryColors } from './constants';
+import { Routes } from 'kadesh/core/routes';
 
 interface BlogCardProps {
   post: BlogPost;
@@ -32,7 +33,7 @@ export default function BlogCard({ post, index }: BlogCardProps) {
       whileHover={{ y: -5 }}
       className="bg-[#f5f5f5] dark:bg-[#1e1e1e] rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col"
     >
-      <Link href={`/blog/${post.id}`}>
+      <Link href={Routes.blog.post(post.url)}>
         <div className="relative w-full h-48 overflow-hidden bg-[#f5f5f5] dark:bg-[#1e1e1e]">
           {post.image?.url ? (
             <Image

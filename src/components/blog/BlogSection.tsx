@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ErrorState } from "../shared";
 import BlogCard from "./BlogCard";
 import BlogCardSkeleton from "./BlogCardSkeleton";
 import EmptyBlogState from "./EmptyBlogState";
 import { useBlogPosts } from "./hooks/useBlogPosts";
+import { PostWhereInput } from "./types";
 
 interface BlogSectionProps {
   postsPerPage?: number;
@@ -15,6 +18,21 @@ export default function BlogSection({
   postsPerPage = 12,
   showPagination = true,
 }: BlogSectionProps = {}) {
+    const searchParams = useSearchParams();
+    const categoryUrl = searchParams.get('category');
+    
+    const where: PostWhereInput | null = useMemo(() => {
+      return categoryUrl 
+        ? {
+            category: {
+              url: {
+                equals: categoryUrl
+              }
+            }
+          }
+        : null;
+    }, [categoryUrl]);
+    
     const {
         posts,
         loading,
@@ -26,7 +44,12 @@ export default function BlogSection({
         goToPage,
         hasNextPage,
         hasPreviousPage,
-    } = useBlogPosts(undefined, undefined, postsPerPage);
+        updateFilters,
+    } = useBlogPosts(where, undefined, postsPerPage);
+
+    useEffect(() => {
+        updateFilters(where, null);
+    }, [where, updateFilters]);
 
     if (loading) {
     return (

@@ -7,18 +7,12 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import {
     FavouriteIcon,
     BubbleChatIcon,
-    Bookmark02Icon
+    Bookmark02Icon,
+    Image01Icon
 } from '@hugeicons/core-free-icons';
 
-interface BlogPost {
-  id: number;
-  title: string;
-  excerpt: string;
-  author: string;
-  date: string;
-  category: string;
-  image: string;
-}
+import { BlogPost } from './types';
+import { getCategoryLabel, getCategoryColors } from './constants';
 
 interface BlogCardProps {
   post: BlogPost;
@@ -26,13 +20,9 @@ interface BlogCardProps {
 }
 
 export default function BlogCard({ post, index }: BlogCardProps) {
-  const categoryColors: Record<string, { border: string; text: string; bg: string }> = {
-    'Rescate': { border: 'border-2 border-blue-600', text: 'text-blue-700', bg: 'bg-blue-50' },
-    'Salud': { border: 'border-2 border-yellow-600', text: 'text-yellow-700', bg: 'bg-yellow-50' },
-    'Historias': { border: 'border-2 border-purple-600', text: 'text-purple-700', bg: 'bg-purple-50' },
-    'Adopción': { border: 'border-2 border-green-600', text: 'text-green-700', bg: 'bg-green-50' },
-    'Comunidad': { border: 'border-2 border-pink-600', text: 'text-pink-700', bg: 'bg-pink-50' },
-  };
+  const categoryValue = post.category?.name || '';
+  const categoryLabel = getCategoryLabel(categoryValue);
+  const categoryColors = getCategoryColors(categoryValue);
 
   return (
     <motion.article
@@ -43,36 +33,61 @@ export default function BlogCard({ post, index }: BlogCardProps) {
       className="bg-[#f5f5f5] dark:bg-[#1e1e1e] rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col"
     >
       <Link href={`/blog/${post.id}`}>
-        <div className="relative w-full h-48 overflow-hidden bg-gray-200 dark:bg-gray-800 ">
-          <Image
-            src={post.image}
-            alt={post.title}
-            fill
-            className="object-cover hover:scale-110 transition-transform duration-300"
-          />
+        <div className="relative w-full h-48 overflow-hidden bg-[#f5f5f5] dark:bg-[#1e1e1e]">
+          {post.image?.url ? (
+            <Image
+              src={post.image.url}
+              alt={post.title}
+              fill
+              className="object-cover hover:scale-110 transition-transform duration-300"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <HugeiconsIcon 
+                icon={Image01Icon} 
+                size={64} 
+                className="text-[#616161] dark:text-[#b0b0b0]"
+                strokeWidth={1.5}
+              />
+            </div>
+          )}
           
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             <span className={`
               px-2.5 py-1 rounded-full text-xs font-semibold
-              ${categoryColors[post.category]?.border || 'border-2 border-orange-600'}
-              ${categoryColors[post.category]?.bg || 'bg-orange-50'}
-              ${categoryColors[post.category]?.text || 'text-orange-700'}
+              ${categoryColors.border}
+              ${categoryColors.bg}
+              ${categoryColors.text}
               dark:border-opacity-70
             `}>
-              {post.category}
+              {categoryLabel}
             </span>
           </div>
         </div>
         
         <div className="p-4 flex flex-col flex-1">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-xs">
-              {post.author.charAt(0)}
+            <div className="relative w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-xs overflow-hidden">
+              {post.author?.profileImage?.url ? (
+                <Image
+                  src={post.author.profileImage.url}
+                  alt={post.author.name}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <span>{post.author?.name?.charAt(0) || 'A'}</span>
+              )}
             </div>
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="font-medium text-[#212121] dark:text-[#ffffff]">{post.author}</span>
+              <span className="font-medium text-[#212121] dark:text-[#ffffff]">{post.author?.name || 'Autor'}</span>
               <span className="text-[#616161] dark:text-[#b0b0b0]">·</span>
-              <span className="text-[#616161] dark:text-[#b0b0b0]">{post.date}</span>
+              <span className="text-[#616161] dark:text-[#b0b0b0]">
+                {post.publishedAt 
+                  ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                  : new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                }
+              </span>
             </div>
           </div>
           
@@ -88,7 +103,7 @@ export default function BlogCard({ post, index }: BlogCardProps) {
                 className="text-[#616161] dark:text-[#b0b0b0]"
                 strokeWidth={2}
               />
-              <span className="text-xs">2</span>
+              <span className="text-xs">{post.post_likesCount || 0}</span>
             </div>
             <div className="flex items-center gap-1.5 text-[#616161] dark:text-[#b0b0b0]">
               <HugeiconsIcon 
@@ -97,7 +112,7 @@ export default function BlogCard({ post, index }: BlogCardProps) {
                 className="text-[#616161] dark:text-[#b0b0b0]"
                 strokeWidth={2}
               />
-              <span className="text-xs">11</span>
+              <span className="text-xs">{post.commentsCount || 0}</span>
             </div>
             <button 
               onClick={(e) => {

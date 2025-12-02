@@ -3,64 +3,8 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Footer, Navigation } from 'kadesh/components/layout';
-import { BlogCard, CategorySection } from 'kadesh/components/blog';
+import { BlogSection, CategorySection } from 'kadesh/components/blog';
 
-const blogPosts = [
-  {
-    id: 1,
-    title: 'Cómo ayudar a un animal perdido: Guía completa',
-    excerpt: 'Aprende los pasos esenciales para ayudar a un animal perdido de manera segura y efectiva. Desde la identificación hasta el rescate.',
-    author: 'Equipo KADESH',
-    date: 'Jan 15, 2024',
-    category: 'Rescate',
-    image: '/images/ss/husky.png',
-  },
-  {
-    id: 2,
-    title: 'La importancia de la esterilización en animales',
-    excerpt: 'Descubre por qué la esterilización es crucial para el bienestar animal y cómo puede ayudar a reducir la sobrepoblación.',
-    author: 'Dr. María González',
-    date: 'Jan 10, 2024',
-    category: 'Salud',
-    image: '/images/ss/cat.png',
-  },
-  {
-    id: 3,
-    title: 'Historias de rescate: Luna encuentra su hogar',
-    excerpt: 'Conoce la conmovedora historia de Luna, una perrita rescatada que finalmente encontró su familia para siempre.',
-    author: 'Ana Martínez',
-    date: 'Jan 5, 2024',
-    category: 'Historias',
-    image: '/images/ss/bunny.png',
-  },
-  {
-    id: 4,
-    title: 'Cómo preparar tu hogar para una nueva mascota',
-    excerpt: 'Guía práctica para preparar tu casa y familia para recibir a un nuevo miembro peludo. Todo lo que necesitas saber.',
-    author: 'Equipo KADESH',
-    date: 'Dec 28, 2023',
-    category: 'Adopción',
-    image: '/images/ss/parrot.png',
-  },
-  {
-    id: 5,
-    title: 'Refugios en México: Cómo puedes ayudar',
-    excerpt: 'Conoce los refugios aliados de KADESH y descubre las diferentes formas en que puedes apoyar su labor.',
-    author: 'Carlos Ramírez',
-    date: 'Dec 20, 2023',
-    category: 'Comunidad',
-    image: '/images/ss/map.png',
-  },
-  {
-    id: 6,
-    title: 'Señales de que tu mascota necesita atención veterinaria',
-    excerpt: 'Aprende a identificar las señales de alerta que indican que tu mascota necesita atención médica inmediata.',
-    author: 'Dr. Luis Hernández',
-    date: 'Dec 15, 2023',
-    category: 'Salud',
-    image: '/images/ss/splash.png',
-  },
-];
 
 const categories = ['Todos', 'Rescate', 'Salud', 'Historias', 'Adopción', 'Comunidad'];
 
@@ -141,26 +85,7 @@ export default function BlogPage() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {blogPosts.map((post, index) => (
-            <BlogCard key={post.id} post={post} index={index} />
-          ))}
-        </div>
-
-        <div className="mt-12 flex justify-center gap-2">
-          <button className="px-4 py-2 rounded-lg bg-[#f5f5f5] dark:bg-[#1e1e1e] text-[#212121] dark:text-[#ffffff] font-semibold hover:bg-orange-500 hover:text-white dark:hover:bg-orange-500 transition-colors">
-            Anterior
-          </button>
-          <button className="px-4 py-2 rounded-lg bg-orange-500 text-white font-semibold">
-            1
-          </button>
-          <button className="px-4 py-2 rounded-lg bg-[#f5f5f5] dark:bg-[#1e1e1e] text-[#212121] dark:text-[#ffffff] font-semibold hover:bg-orange-500 hover:text-white dark:hover:bg-orange-500 transition-colors">
-            2
-          </button>
-          <button className="px-4 py-2 rounded-lg bg-[#f5f5f5] dark:bg-[#1e1e1e] text-[#212121] dark:text-[#ffffff] font-semibold hover:bg-orange-500 hover:text-white dark:hover:bg-orange-500 transition-colors">
-            Siguiente
-          </button>
-        </div>
+        <BlogSection />
       </main>
 
       {/* Sección de Categorías */}

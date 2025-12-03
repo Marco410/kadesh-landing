@@ -25,6 +25,7 @@ export const GET_POSTS_QUERY = gql`
       excerpt
       post_favoritesCount
       post_likesCount
+      post_viewsCount
       publishedAt
       tags {
         name
@@ -73,10 +74,15 @@ export const GET_POST_BY_URL_QUERY = gql`
       createdAt
       updatedAt
       author {
+        id
         name
+        lastName
+        username
+        verified
         profileImage {
           url
         }
+        createdAt
       }
       category {
         name
@@ -88,10 +94,149 @@ export const GET_POST_BY_URL_QUERY = gql`
       commentsCount
       post_likesCount
       post_favoritesCount
+      post_viewsCount
     }
   }
 `;
 
 export type GetPostByUrlQueryResult = PostByUrlQueryResponse;
 export type GetPostByUrlQueryVariables = PostByUrlQueryVariables;
+
+export const CREATE_POST_LIKE_MUTATION = gql`
+  mutation CreatePostLike($data: PostLikeCreateInput!) {
+    createPostLike(data: $data) {
+      id
+    }
+  }
+`;
+
+export interface CreatePostLikeVariables {
+  data: {
+    post: {
+      connect: {
+        id: string;
+      };
+    } | null;
+    user: {
+      connect: {
+        id: string;
+      };
+    } | null;
+  };
+}
+
+export interface CreatePostLikeResponse {
+  createPostLike: {
+    id: string;
+  };
+}
+
+export const GET_POST_LIKES_QUERY = gql`
+  query GetPostLikes($where: PostLikeWhereInput!) {
+    postLikes(where: $where) {
+      id
+      user {
+        id
+        name
+      }
+      post {
+        id
+        url
+      }
+      createdAt
+    }
+  }
+`;
+
+export interface PostLikeUser {
+  id: string;
+  name: string;
+}
+
+export interface PostLikePost {
+  id: string;
+  url: string;
+}
+
+export interface PostLike {
+  id: string;
+  user: PostLikeUser | null;
+  post: PostLikePost;
+  createdAt: string;
+}
+
+export interface GetPostLikesResponse {
+  postLikes: PostLike[];
+}
+
+export interface GetPostLikesVariables {
+  where: {
+    post: {
+      id: {
+        equals: string;
+      };
+    };
+  };
+}
+
+export const DELETE_POST_LIKE_MUTATION = gql`
+  mutation DeletePostLike($where: PostLikeWhereUniqueInput!) {
+    deletePostLike(where: $where) {
+      id
+    }
+  }
+`;
+
+export interface DeletePostLikeVariables {
+  where: {
+    id: string;
+  };
+}
+
+export interface DeletePostLikeResponse {
+  deletePostLike: {
+    id: string;
+  };
+}
+
+export const CREATE_POST_VIEW_MUTATION = gql`
+  mutation CreatePostView($data: PostViewCreateInput!) {
+    createPostView(data: $data) {
+      id
+      post {
+        id
+      }
+      user {
+        id
+      }
+    }
+  }
+`;
+
+export interface CreatePostViewVariables {
+  data: {
+    post: {
+      connect: {
+        id: string;
+      };
+    };
+    user: {
+      connect: {
+        id: string;
+      };
+    } | null;
+  };
+}
+
+export interface CreatePostViewResponse {
+  createPostView: {
+    id: string;
+    post: {
+      id: string;
+    };
+    user: {
+      id: string;
+    } | null;
+  };
+}
 

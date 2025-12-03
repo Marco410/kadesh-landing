@@ -3,14 +3,20 @@ export interface Image {
 }
 
 export interface Author {
+  id: string;
   name: string;
+  lastName: string;
+  username: string;
+  verified: boolean;
   profileImage?: {
     url: string;
   } | null;
+  createdAt: string;
 }
 
 export interface PostCategory {
   name: string;
+  url: string;
 }
 
 export interface Tag {
@@ -32,6 +38,7 @@ export interface BlogPost {
   excerpt: string;
   post_favoritesCount: number;
   post_likesCount: number;
+  post_viewsCount: number;
   publishedAt: string | null;
   tags: Tag[];
   title: string;

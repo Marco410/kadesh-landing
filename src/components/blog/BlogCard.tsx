@@ -8,7 +8,8 @@ import {
     FavouriteIcon,
     BubbleChatIcon,
     Bookmark02Icon,
-    Image01Icon
+    Image01Icon,
+    ViewIcon
 } from '@hugeicons/core-free-icons';
 
 import { BlogPost } from './types';
@@ -85,16 +86,17 @@ export default function BlogCard({ post, index }: BlogCardProps) {
               <span className="text-[#616161] dark:text-[#b0b0b0]">·</span>
               <span className="text-[#616161] dark:text-[#b0b0b0]">
                 {post.publishedAt 
-                  ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                  : new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                  ? new Date(post.publishedAt).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' })
+                  : new Date(post.createdAt).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' })
                 }
               </span>
             </div>
           </div>
           
-          <h2 className="text-base font-bold text-[#212121] dark:text-[#ffffff] mb-3 line-clamp-2 hover:text-orange-500 dark:hover:text-orange-400 transition-colors">
+          <h3 className="text-base font-bold text-[#212121] dark:text-[#ffffff] mb-3 line-clamp-2 hover:text-orange-500 dark:hover:text-orange-400 transition-colors">
             {post.title}
-          </h2>
+          </h3>
+          <p className="text-sm text-[#616161] dark:text-[#b0b0b0] mb-3 line-clamp-3"> {post.excerpt} </p>
           
           <div className="flex items-center gap-4 mt-auto pt-3">
             <div className="flex items-center gap-1.5 text-[#616161] dark:text-[#b0b0b0]">
@@ -114,6 +116,15 @@ export default function BlogCard({ post, index }: BlogCardProps) {
                 strokeWidth={2}
               />
               <span className="text-xs">{post.commentsCount || 0}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[#616161] dark:text-[#b0b0b0]">
+              <HugeiconsIcon 
+                icon={ViewIcon} 
+                size={16} 
+                className="text-[#616161] dark:text-[#b0b0b0]"
+                strokeWidth={2}
+              />
+              <span className="text-xs">{post.post_viewsCount || 0}</span>
             </div>
             <button 
               onClick={(e) => {

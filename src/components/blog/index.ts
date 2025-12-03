@@ -1,5 +1,4 @@
 export { default as BlogCard } from './BlogCard';
 export { default as CategorySection } from './CategorySection';
 export { default as BlogSection } from './BlogSection';
-export { default as BlogPostDetail } from './BlogPostDetail';
-
+export { BlogPostDetail, PostActions } from './post';

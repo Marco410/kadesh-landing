@@ -1,21 +1,25 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Footer, Navigation } from 'kadesh/components/layout';
 import { usePostByUrl } from 'kadesh/components/blog/hooks/usePostByUrl';
-import BlogPostDetailComponent from 'kadesh/components/blog/BlogPostDetail';
+import { usePostView } from 'kadesh/components/blog/hooks/usePostView';
+import BlogPostDetailComponent from 'kadesh/components/blog/post/BlogPostDetail';
 import { ErrorState } from 'kadesh/components/shared';
 
 interface BlogPostPageProps {
-  params: {
+  params: Promise<{
     url: string;
-  };
+  }>;
 }
 
 export default function BlogPostPage({ params }: BlogPostPageProps) {
   const router = useRouter();
-  const { post, loading, error } = usePostByUrl(params.url);
+  const { url } = use(params);
+  const { post, loading, error } = usePostByUrl(url);
+  
+  usePostView(post?.id || '');
 
   useEffect(() => {
     if (!loading && !error && !post) {

@@ -9,6 +9,7 @@ import ApolloProviderWrapper from '../providers/ApolloProviderWrapper';
 import { ThemeProvider } from '../providers/ThemeProvider';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
+import { UserProvider } from "kadesh/utils/UserContext";
 
 export default function RootLayout({
   children,
@@ -36,9 +37,11 @@ export default function RootLayout({
       <body className="font-sans bg-[#ffffff] dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] transition-colors duration-200">
         <ThemeProvider>
           <ApolloProviderWrapper>
-            {children}
-            <SpeedInsights />
-            <Analytics />
+            <UserProvider>
+              {children}
+              <SpeedInsights />
+              <Analytics />
+            </UserProvider>
           </ApolloProviderWrapper>
         </ThemeProvider>
       </body>

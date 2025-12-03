@@ -240,3 +240,107 @@ export interface CreatePostViewResponse {
   };
 }
 
+export const CREATE_POST_COMMENT_MUTATION = gql`
+  mutation CreatePostComment($data: PostCommentCreateInput!) {
+    createPostComment(data: $data) {
+      id
+      comment
+      post {
+        id
+      }
+      user {
+        id
+      }
+    }
+  }
+`;
+
+export interface CreatePostCommentVariables {
+  data: {
+    comment: string;
+    post: {
+      connect: {
+        id: string;
+      };
+    };
+    user: {
+      connect: {
+        id: string;
+      };
+    } | null;
+  };
+}
+
+export interface CreatePostCommentResponse {
+  createPostComment: {
+    id: string;
+    comment: string;
+    post: {
+      id: string;
+    };
+    user: {
+      id: string;
+    } | null;
+  };
+}
+
+export const GET_POST_COMMENTS_QUERY = gql`
+  query GetPostComments($where: PostCommentWhereInput!) {
+    postComments(where: $where) {
+      id
+      comment
+      post {
+        id
+      }
+      user {
+        id
+        name
+        lastName
+        username
+        verified
+        profileImage {
+          url
+        }
+      }
+      createdAt
+    }
+  }
+`;
+
+export interface PostCommentUser {
+  id: string;
+  name: string;
+  lastName: string;
+  username: string;
+  verified: boolean;
+  profileImage?: {
+    url: string;
+  } | null;
+}
+
+export interface PostCommentPost {
+  id: string;
+}
+
+export interface PostComment {
+  id: string;
+  comment: string;
+  post: PostCommentPost;
+  user: PostCommentUser | null;
+  createdAt: string;
+}
+
+export interface GetPostCommentsResponse {
+  postComments: PostComment[];
+}
+
+export interface GetPostCommentsVariables {
+  where: {
+    post: {
+      id: {
+        equals: string;
+      };
+    };
+  };
+}
+

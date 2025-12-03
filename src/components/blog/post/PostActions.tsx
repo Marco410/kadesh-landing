@@ -8,6 +8,7 @@ import {
   ViewIcon,
 } from '@hugeicons/core-free-icons';
 import { usePostLikes } from '../hooks/usePostLikes';
+import { usePostComments } from '../hooks/usePostComments';
 
 interface PostActionsProps {
   postId: string;
@@ -23,6 +24,8 @@ export default function PostActions({ postId, viewsCount }: PostActionsProps) {
     isDeletingLike,
     handleLike,
   } = usePostLikes(postId);
+
+  const { commentsCount } = usePostComments(postId);
 
   return (
     <div className="flex items-center gap-6">
@@ -50,7 +53,7 @@ export default function PostActions({ postId, viewsCount }: PostActionsProps) {
           className="text-[#616161] dark:text-[#b0b0b0]"
           strokeWidth={2}
         />
-        <span>0</span>
+        <span>{commentsCount}</span>
       </div>
       <div className="flex items-center gap-2 text-[#616161] dark:text-[#b0b0b0]">
         <HugeiconsIcon

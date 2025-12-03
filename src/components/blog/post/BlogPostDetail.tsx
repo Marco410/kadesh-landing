@@ -14,6 +14,7 @@ import renderers from 'kadesh/utils/renderes';
 import { DocumentRenderer } from '@keystone-6/document-renderer';
 import PostActions from './PostActions';
 import AuthorCard from '../../shared/AuthorCard';
+import CommentsSection from './CommentsSection';
 
 interface BlogPostDetailProps {
   post: BlogPostDetail;
@@ -116,6 +117,8 @@ export default function BlogPostDetailComponent({ post }: BlogPostDetailProps) {
             ))}
           </div>
         )}
+
+        <CommentsSection postId={post.id} />
       
       </main>
     </article>

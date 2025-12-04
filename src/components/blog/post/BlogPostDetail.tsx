@@ -15,6 +15,7 @@ import { DocumentRenderer } from '@keystone-6/document-renderer';
 import PostActions from './PostActions';
 import AuthorCard from '../../shared/AuthorCard';
 import CommentsSection from './CommentsSection';
+import RelatedPostsSlider from './RelatedPostsSlider';
 
 interface BlogPostDetailProps {
   post: BlogPostDetail;
@@ -106,7 +107,7 @@ export default function BlogPostDetailComponent({ post }: BlogPostDetailProps) {
         </div>
 
         {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-8">
+          <div className="flex flex-wrap gap-2 mb-8 pb-8 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">
             {post.tags.map((tag) => (
               <span
                 key={tag.name}
@@ -120,6 +121,8 @@ export default function BlogPostDetailComponent({ post }: BlogPostDetailProps) {
 
         <CommentsSection postId={post.id} />
       
+        <RelatedPostsSlider currentPost={post} />
+
       </main>
     </article>
   );

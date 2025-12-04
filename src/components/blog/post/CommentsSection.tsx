@@ -1,8 +1,13 @@
 "use client";
 
+import { useState } from 'react';
 import Image from 'next/image';
 import { usePostComments } from '../hooks/usePostComments';
-import Avatar from '../../shared/Avatar';
+import { Avatar, ConfirmModal } from '../../shared';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Delete02Icon } from '@hugeicons/core-free-icons';
+import { useUser } from 'kadesh/utils/UserContext';
+import { Routes } from 'kadesh/core/routes';
 
 interface CommentsSectionProps {
   postId: string;
@@ -16,16 +21,40 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     setComment,
     isSubmitting,
     isCreatingComment,
+    isDeletingComment,
     handleSubmit,
+    handleDelete,
   } = usePostComments(postId);
 
+  const { user } = useUser();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
+
+  const openDeleteModal = (commentId: string) => {
+    setCommentToDelete(commentId);
+    setDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setCommentToDelete(null);
+  };
+
+  const confirmDelete = () => {
+    if (commentToDelete) {
+      handleDelete(commentToDelete);
+      closeDeleteModal();
+    }
+  };
+
   return (
-    <section className="mt-12 pt-8 border-t border-[#e0e0e0] dark:border-[#3a3a3a]">
+    <section className="mt-12 pt-8 ">
       <h2 className="text-2xl font-bold text-[#212121] dark:text-[#ffffff] mb-6">
         Comentarios ({commentsCount}) 
       </h2>
       
       <div className="space-y-6">
+        { user ? (
         <form onSubmit={handleSubmit}>
           <div className="bg-[#f5f5f5] dark:bg-[#1e1e1e] rounded-xl p-6">
             <textarea
@@ -47,7 +76,22 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
             </div>
           </div>
         </form>
-
+        ) : (
+          <div className="flex flex-col items-center justify-center py-8">
+            <p className="text-center text-[#616161] dark:text-[#b0b0b0] mb-4">
+              ¿Quieres unirte a la conversación?{' '}
+              <span className="font-semibold text-orange-500 dark:text-orange-400">
+                Inicia sesión para dejar tu comentario.
+              </span>
+            </p>
+            <a
+              href={Routes.auth.login}
+              className="inline-block px-5 py-2 bg-orange-500 hover:bg-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors"
+            >
+              Iniciar sesión
+            </a>
+          </div>
+        )}
         <div className="space-y-4">
           {comments.length === 0 ? (
             <p className="text-center text-[#616161] dark:text-[#b0b0b0] py-8">
@@ -98,11 +142,25 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                     <p className="text-[#212121] dark:text-[#ffffff] whitespace-pre-wrap">
                       {commentItem.comment}
                     </p>
-                    <p className="text-sm text-[#616161] dark:text-[#b0b0b0] mt-3"> {new Date(commentItem.createdAt).toLocaleDateString('es-MX', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })} </p>
+                    <div className="flex items-center gap-2 justify-between">
+                      <p className="text-sm text-[#616161] dark:text-[#b0b0b0] mt-3"> {new Date(commentItem.createdAt).toLocaleDateString('es-MX', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })} </p>
+                      {
+                        commentItem.user?.id === user?.id && (
+                          <button
+                            onClick={() => openDeleteModal(commentItem.id)}
+                            disabled={isDeletingComment}
+                            className="text-sm text-[#616161] dark:text-[#b0b0b0] mt-3 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Eliminar comentario"
+                          >
+                            <HugeiconsIcon icon={Delete02Icon} size={20} />
+                          </button>
+                        )
+                      }
+                    </div>
                   </div>
                 </div>
               </div>
@@ -110,6 +168,18 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
           )}
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        title="Eliminar comentario"
+        message="¿Estás seguro de que deseas eliminar este comentario? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        isLoading={isDeletingComment}
+        confirmButtonColor="red"
+      />
     </section>
   );
 }

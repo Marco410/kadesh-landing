@@ -19,9 +19,10 @@ import { Routes } from 'kadesh/core/routes';
 interface BlogCardProps {
   post: BlogPost;
   index: number;
+  showExcerpt?: boolean;
 }
 
-export default function BlogCard({ post, index }: BlogCardProps) {
+export default function BlogCard({ post, index, showExcerpt = true }: BlogCardProps) {
   const categoryValue = post.category?.name || '';
   const categoryLabel = getCategoryLabel(categoryValue);
   const categoryColors = getCategoryColors(categoryValue);
@@ -96,7 +97,10 @@ export default function BlogCard({ post, index }: BlogCardProps) {
           <h3 className="text-base font-bold text-[#212121] dark:text-[#ffffff] mb-3 line-clamp-2 hover:text-orange-500 dark:hover:text-orange-400 transition-colors">
             {post.title}
           </h3>
-          <p className="text-sm text-[#616161] dark:text-[#b0b0b0] mb-3 line-clamp-3"> {post.excerpt} </p>
+          
+          {showExcerpt && (
+            <p className="text-sm text-[#616161] dark:text-[#b0b0b0] mb-3 line-clamp-3"> {post.excerpt} </p>
+          )}
           
           <div className="flex items-center gap-4 mt-auto pt-3">
             <div className="flex items-center gap-1.5 text-[#616161] dark:text-[#b0b0b0]">

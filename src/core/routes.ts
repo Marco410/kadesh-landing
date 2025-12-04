@@ -4,13 +4,28 @@
  */
 
 export const Routes = {
+  
+  auth: {
+    login: '/auth/login',
+    register: '/auth/register',
+  },
   // Home
   home: '/',
   
-  // Blog
+  // Navigation sections (anchors on home page)
+  navigation: {
+    whatIsKadesh: '#que-es-kadesh',
+    lostAnimals: '#animales-perdidos',
+    veterinarians: '#veterinarias',
+    stories: '#historias',
+    donations: '#donaciones',
+    howItWorks: '#como-funciona',
+    roadmap: '#roadmap',
+  },
+
   blog: {
     index: '/blog',
-    post: (url: string) => `/blog/${url}`,
+    post: (url: string): string => `/blog/${url}`,
   },
   
   // Landing
@@ -21,14 +36,5 @@ export const Routes = {
   privacy: '/privacidad',
   contact: '/contacto',
   
-  // Services
-  donations: '/donaciones',
-  veterinarians: {
-    index: '/veterinarias',
-    register: '/veterinarias/registro',
-  },
   
-  // Other
-  news: '/noticias',
-  stories: '/historias',
 } as const;

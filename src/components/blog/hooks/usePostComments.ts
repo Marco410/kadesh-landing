@@ -8,7 +8,10 @@ import {
   CreatePostCommentResponse,
   GET_POST_COMMENTS_QUERY,
   GetPostCommentsResponse,
-  GetPostCommentsVariables
+  GetPostCommentsVariables,
+  DELETE_POST_COMMENT_MUTATION,
+  DeletePostCommentVariables,
+  DeletePostCommentResponse
 } from '../queries';
 import { useUser } from 'kadesh/utils/UserContext';
 
@@ -29,6 +32,11 @@ export function usePostComments(postId: string) {
           },
         },
       },
+      orderBy: [
+        {
+          createdAt: 'desc',
+        },
+      ],
     },
     skip: !postId,
   });
@@ -48,6 +56,18 @@ export function usePostComments(postId: string) {
     onError: (error) => {
       console.error('Error al crear comentario:', error);
       setIsSubmitting(false);
+    },
+  });
+
+  const [deletePostComment, { loading: isDeletingComment }] = useMutation<
+    DeletePostCommentResponse,
+    DeletePostCommentVariables
+  >(DELETE_POST_COMMENT_MUTATION, {
+    onCompleted: () => {
+      refetchComments();
+    },
+    onError: (error) => {
+      console.error('Error al eliminar comentario:', error);
     },
   });
 
@@ -83,6 +103,22 @@ export function usePostComments(postId: string) {
     }
   };
 
+  const handleDelete = async (commentId: string) => {
+    if (isDeletingComment || !commentId) return;
+
+    try {
+      await deletePostComment({
+        variables: {
+          where: {
+            id: commentId,
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Error al eliminar comentario:', error);
+    }
+  };
+
   return {
     comments,
     commentsCount,
@@ -91,7 +127,9 @@ export function usePostComments(postId: string) {
     loading: commentsLoading,
     isSubmitting,
     isCreatingComment,
+    isDeletingComment,
     handleSubmit,
+    handleDelete,
     refetchComments,
   };
 }

@@ -285,8 +285,8 @@ export interface CreatePostCommentResponse {
 }
 
 export const GET_POST_COMMENTS_QUERY = gql`
-  query GetPostComments($where: PostCommentWhereInput!) {
-    postComments(where: $where) {
+  query GetPostComments($where: PostCommentWhereInput!, $orderBy: [PostCommentOrderByInput!]) {
+    postComments(where: $where, orderBy: $orderBy) {
       id
       comment
       post {
@@ -341,6 +341,29 @@ export interface GetPostCommentsVariables {
         equals: string;
       };
     };
+  };
+  orderBy?: Array<{
+    createdAt?: 'asc' | 'desc';
+  }>;
+}
+
+export const DELETE_POST_COMMENT_MUTATION = gql`
+  mutation DeletePostComment($where: PostCommentWhereUniqueInput!) {
+    deletePostComment(where: $where) {
+      id
+    }
+  }
+`;
+
+export interface DeletePostCommentVariables {
+  where: {
+    id: string;
+  };
+}
+
+export interface DeletePostCommentResponse {
+  deletePostComment: {
+    id: string;
   };
 }
 

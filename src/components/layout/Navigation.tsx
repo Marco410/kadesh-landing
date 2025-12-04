@@ -3,18 +3,20 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
+import { usePathname } from 'next/navigation';
 import Logo from '../shared/Logo';
 import Link from 'next/link';
+import { Routes } from 'kadesh/core/routes';
 
 const NAV_LINKS = [
-  { label: 'Inicio', href: '#inicio' },
-  { label: '¿Qué es KADESH?', href: '#que-es-kadesh' },
-  { label: 'Perros perdidos', href: '#perros-perdidos' },
-  { label: 'Veterinarias', href: '#veterinarias' },
-  { label: 'Historias', href: '#historias' },
-  { label: 'Donaciones', href: '#donaciones' },
-  { label: 'Cómo funciona', href: '#como-funciona' },
-  { label: 'Roadmap', href: '#roadmap' },
+  { label: 'Inicio', href: Routes.home, anchor: null },
+  { label: '¿Qué es KADESH?', href: Routes.navigation.whatIsKadesh, anchor: Routes.navigation.whatIsKadesh },
+  { label: 'Animales perdidos', href: Routes.navigation.lostAnimals, anchor: Routes.navigation.lostAnimals },
+  { label: 'Veterinarias', href: Routes.navigation.veterinarians, anchor: Routes.navigation.veterinarians },
+  { label: 'Historias', href: Routes.navigation.stories, anchor: Routes.navigation.stories },
+  { label: 'Donaciones', href: Routes.navigation.donations, anchor: Routes.navigation.donations },
+  { label: 'Cómo funciona', href: Routes.navigation.howItWorks, anchor: Routes.navigation.howItWorks },
+  { label: 'Roadmap', href: Routes.navigation.roadmap, anchor: Routes.navigation.roadmap },
 ];
 
 export default function Navigation() {
@@ -22,6 +24,7 @@ export default function Navigation() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
@@ -31,17 +34,38 @@ export default function Navigation() {
     };
     
     window.addEventListener('scroll', handleScroll);
+    
+    // Si estamos en la página principal y hay un anchor en la URL, hacer scroll a esa sección
+    if (pathname === Routes.home && window.location.hash) {
+      const hash = window.location.hash;
+      setTimeout(() => {
+        const el = document.querySelector(hash);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+    
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [pathname]);
 
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (href.startsWith('#')) {
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, anchor: string | null) => {
+    // Si el link tiene un anchor y no estamos en la página principal, redirigir a home con el anchor
+    if (anchor && pathname !== Routes.home) {
       e.preventDefault();
-      const el = document.querySelector(href);
+      window.location.href = `${Routes.home}${anchor}`;
+      return;
+    }
+    
+    // Si estamos en la página principal y es un anchor, hacer scroll suave
+    if (anchor && pathname === Routes.home) {
+      e.preventDefault();
+      const el = document.querySelector(anchor);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
+    
     setOpened(false);
   };
 
@@ -61,7 +85,7 @@ export default function Navigation() {
             : 'bg-transparent'
         }`}
       >
-        <Link href="/" className="flex items-center">
+        <Link href={Routes.home} className="flex items-center">
           <Logo size={48} />
         </Link>
         
@@ -70,13 +94,13 @@ export default function Navigation() {
           {NAV_LINKS.map(link => (
             <motion.a
               key={link.label}
-              href={link.href}
+              href={link.anchor ? `${Routes.home}${link.anchor}` : link.href}
               className={`font-semibold text-sm no-underline transition-colors duration-200 ${
                 'text-white hover:text-orange-100'
               }`}
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300, damping: 18 }}
-              onClick={(e) => handleLinkClick(e, link.href)}
+              onClick={(e) => handleLinkClick(e, link.href, link.anchor)}
             >
               {link.label}
             </motion.a>
@@ -187,8 +211,8 @@ export default function Navigation() {
                   {NAV_LINKS.map((link, index) => (
                     <motion.a
                       key={link.label}
-                      href={link.href}
-                      onClick={(e) => handleLinkClick(e, link.href)}
+                      href={link.anchor ? `${Routes.home}${link.anchor}` : link.href}
+                      onClick={(e) => handleLinkClick(e, link.href, link.anchor)}
                       className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}

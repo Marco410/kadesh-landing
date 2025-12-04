@@ -15,6 +15,8 @@ import {
 import { BlogPost } from './types';
 import { getCategoryLabel, getCategoryColors } from './constants';
 import { Routes } from 'kadesh/core/routes';
+import { useUser } from 'kadesh/utils/UserContext';
+import { usePostFavorites } from './hooks/usePostFavorites';
 
 interface BlogCardProps {
   post: BlogPost;
@@ -26,6 +28,17 @@ export default function BlogCard({ post, index, showExcerpt = true }: BlogCardPr
   const categoryValue = post.category?.name || '';
   const categoryLabel = getCategoryLabel(categoryValue);
   const categoryColors = getCategoryColors(categoryValue);
+
+  const { user } = useUser();
+
+
+  const {
+    isFavorited,
+    loading: favoritesLoading,
+    isCreatingFavorite,
+    isDeletingFavorite,
+    handleFavorite,
+  } = usePostFavorites(post.id);
 
   return (
     <motion.article
@@ -130,21 +143,28 @@ export default function BlogCard({ post, index, showExcerpt = true }: BlogCardPr
               />
               <span className="text-xs">{post.post_viewsCount || 0}</span>
             </div>
-            <button 
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              className="ml-auto text-[#616161] dark:text-[#b0b0b0] hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
-              aria-label="Guardar artículo"
-            >
-              <HugeiconsIcon 
-                icon={Bookmark02Icon} 
-                size={16} 
-                className="text-[#616161] dark:text-[#b0b0b0] hover:text-orange-500 dark:hover:text-orange-400"
-                strokeWidth={2}
-              />
-            </button>
+            {user?.id && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleFavorite();
+                }}
+                className={`ml-auto items-center gap-2 transition-colors ${
+                  isFavorited 
+                    ? "text-orange-500 dark:text-orange-400" 
+                    : "text-[#616161] dark:text-[#b0b0b0] hover:text-orange-500 dark:hover:text-orange-400"
+                } ${isCreatingFavorite || isDeletingFavorite || favoritesLoading ? "opacity-50 cursor-wait" : "cursor-pointer"}`}
+                aria-label="Guardar artículo"
+              >
+                <HugeiconsIcon
+                  icon={Bookmark02Icon}
+                  size={20}
+                  className={isFavorited ? "text-orange-500 dark:text-orange-400" : ""}
+                  strokeWidth={2}
+                />
+              </button>
+            )}
           </div>
         </div>
       </Link>

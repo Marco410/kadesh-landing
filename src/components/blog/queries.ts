@@ -367,3 +367,109 @@ export interface DeletePostCommentResponse {
   };
 }
 
+export const CREATE_POST_FAVORITE_MUTATION = gql`
+  mutation CreatePostFavorite($data: PostFavoriteCreateInput!) {
+    createPostFavorite(data: $data) {
+      id
+      post {
+        id
+      }
+      user {
+        id
+      }
+    }
+  }
+`;
+
+export interface CreatePostFavoriteVariables {
+  data: {
+    post: {
+      connect: {
+        id: string;
+      };
+    };
+    user: {
+      connect: {
+        id: string;
+      };
+    } | null;
+  };
+}
+
+export interface CreatePostFavoriteResponse {
+  createPostFavorite: {
+    id: string;
+    post: {
+      id: string;
+    };
+    user: {
+      id: string;
+    } | null;
+  };
+}
+
+export const GET_POST_FAVORITES_QUERY = gql`
+  query GetPostFavorites($where: PostFavoriteWhereInput!) {
+    postFavorites(where: $where) {
+      id
+      post {
+        id
+      }
+      user {
+        id
+      }
+      createdAt
+    }
+  }
+`;
+
+export interface PostFavorite {
+  id: string;
+  post: {
+    id: string;
+  };
+  user: {
+    id: string;
+  } | null;
+  createdAt: string;
+}
+
+export interface GetPostFavoritesResponse {
+  postFavorites: PostFavorite[];
+}
+
+export interface GetPostFavoritesVariables {
+  where: {
+    post: {
+      id: {
+        equals: string;
+      };
+    };
+    user?: {
+      id: {
+        equals: string;
+      };
+    };
+  };
+}
+
+export const DELETE_POST_FAVORITE_MUTATION = gql`
+  mutation DeletePostFavorite($where: PostFavoriteWhereUniqueInput!) {
+    deletePostFavorite(where: $where) {
+      id
+    }
+  }
+`;
+
+export interface DeletePostFavoriteVariables {
+  where: {
+    id: string;
+  };
+}
+
+export interface DeletePostFavoriteResponse {
+  deletePostFavorite: {
+    id: string;
+  };
+}
+

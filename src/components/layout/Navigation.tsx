@@ -1,15 +1,22 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Logo from '../shared/Logo';
 import Link from 'next/link';
 import { Routes } from 'kadesh/core/routes';
+import { useUser } from 'kadesh/utils/UserContext';
 
-const NAV_LINKS = [
-  { label: 'Inicio', href: Routes.home, anchor: null },
+interface DropdownLink {
+  label: string;
+  href: string;
+  anchor: string | null;
+}
+
+const DROPDOWN_LINKS: DropdownLink[] = [
   { label: '¿Qué es KADESH?', href: Routes.navigation.whatIsKadesh, anchor: Routes.navigation.whatIsKadesh },
   { label: 'Animales perdidos', href: Routes.navigation.lostAnimals, anchor: Routes.navigation.lostAnimals },
   { label: 'Veterinarias', href: Routes.navigation.veterinarians, anchor: Routes.navigation.veterinarians },
@@ -21,10 +28,16 @@ const NAV_LINKS = [
 
 export default function Navigation() {
   const [opened, setOpened] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, setUser } = useUser();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const avatarDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -48,6 +61,21 @@ export default function Navigation() {
     
     return () => window.removeEventListener('scroll', handleScroll);
   }, [pathname]);
+
+  // Cerrar dropdowns al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+      if (avatarDropdownRef.current && !avatarDropdownRef.current.contains(event.target as Node)) {
+        setAvatarDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, anchor: string | null) => {
     // Si el link tiene un anchor y no estamos en la página principal, redirigir a home con el anchor
@@ -76,6 +104,26 @@ export default function Navigation() {
     setTheme(newTheme);
   };
 
+  const handleLogout = async () => {
+    try {
+      // Limpiar cookies de sesión
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+      
+      // Limpiar el usuario del contexto
+      setUser(undefined);
+      
+      // Redirigir a home
+      router.push(Routes.home);
+      setAvatarDropdownOpen(false);
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
+
   return (
     <>
       <nav 
@@ -91,29 +139,70 @@ export default function Navigation() {
         
         {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center gap-6">
-          {NAV_LINKS.map(link => (
-            <motion.a
-              key={link.label}
-              href={link.anchor ? `${Routes.home}${link.anchor}` : link.href}
-              className={`font-semibold text-sm no-underline transition-colors duration-200 ${
-                'text-white hover:text-orange-100'
-              }`}
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300, damping: 18 }}
-              onClick={(e) => handleLinkClick(e, link.href, link.anchor)}
+          {/* Inicio Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="font-semibold text-sm text-white hover:text-orange-100 transition-colors duration-200 flex items-center gap-1"
             >
-              {link.label}
-            </motion.a>
-          ))}
+              Inicio
+              <svg 
+                className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <AnimatePresence>
+              {dropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute top-full left-0 mt-2 bg-white dark:bg-[#1e1e1e] rounded-lg shadow-lg py-2 min-w-[200px] z-50"
+                >
+                  {DROPDOWN_LINKS.map((link: DropdownLink) => (
+                    <a
+                      key={link.label}
+                      href={link.anchor ? `${Routes.home}${link.anchor}` : link.href}
+                      onClick={(e) => {
+                        handleLinkClick(e, link.href, link.anchor);
+                        setDropdownOpen(false);
+                      }}
+                      className="block px-4 py-2 text-sm text-[#212121] dark:text-[#ffffff] hover:bg-orange-500/10 dark:hover:bg-white/10 transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Blog Link */}
+          <Link
+            href={Routes.blog.index}
+            className="font-semibold text-sm text-white hover:text-orange-100 transition-colors duration-200"
+          >
+            Blog
+          </Link>
+
+          {/* Conócenos Link */}
+          <Link
+            href={Routes.home}
+            className="font-semibold text-sm text-white hover:text-orange-100 transition-colors duration-200"
+          >
+            Conócenos
+          </Link>
           
           {/* Theme Toggle Button */}
           {mounted && (
             <button
               onClick={toggleTheme}
               type="button"
-              className={`p-2 rounded-lg transition-colors duration-200 ${
-                 'text-white hover:bg-white/10'
-              }`}
+              className="p-2 rounded-lg transition-colors duration-200 text-white hover:bg-white/10"
               aria-label="Toggle theme"
             >
               {(resolvedTheme || theme) === 'dark' ? (
@@ -126,6 +215,61 @@ export default function Navigation() {
                 </svg>
               )}
             </button>
+          )}
+
+          {/* User Avatar or Login Button */}
+          {user?.id ? (
+            <div className="relative" ref={avatarDropdownRef}>
+              <button
+                onClick={() => setAvatarDropdownOpen(!avatarDropdownOpen)}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors overflow-hidden"
+              >
+                {user.profileImage?.url ? (
+                  <Image
+                    src={user.profileImage.url}
+                    alt={user.name || 'Usuario'}
+                    width={40}
+                    height={40}
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="text-white font-semibold text-sm">
+                    {user.name?.charAt(0) || 'U'}
+                  </span>
+                )}
+              </button>
+              <AnimatePresence>
+                {avatarDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full right-0 mt-2 bg-white dark:bg-[#1e1e1e] rounded-lg shadow-lg py-2 min-w-[180px] z-50"
+                  >
+                    <Link
+                      href="/perfil"
+                      onClick={() => setAvatarDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-[#212121] dark:text-[#ffffff] hover:bg-orange-500/10 dark:hover:bg-white/10 transition-colors"
+                    >
+                      Mi perfil
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-[#212121] dark:text-[#ffffff] hover:bg-orange-500/10 dark:hover:bg-white/10 transition-colors"
+                    >
+                      Cerrar Sesión
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <Link
+              href={Routes.auth.login}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-sm rounded-lg transition-colors duration-200"
+            >
+              Iniciar Sesión
+            </Link>
           )}
         </div>
 
@@ -174,7 +318,7 @@ export default function Navigation() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-full bg-orange-500 dark:bg-[#1a1a1a] z-50 lg:hidden overflow-y-auto"
+              className="fixed top-0 right-0 h-full w-90 bg-orange-500 dark:bg-[#1a1a1a] z-50 lg:hidden overflow-y-auto shadow-2xl"
             >
               <div className="p-8">
                 <div className="flex justify-between items-center mb-12">
@@ -208,20 +352,121 @@ export default function Navigation() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-4">
-                  {NAV_LINKS.map((link, index) => (
-                    <motion.a
-                      key={link.label}
-                      href={link.anchor ? `${Routes.home}${link.anchor}` : link.href}
-                      onClick={(e) => handleLinkClick(e, link.href, link.anchor)}
-                      className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.02 }}
+                  {/* Inicio Dropdown Mobile */}
+                  <div>
+                    <button
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className="w-full text-left text-white font-semibold text-lg opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all flex items-center justify-between"
                     >
-                      {link.label}
-                    </motion.a>
-                  ))}
+                      Inicio
+                      <svg 
+                        className={`w-5 h-5 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    <AnimatePresence>
+                      {dropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pl-4 pt-2 flex flex-col gap-2">
+                            {DROPDOWN_LINKS.map((link: DropdownLink, index: number) => (
+                              <motion.a
+                                key={link.label}
+                                href={link.anchor ? `${Routes.home}${link.anchor}` : link.href}
+                                onClick={(e) => {
+                                  handleLinkClick(e, link.href, link.anchor);
+                                  setDropdownOpen(false);
+                                }}
+                                className="text-white font-medium text-base opacity-80 hover:opacity-100 py-2 px-4 rounded-lg bg-white/5 hover:bg-white/10 transition-all"
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                              >
+                                {link.label}
+                              </motion.a>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Blog Link Mobile */}
+                  <Link
+                    href={Routes.blog.index}
+                    onClick={() => setOpened(false)}
+                    className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
+                  >
+                    Blog
+                  </Link>
+
+                  {/* Conócenos Link Mobile */}
+                  <Link
+                    href={Routes.home}
+                    onClick={() => setOpened(false)}
+                    className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
+                  >
+                    Conócenos
+                  </Link>
+
+                  {/* User Avatar or Login Button Mobile */}
+                  {user?.id ? (
+                    <div className="pt-4 border-t border-white/20">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 overflow-hidden">
+                          {user.profileImage?.url ? (
+                            <Image
+                              src={user.profileImage.url}
+                              alt={user.name || 'Usuario'}
+                              width={48}
+                              height={48}
+                              className="object-cover"
+                            />
+                          ) : (
+                            <span className="text-white font-semibold text-lg">
+                              {user.name?.charAt(0) || 'U'}
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-white font-semibold">{user.name || 'Usuario'}</p>
+                          <p className="text-white/70 text-sm">{user.email}</p>
+                        </div>
+                      </div>
+                      <Link
+                        href="/perfil"
+                        onClick={() => setOpened(false)}
+                        className="block text-white font-semibold text-lg opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all mb-2"
+                      >
+                        Mi perfil
+                      </Link>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setOpened(false);
+                        }}
+                        className="w-full text-left text-white font-semibold text-lg opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
+                      >
+                        Cerrar Sesión
+                      </button>
+                    </div>
+                  ) : (
+                    <Link
+                      href={Routes.auth.login}
+                      onClick={() => setOpened(false)}
+                      className="text-white font-semibold text-lg opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all text-center"
+                    >
+                      Iniciar Sesión
+                    </Link>
+                  )}
                 </div>
               </div>
             </motion.div>

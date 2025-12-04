@@ -17,31 +17,32 @@ export function useRelatedPosts({
   categoryUrl,
   limit = 6 
 }: UseRelatedPostsProps) {
-  // Construir el where para buscar posts relacionados
-  // Prioridad: tags > categoría
   const where: PostWhereInput = {
     id: {
       not: {
         equals: currentPostId,
       },
     },
-    ...(tags && tags.length > 0
+    ...(tags && tags.length > 0 && categoryUrl
       ? {
-          tags: {
-            some: {
-              name: {
-                in: tags.map((tag) => tag.name),
+          OR: [
+            {
+              tags: {
+                some: {
+                  name: {
+                    in: tags.map((tag) => tag.name),
+                  },
+                },
               },
             },
-          },
-        }
-      : categoryUrl
-      ? {
-          category: {
-            url: {
-              equals: categoryUrl,
+            {
+              category: {
+                url: {
+                  equals: categoryUrl,
+                },
+              },
             },
-          },
+          ],
         }
       : {}),
   };

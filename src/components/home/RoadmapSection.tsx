@@ -48,7 +48,7 @@ const ROADMAP_ITEMS = [
   {
     id: 8,
     title: "Comunidad y blog",
-    status: "in-progress",
+    status: "completed",
     description: "Espacio para historias y noticias"
   },
   {

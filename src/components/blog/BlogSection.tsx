@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ErrorState } from "../shared";
 import BlogCard from "./BlogCard";
@@ -14,10 +14,10 @@ interface BlogSectionProps {
   showPagination?: boolean;
 }
 
-export default function BlogSection({ 
+function BlogSectionContent({ 
   postsPerPage = 12,
   showPagination = true,
-}: BlogSectionProps = {}) {
+}: BlogSectionProps) {
     const searchParams = useSearchParams();
     const categoryUrl = searchParams.get('category');
     
@@ -128,6 +128,23 @@ export default function BlogSection({
         </div>
       )}
     </>
+  );
+}
+
+export default function BlogSection({ 
+  postsPerPage = 12,
+  showPagination = true,
+}: BlogSectionProps) {
+  return (
+    <Suspense fallback={
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {Array.from({ length: postsPerPage || 8 }).map((_, index) => (
+          <BlogCardSkeleton key={index} />
+        ))}
+      </div>
+    }>
+      <BlogSectionContent postsPerPage={postsPerPage} showPagination={showPagination} />
+    </Suspense>
   );
 }
 

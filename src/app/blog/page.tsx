@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,10 +9,26 @@ import { BlogSection, CategorySection } from 'kadesh/components/blog';
 import { useSearchParams } from 'next/navigation';
 import { Routes } from 'kadesh/core/routes';
 
-
-export default function BlogPage() {
+function BlogFilters() {
   const searchParams = useSearchParams();
   const categoryUrl = searchParams.get('category');
+  
+  return (
+    categoryUrl && (
+      <Link
+        href={Routes.blog.index}
+        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 text-white font-medium hover:bg-orange-600 dark:hover:bg-orange-600 transition-colors"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        <span>Limpiar filtros</span>
+      </Link>
+    )
+  );
+}
+
+export default function BlogPage() {
   return (
     <div className="min-h-screen bg-[#ffffff] dark:bg-[#121212]">
       <Navigation />
@@ -52,17 +69,9 @@ export default function BlogPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">
         <div className="flex flex-wrap items-center gap-4 justify-between">
           <div className="flex flex-wrap items-center gap-4">
-            {categoryUrl && (
-              <Link
-                href={Routes.blog.index}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 text-white font-medium hover:bg-orange-600 dark:hover:bg-orange-600 transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>Limpiar filtros</span>
-              </Link>
-            )}
+            <Suspense fallback={null}>
+              <BlogFilters />
+            </Suspense>
             <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#f5f5f5] dark:bg-[#1e1e1e] text-[#212121] dark:text-[#ffffff] font-medium hover:bg-[#e0e0e0] dark:hover:bg-[#3a3a3a] transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

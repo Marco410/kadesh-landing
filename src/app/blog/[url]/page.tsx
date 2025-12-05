@@ -6,7 +6,6 @@ import { Footer, Navigation } from 'kadesh/components/layout';
 import { usePostByUrl } from 'kadesh/components/blog/hooks/usePostByUrl';
 import { usePostView } from 'kadesh/components/blog/hooks/usePostView';
 import BlogPostDetailComponent from 'kadesh/components/blog/post/BlogPostDetail';
-import PostMetadata from 'kadesh/components/blog/post/PostMetadata';
 import { ErrorState } from 'kadesh/components/shared';
 
 interface BlogPostPageProps {
@@ -81,14 +80,11 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   return (
-    <>
-      <PostMetadata post={post} />
-      <div className="min-h-screen bg-[#ffffff] dark:bg-[#121212]">
-        <Navigation />
-        <BlogPostDetailComponent post={post} />
-        <Footer />
-      </div>
-    </>
+    <div className="min-h-screen bg-[#ffffff] dark:bg-[#121212]">
+      <Navigation />
+      <BlogPostDetailComponent post={post} />
+      <Footer />
+    </div>
   );
 }
 

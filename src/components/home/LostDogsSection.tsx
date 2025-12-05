@@ -33,7 +33,7 @@ const MOCK_DOGS = [
 
 export default function LostDogsSection() {
   return (
-    <section id="perros-perdidos" className="w-full py-20 bg-gray-50 dark:bg-[#1a1a1a]">
+    <section id="animales-perdidos" className="w-full py-20 bg-gray-50 dark:bg-[#1a1a1a]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -43,7 +43,7 @@ export default function LostDogsSection() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white mb-4">
-            Perros perdidos y en adopción
+            Animales perdidos y en adopción
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-400">
             Ayudemos a encontrarles un hogar

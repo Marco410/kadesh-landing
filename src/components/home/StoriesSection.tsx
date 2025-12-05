@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { BlogSection } from '../blog';
+import { Routes } from 'kadesh/core/routes';
 
 const MOCK_STORIES = [
   {
@@ -50,41 +52,8 @@ export default function StoriesSection() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
-          {MOCK_STORIES.map((story, index) => (
-            <motion.article
-              key={story.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white dark:bg-[#1e1e1e] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 group cursor-pointer"
-            >
-              <div className="relative h-48 w-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
-                <Image
-                  src={story.image}
-                  alt={story.title}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                <div className="absolute top-4 left-4 px-3 py-1 bg-orange-500 text-white text-sm font-semibold rounded-full">
-                  {story.category}
-                </div>
-              </div>
-              
-              <div className="p-6">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  {story.date}
-                </p>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors">
-                  {story.title}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                  {story.excerpt}
-                </p>
-              </div>
-            </motion.article>
-          ))}
+        <div className="gap-8 mb-10">
+          <BlogSection  postsPerPage={4} showPagination={false} />
         </div>
 
         <motion.div
@@ -94,7 +63,7 @@ export default function StoriesSection() {
           className="text-center"
         >
           <Link
-            href="/blog"
+            href={Routes.blog.index}
             className="inline-block px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
           >
             Leer más historias →

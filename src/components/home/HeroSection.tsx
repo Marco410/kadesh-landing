@@ -27,9 +27,9 @@ export default function HeroSection() {
             className="flex-1 text-center lg:text-left"
           >
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight">
-              Rescatando vidas.
+              Conectando vidas.
               <br />
-              <span className="text-orange-100">Conectando almas.</span>
+              <span className="text-orange-100">Rescatando almas.</span>
             </h1>
             
             <p className="text-xl sm:text-2xl text-white/90 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">

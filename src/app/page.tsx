@@ -1,5 +1,4 @@
 import {
-  Navigation,
   HeroSection,
   WhatIsKadesh,
   LostDogsSection,
@@ -8,8 +7,8 @@ import {
   DonationsSection,
   HowItWorksSection,
   RoadmapSection,
-  Footer,
 } from 'kadesh/components/home';
+import { Footer, Navigation } from 'kadesh/components/layout';
 
 export default function HomePage() {
   return (

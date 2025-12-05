@@ -7,6 +7,7 @@ export const AUTHENTICATED_ITEM_QUERY = gql(`
         id
         name
         lastName
+        secondLastName
         username
         email
         verified
@@ -17,6 +18,8 @@ export const AUTHENTICATED_ITEM_QUERY = gql(`
         roles{
           name
         }
+        birthday
+        age
         createdAt
       }
     }

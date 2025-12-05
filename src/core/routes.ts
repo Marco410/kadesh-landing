@@ -36,5 +36,7 @@ export const Routes = {
   privacy: '/privacidad',
   contact: '/contacto',
   
+  // Profile
+  profile: '/perfil',
   
 } as const;

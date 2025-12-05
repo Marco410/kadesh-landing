@@ -6,6 +6,7 @@ export interface User {
   id: string;
   name: string;
   lastName: string;
+  secondLastName?: string | null;
   username: string;
   email: string;
   verified: boolean;
@@ -16,5 +17,7 @@ export interface User {
   roles?: {
     name: string;
   } | null;
+  birthday?: string | null;
+  age?: string | null;
   createdAt: string;
 }

@@ -33,7 +33,7 @@ export default function HeroSection() {
             </h1>
             
             <p className="text-xl sm:text-2xl text-white/90 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              KADESH es el santuario digital para encontrar perros perdidos, apoyar rescatistas y conectar con veterinarias y refugios.
+              KADESH es el santuario digital para encontrar animales perdidos, apoyar rescatistas y conectar con veterinarias y refugios.
             </p>
 
             {/* CTAs */}
@@ -53,21 +53,21 @@ export default function HeroSection() {
                 </Link>
               </motion.div>
               
-              {/* Perros perdidos */}
+              {/* Animales perdidos */}
               <motion.div
                 whileHover={{ y: -4, scale: 1.06, boxShadow: "0 8px 32px 0 rgba(255,255,255,0.13)" }}
                 whileTap={{ scale: 0.97 }}
                 className="flex-1 min-w-[220px]"
               >
                 <Link
-                  href="/perros-perdidos"
+                  href="#animales-perdidos"
                   className="group flex items-center gap-3 px-7 py-4 bg-gradient-to-r from-orange-100/20 via-white/10 to-orange-50/10 text-white font-extrabold text-base sm:text-lg rounded-2xl shadow-lg border border-white/30 hover:bg-orange-400/20 hover:text-orange-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 transition-all duration-300 backdrop-blur-sm"
                 >
                   <HugeiconsIcon 
                     icon={GlobalSearchIcon} 
                     className="w-7 h-7 text-orange-100 group-hover:text-orange-200 transition-colors duration-200 flex-shrink-0"
                   />
-                  <span>Perros perdidos cerca de ti</span>
+                  <span>Animales perdidos cerca de ti</span>
                 </Link>
               </motion.div>
             </div>

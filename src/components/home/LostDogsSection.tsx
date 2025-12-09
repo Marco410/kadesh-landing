@@ -102,7 +102,7 @@ export default function LostDogsSection() {
           className="text-center"
         >
           <Link
-            href="/perros-perdidos"
+            href="/animales-perdidos"
             className="inline-block px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
           >
             Ver todos →

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 const products = [
   {
-    name: 'Rescate de perros',
+    name: 'Rescate de animales',
     desc: 'Visualiza en el mapa la última ubicación reportada de animales en situación de calle o extraviados. Cualquier usuario puede añadir un caso y la comunidad podrá colaborar en tiempo real.'
   },
   {

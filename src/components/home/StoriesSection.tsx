@@ -17,8 +17,8 @@ const MOCK_STORIES = [
   },
   {
     id: 2,
-    title: "Red de rescatistas salva 50 perros en una semana",
-    excerpt: "Gracias a la coordinación a través de KADESH, un grupo de rescatistas logró encontrar hogares para 50 perros en situación vulnerable.",
+    title: "Red de rescatistas salva 50 animales en una semana",
+    excerpt: "Gracias a la coordinación a través de KADESH, un grupo de rescatistas logró encontrar hogares para 50 animales en situación vulnerable.",
     image: "/images/ss/parrot.png",
     date: "8 de Enero, 2024",
     category: "Rescate"

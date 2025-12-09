@@ -46,19 +46,22 @@ export function useLogin() {
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, submitEmail?: string, submitPassword?: string) => {
     e.preventDefault();
     setError('');
 
-    if (!email || !password) {
+    const emailToUse = submitEmail ?? email;
+    const passwordToUse = submitPassword ?? password;
+
+    if (!emailToUse || !passwordToUse) {
       setError('Por favor completa todos los campos');
       return;
     }
 
     await authenticateUser({
       variables: {
-        email,
-        password,
+        email: emailToUse,
+        password: passwordToUse,
       },
     });
   };

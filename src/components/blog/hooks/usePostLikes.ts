@@ -69,7 +69,7 @@ export function usePostLikes(postId: string) {
   });
 
   const handleLike = async () => {
-    if (isCreatingLike || isDeletingLike || !postId) return;
+    if (isCreatingLike || isDeletingLike || !postId || !user?.id) return;
 
     try {
       if (isLiked && userLike) {

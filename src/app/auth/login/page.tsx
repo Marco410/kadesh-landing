@@ -91,7 +91,7 @@ export default function LoginPage() {
             <Tab key="login" title="Iniciar Sesión">
               <form onSubmit={(e) => {
                 setSuccessMessage('');
-                handleLogin(e);
+                handleLogin(e, loginEmail, loginPassword);
               }} className="space-y-5">
                 {successMessage && (
                   <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 text-sm font-medium">

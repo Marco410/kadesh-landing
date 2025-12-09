@@ -106,6 +106,9 @@ export default function Navigation() {
 
   const handleLogout = async () => {
     try {
+      // Limpiar token del localStorage
+      localStorage.removeItem('keystonejs-session-token');
+      
       // Limpiar cookies de sesión
       document.cookie.split(";").forEach((c) => {
         document.cookie = c

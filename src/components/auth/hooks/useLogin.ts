@@ -29,6 +29,19 @@ export function useLogin() {
       }
 
       if (data.authenticateUserWithPassword.__typename === 'UserAuthenticationWithPasswordSuccess') {
+        // Guardar el sessionToken en localStorage y como cookie
+        const sessionToken = data.authenticateUserWithPassword.sessionToken;
+        if (sessionToken && typeof window !== 'undefined') {
+          // Guardar en localStorage para uso en headers
+          localStorage.setItem('keystonejs-session-token', sessionToken);
+          
+          // También guardar como cookie por si acaso
+          const expires = new Date();
+          expires.setTime(expires.getTime() + 30 * 24 * 60 * 60 * 1000);
+          const isSecure = window.location.protocol === 'https:';
+          document.cookie = `keystonejs-session=${sessionToken}; expires=${expires.toUTCString()}; path=/; SameSite=Lax${isSecure ? '; Secure' : ''}`;
+        }
+        
         // Refresh user context to get the authenticated user
         await refreshUser();
         // Redireccionar a la página de donde viene

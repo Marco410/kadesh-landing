@@ -136,7 +136,7 @@ export default function LoginPage() {
                   <input
                     id="login-email"
                     type="email"
-                    placeholder="ejemplo@kadesh.com.mx"
+                    placeholder="tu@kadesh.com.mx"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     required
@@ -263,7 +263,7 @@ export default function LoginPage() {
                   <input
                     id="register-email"
                     type="email"
-                    placeholder="ejemplo@kadesh.com.mx"
+                    placeholder="tu@kadesh.com.mx"
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
                     required

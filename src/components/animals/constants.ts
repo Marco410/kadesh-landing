@@ -191,4 +191,3 @@ export const lightMapStyles = [
     stylers: [{ visibility: 'off' }],
   },
 ];
-

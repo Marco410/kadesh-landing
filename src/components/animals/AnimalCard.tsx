@@ -131,7 +131,6 @@ export default function AnimalCard({
   onClick,
   variant = 'vertical'
 }: AnimalCardProps) {
-
   // Horizontal variant for map view
   if (variant === 'horizontal') {
     return (

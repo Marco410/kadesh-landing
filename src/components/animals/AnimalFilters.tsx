@@ -12,7 +12,6 @@ interface AnimalFiltersProps {
 }
 
 
-
 export default function AnimalFilters({ filters, onFiltersChange, onClearFilters }: AnimalFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 

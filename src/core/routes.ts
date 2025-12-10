@@ -49,4 +49,11 @@ export const Routes = {
   // About
   conocenos: '/conocenos',
   
+  // Animals
+  animals: {
+    index: '/animales',
+    new: '/animales/nuevo',
+    detail: (id: string): string => `/animales/${id}`,
+  },
+  
 } as const;

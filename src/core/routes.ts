@@ -39,4 +39,11 @@ export const Routes = {
   // Profile
   profile: '/perfil',
   
+  // Animals
+  animals: {
+    index: '/animales',
+    new: '/animales/nuevo',
+    detail: (id: string): string => `/animales/${id}`,
+  },
+  
 } as const;

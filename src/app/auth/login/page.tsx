@@ -1,13 +1,18 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Tabs, Tab } from '@heroui/tabs';
 import Logo from 'kadesh/components/shared/Logo';
 import { useLogin, useRegister } from '../../../components/auth/hooks';
 
 export default function LoginPage() {
-  const [selectedTab, setSelectedTab] = useState('login');
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams.get('redirect') || null;
+  const initialTab = searchParams.get('tab') || 'login';
+  
+  const [selectedTab, setSelectedTab] = useState(initialTab);
   const [successMessage, setSuccessMessage] = useState('');
 
   const {
@@ -18,7 +23,7 @@ export default function LoginPage() {
     error: loginError,
     loading: loginLoading,
     handleSubmit: handleLogin,
-  } = useLogin();
+  } = useLogin({ redirectTo: redirectPath });
 
   const {
     name: registerName,
@@ -38,11 +43,18 @@ export default function LoginPage() {
     handleSubmit: handleRegister,
   } = useRegister({
     onSuccess: () => {
-      // Switch to login tab after successful registration
-      setSelectedTab('login');
-      // Show success message
-      setSuccessMessage('Registro exitoso, ya puedes iniciar sesión con tus credenciales');
+      if (redirectPath) {
+        // If there's a redirect, automatically login and redirect
+        setSuccessMessage('Registro exitoso. Iniciando sesión...');
+        // Auto-login will be handled by useRegister
+      } else {
+        // Switch to login tab after successful registration
+        setSelectedTab('login');
+        // Show success message
+        setSuccessMessage('Registro exitoso, ya puedes iniciar sesión con tus credenciales');
+      }
     },
+    redirectTo: redirectPath,
   });
 
   const handleGoogleLogin = () => {
@@ -111,7 +123,7 @@ export default function LoginPage() {
                   <input
                     id="login-email"
                     type="email"
-                    placeholder="tu@email.com"
+                    placeholder="tu@kadesh.com.mx"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     required
@@ -152,7 +164,7 @@ export default function LoginPage() {
                   )}
                 </button>
 
-                <div className="relative my-6">
+                {/* <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-[#e0e0e0] dark:border-[#3a3a3a]"></div>
                   </div>
@@ -187,7 +199,7 @@ export default function LoginPage() {
                     />
                   </svg>
                   Continuar con Google
-                </button>
+                </button> */}
               </form>
             </Tab>
 
@@ -238,7 +250,7 @@ export default function LoginPage() {
                   <input
                     id="register-email"
                     type="email"
-                    placeholder="tu@email.com"
+                    placeholder="tu@kadesh.com.mx"
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
                     required
@@ -310,7 +322,7 @@ export default function LoginPage() {
                   )}
                 </button>
 
-                <div className="relative my-6">
+                {/* <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-[#e0e0e0] dark:border-[#3a3a3a]"></div>
                   </div>
@@ -345,7 +357,7 @@ export default function LoginPage() {
                     />
                   </svg>
                   Continuar con Google
-                </button>
+                </button> */}
               </form>
             </Tab>
           </Tabs>

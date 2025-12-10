@@ -10,7 +10,7 @@ export const createApolloClient = () => {
   });
 
   // Auth link para agregar el token en los headers
-  const authLink = setContext((_, { headers }) => {
+  const authLink = setContext((_, { headers, operationName }) => {
     // Obtener el token del localStorage o cookie
     let token: string | null = null;
     
@@ -31,6 +31,8 @@ export const createApolloClient = () => {
     return {
       headers: {
         ...headers,
+        'apollo-require-preflight': 'true',
+        ...(operationName && { 'x-apollo-operation-name': operationName }),
         ...(token && { authorization: `Bearer ${token}` }),
       },
     };

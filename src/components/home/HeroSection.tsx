@@ -60,7 +60,7 @@ export default function HeroSection() {
                 className="flex-1 min-w-[220px]"
               >
                 <Link
-                  href="#animales-perdidos"
+                  href="#animales"
                   className="group flex items-center gap-3 px-7 py-4 bg-gradient-to-r from-orange-100/20 via-white/10 to-orange-50/10 text-white font-extrabold text-base sm:text-lg rounded-2xl shadow-lg border border-white/30 hover:bg-orange-400/20 hover:text-orange-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 transition-all duration-300 backdrop-blur-sm"
                 >
                   <HugeiconsIcon 

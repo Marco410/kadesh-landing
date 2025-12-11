@@ -26,5 +26,6 @@ export interface AnimalFilters {
   breed?: string | null;
   status?: AnimalStatus | null;
   location?: string | null;
+  name?: string | null;
   favoritesOnly?: boolean;
 }

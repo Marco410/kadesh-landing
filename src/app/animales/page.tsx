@@ -8,6 +8,8 @@ import { useUser } from 'kadesh/utils/UserContext';
 import { ConfirmModal } from 'kadesh/components/shared';
 import { motion } from 'framer-motion';
 import { Routes } from 'kadesh/core/routes';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { AddCircleIcon } from '@hugeicons/core-free-icons';
 
 export default function LostAnimalsPage() {
   const router = useRouter();
@@ -67,7 +69,7 @@ export default function LostAnimalsPage() {
       <Navigation />
       
       {/* Hero Section - Compact */}
-      <section className="w-full py-4 bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700">
+      <section className="w-full py-4 bg-gradient-to-br from-orange-500 to-orange-600 ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -85,8 +87,8 @@ export default function LostAnimalsPage() {
         </div>
       </section>
 
-      {/* CTA Button - Fixed */}
-      <div className="fixed bottom-8 right-8 z-50">
+      {/* CTA Button - Fixed Bottom Center */}
+      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
         <motion.button
           onClick={handleReportAnimalClick}
           disabled={userLoading}
@@ -94,9 +96,12 @@ export default function LostAnimalsPage() {
           whileTap={{ scale: 0.95 }}
           className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg px-6 py-4 rounded-full shadow-2xl flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+          <HugeiconsIcon 
+            icon={AddCircleIcon} 
+            size={25} 
+            className="text-white"
+            strokeWidth={1.5}
+          />
           Reportar Animal
         </motion.button>
       </div>

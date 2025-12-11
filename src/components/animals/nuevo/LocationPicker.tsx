@@ -2,11 +2,18 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Location01Icon } from '@hugeicons/core-free-icons';
 
 interface LocationPickerProps {
   lat: string;
   lng: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
   onLocationChange: (lat: string, lng: string) => void;
+  onAddressChange?: (address: string, city: string, state: string, country: string) => void;
   className?: string;
 }
 
@@ -20,10 +27,84 @@ const defaultCenter = {
   lng: -99.1332,
 };
 
-export default function LocationPicker({ lat, lng, onLocationChange, className = '' }: LocationPickerProps) {
+export default function LocationPicker({ 
+  lat, 
+  lng, 
+  address = '', 
+  city = '', 
+  state = '', 
+  country = '', 
+  onLocationChange, 
+  onAddressChange,
+  className = '' 
+}: LocationPickerProps) {
   const [mapCenter, setMapCenter] = useState(defaultCenter);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [localAddress, setLocalAddress] = useState(address);
+  const [localCity, setLocalCity] = useState(city);
+  const [localState, setLocalState] = useState(state);
+  const [localCountry, setLocalCountry] = useState(country);
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  // Geocoding function to get address from coordinates
+  const reverseGeocode = useCallback((latitude: number, longitude: number) => {
+    // Check if Google Maps is loaded
+    if (typeof window === 'undefined' || !window.google || !window.google.maps || !window.google.maps.Geocoder) {
+      return;
+    }
+
+    setIsGeocoding(true);
+    const geocoder = new window.google.maps.Geocoder();
+    
+    geocoder.geocode(
+      { location: { lat: latitude, lng: longitude } },
+      (results, status) => {
+        setIsGeocoding(false);
+        
+        if (status === 'OK' && results && results[0]) {
+          const result = results[0];
+          let streetAddress = '';
+          let cityName = '';
+          let stateName = '';
+          let countryName = '';
+
+          // Parse address components
+          result.address_components.forEach((component) => {
+            const types = component.types;
+            
+            if (types.includes('street_number')) {
+              streetAddress = component.long_name + (streetAddress ? ' ' + streetAddress : '');
+            } else if (types.includes('route')) {
+              streetAddress = streetAddress ? streetAddress + ' ' + component.long_name : component.long_name;
+            } else if (types.includes('locality') || types.includes('sublocality')) {
+              if (!cityName) {
+                cityName = component.long_name;
+              }
+            } else if (types.includes('administrative_area_level_1')) {
+              stateName = component.long_name;
+            } else if (types.includes('country')) {
+              countryName = component.long_name;
+            }
+          });
+
+          // If no street address found, use formatted_address
+          if (!streetAddress && result.formatted_address) {
+            streetAddress = result.formatted_address;
+          }
+
+          setLocalAddress(streetAddress);
+          setLocalCity(cityName);
+          setLocalState(stateName);
+          setLocalCountry(countryName);
+
+          if (onAddressChange) {
+            onAddressChange(streetAddress, cityName, stateName, countryName);
+          }
+        }
+      }
+    );
+  }, [onAddressChange]);
 
   // Update map center when lat/lng changes
   useEffect(() => {
@@ -32,8 +113,21 @@ export default function LocationPicker({ lat, lng, onLocationChange, className =
     
     if (!isNaN(latNum) && !isNaN(lngNum)) {
       setMapCenter({ lat: latNum, lng: lngNum });
+      // Reverse geocode when coordinates change (with a small delay to ensure Google Maps is loaded)
+      const timer = setTimeout(() => {
+        reverseGeocode(latNum, lngNum);
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [lat, lng]);
+  }, [lat, lng, reverseGeocode]);
+
+  // Sync local state with props
+  useEffect(() => {
+    setLocalAddress(address);
+    setLocalCity(city);
+    setLocalState(state);
+    setLocalCountry(country);
+  }, [address, city, state, country]);
 
   // Get user's current location
   const handleUseCurrentLocation = useCallback(() => {
@@ -51,6 +145,7 @@ export default function LocationPicker({ lat, lng, onLocationChange, className =
         
         onLocationChange(newLat, newLng);
         setMapCenter({ lat: position.coords.latitude, lng: position.coords.longitude });
+        reverseGeocode(position.coords.latitude, position.coords.longitude);
         setIsLoadingLocation(false);
       },
       (error) => {
@@ -64,7 +159,7 @@ export default function LocationPicker({ lat, lng, onLocationChange, className =
         maximumAge: 0,
       }
     );
-  }, [onLocationChange]);
+  }, [onLocationChange, reverseGeocode]);
 
   // Handle map click
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
@@ -72,8 +167,9 @@ export default function LocationPicker({ lat, lng, onLocationChange, className =
       const newLat = e.latLng.lat().toString();
       const newLng = e.latLng.lng().toString();
       onLocationChange(newLat, newLng);
+      reverseGeocode(e.latLng.lat(), e.latLng.lng());
     }
-  }, [onLocationChange]);
+  }, [onLocationChange, reverseGeocode]);
 
   // Handle manual input change
   const handleLatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,10 +227,12 @@ export default function LocationPicker({ lat, lng, onLocationChange, className =
             </>
           ) : (
             <>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+              <HugeiconsIcon 
+                icon={Location01Icon} 
+                size={15} 
+                className="text-white"
+                strokeWidth={1.5}
+              />
               Usar mi ubicación actual
             </>
           )}
@@ -176,6 +274,7 @@ export default function LocationPicker({ lat, lng, onLocationChange, className =
                     const newLat = e.latLng.lat().toString();
                     const newLng = e.latLng.lng().toString();
                     onLocationChange(newLat, newLng);
+                    reverseGeocode(e.latLng.lat(), e.latLng.lng());
                   }
                 }}
               />
@@ -215,6 +314,84 @@ export default function LocationPicker({ lat, lng, onLocationChange, className =
             className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
             placeholder="Ej: -99.1332"
           />
+        </div>
+      </div>
+
+      {/* Address fields */}
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="address" className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1">
+            Dirección {isGeocoding && <span className="text-orange-500 text-xs">(Obteniendo...)</span>}
+          </label>
+          <input
+            id="address"
+            type="text"
+            value={localAddress}
+            onChange={(e) => {
+              setLocalAddress(e.target.value);
+              if (onAddressChange) {
+                onAddressChange(e.target.value, localCity, localState, localCountry);
+              }
+            }}
+            className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+            placeholder="Dirección"
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label htmlFor="city" className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1">
+              Ciudad
+            </label>
+            <input
+              id="city"
+              type="text"
+              value={localCity}
+              onChange={(e) => {
+                setLocalCity(e.target.value);
+                if (onAddressChange) {
+                  onAddressChange(localAddress, e.target.value, localState, localCountry);
+                }
+              }}
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+              placeholder="Ciudad"
+            />
+          </div>
+          <div>
+            <label htmlFor="state" className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1">
+              Estado/Provincia
+            </label>
+            <input
+              id="state"
+              type="text"
+              value={localState}
+              onChange={(e) => {
+                setLocalState(e.target.value);
+                if (onAddressChange) {
+                  onAddressChange(localAddress, localCity, e.target.value, localCountry);
+                }
+              }}
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+              placeholder="Estado/Provincia"
+            />
+          </div>
+          <div>
+            <label htmlFor="country" className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1">
+              País
+            </label>
+            <input
+              id="country"
+              type="text"
+              value={localCountry}
+              onChange={(e) => {
+                setLocalCountry(e.target.value);
+                if (onAddressChange) {
+                  onAddressChange(localAddress, localCity, localState, e.target.value);
+                }
+              }}
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+              placeholder="País"
+            />
+          </div>
         </div>
       </div>
 

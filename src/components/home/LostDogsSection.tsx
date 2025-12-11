@@ -33,7 +33,7 @@ const MOCK_DOGS = [
 
 export default function LostDogsSection() {
   return (
-    <section id="animales-perdidos" className="w-full py-20 bg-gray-50 dark:bg-[#1a1a1a]">
+    <section id="animales" className="w-full py-20 bg-gray-50 dark:bg-[#1a1a1a]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -102,7 +102,7 @@ export default function LostDogsSection() {
           className="text-center"
         >
           <Link
-            href="/animales-perdidos"
+            href="/animales"
             className="inline-block px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
           >
             Ver todos →

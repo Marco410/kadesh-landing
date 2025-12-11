@@ -15,7 +15,7 @@ export const Routes = {
   // Navigation sections (anchors on home page)
   navigation: {
     whatIsKadesh: '#que-es-kadesh',
-    lostAnimals: '#animales-perdidos',
+    lostAnimals: '#animales',
     veterinarians: '#veterinarias',
     stories: '#historias',
     donations: '#donaciones',

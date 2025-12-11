@@ -8,6 +8,12 @@ export const ANIMAL_LOGS_OPTIONS = [
   { label: "Encontrado", value: "found" },
 ];
 
+export const ANIMAL_SEX_OPTIONS = [
+  { label: "Macho", value: "male" },
+  { label: "Hembra", value: "female" },
+  { label: "Desconocido", value: "unknown" },
+];
+
 // Mapeo de valores de AnimalType a labels en español
 export const ANIMAL_TYPE_LABELS: Record<string, string> = {
   dog: "Perro",

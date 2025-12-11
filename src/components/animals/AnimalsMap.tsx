@@ -98,7 +98,7 @@ export default function AnimalsMap({
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
           center={mapCenter}
-          zoom={animals.length > 1 ? 6 : 9}
+          zoom={animals.length > 1 ? 13 : 10}
           options={{
             styles: [
               {

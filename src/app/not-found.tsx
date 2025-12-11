@@ -109,7 +109,7 @@ export default function NotFound() {
               </Link>
               <span className="text-white/40">•</span>
               <Link
-                href="/#animales-perdidos"
+                href="/#animales"
                 className="hover:text-white hover:underline transition-colors text-sm"
               >
                 Animales perdidos

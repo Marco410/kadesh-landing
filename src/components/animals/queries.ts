@@ -2,6 +2,49 @@ import { gql } from '@apollo/client';
 
 // TODO: Replace with actual GraphQL query when backend is ready
 // For now, we'll use mock data structure
+export const GET_ANIMALS_QUERY = gql`
+  query GetAnimals($skip: Int!, $take: Int, $orderBy: [AnimalOrderByInput!]!, $where: AnimalWhereInput!) {
+    animals(skip: $skip, take: $take, orderBy: $orderBy, where: $where) {
+      name
+      id
+      createdAt
+      user {
+        id
+        name
+        lastName
+        username
+      }
+      animal_breed {
+        breed
+        animal_type {
+          name
+        }
+      }
+      logs {
+        id
+        last_seen
+        lat
+        lng
+        notes
+        status
+        createdAt
+      }
+      multimedia {
+        image {
+          url
+        }
+      }
+    }
+  }
+`;
+
+export const GET_ANIMALS_COUNT_QUERY = gql`
+  query GetAnimalsCount($where: AnimalWhereInput!) {
+    animalsCount(where: $where)
+  }
+`;
+
+// Keep old query for backward compatibility if needed
 export const GET_LOST_ANIMALS_QUERY = gql`
   query GetLostAnimals($take: Int, $skip: Int!, $where: LostAnimalWhereInput) {
     lostAnimals(take: $take, skip: $skip, where: $where) {

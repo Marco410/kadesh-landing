@@ -45,7 +45,6 @@ export default function NewAnimalForm() {
   const [images, setImages] = useState<ImagePreview[]>([]);
 
 
-
   const { data: animalBreedsData, loading: loadingBreeds } = useQuery(GET_ANIMAL_BREEDS_QUERY, {
     variables: { 
       where: { 

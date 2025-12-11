@@ -21,5 +21,6 @@ export const createApolloClient = () => {
   });
 };
 
+
 const client = createApolloClient();
 export default client;

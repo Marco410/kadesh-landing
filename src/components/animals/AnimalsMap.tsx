@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useEffect, useState } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+import { useTheme } from 'next-themes';
 import { LostAnimal } from './types';
-import { getStatusColor } from './constants';
+import { darkMapStyles, getStatusColor, lightMapStyles } from './constants';
 
 interface AnimalsMapProps {
   animals: LostAnimal[];
@@ -22,7 +23,6 @@ const defaultCenter = {
   lng: -99.1332,
 };
 
-
 export default function AnimalsMap({ 
   animals, 
   selectedAnimal, 
@@ -30,6 +30,35 @@ export default function AnimalsMap({
   height = '600px'
 }: AnimalsMapProps) {
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const { resolvedTheme } = useTheme();
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Wait for theme to be resolved
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Determine if dark mode is active
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+
+  // Update map styles when dark mode changes
+  useEffect(() => {
+    if (map && mounted) {
+      const newStyles = isDarkMode ? darkMapStyles : lightMapStyles;
+      map.setOptions({
+        styles: newStyles,
+      });
+    }
+  }, [isDarkMode, map, mounted]);
+
+  const onLoad = useCallback((mapInstance: google.maps.Map) => {
+    setMap(mapInstance);
+  }, []);
+
+  const onUnmount = useCallback(() => {
+    setMap(null);
+  }, []);
 
   // Calculate map center based on animals
   const mapCenter = useMemo(() => {
@@ -120,27 +149,27 @@ export default function AnimalsMap({
     );
   }
 
+  // Memoize map options to ensure they update when theme changes
+  const mapOptions = useMemo(() => ({
+    styles: isDarkMode ? darkMapStyles : lightMapStyles,
+    disableDefaultUI: false,
+    zoomControl: true,
+    streetViewControl: false,
+    mapTypeControl: false,
+    fullscreenControl: true,
+  }), [isDarkMode]);
+
   return (
     <div className="w-full overflow-hidden shadow-lg" style={{ height }}>
       <LoadScript googleMapsApiKey={googleMapsApiKey}>
         <GoogleMap
+          key={`map-${isDarkMode ? 'dark' : 'light'}`}
           mapContainerStyle={mapContainerStyle}
           center={mapCenter}
           zoom={animals.length > 1 ? 13 : 10}
-          options={{
-            styles: [
-              {
-                featureType: 'poi',
-                elementType: 'labels',
-                stylers: [{ visibility: 'off' }],
-              },
-            ],
-            disableDefaultUI: false,
-            zoomControl: true,
-            streetViewControl: false,
-            mapTypeControl: false,
-            fullscreenControl: true,
-          }}
+          onLoad={onLoad}
+          onUnmount={onUnmount}
+          options={mapOptions}
         >
           {animals
             .filter(animal => animal.latitude !== undefined && animal.longitude !== undefined)

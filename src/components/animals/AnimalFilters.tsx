@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from 'react';
-import { AnimalFilters as FiltersType, AnimalType, AnimalStatus } from './types';
+import { AnimalFilters as FiltersType, AnimalType } from './types';
+import AnimalTypeSelector from './nuevo/AnimalTypeSelector';
+import { ANIMAL_LOGS_OPTIONS, ANIMAL_TYPE_LABELS } from './constants';
 
 interface AnimalFiltersProps {
   filters: FiltersType;
@@ -9,19 +11,7 @@ interface AnimalFiltersProps {
   onClearFilters: () => void;
 }
 
-const ANIMAL_TYPES: { value: AnimalType; label: string }[] = [
-  { value: 'perro', label: 'Perro' },
-  { value: 'gato', label: 'Gato' },
-  { value: 'conejo', label: 'Conejo' },
-  { value: 'ave', label: 'Ave' },
-  { value: 'otro', label: 'Otro' },
-];
 
-const ANIMAL_STATUSES: { value: AnimalStatus; label: string }[] = [
-  { value: 'perdido', label: 'Perdido' },
-  { value: 'encontrado', label: 'Encontrado' },
-  { value: 'en_adopcion', label: 'En Adopción' },
-];
 
 export default function AnimalFilters({ filters, onFiltersChange, onClearFilters }: AnimalFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -67,25 +57,17 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
             <label className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1.5">
               Tipo
             </label>
-            <div className="flex flex-wrap gap-1.5">
-              {ANIMAL_TYPES.map((type) => (
-                <button
-                  key={type.value}
-                  onClick={() => 
-                    onFiltersChange({ 
-                      type: filters.type === type.value ? null : type.value 
-                    })
-                  }
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                    filters.type === type.value
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-[#f5f5f5] dark:bg-[#2a2a2a] text-[#212121] dark:text-[#ffffff] hover:bg-[#e0e0e0] dark:hover:bg-[#3a3a3a]'
-                  }`}
-                >
-                  {type.label}
-                </button>
-              ))}
-            </div>
+            <AnimalTypeSelector
+              selectedTypeId=""
+              selectedValue={filters.type || undefined}
+              onTypeChange={(typeValue) => 
+                onFiltersChange({ 
+                  type: filters.type === typeValue ? null : (typeValue as AnimalType)
+                })
+              }
+              variant="compact"
+              required={false}
+            />
           </div>
 
           {/* Status */}
@@ -94,7 +76,7 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
               Estado
             </label>
             <div className="flex flex-wrap gap-1.5">
-              {ANIMAL_STATUSES.map((status) => (
+              {ANIMAL_LOGS_OPTIONS.map((status) => (
                 <button
                   key={status.value}
                   onClick={() => 
@@ -165,12 +147,12 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
         <div className="mt-2 flex flex-wrap gap-1.5">
           {filters.type && (
             <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-xs font-medium">
-              {ANIMAL_TYPES.find(t => t.value === filters.type)?.label}
+              { ANIMAL_TYPE_LABELS[filters.type] || filters.type } 
             </span>
           )}
           {filters.status && (
             <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-xs font-medium">
-              {ANIMAL_STATUSES.find(s => s.value === filters.status)?.label}
+              {ANIMAL_LOGS_OPTIONS.find(s => s.value === filters.status)?.label}
             </span>
           )}
           {filters.breed && (

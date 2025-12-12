@@ -14,8 +14,9 @@ import { useUser } from 'kadesh/utils/UserContext';
 import { Autocomplete, AutocompleteOption } from 'kadesh/components/shared';
 import LocationPicker from 'kadesh/components/animals/nuevo/LocationPicker';
 import AnimalNameInput from 'kadesh/components/animals/nuevo/AnimalNameInput';
+import AnimalTypeSelector from 'kadesh/components/animals/nuevo/AnimalTypeSelector';
 import { motion } from 'framer-motion';
-import { ANIMAL_LOGS_OPTIONS, ANIMAL_SEX_OPTIONS, ANIMAL_TYPE_ICONS, ANIMAL_TYPE_LABELS } from 'kadesh/components/animals/constants';
+import { ANIMAL_LOGS_OPTIONS, ANIMAL_SEX_OPTIONS } from 'kadesh/components/animals/constants';
 
 interface ImagePreview {
   file: File;
@@ -32,7 +33,7 @@ export default function NewAnimalForm() {
   const [animalTypeId, setAnimalTypeId] = useState<string>('');
   const [animalBreedId, setAnimalBreedId] = useState<string>('');
   const [sex, setSex] = useState('unknown');
-  const [status, setStatus] = useState('register');
+  const [status, setStatus] = useState('lost');
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
   const [address, setAddress] = useState('');
@@ -43,10 +44,7 @@ export default function NewAnimalForm() {
   const [lastSeen, setLastSeen] = useState(false);
   const [images, setImages] = useState<ImagePreview[]>([]);
 
-  // Queries
-  const { data: animalTypesData, loading: loadingTypes } = useQuery(GET_ANIMAL_TYPES_QUERY, {
-    variables: { orderBy: [{ order: "asc" }] },
-  });
+
 
   const { data: animalBreedsData, loading: loadingBreeds } = useQuery(GET_ANIMAL_BREEDS_QUERY, {
     variables: { 
@@ -104,7 +102,10 @@ export default function NewAnimalForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user?.id || !name || !animalTypeId || !animalBreedId || !status || !lat || !lng) {
+    // Validate name: must be non-empty (after trim) or exactly 'Sin nombre'
+    const isValidName = name === 'Sin nombre' || (name && name.trim() !== '');
+    
+    if (!user?.id || !isValidName || !animalTypeId || !animalBreedId || !status || !lat || !lng) {
       alert('Por favor completa todos los campos requeridos');
       return;
     }
@@ -189,66 +190,14 @@ export default function NewAnimalForm() {
           />
 
           {/* Animal Type */}
-          <div>
-            <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-              Tipo de Animal <span className="text-red-500">*</span>
-            </label>
-            <div className="flex flex-wrap gap-4">
-              {animalTypesData?.animalTypes?.map((type: any) => {
-                // Obtener el label en español basado en el value (name) que viene del backend
-                const typeValue = type.name?.toLowerCase() || '';
-                const typeLabel = ANIMAL_TYPE_LABELS[typeValue] || type.name;
-                const emojiIcon = ANIMAL_TYPE_ICONS[typeValue] || "🐾";
-                const iconUrl = type.icon?.url || "";
-
-                return (
-                  <label
-                    key={type.id}
-                    className={`
-                      flex flex-col items-center justify-center px-5 py-3 rounded-xl
-                      cursor-pointer transition border-2
-                      ${animalTypeId === type.id 
-                          ? "border-orange-500 bg-orange-50 dark:bg-orange-900/40"
-                          : "border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212]"
-                      }
-                      w-28 hover:shadow-md
-                    `}
-                  >
-                    {/* Icon (image or emoji) */}
-                    {iconUrl ? (
-                      <img 
-                        src={iconUrl} 
-                        alt={typeLabel}
-                        className="w-10 h-10 mb-2 object-contain"
-                      />
-                    ) : (
-                      <span className="text-3xl mb-2">{emojiIcon}</span>
-                    )}
-                    <span className="text-sm font-semibold text-[#212121] dark:text-[#ffffff]">
-                      {typeLabel}
-                    </span>
-                    <input
-                      type="radio"
-                      name="animalType"
-                      value={type.id}
-                      checked={animalTypeId === type.id}
-                      onChange={() => {
-                        setAnimalTypeId(type.id);
-                        setAnimalBreedId(""); // Reset breed when type changes
-                      }}
-                      required
-                      disabled={loadingTypes}
-                      className="sr-only"
-                      aria-label={typeLabel}
-                    />
-                  </label>
-                );
-              })}
-            </div>
-            {!animalTypeId && (
-              <p className="text-red-500 text-xs mt-2">Selecciona un tipo</p>
-            )}
-          </div>
+          <AnimalTypeSelector
+            selectedTypeId={animalTypeId}
+            onTypeChange={(typeId) => {
+              setAnimalTypeId(typeId);
+              setAnimalBreedId(""); // Reset breed when type changes
+            }}
+            required
+          />
 
           {/* Animal Breed - Autocomplete */}
           <Autocomplete
@@ -326,7 +275,7 @@ export default function NewAnimalForm() {
               Estado <span className="text-red-500">*</span>
             </label>
             <div className="flex flex-wrap gap-4">
-              {ANIMAL_LOGS_OPTIONS.filter((option) => option.value == 'abandoned' || option.value == 'found' || option.value == 'lost' || option.value == 'rescued').map((option) => {
+              {ANIMAL_LOGS_OPTIONS.filter((option) => option.value === 'abandoned' || option.value === 'found' || option.value === 'lost' || option.value === 'rescued').map((option) => {
                 const statusIcons: Record<string, string> = {
                   abandoned: '🚫',
                   found: '✅',

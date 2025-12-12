@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_ANIMALS_QUERY, GET_ANIMALS_COUNT_QUERY, GET_ANIMAL_TYPES_QUERY } from '../queries';
-import { LostAnimal, AnimalFilters, AnimalType, AnimalStatus } from '../types';
+import { LostAnimal, AnimalFilters, AnimalType } from '../types';
 
 const DEFAULT_ANIMALS_PER_PAGE = 12;
 
@@ -66,25 +66,14 @@ function transformAnimal(animal: DatabaseAnimal): LostAnimal {
   // Get first image from multimedia
   const image = animal.multimedia?.[0]?.image;
 
-  // Map status from database to LostAnimal status
+  // Use status directly from database (no mapping needed)
   // Database values: register, adopted, abandoned, rescued, in_family, lost, found
-  // LostAnimal values: perdido, encontrado, en_adopcion
-  const statusMap: Record<string, AnimalStatus> = {
-    'lost': 'perdido',
-    'found': 'encontrado',
-    'register': 'en_adopcion',
-    'adopted': 'en_adopcion',
-    'abandoned': 'en_adopcion',
-    'rescued': 'en_adopcion',
-    'in_family': 'en_adopcion',
-  };
-
   return {
     id: animal.id,
     name: animal.name,
     type: (animal.animal_breed?.animal_type?.name || '').toLowerCase() as AnimalType,
     breed: animal.animal_breed?.breed || '',
-    status: statusLog?.status ? (statusMap[statusLog.status] || 'en_adopcion') : 'en_adopcion',
+    status: (statusLog?.status || 'register'),
     location: lastLog?.lat && lastLog?.lng 
       ? `${lastLog.lat}, ${lastLog.lng}` 
       : 'Ubicación no disponible',
@@ -146,17 +135,11 @@ export function useLostAnimals(
     // Filter by status (from logs)
     // Note: We'll filter for coordinates client-side to avoid Prisma errors
     if (filters.status) {
-      // Map status to database values
-      const statusMap: Record<AnimalStatus, string> = {
-        'perdido': 'lost',
-        'encontrado': 'found',
-        'en_adopcion': 'register',
-      };
-      
+      // Use status directly (no mapping needed - filters already use database values)
       where.logs = {
         some: {
           status: {
-            equals: statusMap[filters.status],
+            equals: filters.status,
           },
         },
       };

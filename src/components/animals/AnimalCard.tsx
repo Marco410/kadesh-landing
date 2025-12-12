@@ -16,6 +16,21 @@ interface AnimalCardProps {
 
 const getStatusLabel = (status: string) => {
   switch (status) {
+    case 'register':
+      return 'Registrado';
+    case 'adopted':
+      return 'Adoptado';
+    case 'abandoned':
+      return 'Abandonado';
+    case 'rescued':
+      return 'Rescatado';
+    case 'in_family':
+      return 'En familia';
+    case 'lost':
+      return 'Perdido';
+    case 'found':
+      return 'Encontrado';
+    // Mantener compatibilidad con valores antiguos
     case 'perdido':
       return 'Perdido';
     case 'encontrado':
@@ -29,6 +44,21 @@ const getStatusLabel = (status: string) => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
+    case 'register':
+      return 'bg-gray-500 text-white';
+    case 'adopted':
+      return 'bg-purple-500 text-white';
+    case 'abandoned':
+      return 'bg-red-600 text-white';
+    case 'rescued':
+      return 'bg-orange-500 text-white';
+    case 'in_family':
+      return 'bg-blue-500 text-white';
+    case 'lost':
+      return 'bg-red-500 text-white';
+    case 'found':
+      return 'bg-green-500 text-white';
+    // Mantener compatibilidad con valores antiguos
     case 'perdido':
       return 'bg-red-500 text-white';
     case 'encontrado':
@@ -72,6 +102,7 @@ export default function AnimalCard({
   onClick,
   variant = 'vertical'
 }: AnimalCardProps) {
+
   // Horizontal variant for map view
   if (variant === 'horizontal') {
     return (

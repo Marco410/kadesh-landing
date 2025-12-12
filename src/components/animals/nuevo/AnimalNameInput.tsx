@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface AnimalNameInputProps {
   value: string;
@@ -34,14 +34,23 @@ const PET_NAMES = [
 
 export default function AnimalNameInput({ value, onChange, required = false }: AnimalNameInputProps) {
   const [hasNoName, setHasNoName] = useState(value === 'Sin nombre' || value === '');
+  const hasInitializedRef = useRef(false);
 
   useEffect(() => {
+    // Sincronizar el estado del checkbox con el valor
     if (value === 'Sin nombre') {
       setHasNoName(true);
-    } else if (value && value !== 'Sin nombre') {
+      hasInitializedRef.current = true;
+    } else if (value && value.trim() !== '' && value !== 'Sin nombre') {
       setHasNoName(false);
+      hasInitializedRef.current = true;
+    } else if (value === '' && !hasInitializedRef.current) {
+      // Solo establecer 'Sin nombre' una vez al inicio si el valor está vacío
+      // Esto maneja el caso cuando el componente se monta con value=''
+      onChange('Sin nombre');
+      hasInitializedRef.current = true;
     }
-  }, [value]);
+  }, [value, onChange]);
 
   const generateRandomName = () => {
     const randomIndex = Math.floor(Math.random() * PET_NAMES.length);
@@ -54,6 +63,9 @@ export default function AnimalNameInput({ value, onChange, required = false }: A
     setHasNoName(checked);
     if (checked) {
       onChange('Sin nombre');
+    } else {
+      // Si se desmarca, limpiar el nombre para que el usuario pueda escribir uno nuevo
+      onChange('');
     }
   };
 

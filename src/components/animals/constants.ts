@@ -33,3 +33,24 @@ export const ANIMAL_TYPE_ICONS: Record<string, string> = {
   reptil: "🦎",
   mammal: "🦁",
 };
+
+export const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'register':
+      return '#6b7280'; // gray-500 - Registrado
+    case 'adopted':
+      return '#a855f7'; // purple-500 - Adoptado
+    case 'abandoned':
+      return '#dc2626'; // red-600 - Abandonado
+    case 'rescued':
+      return '#f97316'; // orange-500 - Rescatado
+    case 'in_family':
+      return '#3b82f6'; // blue-500 - En familia
+    case 'lost':
+      return '#ef4444'; // red-500 - Perdido
+    case 'found':
+      return '#10b981'; // green-500 - Encontrado
+    default:
+      return '#6b7280'; // gray-500
+  }
+};

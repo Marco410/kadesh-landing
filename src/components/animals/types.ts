@@ -9,6 +9,7 @@ export interface LostAnimal {
   location: string;
   latitude?: number;
   longitude?: number;
+  distance?: number | null;
   image?: {
     url: string;
   };

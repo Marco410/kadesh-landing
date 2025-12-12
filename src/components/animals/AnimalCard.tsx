@@ -84,13 +84,42 @@ const getTypeLabel = (type: string) => {
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
-  const diffTime = Math.abs(now.getTime() - date.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Normalize dates to midnight for day comparison
+  const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  // Calculate difference in days
+  const diffTime = nowMidnight.getTime() - dateMidnight.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return 'Hoy';
-  if (diffDays === 1) return 'Ayer';
-  if (diffDays < 7) return `Hace ${diffDays} días`;
-  if (diffDays < 30) return `Hace ${Math.ceil(diffDays / 7)} semanas`;
+  // Format time for "Hoy" case - format: MM/DD/YYYY, HH:MM:SS AM/PM
+  const formatTime = (d: Date) => {
+    const hours = d.getHours();
+    const minutes = d.getMinutes();
+    const seconds = d.getSeconds();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, '0');
+    const displaySeconds = seconds.toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    const year = d.getFullYear();
+    return `${displayHours}:${displayMinutes} ${ampm}`;
+  };
+
+  if (diffDays === 0) {
+    return `Hoy a las ${formatTime(date)}`;
+  }
+  if (diffDays === 1) {
+    return 'Ayer';
+  }
+  if (diffDays < 7) {
+    return `Hace ${diffDays} días`;
+  }
+  if (diffDays < 30) {
+    return `Hace ${Math.ceil(diffDays / 7)} semanas`;
+  }
   return `Hace ${Math.ceil(diffDays / 30)} meses`;
 };
 
@@ -118,7 +147,7 @@ export default function AnimalCard({
         }`}
       >
         {/* Image */}
-        <div className="relative w-24 h-24 flex-shrink-0 bg-gray-200 dark:bg-gray-800">
+        <div className="relative w-24 flex-shrink-0 bg-gray-200 dark:bg-gray-800">
           {animal.image?.url ? (
             <Image
               src={animal.image.url}
@@ -159,6 +188,12 @@ export default function AnimalCard({
               <span>🕐</span>
               {formatDate(animal.createdAt)}
             </p>
+            <p className="text-xs flex items-center gap-1">
+              <span>🚗</span>
+              {animal.distance && animal.distance < 1 
+                ? `${Math.round(animal.distance * 1000)} m` 
+                : `${animal.distance?.toFixed(1)} km`}
+            </p>
           </div>
         </div>
 
@@ -191,7 +226,7 @@ export default function AnimalCard({
       whileHover={{ y: -5 }}
       className="bg-white dark:bg-[#1e1e1e] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col"
     >
-      <div className="relative h-64 w-full bg-gray-200 dark:bg-gray-800">
+      <div className="relative w-full bg-gray-200 dark:bg-gray-800">
         {animal.image?.url ? (
           <Image
             src={animal.image.url}

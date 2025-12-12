@@ -70,6 +70,48 @@ export const GET_LOST_ANIMALS_QUERY = gql`
 `;
 
 // Queries for creating animals
+export const GET_NEARBY_ANIMALS_QUERY = gql`
+  query GetNearbyAnimals($input: NearbyAnimalsInput!) {
+    getNearbyAnimals(input: $input) {
+      success
+      message
+      total
+      animals {
+        id
+        name
+        distance
+        sex
+        lat
+        lng
+        address
+        city
+        state
+        country
+        status
+        animal_breed {
+          id
+          breed
+        }
+        animal_type {
+          id
+          name
+        }
+        user {
+          name
+          profileImage {
+            url
+          }
+        }
+        createdAt
+        multimedia {
+          id
+          url
+        }
+      }
+    }
+  }
+`;
+
 export const GET_ANIMAL_TYPES_QUERY = gql`
   query GetAnimalTypes($orderBy: [AnimalTypeOrderByInput!]!) {
     animalTypes(orderBy: $orderBy) {

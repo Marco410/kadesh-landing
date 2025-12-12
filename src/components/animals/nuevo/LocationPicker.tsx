@@ -255,7 +255,7 @@ export default function LocationPicker({
                   stylers: [{ visibility: 'off' }],
                 },
               ],
-              disableDefaultUI: false,
+              disableDefaultUI: true,
               zoomControl: true,
               streetViewControl: false,
               mapTypeControl: false,

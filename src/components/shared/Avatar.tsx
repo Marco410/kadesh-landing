@@ -26,7 +26,7 @@ export default function Avatar({ author, size = 48, verify = false }: AvatarProp
         )}
       </div>
       {verify && (
-        <div className="absolute top-0 right-0 bg-white dark:bg-white rounded-full flex items-center justify-center overflow-hidden">
+        <div className="absolute  top-0 right-0 bg-white dark:bg-white rounded-full flex items-center justify-center overflow-hidden">
           <Image
             src="/icons/firmar.png"
             alt="Verificado"

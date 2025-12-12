@@ -2,85 +2,86 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@apollo/client';
-import { GET_ANIMALS_QUERY, GET_ANIMALS_COUNT_QUERY, GET_ANIMAL_TYPES_QUERY } from '../queries';
+import { GET_NEARBY_ANIMALS_QUERY, GET_ANIMAL_TYPES_QUERY } from '../queries';
 import { LostAnimal, AnimalFilters, AnimalType } from '../types';
 
 const DEFAULT_ANIMALS_PER_PAGE = 12;
+const DEFAULT_RADIUS = 50; // Default radius in km
 
-// Calculate distance between two coordinates (Haversine formula)
-function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371; // Radius of the Earth in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-interface DatabaseAnimal {
+// Interface matching the new getNearbyAnimals response
+interface NearbyAnimal {
   id: string;
   name: string;
-  createdAt: string;
-  user?: {
+  distance: number | null;
+  sex: string;
+  lat: string;
+  lng: string;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  status: string;
+  animal_breed: {
+    id: string;
+    breed: string;
+  } | null;
+  animal_type: {
     id: string;
     name: string;
-    lastName: string;
-    username: string;
-  };
-  animal_breed?: {
-    breed: string;
-    animal_type?: {
-      name: string;
-    };
-  };
-  logs?: Array<{
-    id: string;
-    last_seen: boolean;
-    lat: string | null;
-    lng: string | null;
-    notes: string | null;
-    status: string;
-    createdAt: string;
-  }>;
-  multimedia?: Array<{
-    image?: {
+  } | null;
+  user: {
+    name: string;
+    profileImage: {
       url: string;
-    };
+    } | null;
+  } | null;
+  createdAt: string;
+  multimedia: Array<{
+    id: string;
+    url: string;
   }>;
 }
 
-// Transform database animal to LostAnimal format
-function transformAnimal(animal: DatabaseAnimal): LostAnimal {
-  // Get the most recent log with coordinates
-  const lastLog = animal.logs
-    ?.filter((log) => log.lat && log.lng)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-
-  // Get the most recent log for status
-  const statusLog = animal.logs
-    ?.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+// Transform nearby animal to LostAnimal format
+function transformAnimal(animal: NearbyAnimal): LostAnimal {
+  // Build location string from available address components
+  const locationParts = [];
+  if (animal.address) locationParts.push(animal.address);
+  if (animal.city) locationParts.push(animal.city);
+  if (animal.state) locationParts.push(animal.state);
+  if (animal.country) locationParts.push(animal.country);
+  
+  const location = locationParts.length > 0 
+    ? locationParts.join(', ')
+    : animal.lat && animal.lng 
+      ? `${animal.lat}, ${animal.lng}` 
+      : 'Ubicación no disponible';
 
   // Get first image from multimedia
-  const image = animal.multimedia?.[0]?.image;
+  const image = animal.multimedia?.[0];
 
-  // Use status directly from database (no mapping needed)
-  // Database values: register, adopted, abandoned, rescued, in_family, lost, found
+  // Map animal type name to AnimalType (convert to lowercase and handle mapping)
+  const typeName = animal.animal_type?.name?.toLowerCase() || '';
+  const typeMap: Record<string, AnimalType> = {
+    'dog': 'perro',
+    'cat': 'gato',
+    'rabbit': 'conejo',
+    'bird': 'ave',
+  };
+  const mappedType = typeMap[typeName] || (typeName as AnimalType) || 'otro';
+
   return {
     id: animal.id,
     name: animal.name,
-    type: (animal.animal_breed?.animal_type?.name || '').toLowerCase() as AnimalType,
+    type: mappedType,
     breed: animal.animal_breed?.breed || '',
-    status: (statusLog?.status || 'register'),
-    location: lastLog?.lat && lastLog?.lng 
-      ? `${lastLog.lat}, ${lastLog.lng}` 
-      : 'Ubicación no disponible',
-    latitude: lastLog?.lat ? parseFloat(lastLog.lat) : undefined,
-    longitude: lastLog?.lng ? parseFloat(lastLog.lng) : undefined,
+    status: animal.status,
+    location,
+    latitude: animal.lat ? parseFloat(animal.lat) : undefined,
+    longitude: animal.lng ? parseFloat(animal.lng) : undefined,
+    distance: animal.distance || 0.01,
     image: image ? { url: image.url } : undefined,
-    description: statusLog?.notes || '',
+    description: '', // Not available in new response
     createdAt: animal.createdAt,
     isFavorite: false, // TODO: Implement favorites
   };
@@ -100,7 +101,7 @@ export function useLostAnimals(
     variables: { orderBy: [{ order: "asc" }] },
   });
 
-  // Map Spanish type names to English database values
+  // Map Spanish type names to English database values (for animalType ID lookup)
   const typeNameMap: Record<string, string> = {
     'perro': 'dog',
     'gato': 'cat',
@@ -109,71 +110,58 @@ export function useLostAnimals(
     'otro': 'other',
   };
 
-  // Build where clause for GraphQL query
-  const whereClause = useMemo(() => {
-    const where: any = {};
+  // Build input for getNearbyAnimals query
+  const queryInput = useMemo(() => {
+    const input: any = {
+      limit: 500, // Get enough for client-side filtering and pagination
+      skip: 0,
+    };
 
-    // Filter by animal type - map Spanish to English and use name
-    if (filters.type) {
+    // Add location and radius if provided
+    if (userLocation) {
+      input.lat = userLocation.lat;
+      input.lng = userLocation.lng;
+      input.radius = DEFAULT_RADIUS;
+    }
+
+    // Filter by animal type - need to find the ID from animalTypesData
+    // If we can't find the ID, we'll filter client-side
+    if (filters.type && animalTypesData?.animalTypes) {
       const dbTypeName = typeNameMap[filters.type] || filters.type;
-      where.animal_type = {
-        name: {
-          equals: dbTypeName,
-        },
-      };
+      const animalType = animalTypesData.animalTypes.find(
+        (at: any) => at.name?.toLowerCase() === dbTypeName.toLowerCase()
+      );
+      if (animalType?.id) {
+        input.animalType = animalType.id;
+      }
+      // Note: If ID not found, we'll filter client-side in transformedAnimals
     }
 
-    // Filter by breed
-    if (filters.breed) {
-      where.animal_breed = {
-        breed: {
-          contains: filters.breed,
-        },
-      };
-    }
-
-    // Filter by status (from logs)
-    // Note: We'll filter for coordinates client-side to avoid Prisma errors
+    // Filter by status
     if (filters.status) {
-      // Use status directly (no mapping needed - filters already use database values)
-      where.logs = {
-        some: {
-          status: {
-            equals: filters.status,
-          },
-        },
-      };
+      input.status = filters.status;
     }
 
-    // Filter by name
-    if (filters.name) {
-      where.name = {
-        contains: filters.name,
-      };
+    // Filter by breed - need breed ID, but we'll filter client-side for now
+    // TODO: If you have a way to get breed ID from breed name, add it here
+
+    // Filter by city, state, country from location filter
+    if (filters.location) {
+      // Try to parse location - could be city, state, or country
+      const locationLower = filters.location.toLowerCase();
+      // Simple heuristic: if it's a short string, assume city
+      if (locationLower.length < 20) {
+        input.city = filters.location;
+      }
     }
 
-    return where;
-  }, [filters]);
+    return input;
+  }, [filters, userLocation, animalTypesData, ANIMALS_PER_PAGE]);
 
-  // Build orderBy clause
-  const orderBy = useMemo(() => {
-    // Default: order by createdAt descending (newest first)
-    return [{ createdAt: 'desc' as const }];
-  }, []);
-
-  // If sorting by distance, we need all animals first
-  // Otherwise, use server-side pagination
-  const shouldGetAll = !!userLocation;
-  const skip = shouldGetAll ? 0 : (currentPage - 1) * ANIMALS_PER_PAGE;
-  const take = shouldGetAll ? null : ANIMALS_PER_PAGE;
-
-  // Query animals from database
-  const { data, loading, error } = useQuery(GET_ANIMALS_QUERY, {
+  // Query animals using getNearbyAnimals
+  const { data, loading, error } = useQuery(GET_NEARBY_ANIMALS_QUERY, {
     variables: {
-      skip,
-      take,
-      orderBy,
-      where: whereClause,
+      input: queryInput,
     },
     fetchPolicy: 'cache-and-network',
     errorPolicy: 'all', // Return partial data even if there are errors
@@ -181,20 +169,50 @@ export function useLostAnimals(
 
   // Transform and filter animals
   const transformedAnimals = useMemo(() => {
-    if (!data?.animals) return [];
+    if (!data?.getNearbyAnimals?.animals) return [];
 
-    let animals = (data.animals as DatabaseAnimal[]).map(transformAnimal);
+    let animals = (data.getNearbyAnimals.animals as NearbyAnimal[]).map(transformAnimal);
 
-    // Filter out animals without coordinates (client-side)
+    // Filter out animals without coordinates (shouldn't happen with new query, but safety check)
     animals = animals.filter((animal: LostAnimal) => 
       animal.latitude !== undefined && animal.longitude !== undefined
     );
 
-    // Client-side filtering for location text search
+    // Client-side filtering for location text search (more flexible than server-side)
     if (filters.location) {
       animals = animals.filter((animal: LostAnimal) =>
         animal.location.toLowerCase().includes(filters.location!.toLowerCase())
       );
+    }
+
+    // Filter by name (client-side)
+    if (filters.name) {
+      animals = animals.filter((animal: LostAnimal) =>
+        animal.name.toLowerCase().includes(filters.name!.toLowerCase())
+      );
+    }
+
+    // Filter by breed (client-side)
+    if (filters.breed) {
+      animals = animals.filter((animal: LostAnimal) =>
+        animal.breed?.toLowerCase().includes(filters.breed!.toLowerCase())
+      );
+    }
+
+    // Filter by type (client-side if not filtered server-side or if ID not found)
+    if (filters.type) {
+      const dbTypeName = typeNameMap[filters.type] || filters.type;
+      animals = animals.filter((animal: LostAnimal) => {
+        // Map the animal type back to compare
+        const animalTypeMap: Record<string, string> = {
+          'perro': 'dog',
+          'gato': 'cat',
+          'conejo': 'rabbit',
+          'ave': 'bird',
+        };
+        const animalDbType = animalTypeMap[animal.type] || animal.type;
+        return animalDbType.toLowerCase() === dbTypeName.toLowerCase();
+      });
     }
 
     // Filter favorites if needed
@@ -202,72 +220,56 @@ export function useLostAnimals(
       animals = animals.filter((animal: LostAnimal) => animal.isFavorite);
     }
 
-    // Sort by distance if user location is provided (prioritize closest)
-    if (userLocation) {
-      animals = animals
-        .map((animal: LostAnimal) => ({
-          ...animal,
-          distance: animal.latitude && animal.longitude
-            ? calculateDistance(
-                userLocation.lat,
-                userLocation.lng,
-                animal.latitude,
-                animal.longitude
-              )
-            : Infinity,
-        }))
-        .sort((a: LostAnimal & { distance?: number }, b: LostAnimal & { distance?: number }) => 
-          (a.distance || Infinity) - (b.distance || Infinity)
-        );
-    }
+    // Distance is already calculated by the server, so no need to recalculate
+    // Animals are already sorted by distance if lat/lng provided
 
     return animals;
-  }, [data, filters, userLocation]);
+  }, [data, filters]);
 
   // For map, we need all animals (not paginated)
-  // Reuse the same query if we already got all animals, otherwise make a separate query
-  const { data: allAnimalsData } = useQuery(GET_ANIMALS_QUERY, {
+  // Reuse the main query data if it has enough animals, otherwise use a separate query
+  const needsSeparateMapQuery = useMemo(() => {
+    // If we have data and it has animals, check if we need more for the map
+    if (data?.getNearbyAnimals?.animals) {
+      const animalCount = data.getNearbyAnimals.animals.length;
+      // If we got less than the limit, we have all animals, so reuse
+      return animalCount >= (queryInput.limit || 500);
+    }
+    return true; // Need to fetch if no data
+  }, [data, queryInput.limit]);
+
+  const { data: allAnimalsData } = useQuery(GET_NEARBY_ANIMALS_QUERY, {
     variables: {
-      skip: 0,
-      take: null, // Get all for map
-      orderBy,
-      where: whereClause,
+      input: {
+        ...queryInput,
+        limit: 1000, // Large limit for map
+        skip: 0,
+      },
     },
     fetchPolicy: 'cache-and-network',
-    skip: shouldGetAll, // Skip if we already have all animals from main query
+    skip: !needsSeparateMapQuery, // Only fetch if we need more animals for map
   });
 
   const allAnimals = useMemo(() => {
-    // If we got all animals in main query, use those
-    if (shouldGetAll && data?.animals) {
-      return (data.animals as DatabaseAnimal[]).map(transformAnimal);
+    // If we don't need a separate query, use the main data
+    if (!needsSeparateMapQuery && data?.getNearbyAnimals?.animals) {
+      return (data.getNearbyAnimals.animals as NearbyAnimal[]).map(transformAnimal);
     }
     // Otherwise use the allAnimals query
-    if (!allAnimalsData?.animals) return [];
-    return (allAnimalsData.animals as DatabaseAnimal[]).map(transformAnimal);
-  }, [data, allAnimalsData, shouldGetAll]);
-
-  // Get total count for accurate pagination
-  const { data: countData } = useQuery(GET_ANIMALS_COUNT_QUERY, {
-    variables: {
-      where: whereClause,
-    },
-    fetchPolicy: 'cache-and-network',
-    skip: shouldGetAll, // Skip if we're getting all animals (we can count client-side)
-  });
+    if (!allAnimalsData?.getNearbyAnimals?.animals) return [];
+    return (allAnimalsData.getNearbyAnimals.animals as NearbyAnimal[]).map(transformAnimal);
+  }, [needsSeparateMapQuery, data, allAnimalsData]);
 
   // Calculate pagination
-  // If sorting by distance, we need to paginate client-side and use client count
-  // Otherwise, use server count
-  const totalAnimals = shouldGetAll 
-    ? transformedAnimals.length 
-    : (countData?.animalsCount || transformedAnimals.length);
+  // Use the count of transformed animals (after client-side filters) for accurate pagination
+  const totalAnimals = transformedAnimals.length;
   const totalPages = Math.ceil(totalAnimals / ANIMALS_PER_PAGE);
   
-  // Paginate based on whether we sorted by distance
-  const paginatedAnimals = shouldGetAll
-    ? transformedAnimals.slice((currentPage - 1) * ANIMALS_PER_PAGE, currentPage * ANIMALS_PER_PAGE)
-    : transformedAnimals;
+  // Paginate client-side (since we get all matching animals and filter client-side)
+  const paginatedAnimals = transformedAnimals.slice(
+    (currentPage - 1) * ANIMALS_PER_PAGE, 
+    currentPage * ANIMALS_PER_PAGE
+  );
 
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {

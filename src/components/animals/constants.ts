@@ -64,7 +64,7 @@ export const darkMapStyles = [
   {
     featureType: 'administrative.locality',
     elementType: 'labels.text.fill',
-    stylers: [{ color: '#d59563' }],
+    stylers: [{ color: '#c9733e' }],
   },
   {
     featureType: 'poi',
@@ -91,11 +91,11 @@ export const darkMapStyles = [
     elementType: 'geometry.stroke',
     stylers: [{ color: '#212a37' }],
   },
-  {
+  /* {
     featureType: 'road',
     elementType: 'labels.text.fill',
     stylers: [{ color: '#9ca5b3' }],
-  },
+  }, */
   {
     featureType: 'road.highway',
     elementType: 'geometry',
@@ -112,6 +112,11 @@ export const darkMapStyles = [
     stylers: [{ color: '#f3d19c' }],
   },
   {
+    featureType: 'road.highway',
+    elementType: 'labels.icon',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
     featureType: 'transit',
     elementType: 'geometry',
     stylers: [{ color: '#2f3948' }],
@@ -121,11 +126,7 @@ export const darkMapStyles = [
     elementType: 'labels.text.fill',
     stylers: [{ color: '#d59563' }],
   },
-  {
-    featureType: 'water',
-    elementType: 'geometry',
-    stylers: [{ color: '#17263c' }],
-  },
+ /* maps */
   {
     featureType: 'water',
     elementType: 'labels.text.fill',

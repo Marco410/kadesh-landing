@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navigation, Footer } from 'kadesh/components/layout';
 import { AnimalCard, AnimalFilters, AnimalsMap, useLostAnimals, LostAnimal } from 'kadesh/components/animals';
@@ -16,6 +16,52 @@ export default function LostAnimalsPage() {
   const { user, loading: userLoading } = useUser();
   const [selectedAnimal, setSelectedAnimal] = useState<LostAnimal | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(undefined);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [locationLoading, setLocationLoading] = useState(true);
+
+  // Get user location on mount
+  useEffect(() => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      setLocationError('La geolocalización no está disponible en tu navegador');
+      setLocationLoading(false);
+      return;
+    }
+
+    setLocationLoading(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+        setLocationLoading(false);
+      },
+      (error) => {
+        let errorMessage = 'No se pudo obtener tu ubicación';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Permiso de ubicación denegado. Por favor, permite el acceso a tu ubicación para ver animales cercanos.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Información de ubicación no disponible';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Tiempo de espera agotado al obtener la ubicación';
+            break;
+        }
+        setLocationError(errorMessage);
+        setLocationLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0, // Don't use cached location
+      }
+    );
+  }, []);
   
   const {
     animals,
@@ -31,7 +77,8 @@ export default function LostAnimalsPage() {
     filters,
     hasNextPage,
     hasPreviousPage,
-  } = useLostAnimals();
+    loading: animalsLoading,
+  } = useLostAnimals(undefined, undefined, userLocation);
 
   const handleAnimalClick = (animal: LostAnimal | null) => {
     setSelectedAnimal(animal);
@@ -127,6 +174,21 @@ export default function LostAnimalsPage() {
               <h2 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] mb-2">
                 Animales ({totalAnimals})
               </h2>
+              {locationLoading && (
+                <p className="text-xs text-orange-500 dark:text-orange-400 mb-2">
+                  Obteniendo tu ubicación...
+                </p>
+              )}
+              {locationError && (
+                <p className="text-xs text-red-500 dark:text-red-400 mb-2">
+                  {locationError}
+                </p>
+              )}
+              {userLocation && !locationError && (
+                <p className="text-xs text-green-600 dark:text-green-400 mb-2">
+                  Mostrando animales cercanos a tu ubicación
+                </p>
+              )}
             </div>
             <AnimalFilters
               filters={filters}
@@ -137,7 +199,17 @@ export default function LostAnimalsPage() {
 
           {/* Cards List - Scrollable */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {animals.length === 0 ? (
+            {(locationLoading || animalsLoading) && animals.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                <h3 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] mb-2">
+                  {locationLoading ? 'Obteniendo tu ubicación...' : 'Cargando animales...'}
+                </h3>
+                <p className="text-sm text-[#616161] dark:text-[#b0b0b0]">
+                  Por favor espera
+                </p>
+              </div>
+            ) : animals.length === 0 ? (
               <div className="text-center py-12">
                 <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -146,7 +218,9 @@ export default function LostAnimalsPage() {
                   No se encontraron animales
                 </h3>
                 <p className="text-sm text-[#616161] dark:text-[#b0b0b0] mb-4">
-                  Intenta ajustar los filtros
+                  {locationError 
+                    ? 'No se pudo obtener tu ubicación. Intenta ajustar los filtros o permite el acceso a tu ubicación.'
+                    : 'Intenta ajustar los filtros'}
                 </p>
                 <button
                   onClick={clearFilters}

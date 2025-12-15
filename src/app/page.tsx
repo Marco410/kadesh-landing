@@ -39,7 +39,8 @@ export default function HomePage() {
         name: 'México',
       },
       sameAs: [
-        // Aquí se pueden agregar las redes sociales cuando estén disponibles
+        "https://www.facebook.com/profile.php?id=61576878181992",
+        "https://www.instagram.com/kadesh.pet/"
       ],
     },
     potentialAction: {

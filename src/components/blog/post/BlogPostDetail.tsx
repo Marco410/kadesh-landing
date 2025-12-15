@@ -87,6 +87,8 @@ export default function BlogPostDetailComponent({ post }: BlogPostDetailProps) {
           <PostActions 
               postId={post.id}
               viewsCount={post.post_viewsCount}
+              postUrl={Routes.blog.post(post.url)}
+              postTitle={post.title}
             /> 
         </div>
         <motion.div
@@ -103,6 +105,8 @@ export default function BlogPostDetailComponent({ post }: BlogPostDetailProps) {
           <PostActions 
             postId={post.id}
             viewsCount={post.post_viewsCount}
+            postUrl={Routes.blog.post(post.url)}
+            postTitle={post.title}
           />
         </div>
 

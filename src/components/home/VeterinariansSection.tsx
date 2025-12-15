@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import ConfirmModal from '../shared/ConfirmModal';
 
 const MOCK_VETS = [
   {
@@ -35,6 +37,12 @@ const MOCK_VETS = [
 ];
 
 export default function VeterinariansSection() {
+  const [showModal, setShowModal] = useState(false);
+
+  const handleCardClick = () => {
+    setShowModal(true);
+  };
+
   return (
     <section id="veterinarias" className="w-full py-20 bg-white dark:bg-[#121212]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,13 +63,15 @@ export default function VeterinariansSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {MOCK_VETS.map((vet, index) => (
-            <motion.div
+            <motion.button
               key={vet.id}
+              onClick={handleCardClick}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-gray-50 dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-200 dark:border-gray-800"
+              className="bg-gray-50 dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-200 dark:border-gray-800 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 w-full"
+              aria-label={`Ver detalles de ${vet.name}`}
             >
               <div className="mb-4">
                 <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-3">
@@ -91,7 +101,7 @@ export default function VeterinariansSection() {
                   </span>
                 ))}
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
 
@@ -121,6 +131,17 @@ export default function VeterinariansSection() {
           </motion.div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={() => setShowModal(false)}
+        title="¡Próximamente! 🐾"
+        message="Estamos trabajando muy duro para traerte esta sección muy pronto. Mientras tanto, puedes explorar otras partes de KADESH o contactarnos si necesitas ayuda."
+        confirmText="Entendido"
+        cancelText=""
+        confirmButtonColor="orange"
+      />
     </section>
   );
 }

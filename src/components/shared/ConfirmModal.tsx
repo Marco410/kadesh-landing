@@ -71,7 +71,7 @@ export default function ConfirmModal({
                   {message}
                 </p>
                 {/* Two buttons layout: responsive (mobile: action first, then cancel below; desktop: side by side) */}
-                <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+                <div className={`flex flex-col sm:flex-row gap-3 ${cancelText ? 'sm:justify-end' : 'sm:justify-center'}`}>
                   <button 
                     onClick={onConfirm}
                     disabled={isLoading}
@@ -79,13 +79,15 @@ export default function ConfirmModal({
                   >
                     {isLoading ? 'Procesando...' : confirmText}
                   </button>
-                  <button 
-                    onClick={onClose}
-                    disabled={isLoading}
-                    className="order-2 px-5 py-2.5 border-2 border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] font-semibold rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap w-full sm:w-auto"
-                  >
-                    {cancelText}
-                  </button>
+                  {cancelText && (
+                    <button 
+                      onClick={onClose}
+                      disabled={isLoading}
+                      className="order-2 px-5 py-2.5 border-2 border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] font-semibold rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap w-full sm:w-auto"
+                    >
+                      {cancelText}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

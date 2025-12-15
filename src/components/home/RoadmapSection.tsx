@@ -90,13 +90,13 @@ const ROADMAP_ITEMS = [
   {
     id: 15,
     title: "Contacto",
-    status: "pending",
+    status: "completed",
     description: "Contacta con el equipo de KADESH"
   },
   {
     id: 16,
     title: "Estatus de rescates",
-    status: "pending",
+    status: "in-progress",
     description: "Sigue el avance de cada rescate en tiempo real: actualizaciones, comentarios, fotos y logros para que todos puedan apoyar y celebrar juntos."
   }
 ];

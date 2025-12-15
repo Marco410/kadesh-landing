@@ -119,3 +119,38 @@ export interface CreateUserResponse {
     phone: string | null;
   };
 }
+
+export const CREATE_CONTACT_FORM_MUTATION = gql`
+  mutation CreateContactForms($data: [ContactFormCreateInput!]!) {
+    createContactForms(data: $data) {
+      id
+      message
+      email
+      name
+      phone
+      subject
+    }
+  }
+`;
+
+export interface CreateContactFormVariables {
+  data: Array<{
+    name: string;
+    email: string;
+    phone?: string;
+    subject: string;
+    message: string;
+    status?: string;
+  }>;
+}
+
+export interface CreateContactFormResponse {
+  createContactForms: Array<{
+    id: string;
+    message: string;
+    email: string;
+    name: string;
+    phone: string | null;
+    subject: string;
+  }>;
+}

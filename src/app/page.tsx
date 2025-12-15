@@ -11,6 +11,7 @@ import {
   RoadmapSection,
 } from 'kadesh/components/home';
 import { Footer, Navigation } from 'kadesh/components/layout';
+import { NewsletterSubscription } from 'kadesh/components/newsletter';
 
 export default function HomePage() {
   // Structured Data (JSON-LD) for SEO
@@ -123,6 +124,7 @@ export default function HomePage() {
         <DonationsSection />
         <HowItWorksSection />
         <RoadmapSection />
+        <NewsletterSubscription/>
         <Footer />
       </main>
     </>

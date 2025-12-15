@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Footer, Navigation } from 'kadesh/components/layout';
 import { BlogSection, CategorySection } from 'kadesh/components/blog';
+import { NewsletterSubscription } from 'kadesh/components/newsletter';
 import { useSearchParams } from 'next/navigation';
 import { Routes } from 'kadesh/core/routes';
 
@@ -155,58 +156,7 @@ export default function BlogPage() {
         <CategorySection />
 
         {/* Newsletter Section */}
-        <section 
-          aria-labelledby="newsletter-heading"
-          className="bg-[#f5f5f5] dark:bg-[#1e1e1e] py-16 px-4 sm:px-6 lg:px-8 mt-16"
-        >
-          <div className="max-w-2xl mx-auto text-center">
-            <motion.h2
-              id="newsletter-heading"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="text-3xl font-bold text-[#212121] dark:text-[#ffffff] mb-4"
-            >
-              Suscríbete a nuestro blog
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-[#616161] dark:text-[#b0b0b0] mb-6"
-            >
-              Recibe las últimas historias, consejos y noticias sobre bienestar animal directamente en tu correo.
-            </motion.p>
-            <motion.form
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <label htmlFor="newsletter-email" className="sr-only">
-                Correo electrónico para suscripción
-              </label>
-              <input
-                id="newsletter-email"
-                type="email"
-                placeholder="Tu correo electrónico"
-                className="flex-1 px-4 py-3 rounded-lg bg-[#ffffff] dark:bg-[#121212] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] focus:outline-none focus:ring-2 focus:ring-orange-500"
-                aria-label="Correo electrónico para suscripción al blog"
-              />
-              <button 
-                type="submit"
-                className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 dark:hover:bg-orange-600 transition-colors"
-                aria-label="Suscribirse al blog de KADESH"
-              >
-                Suscribirse
-              </button>
-            </motion.form>
-          </div>
-        </section>
+        <NewsletterSubscription className="mt-16" />
 
         <Footer />
       </div>

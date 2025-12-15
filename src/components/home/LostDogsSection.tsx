@@ -254,6 +254,17 @@ export default function LostDogsSection() {
           </motion.div>
         )}
       </div>
+
+      {/* <ConfirmModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={() => setShowModal(false)}
+        title="¡Próximamente! 🐾"
+        message="Estamos trabajando muy duro para traerte esta sección muy pronto. Mientras tanto, puedes explorar otras partes de KADESH o contactarnos si necesitas ayuda."
+        confirmText="Entendido"
+        cancelText=""
+        confirmButtonColor="orange"
+      /> */}
     </section>
   );
 }

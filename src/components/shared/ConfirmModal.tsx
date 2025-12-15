@@ -50,17 +50,18 @@ export default function ConfirmModal({
             className="fixed inset-0 z-[60] flex items-center justify-center p-4 pointer-events-none"
           >
             <div 
-              className="bg-[#ffffff] dark:bg-[#1e1e1e] rounded-2xl shadow-2xl max-w-md w-full p-8 pointer-events-auto border border-[#e0e0e0] dark:border-[#3a3a3a]"
+              className="bg-[#ffffff] dark:bg-[#1e1e1e] rounded-2xl shadow-2xl max-w-lg w-full p-8 pointer-events-auto border border-[#e0e0e0] dark:border-[#3a3a3a]"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center mb-6 pb-4 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">
-                <h3 className="text-2xl font-bold text-[#212121] dark:text-[#ffffff]">
+              <div className="flex justify-between items-start mb-6 pb-4 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">
+                <h3 className="text-2xl font-bold text-[#212121] dark:text-[#ffffff] pr-4 flex-1">
                   {title}
                 </h3>
                 <button
                   onClick={onClose}
-                  className="text-2xl font-bold text-[#616161] dark:text-[#b0b0b0] hover:text-[#212121] dark:hover:text-[#ffffff] transition-colors"
+                  className="text-2xl font-bold text-[#616161] dark:text-[#b0b0b0] hover:text-[#212121] dark:hover:text-[#ffffff] transition-colors flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a]"
                   disabled={isLoading}
+                  aria-label="Cerrar"
                 >
                   ×
                 </button>
@@ -69,20 +70,21 @@ export default function ConfirmModal({
                 <p className="text-md text-[#616161] dark:text-[#b0b0b0] leading-relaxed">
                   {message}
                 </p>
-                <div className="flex gap-4 justify-end">
-                  <button 
-                    onClick={onClose}
-                    disabled={isLoading}
-                    className="px-6 py-2 border-2 border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] font-semibold rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#1e1e1e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {cancelText}
-                  </button>
+                {/* Two buttons layout: responsive (mobile: action first, then cancel below; desktop: side by side) */}
+                <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
                   <button 
                     onClick={onConfirm}
                     disabled={isLoading}
-                    className={`px-6 py-2 ${confirmButtonClasses[confirmButtonColor]} text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`order-1 px-5 py-2.5 ${confirmButtonClasses[confirmButtonColor]} text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap hover:opacity-90 w-full sm:w-auto`}
                   >
                     {isLoading ? 'Procesando...' : confirmText}
+                  </button>
+                  <button 
+                    onClick={onClose}
+                    disabled={isLoading}
+                    className="order-2 px-5 py-2.5 border-2 border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] font-semibold rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap w-full sm:w-auto"
+                  >
+                    {cancelText}
                   </button>
                 </div>
               </div>

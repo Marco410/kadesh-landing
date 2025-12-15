@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   FavouriteIcon,
@@ -11,6 +13,8 @@ import { usePostLikes } from '../hooks/usePostLikes';
 import { usePostComments } from '../hooks/usePostComments';
 import { usePostFavorites } from '../hooks/usePostFavorites';
 import { useUser } from 'kadesh/utils/UserContext';
+import ConfirmModal from 'kadesh/components/shared/ConfirmModal';
+import { Routes } from 'kadesh/core/routes';
 
 interface PostActionsProps {
   postId: string;
@@ -18,7 +22,9 @@ interface PostActionsProps {
 }
 
 export default function PostActions({ postId, viewsCount }: PostActionsProps) {
+  const router = useRouter();
   const { user } = useUser();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const {
     likesCount,
     isLiked,
@@ -38,10 +44,31 @@ export default function PostActions({ postId, viewsCount }: PostActionsProps) {
     handleFavorite,
   } = usePostFavorites(postId);
 
+  const handleLikeClick = () => {
+    if (!user?.id) {
+      setShowAuthModal(true);
+      return;
+    }
+    handleLike();
+  };
+
+  const handleGoToAuth = () => {
+    setShowAuthModal(false);
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+    router.push(`${Routes.auth.login}?redirect=${currentPath}`);
+  };
+
+  const handleCommentsClick = () => {
+    const commentsSection = document.getElementById('comments-section');
+    if (commentsSection) {
+      commentsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="flex items-center gap-6">
       <button
-        onClick={handleLike}
+        onClick={handleLikeClick}
         className={`flex items-center gap-2 transition-colors ${
           isLiked 
             ? "text-orange-500 dark:text-orange-400" 
@@ -57,15 +84,19 @@ export default function PostActions({ postId, viewsCount }: PostActionsProps) {
         />
         <span>{likesCount}</span>
       </button>
-      <div className="flex items-center gap-2 text-[#616161] dark:text-[#b0b0b0]">
+      <button
+        onClick={handleCommentsClick}
+        className="flex items-center gap-2 text-[#616161] dark:text-[#b0b0b0] hover:text-orange-500 dark:hover:text-orange-400 transition-colors cursor-pointer"
+        aria-label="Ver comentarios"
+      >
         <HugeiconsIcon
           icon={BubbleChatIcon}
           size={20}
-          className="text-[#616161] dark:text-[#b0b0b0]"
+          className="text-current"
           strokeWidth={2}
         />
         <span>{commentsCount}</span>
-      </div>
+      </button>
       <div className="flex items-center gap-2 text-[#616161] dark:text-[#b0b0b0]">
         <HugeiconsIcon
           icon={ViewIcon}
@@ -93,6 +124,16 @@ export default function PostActions({ postId, viewsCount }: PostActionsProps) {
           />
         </button>
       )}
+      <ConfirmModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onConfirm={handleGoToAuth}
+        title="¡Únete a nuestra comunidad! 🐾"
+        message="Para dar like y ser parte de nuestra comunidad, necesitas una cuenta. ¡Es gratis y solo toma un minuto!"
+        confirmText="Ya tengo cuenta/Registrarme"
+        cancelText="Tal vez después"
+        confirmButtonColor="orange"
+      />
     </div>
   );
 }

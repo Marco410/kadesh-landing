@@ -46,4 +46,7 @@ export const Routes = {
     detail: (id: string): string => `/animales/${id}`,
   },
   
+  // About
+  conocenos: '/conocenos',
+  
 } as const;

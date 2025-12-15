@@ -195,7 +195,7 @@ export default function Navigation() {
 
           {/* Conócenos Link */}
           <Link
-            href={Routes.home}
+            href={Routes.conocenos}
             className="font-semibold text-sm text-white hover:text-orange-100 transition-colors duration-200"
           >
             Conócenos

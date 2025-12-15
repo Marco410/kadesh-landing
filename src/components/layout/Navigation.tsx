@@ -194,10 +194,18 @@ export default function Navigation() {
 
           {/* Conócenos Link */}
           <Link
-            href={Routes.home}
+            href={Routes.conocenos}
             className="font-semibold text-sm text-white hover:text-orange-100 transition-colors duration-200"
           >
             Conócenos
+          </Link>
+
+          {/* Contacto Link */}
+          <Link
+            href={Routes.contact}
+            className="font-semibold text-sm text-white hover:text-orange-100 transition-colors duration-200"
+          >
+            Contacto
           </Link>
           
           {/* Theme Toggle Button */}
@@ -413,11 +421,20 @@ export default function Navigation() {
 
                   {/* Conócenos Link Mobile */}
                   <Link
-                    href={Routes.home}
+                    href={Routes.conocenos}
                     onClick={() => setOpened(false)}
                     className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
                   >
                     Conócenos
+                  </Link>
+
+                  {/* Contacto Link Mobile */}
+                  <Link
+                    href={Routes.contact}
+                    onClick={() => setOpened(false)}
+                    className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
+                  >
+                    Contacto
                   </Link>
 
                   {/* User Avatar or Login Button Mobile */}

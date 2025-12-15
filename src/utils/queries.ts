@@ -154,3 +154,37 @@ export interface CreateContactFormResponse {
     subject: string;
   }>;
 }
+
+export const CREATE_BLOG_SUBSCRIPTION_MUTATION = gql`
+  mutation CreateBlogSubscription($data: BlogSubscriptionCreateInput!) {
+    createBlogSubscription(data: $data) {
+      active
+      email
+      user {
+        name
+      }
+    }
+  }
+`;
+
+export interface CreateBlogSubscriptionVariables {
+  data: {
+    email: string;
+    active?: boolean;
+    user?: {
+      connect?: {
+        id: string;
+      };
+    };
+  };
+}
+
+export interface CreateBlogSubscriptionResponse {
+  createBlogSubscription: {
+    active: boolean;
+    email: string;
+    user: {
+      name: string;
+    } | null;
+  };
+}

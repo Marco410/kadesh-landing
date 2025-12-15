@@ -39,4 +39,7 @@ export const Routes = {
   // Profile
   profile: '/perfil',
   
+  // About
+  conocenos: '/conocenos',
+  
 } as const;

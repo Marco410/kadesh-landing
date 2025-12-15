@@ -48,7 +48,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
   };
 
   return (
-    <section className="mt-12 pt-8 ">
+    <section id="comments-section" className="mt-12 pt-8 scroll-mt-20">
       <h2 className="text-2xl font-bold text-[#212121] dark:text-[#ffffff] mb-6">
         Comentarios ({commentsCount}) 
       </h2>

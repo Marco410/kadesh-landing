@@ -51,8 +51,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#f5f5f5] dark:bg-[#0a0a0a]">
-      {/* Left side - Image */}
+    <div className="min-h-screen flex bg-[#f5f5f5] dark:bg-[#0a0a0a] relative">
+      {/* Background Image - Mobile: full screen with blur, Desktop: left side */}
+      <div className="lg:hidden fixed inset-0 w-full h-full z-0">
+        <Image
+          src="/conectando.png"
+          alt="KADESH - Conectando vidas, rescatando almas"
+          fill
+          className="object-cover blur-xs"
+          priority
+        />
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/40"></div>
+      </div>
+
+      {/* Left side - Image (Desktop only) */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <Image
           src="/conectando.png"
@@ -64,7 +77,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right side - Form */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 sm:p-8 lg:p-12">
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 sm:p-8 lg:p-12 relative z-10">
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="flex justify-center mb-10">
@@ -152,7 +165,7 @@ export default function LoginPage() {
                   )}
                 </button>
 
-                <div className="relative my-6">
+                {/* <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-[#e0e0e0] dark:border-[#3a3a3a]"></div>
                   </div>
@@ -187,7 +200,7 @@ export default function LoginPage() {
                     />
                   </svg>
                   Continuar con Google
-                </button>
+                </button> */}
               </form>
             </Tab>
 
@@ -310,7 +323,7 @@ export default function LoginPage() {
                   )}
                 </button>
 
-                <div className="relative my-6">
+                {/* <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-[#e0e0e0] dark:border-[#3a3a3a]"></div>
                   </div>
@@ -345,7 +358,7 @@ export default function LoginPage() {
                     />
                   </svg>
                   Continuar con Google
-                </button>
+                </button> */}
               </form>
             </Tab>
           </Tabs>

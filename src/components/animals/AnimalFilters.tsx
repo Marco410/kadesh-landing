@@ -72,7 +72,7 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
           {/* Status */}
           <div>
             <label className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1.5">
-              Estado
+              Estatus
             </label>
             <div className="flex flex-wrap gap-1.5">
               {ANIMAL_LOGS_OPTIONS.map((status) => (
@@ -118,7 +118,7 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
             <input
               id="location-filter"
               type="text"
-              placeholder="Buscar ubicación..."
+              placeholder="Buscar por calle, ciudad, estado o país..."
               value={filters.location || ''}
               onChange={(e) => onFiltersChange({ location: e.target.value || null })}
               className="w-full px-3 py-1.5 text-sm rounded-md border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"

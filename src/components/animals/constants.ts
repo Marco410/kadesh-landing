@@ -55,6 +55,38 @@ export const getStatusColor = (status: string) => {
   }
 };
 
+export const getStatusLabel = (status: string) => {
+  switch (status) {
+    case 'register':
+      return 'Registrado';
+    case 'adopted':
+      return 'Adoptado';
+    case 'abandoned':
+      return 'Abandonado';
+    case 'rescued':
+      return 'Rescatado';
+    case 'in_family':
+      return 'En familia';
+    case 'lost':
+      return 'Perdido';
+    case 'found':
+      return 'Encontrado';
+    default:
+      return status;
+  }
+};
+
+export const getTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    perro: 'Perro',
+    gato: 'Gato',
+    conejo: 'Conejo',
+    ave: 'Ave',
+    otro: 'Otro',
+  };
+  return labels[type] || type;
+};
+
 
 // Dark mode map styles
 export const darkMapStyles = [

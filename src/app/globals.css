@@ -124,6 +124,8 @@ html.dark {
 }
 
 /* Google Maps InfoWindow dark mode styles */
+
+
 html.dark .gm-style .gm-style-iw-c {
   background-color: #1e1e1e !important;
   border-radius: 12px !important;
@@ -133,36 +135,42 @@ html.dark .gm-style .gm-style-iw-c {
 
 html.dark .gm-style .gm-style-iw-d {
   background-color: #1e1e1e !important;
-  overflow: hidden !important;
   border-radius: 12px !important;
 }
+/* Solo ocultar overflow cuando sí hay desbordamiento */
+html .gm-style .gm-style-iw-d {
+  overflow: auto !important;
+}
+
+html .gm-style-iw-ch, html.dark .gm-style-iw-ch{
+  display: none !important;
+}
+
 
 html.dark .gm-style .gm-style-iw {
   background-color: #1e1e1e !important;
   border-radius: 12px !important;
 }
 
+html.dark .gm-style-iw-chr button .gm-ui-hover-effect {
+  display: none !important;
+}
+
+html .gm-style-iw-chr button .gm-ui-hover-effect {
+  display: none !important;
+}
+
+html .gm-style .gm-ui-hover-effect,
+html .gm-style-iw .gm-ui-hover-effect,
+html .gm-style-iw-c .gm-ui-hover-effect {
+  display: none !important;
+}
+
 /* InfoWindow close button in dark mode */
 html.dark .gm-style .gm-ui-hover-effect,
 html.dark .gm-style-iw .gm-ui-hover-effect,
 html.dark .gm-style-iw-c .gm-ui-hover-effect {
-  opacity: 1 !important;
-  top: 10px !important;
-  right: 10px !important;
-  width: 36px !important;
-  height: 36px !important;
-  min-width: 36px !important;
-  min-height: 36px !important;
-  max-width: 36px !important;
-  max-height: 36px !important;
-  background-color: rgba(255, 255, 255, 0.2) !important;
-  border-radius: 50% !important;
-  display: block !important;
-  transition: all 0.2s ease !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
-  position: absolute !important;
+  display: none !important;
 }
 
 html.dark .gm-style .gm-ui-hover-effect:hover,

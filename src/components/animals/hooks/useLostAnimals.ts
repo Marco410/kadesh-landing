@@ -291,6 +291,8 @@ export function useLostAnimals(
 
   const updateFilters = (newFilters: Partial<AnimalFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
+    console.log('newFilters', newFilters);
+    console.log('filters', filters);
     setCurrentPage(1);
   };
 

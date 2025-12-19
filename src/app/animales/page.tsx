@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { Routes } from 'kadesh/core/routes';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AddCircleIcon } from '@hugeicons/core-free-icons';
+import { useTheme } from 'next-themes';
 
 export default function LostAnimalsPage() {
   const router = useRouter();
@@ -19,6 +20,13 @@ export default function LostAnimalsPage() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(undefined);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const isDarkMode = mounted && resolvedTheme === 'dark';
 
   // Get user location on mount
   useEffect(() => {
@@ -215,7 +223,7 @@ export default function LostAnimalsPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <h3 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] mb-2">
-                  No se encontraron animales
+                  No se encontraron animales reportados
                 </h3>
                 <p className="text-sm text-[#616161] dark:text-[#b0b0b0] mb-4">
                   {locationError 
@@ -238,6 +246,7 @@ export default function LostAnimalsPage() {
                     onClick={() => handleAnimalClick(animal)}
                   >
                     <AnimalCard
+                      isDarkMode={isDarkMode}
                       animal={animal}
                       index={index}
                       variant="horizontal"

@@ -8,6 +8,14 @@ import { LostAnimal, AnimalFilters, AnimalType } from '../types';
 const DEFAULT_ANIMALS_PER_PAGE = 12;
 const DEFAULT_RADIUS = 50; // Default radius in km
 
+// Function to normalize text by removing accents
+function normalizeText(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .toLowerCase();
+}
+
 // Interface matching the new getNearbyAnimals response
 interface NearbyAnimal {
   id: string;
@@ -151,7 +159,7 @@ export function useLostAnimals(
       const locationLower = filters.location.toLowerCase();
       // Simple heuristic: if it's a short string, assume city
       if (locationLower.length < 20) {
-        input.city = filters.location;
+        input.location = filters.location;
       }
     }
 
@@ -180,22 +188,25 @@ export function useLostAnimals(
 
     // Client-side filtering for location text search (more flexible than server-side)
     if (filters.location) {
+      const normalizedLocationFilter = normalizeText(filters.location);
       animals = animals.filter((animal: LostAnimal) =>
-        animal.location.toLowerCase().includes(filters.location!.toLowerCase())
+        normalizeText(animal.location).includes(normalizedLocationFilter)
       );
     }
 
     // Filter by name (client-side)
     if (filters.name) {
+      const normalizedNameFilter = normalizeText(filters.name);
       animals = animals.filter((animal: LostAnimal) =>
-        animal.name.toLowerCase().includes(filters.name!.toLowerCase())
+        normalizeText(animal.name).includes(normalizedNameFilter)
       );
     }
 
     // Filter by breed (client-side)
     if (filters.breed) {
+      const normalizedBreedFilter = normalizeText(filters.breed);
       animals = animals.filter((animal: LostAnimal) =>
-        animal.breed?.toLowerCase().includes(filters.breed!.toLowerCase())
+        animal.breed && normalizeText(animal.breed).includes(normalizedBreedFilter)
       );
     }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@apollo/client';
 import { 
@@ -16,7 +16,7 @@ import LocationPicker from 'kadesh/components/animals/nuevo/LocationPicker';
 import AnimalNameInput from 'kadesh/components/animals/nuevo/AnimalNameInput';
 import AnimalTypeSelector from 'kadesh/components/animals/nuevo/AnimalTypeSelector';
 import { motion } from 'framer-motion';
-import { ANIMAL_LOGS_OPTIONS, ANIMAL_SEX_OPTIONS } from 'kadesh/components/animals/constants';
+import { ANIMAL_LOGS_OPTIONS, ANIMAL_SEX_OPTIONS, getStatusLabel, statusIcons } from 'kadesh/components/animals/constants';
 
 interface ImagePreview {
   file: File;
@@ -34,6 +34,10 @@ export default function NewAnimalForm() {
   const [animalBreedId, setAnimalBreedId] = useState<string>('');
   const [sex, setSex] = useState('unknown');
   const [status, setStatus] = useState('lost');
+  const [physicalDescription, setPhysicalDescription] = useState('');
+  const [age, setAge] = useState('');
+  const [color, setColor] = useState('');
+  const [size, setSize] = useState('');
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
   const [address, setAddress] = useState('');
@@ -42,7 +46,37 @@ export default function NewAnimalForm() {
   const [country, setCountry] = useState('');
   const [notes, setNotes] = useState('');
   const [lastSeen, setLastSeen] = useState(false);
+  const [dateStatus, setDateStatus] = useState('');
+  const [isToday, setIsToday] = useState(true);
   const [images, setImages] = useState<ImagePreview[]>([]);
+
+  // Helper function to format date for datetime-local input
+  const formatDateTimeLocal = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  // Initialize dateStatus with current date/time
+  useEffect(() => {
+    if (isToday) {
+      setDateStatus(formatDateTimeLocal(new Date()));
+    }
+  }, [isToday]);
+
+  // Update dateStatus every minute when isToday is true
+  useEffect(() => {
+    if (!isToday) return;
+
+    const interval = setInterval(() => {
+      setDateStatus(formatDateTimeLocal(new Date()));
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [isToday]);
 
 
   const { data: animalBreedsData, loading: loadingBreeds } = useQuery(GET_ANIMAL_BREEDS_QUERY, {
@@ -118,6 +152,10 @@ export default function NewAnimalForm() {
           data: {
             name,
             sex,
+            physical_description: physicalDescription?.trim() || null,
+            age: age?.trim() || null,
+            color: color?.trim() || null,
+            size: size?.trim() || null,
             animal_type: { connect: { id: animalTypeId } },
             animal_breed: { connect: { id: animalBreedId } },
             user: { connect: { id: user.id } },
@@ -144,6 +182,7 @@ export default function NewAnimalForm() {
             state: state?.trim() || null,
             country: country?.trim() || null,
             last_seen: lastSeen,
+            date_status: dateStatus ? new Date(dateStatus).toISOString() : null,
           },
         },
       });
@@ -222,6 +261,69 @@ export default function NewAnimalForm() {
             displayKey="breed"
           />
 
+          {/* Physical Description */}
+          <div>
+            <label htmlFor="physicalDescription" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
+              Descripción Física
+            </label>
+            <textarea
+              id="physicalDescription"
+              value={physicalDescription}
+              onChange={(e) => setPhysicalDescription(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 resize-none"
+              placeholder="Ej: Pelaje corto, orejas caídas, cola larga..."
+            />
+          </div>
+
+          {/* Age, Color, Size - Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Age */}
+            <div>
+              <label htmlFor="age" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
+                Edad
+              </label>
+              <input
+                id="age"
+                type="text"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+                placeholder="Ej: 2 años, cachorro..."
+              />
+            </div>
+
+            {/* Color */}
+            <div>
+              <label htmlFor="color" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
+                Color
+              </label>
+              <input
+                id="color"
+                type="text"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+                placeholder="Ej: Marrón, blanco y negro..."
+              />
+            </div>
+
+            {/* Size */}
+            <div>
+              <label htmlFor="size" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
+                Tamaño
+              </label>
+              <input
+                id="size"
+                type="text"
+                value={size}
+                onChange={(e) => setSize(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+                placeholder="Ej: Pequeño, mediano, grande..."
+              />
+            </div>
+          </div>
+
           {/* Sex */}
           <div>
             <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
@@ -275,12 +377,7 @@ export default function NewAnimalForm() {
             </label>
             <div className="flex flex-wrap gap-4">
               {ANIMAL_LOGS_OPTIONS.filter((option) => option.value === 'abandoned' || option.value === 'found' || option.value === 'lost' || option.value === 'rescued').map((option) => {
-                const statusIcons: Record<string, string> = {
-                  abandoned: '🚫',
-                  found: '✅',
-                  lost: '🔍',
-                  rescued: '🆘',
-                };
+               
                 const icon = statusIcons[option.value] || '📋';
 
                 return (
@@ -316,6 +413,38 @@ export default function NewAnimalForm() {
             </div>
           </div>
 
+           {/* Date Status */}
+           <div>
+            <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
+              Fecha de <strong>{getStatusLabel(status)}</strong>
+            </label>
+            <div className="flex items-center gap-3 mb-3">
+              <input
+                id="isToday"
+                type="checkbox"
+                checked={isToday}
+                onChange={(e) => setIsToday(e.target.checked)}
+                className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+              />
+              <label htmlFor="isToday" className="text-sm font-medium text-[#212121] dark:text-[#ffffff] cursor-pointer">
+                Fue hoy
+              </label>
+            </div>
+            <input
+              id="dateStatus"
+              type="datetime-local"
+              value={dateStatus}
+              onChange={(e) => setDateStatus(e.target.value)}
+              disabled={isToday}
+              className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-[#f5f5f5] dark:disabled:bg-[#2a2a2a]"
+            />
+            <p className="mt-1 text-xs text-[#616161] dark:text-[#b0b0b0]">
+              {isToday 
+                ? 'Fecha y hora actual (se actualiza automáticamente)'
+                : 'Fecha y hora en que ocurrió este estado (opcional)'}
+            </p>
+          </div>
+
           {/* Location - Map Picker */}
           <LocationPicker
             lat={lat}
@@ -335,6 +464,8 @@ export default function NewAnimalForm() {
               setCountry(newCountry);
             }}
           />
+
+         
 
           {/* Last Seen Checkbox */}
           <div className="flex items-center gap-2">

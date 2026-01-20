@@ -193,6 +193,60 @@ export const CREATE_ANIMAL_MULTIMEDIA_MUTATION = gql`
   }
 `;
 
+export const GET_ANIMAL_QUERY = gql`
+  query GetAnimal($where: AnimalWhereUniqueInput!) {
+    animal(where: $where) {
+      animal_breed {
+        breed
+        animal_type {
+          name
+        }
+      }
+      createdAt
+      id
+      logs {
+        address
+        city
+        country
+        createdAt
+        id
+        last_seen
+        lat
+        lng
+        notes
+        state
+        status
+        date_status
+      }
+      multimedia {
+        image {
+          url
+        }
+      }
+      name
+      sex
+      physical_description
+      age
+      color
+      size
+      user {
+        id
+        name
+        email
+        phone
+        username
+        verified
+        profileImage {
+          url
+        }
+        secondLastName
+        lastName
+        createdAt
+      }
+    }
+  }
+`;
+
 // Mock data for development
 export const MOCK_LOST_ANIMALS = [
   {
@@ -271,3 +325,139 @@ export const MOCK_LOST_ANIMALS = [
     isFavorite: false,
   },
 ];
+
+// Animal Comments Queries and Mutations
+export const GET_ANIMAL_COMMENTS_QUERY = gql`
+  query GetAnimalComments($where: AnimalCommentWhereInput!, $orderBy: [AnimalCommentOrderByInput!]) {
+    animalComments(where: $where, orderBy: $orderBy) {
+      id
+      comment
+      createdAt
+      animal {
+        id
+        name
+      }
+      user {
+        id
+        name
+        lastName
+        secondLastName
+        username
+        email
+        verified
+        profileImage {
+          url
+        }
+        createdAt
+      }
+    }
+  }
+`;
+
+export interface AnimalCommentUser {
+  id: string;
+  name: string;
+  lastName?: string | null;
+  secondLastName?: string | null;
+  username: string;
+  email?: string | null;
+  verified?: boolean | null;
+  profileImage?: {
+    url: string;
+  } | null;
+  createdAt: string;
+}
+
+export interface AnimalCommentAnimal {
+  id: string;
+  name: string;
+}
+
+export interface AnimalComment {
+  id: string;
+  comment: string;
+  animal: AnimalCommentAnimal;
+  user: AnimalCommentUser | null;
+  createdAt: string;
+}
+
+export interface GetAnimalCommentsResponse {
+  animalComments: AnimalComment[];
+}
+
+export interface GetAnimalCommentsVariables {
+  where: {
+    animal: {
+      id: {
+        equals: string;
+      };
+    };
+  };
+  orderBy?: Array<{
+    createdAt?: 'asc' | 'desc';
+  }>;
+}
+
+export const CREATE_ANIMAL_COMMENT_MUTATION = gql`
+  mutation CreateAnimalComment($data: AnimalCommentCreateInput!) {
+    createAnimalComment(data: $data) {
+      comment
+      createdAt
+      id
+      user {
+        name
+      }
+    }
+  }
+`;
+
+export interface CreateAnimalCommentVariables {
+  data: {
+    comment: string;
+    animal: {
+      connect: {
+        id: string;
+      };
+    };
+    user: {
+      connect: {
+        id: string;
+      };
+    } | null;
+  };
+}
+
+export interface CreateAnimalCommentResponse {
+  createAnimalComment: {
+    id: string;
+    comment: string;
+    createdAt: string;
+    user: {
+      name: string;
+    };
+  };
+}
+
+export const DELETE_ANIMAL_COMMENT_MUTATION = gql`
+  mutation DeleteAnimalComment($where: AnimalCommentWhereUniqueInput!) {
+    deleteAnimalComment(where: $where) {
+      comment
+      createdAt
+      id
+    }
+  }
+`;
+
+export interface DeleteAnimalCommentVariables {
+  where: {
+    id: string;
+  };
+}
+
+export interface DeleteAnimalCommentResponse {
+  deleteAnimalComment: {
+    id: string;
+    comment: string;
+    createdAt: string;
+  };
+}

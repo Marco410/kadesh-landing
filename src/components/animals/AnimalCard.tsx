@@ -8,6 +8,7 @@ import { formatDate } from 'kadesh/utils/format-date';
 import { Routes } from 'kadesh/core/routes';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { SentIcon } from '@hugeicons/core-free-icons';
+import { getStatusColor, getStatusLabel, getTypeLabel } from './constants';
 
 interface AnimalCardProps {
   animal: LostAnimal;
@@ -19,72 +20,6 @@ interface AnimalCardProps {
   isDarkMode: boolean;
 }
 
-const getStatusLabel = (status: string) => {
-  switch (status) {
-    case 'register':
-      return 'Registrado';
-    case 'adopted':
-      return 'Adoptado';
-    case 'abandoned':
-      return 'Abandonado';
-    case 'rescued':
-      return 'Rescatado';
-    case 'in_family':
-      return 'En familia';
-    case 'lost':
-      return 'Perdido';
-    case 'found':
-      return 'Encontrado';
-    // Mantener compatibilidad con valores antiguos
-    case 'perdido':
-      return 'Perdido';
-    case 'encontrado':
-      return 'Encontrado';
-    case 'en_adopcion':
-      return 'En Adopción';
-    default:
-      return status;
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'register':
-      return 'bg-gray-500 text-white';
-    case 'adopted':
-      return 'bg-purple-500 text-white';
-    case 'abandoned':
-      return 'bg-red-600 text-white';
-    case 'rescued':
-      return 'bg-orange-500 text-white';
-    case 'in_family':
-      return 'bg-blue-500 text-white';
-    case 'lost':
-      return 'bg-red-500 text-white';
-    case 'found':
-      return 'bg-green-500 text-white';
-    // Mantener compatibilidad con valores antiguos
-    case 'perdido':
-      return 'bg-red-500 text-white';
-    case 'encontrado':
-      return 'bg-green-500 text-white';
-    case 'en_adopcion':
-      return 'bg-blue-500 text-white';
-    default:
-      return 'bg-gray-500 text-white';
-  }
-};
-
-const getTypeLabel = (type: string) => {
-  const labels: Record<string, string> = {
-    perro: 'Perro',
-    gato: 'Gato',
-    conejo: 'Conejo',
-    ave: 'Ave',
-    otro: 'Otro',
-  };
-  return labels[type] || type;
-};
 
 export default function AnimalCard({ 
   animal, 
@@ -133,7 +68,7 @@ export default function AnimalCard({
             <h3 className="text-sm font-bold text-[#212121] dark:text-[#ffffff] truncate">
               {animal.name}
             </h3>
-            <div className={`px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0 ${getStatusColor(animal.status)}`}>
+            <div className={`px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0` } style={{ backgroundColor: getStatusColor(animal.status) }}>
               {getStatusLabel(animal.status)}
             </div>
           </div>
@@ -247,7 +182,7 @@ export default function AnimalCard({
         )}
         
         <div className="absolute top-4 right-4 flex gap-2">
-          <div className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(animal.status)}`}>
+          <div className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(animal.status)}`} >
             {getStatusLabel(animal.status)}
           </div>
           {onFavoriteToggle && (

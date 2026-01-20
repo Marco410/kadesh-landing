@@ -76,6 +76,13 @@ export const getStatusLabel = (status: string) => {
   }
 };
 
+export const statusIcons: Record<string, string> = {
+  abandoned: '🚫',
+  found: '✅',
+  lost: '🔍',
+  rescued: '🆘',
+};
+
 export const getTypeLabel = (type: string) => {
   const labels: Record<string, string> = {
     perro: 'Perro',
@@ -184,3 +191,4 @@ export const lightMapStyles = [
     stylers: [{ visibility: 'off' }],
   },
 ];
+

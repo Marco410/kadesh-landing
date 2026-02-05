@@ -10,6 +10,7 @@ import {
 } from 'kadesh/utils/queries';
 import { useUser } from 'kadesh/utils/UserContext';
 import { Routes } from 'kadesh/core/routes';
+import type { AuthenticatedItem } from 'kadesh/utils/types';
 
 interface UseLoginOptions {
   redirectTo?: string | null;
@@ -17,7 +18,7 @@ interface UseLoginOptions {
 
 export function useLogin(options?: UseLoginOptions) {
   const router = useRouter();
-  const { refreshUser } = useUser();
+  const { refreshUser, setUser } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -33,22 +34,23 @@ export function useLogin(options?: UseLoginOptions) {
       }
 
       if (data.authenticateUserWithPassword.__typename === 'UserAuthenticationWithPasswordSuccess') {
-        // Guardar el sessionToken en localStorage y como cookie
-        const sessionToken = data.authenticateUserWithPassword.sessionToken;
+        const { sessionToken, item } = data.authenticateUserWithPassword;
         if (sessionToken && typeof window !== 'undefined') {
-          // Guardar en localStorage para uso en headers
           localStorage.setItem('keystonejs-session-token', sessionToken);
-          
-          // También guardar como cookie por si acaso
           const expires = new Date();
           expires.setTime(expires.getTime() + 30 * 24 * 60 * 60 * 1000);
           const isSecure = window.location.protocol === 'https:';
           document.cookie = `keystonejs-session=${sessionToken}; expires=${expires.toUTCString()}; path=/; SameSite=Lax${isSecure ? '; Secure' : ''}`;
         }
-        
-        // Refresh user context to get the authenticated user
+        const userFromLogin: AuthenticatedItem = {
+          ...item,
+          roles: item.roles?.length ? item.roles[0] : null,
+          birthday: (item as { birthday?: string | null }).birthday ?? null,
+          age: (item as { age?: string | null }).age ?? null,
+          createdAt: (item as { createdAt?: string }).createdAt ?? new Date().toISOString(),
+        };
+        setUser(userFromLogin);
         await refreshUser();
-        // Redireccionar según el redirectTo o a la página de donde viene
         if (options?.redirectTo) {
           router.push(options.redirectTo);
         } else if (window && window.history.length > 1) {

@@ -1,5 +1,3 @@
-import { Author } from "kadesh/components/blog/types";
-
 export type AuthenticatedItem = User;
 
 export interface User {

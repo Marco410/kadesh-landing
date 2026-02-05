@@ -11,7 +11,11 @@ import {
 import { useUser } from 'kadesh/utils/UserContext';
 import { Routes } from 'kadesh/core/routes';
 
-export function useLogin() {
+interface UseLoginOptions {
+  redirectTo?: string | null;
+}
+
+export function useLogin(options?: UseLoginOptions) {
   const router = useRouter();
   const { refreshUser } = useUser();
   const [email, setEmail] = useState('');
@@ -44,8 +48,10 @@ export function useLogin() {
         
         // Refresh user context to get the authenticated user
         await refreshUser();
-        // Redireccionar a la página de donde viene
-        if (window && window.history.length > 1) {
+        // Redireccionar según el redirectTo o a la página de donde viene
+        if (options?.redirectTo) {
+          router.push(options.redirectTo);
+        } else if (window && window.history.length > 1) {
           router.back();
         } else {
           router.push(Routes.home);

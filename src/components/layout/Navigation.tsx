@@ -17,6 +17,7 @@ interface DropdownLink {
 }
 
 const DROPDOWN_LINKS: DropdownLink[] = [
+  { label: 'Home', href: Routes.home, anchor: null },
   { label: '¿Qué es KADESH?', href: Routes.navigation.whatIsKadesh, anchor: Routes.navigation.whatIsKadesh },
   { label: 'Animales perdidos', href: Routes.navigation.lostAnimals, anchor: Routes.navigation.lostAnimals },
   { label: 'Veterinarias', href: Routes.navigation.veterinarians, anchor: Routes.navigation.veterinarians },

@@ -1,0 +1,248 @@
+"use client";
+
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { LostAnimal } from './types';
+import { formatDate } from 'kadesh/utils/format-date';
+import { Routes } from 'kadesh/core/routes';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { SentIcon } from '@hugeicons/core-free-icons';
+import { getStatusColor, getStatusLabel, getTypeLabel } from './constants';
+
+interface AnimalCardProps {
+  animal: LostAnimal;
+  index: number;
+  onFavoriteToggle?: (animal: LostAnimal) => void;
+  isSelected?: boolean;
+  onClick?: () => void;
+  variant?: 'vertical' | 'horizontal';
+  isDarkMode: boolean;
+}
+
+
+export default function AnimalCard({ 
+  animal, 
+  index, 
+  onFavoriteToggle,
+  isSelected = false,
+  onClick,
+  variant = 'vertical',
+  isDarkMode
+}: AnimalCardProps) {
+  // Horizontal variant for map view
+  if (variant === 'horizontal') {
+    return (
+      <motion.article
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3, delay: index * 0.05 }}
+        onClick={onClick}
+        className={`rounded-lg overflow-hidden transition-all duration-200 flex flex-row cursor-pointer
+          bg-white shadow-md hover:shadow-lg
+          dark:bg-[#2a2a2a] dark:shadow-md dark:shadow-black/30 dark:hover:shadow-lg dark:hover:shadow-black/40
+          ${isSelected 
+            ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-900/20 dark:border-orange-500' 
+            : 'border-[#e5e5e5] hover:border-[#d0d0d0] dark:border-[#404040] dark:hover:border-[#505050]'
+          }`}
+      >
+        {/* Image */}
+        <div className="relative w-24 flex-shrink-0 bg-gray-200 dark:bg-gray-800">
+          {animal.image?.url ? (
+            <Image
+              src={animal.image.url}
+              alt={animal.name}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <h3 className="text-sm font-bold text-[#212121] dark:text-[#ffffff] truncate">
+              {animal.name}
+            </h3>
+            <div className={`px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0 text-white` } style={{ backgroundColor: getStatusColor(animal.status) }}>
+              {getStatusLabel(animal.status)}
+            </div>
+          </div>
+
+          <div className="space-y-1 text-[#616161] dark:text-[#b0b0b0]">
+            <p className="text-xs truncate">
+              {getTypeLabel(animal.type)}
+              {animal.breed && ` • ${animal.breed}`}
+            </p>
+            <p className="text-xs flex items-center gap-1 truncate">
+              <span>📍</span>
+              <span className="truncate">{animal.location}</span>
+            </p>
+            <p className="text-xs flex items-center gap-1">
+              <span>🕐</span>
+              {formatDate(animal.createdAt)}
+            </p>
+            <p className="text-xs flex items-center gap-1">
+              <span>🚗</span>
+              {typeof animal.distance === 'number' && !Number.isNaN(animal.distance)
+                ? animal.distance < 1
+                  ? `${Math.round(animal.distance * 1000)} m`
+                  : `${animal.distance.toFixed(1)} km`
+                : '—'}
+            </p>
+            <Link
+            href={Routes.animals.detail(animal.id)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '6px 10px',
+              borderRadius: '8px',
+              backgroundColor: isDarkMode 
+                ? 'rgba(249, 115, 22, 0.2)' 
+                : 'rgba(249, 115, 22, 0.1)',
+              color: isDarkMode ? '#fb923c' : '#ea580c',
+              textDecoration: 'none',
+              fontSize: '12px',
+              fontWeight: '600',
+              transition: 'all 0.2s ease',
+              border: 'none',
+              cursor: 'pointer',
+              gap: '4px',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode 
+                ? 'rgba(249, 115, 22, 0.3)' 
+                : 'rgba(249, 115, 22, 0.15)';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode 
+                ? 'rgba(249, 115, 22, 0.2)' 
+                : 'rgba(249, 115, 22, 0.1)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+            aria-label="Ver detalles"
+          >
+            <HugeiconsIcon
+              icon={SentIcon}
+              size={14}
+              color={isDarkMode ? '#fb923c' : '#ea580c'}
+            />
+            <span>Detalles</span>
+          </Link>
+          </div>
+        </div>
+
+        {/* Favorite button */}
+        {onFavoriteToggle && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onFavoriteToggle(animal);
+            }}
+            className={`p-2 flex-shrink-0 self-start mt-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all ${
+              animal.isFavorite ? 'text-red-500' : 'text-gray-400'
+            }`}
+          >
+            <svg className="w-4 h-4" fill={animal.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        )}
+      </motion.article>
+    );
+  }
+
+  // Vertical variant (original)
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      whileHover={{ y: -5 }}
+      className="bg-white dark:bg-[#2a2a2a] rounded-xl overflow-hidden shadow-lg hover:shadow-xl dark:shadow-lg dark:shadow-black/30 dark:hover:shadow-xl dark:hover:shadow-black/40 border border-transparent dark:border-[#404040] transition-all duration-300 flex flex-col"
+    >
+      <div className="relative w-full bg-gray-200 dark:bg-gray-800">
+        {animal.image?.url ? (
+          <Image
+            src={animal.image.url}
+            alt={animal.name}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-400">
+            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        )}
+        
+        <div className="absolute top-4 right-4 flex gap-2">
+          <div
+            className="px-3 py-1 rounded-full text-sm font-semibold text-white"
+            style={{ backgroundColor: getStatusColor(animal.status) }}
+          >
+            {getStatusLabel(animal.status)}
+          </div>
+          {onFavoriteToggle && (
+            <button
+              onClick={() => onFavoriteToggle(animal)}
+              className={`p-2 rounded-full bg-white/90 dark:bg-[#1e1e1e]/90 backdrop-blur-sm hover:bg-white dark:hover:bg-[#1e1e1e] transition-all ${
+                animal.isFavorite ? 'text-red-500' : 'text-gray-400'
+              }`}
+            >
+              <svg className="w-5 h-5" fill={animal.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="p-6 flex-1 flex flex-col">
+        <h3 className="text-2xl font-bold text-[#212121] dark:text-[#ffffff] mb-2">
+          {animal.name}
+        </h3>
+
+        <div className="space-y-2 text-[#616161] dark:text-[#b0b0b0] mb-4">
+          <p className="flex items-center gap-2 text-sm">
+            <span className="font-medium">Tipo:</span>
+            {getTypeLabel(animal.type)}
+            {animal.breed && ` • ${animal.breed}`}
+          </p>
+          <p className="flex items-center gap-2 text-sm">
+            <span>📍</span>
+            {animal.location}
+          </p>
+          <p className="flex items-center gap-2 text-sm">
+            <span>🕐</span>
+            {formatDate(animal.createdAt)}
+          </p>
+        </div>
+
+        {animal.description && (
+          <p className="text-sm text-[#616161] dark:text-[#b0b0b0] mb-4 line-clamp-2">
+            {animal.description}
+          </p>
+        )}
+
+        <div className="mt-auto pt-4 border-t border-[#e0e0e0] dark:border-[#3a3a3a]">
+          <Link
+            href={`/animales/${animal.id}`}
+            className="block w-full text-center px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors"
+          >
+            Ver detalles
+          </Link>
+        </div>
+      </div>
+    </motion.article>
+  );
+}

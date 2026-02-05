@@ -59,7 +59,7 @@ export default function PostActions({ postId, viewsCount, postUrl, postTitle }: 
   const handleGoToAuth = () => {
     setShowAuthModal(false);
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-    router.push(`${Routes.auth.login}?redirect=${currentPath}`);
+    router.push(`${Routes.auth.login}?redirect=${currentPath}&tab=register`);
   };
 
   const handleCommentsClick = () => {

@@ -1,7 +1,6 @@
 "use client";
 
-import { motion } from 'framer-motion';
-import { SOCIAL_LINKS } from 'kadesh/constants/const';
+import { SOCIAL_LINKS } from 'kadesh/constants/constans';
 import Image from 'next/image';
 
 export default function Footer() {

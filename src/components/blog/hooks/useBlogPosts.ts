@@ -21,13 +21,23 @@ export function useBlogPosts(
 
   const skip = (currentPage - 1) * POSTS_PER_PAGE;
 
+  // Always include published: { equals: true } in the where clause
+  const buildWhereClause = (baseWhere: PostWhereInput | null): PostWhereInput => {
+    return {
+      ...(baseWhere || {}),
+      published: {
+        equals: true,
+      },
+    };
+  };
+
   const { data, loading, error, refetch } = useQuery<GetPostsQueryResult, GetPostsQueryVariables>(
     GET_POSTS_QUERY,
     {
       variables: {
         take: POSTS_PER_PAGE,
         skip,
-        where: where || ({} as any),
+        where: buildWhereClause(where),
         orderBy: orderBy || ([{ publishedAt: 'desc' }] as any),
       },
       fetchPolicy: 'cache-and-network',
@@ -60,8 +70,17 @@ export function useBlogPosts(
     setWhere(newWhere);
     setOrderBy(newOrderBy);
     setCurrentPage(1);
+    
+    // Build where clause with published filter
+    const whereClause = {
+      ...(newWhere || {}),
+      published: {
+        equals: true,
+      },
+    };
+    
     refetch({
-      //where: newWhere || {},
+      where: whereClause,
       orderBy: newOrderBy || [{ publishedAt: 'desc' }],
       skip: 0,
       take: POSTS_PER_PAGE,

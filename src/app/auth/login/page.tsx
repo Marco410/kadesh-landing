@@ -1,13 +1,18 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Tabs, Tab } from '@heroui/tabs';
 import Logo from 'kadesh/components/shared/Logo';
 import { useLogin, useRegister } from '../../../components/auth/hooks';
 
 export default function LoginPage() {
-  const [selectedTab, setSelectedTab] = useState('login');
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams.get('redirect') || null;
+  const initialTab = searchParams.get('tab') || 'login';
+  
+  const [selectedTab, setSelectedTab] = useState(initialTab);
   const [successMessage, setSuccessMessage] = useState('');
 
   const {
@@ -18,7 +23,7 @@ export default function LoginPage() {
     error: loginError,
     loading: loginLoading,
     handleSubmit: handleLogin,
-  } = useLogin();
+  } = useLogin({ redirectTo: redirectPath });
 
   const {
     name: registerName,
@@ -38,11 +43,18 @@ export default function LoginPage() {
     handleSubmit: handleRegister,
   } = useRegister({
     onSuccess: () => {
-      // Switch to login tab after successful registration
-      setSelectedTab('login');
-      // Show success message
-      setSuccessMessage('Registro exitoso, ya puedes iniciar sesión con tus credenciales');
+      if (redirectPath) {
+        // If there's a redirect, automatically login and redirect
+        setSuccessMessage('Registro exitoso. Iniciando sesión...');
+        // Auto-login will be handled by useRegister
+      } else {
+        // Switch to login tab after successful registration
+        setSelectedTab('login');
+        // Show success message
+        setSuccessMessage('Registro exitoso, ya puedes iniciar sesión con tus credenciales');
+      }
     },
+    redirectTo: redirectPath,
   });
 
   const handleGoogleLogin = () => {
@@ -95,9 +107,9 @@ export default function LoginPage() {
               }}
               className="w-full"
               classNames={{
-                tabList: "w-full bg-[#f5f5f5] dark:bg-[#2a2a2a] rounded-lg p-1",
-                tab: "flex-1 text-sm font-semibold data-[selected=true]:bg-white dark:data-[selected=true]:bg-[#1e1e1e] data-[selected=true]:text-orange-500 dark:data-[selected=true]:text-orange-400",
-                tabContent: "text-[#616161] dark:text-[#b0b0b0]",
+                tabList: "w-full bg-[#f5f5f5] dark:bg-[#2a2a2a] rounded-lg p-1 gap-1",
+                tab: "flex-1 text-sm font-semibold rounded-md transition-all duration-200 data-[selected=true]:bg-orange-500 dark:data-[selected=true]:bg-orange-500 data-[selected=true]:text-white dark:data-[selected=true]:text-white data-[hover=true]:bg-[#e8e8e8] dark:data-[hover=true]:bg-[#353535] data-[selected=false]:text-[#616161] dark:data-[selected=false]:text-[#b0b0b0]",
+                tabContent: "data-[selected=true]:!text-white dark:data-[selected=true]:!text-white data-[selected=false]:text-[#616161] dark:data-[selected=false]:text-[#b0b0b0]",
                 panel: "mt-6",
               }}
             >
@@ -124,7 +136,7 @@ export default function LoginPage() {
                   <input
                     id="login-email"
                     type="email"
-                    placeholder="ejemplo@kadesh.com.mx"
+                    placeholder="tu@kadesh.com.mx"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     required
@@ -251,7 +263,7 @@ export default function LoginPage() {
                   <input
                     id="register-email"
                     type="email"
-                    placeholder="ejemplo@kadesh.com.mx"
+                    placeholder="tu@kadesh.com.mx"
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
                     required

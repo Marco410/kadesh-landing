@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import { motion, useScroll, AnimatePresence } from 'framer-motion';
 import { useRef, useState } from 'react';
-import { SOCIAL_LINKS } from 'kadesh/constants/const';
+import { SOCIAL_LINKS } from 'kadesh/constants/constans';
 import Navigation from './Navigation';
 
 const MOCKUP_IMAGES = [

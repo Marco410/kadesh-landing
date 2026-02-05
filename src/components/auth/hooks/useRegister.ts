@@ -1,18 +1,26 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useMutation } from '@apollo/client';
 import {
   CREATE_USER_MUTATION,
+  AUTHENTICATE_USER_MUTATION,
   CreateUserVariables,
-  CreateUserResponse
+  CreateUserResponse,
+  AuthenticateUserVariables,
+  AuthenticateUserResponse
 } from 'kadesh/utils/queries';
+import { useUser } from 'kadesh/utils/UserContext';
 
 interface UseRegisterOptions {
   onSuccess?: () => void;
+  redirectTo?: string | null;
 }
 
 export function useRegister(options?: UseRegisterOptions) {
+  const router = useRouter();
+  const { refreshUser } = useUser();
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -21,11 +29,60 @@ export function useRegister(options?: UseRegisterOptions) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
 
+  const [authenticateUser] = useMutation<
+    AuthenticateUserResponse,
+    AuthenticateUserVariables
+  >(AUTHENTICATE_USER_MUTATION);
+
   const [createUser, { loading }] = useMutation<
     CreateUserResponse,
     CreateUserVariables
   >(CREATE_USER_MUTATION, {
-    onCompleted: () => {
+    onCompleted: async () => {
+      // Save credentials before clearing form
+      const savedEmail = email;
+      const savedPassword = password;
+      
+      // If redirectTo is provided, automatically login after registration
+      if (options?.redirectTo) {
+        try {
+          // Auto-login with the credentials
+          const { data } = await authenticateUser({
+            variables: {
+              email: savedEmail,
+              password: savedPassword,
+            },
+          });
+
+          if (data?.authenticateUserWithPassword?.__typename === 'UserAuthenticationWithPasswordSuccess') {
+            const sessionToken = data.authenticateUserWithPassword.sessionToken;
+            if (sessionToken && typeof window !== 'undefined') {
+              localStorage.setItem('keystonejs-session-token', sessionToken);
+              const expires = new Date();
+              expires.setTime(expires.getTime() + 30 * 24 * 60 * 60 * 1000);
+              const isSecure = window.location.protocol === 'https:';
+              document.cookie = `keystonejs-session=${sessionToken}; expires=${expires.toUTCString()}; path=/; SameSite=Lax${isSecure ? '; Secure' : ''}`;
+            }
+            
+            await refreshUser();
+            router.push(options.redirectTo);
+            
+            // Clear form after successful redirect
+            setName('');
+            setLastName('');
+            setEmail('');
+            setPhone('');
+            setPassword('');
+            setConfirmPassword('');
+            setError('');
+            return;
+          }
+        } catch (error) {
+          console.error('Error auto-logging in:', error);
+          // If auto-login fails, just show success message
+        }
+      }
+      
       // Clear form
       setName('');
       setLastName('');

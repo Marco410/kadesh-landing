@@ -90,9 +90,11 @@ export default function AnimalCard({
             </p>
             <p className="text-xs flex items-center gap-1">
               <span>🚗</span>
-              {animal.distance && animal.distance < 1 
-                ? `${Math.round(animal.distance * 1000)} m` 
-                : `${animal.distance?.toFixed(1)} km`}
+              {typeof animal.distance === 'number' && !Number.isNaN(animal.distance)
+                ? animal.distance < 1
+                  ? `${Math.round(animal.distance * 1000)} m`
+                  : `${animal.distance.toFixed(1)} km`
+                : '—'}
             </p>
             <Link
             href={Routes.animals.detail(animal.id)}
@@ -184,7 +186,10 @@ export default function AnimalCard({
         )}
         
         <div className="absolute top-4 right-4 flex gap-2">
-          <div className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(animal.status)}`} >
+          <div
+            className="px-3 py-1 rounded-full text-sm font-semibold text-white"
+            style={{ backgroundColor: getStatusColor(animal.status) }}
+          >
             {getStatusLabel(animal.status)}
           </div>
           {onFavoriteToggle && (

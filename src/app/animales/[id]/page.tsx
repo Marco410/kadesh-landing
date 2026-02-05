@@ -10,7 +10,6 @@ import {
   AnimalCommentsSection,
 } from 'kadesh/components/animals/detail';
 import { ErrorState } from 'kadesh/components/shared';
-import { useUser } from 'kadesh/utils/UserContext';
 
 export default function AnimalDetailPage() {
   const params = useParams();

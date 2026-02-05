@@ -252,9 +252,6 @@ export default function LostAnimalsPage() {
                       index={index}
                       variant="horizontal"
                       isSelected={selectedAnimal?.id === animal.id}
-                      onFavoriteToggle={(animal) => {
-                        console.log('Toggle favorite:', animal.id);
-                      }}
                     />
                   </div>
                 ))}

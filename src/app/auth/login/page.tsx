@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Tabs, Tab } from '@heroui/tabs';
 import Logo from 'kadesh/components/shared/Logo';
 import { useLogin, useRegister } from '../../../components/auth/hooks';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || null;
   const initialTab = searchParams.get('tab') || 'login';
-  
+
   const [selectedTab, setSelectedTab] = useState(initialTab);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -381,3 +381,18 @@ export default function LoginPage() {
   );
 }
 
+function LoginPageFallback() {
+  return (
+    <div className="min-h-screen flex bg-[#f5f5f5] dark:bg-[#0a0a0a] relative items-center justify-center">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500" />
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginPageFallback />}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}

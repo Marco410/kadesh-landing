@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Tabs, Tab } from '@heroui/tabs';
 import Logo from 'kadesh/components/shared/Logo';
 import { useLogin, useRegister } from '../../../components/auth/hooks';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || null;
   const initialTab = searchParams.get('tab') || 'login';
-  
+
   const [selectedTab, setSelectedTab] = useState(initialTab);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -378,6 +378,29 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoginPageFallback() {
+  return (
+    <div className="min-h-screen flex bg-[#f5f5f5] dark:bg-[#0a0a0a] relative">
+      <div className="lg:hidden fixed inset-0 w-full h-full z-0 bg-[#e8e8e8] dark:bg-[#1e1e1e]" />
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-[#e8e8e8] dark:bg-[#1e1e1e]" />
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 sm:p-8 lg:p-12 relative z-10">
+        <div className="w-full max-w-md animate-pulse">
+          <div className="h-16 bg-[#e0e0e0] dark:bg-[#3a3a3a] rounded-lg mx-auto mb-10 w-32" />
+          <div className="h-96 bg-[#e0e0e0] dark:bg-[#3a3a3a] rounded-2xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginPageFallback />}>
+      <LoginPageContent />
+    </Suspense>
   );
 }
 

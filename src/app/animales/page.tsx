@@ -11,6 +11,7 @@ import { Routes } from 'kadesh/core/routes';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AddCircleIcon } from '@hugeicons/core-free-icons';
 import { useTheme } from 'next-themes';
+import { DEFAULT_RADIUS } from 'kadesh/constants/constans';
 
 export default function LostAnimalsPage() {
   const router = useRouter();
@@ -194,7 +195,7 @@ export default function LostAnimalsPage() {
               )}
               {userLocation && !locationError && (
                 <p className="text-xs text-green-600 dark:text-green-400 mb-2">
-                  Mostrando animales cercanos a tu ubicación
+                  Mostrando animales cercanos a tu ubicación en un radio de {DEFAULT_RADIUS} km
                 </p>
               )}
             </div>
@@ -252,7 +253,6 @@ export default function LostAnimalsPage() {
                       variant="horizontal"
                       isSelected={selectedAnimal?.id === animal.id}
                       onFavoriteToggle={(animal) => {
-                        // TODO: Implement favorite toggle
                         console.log('Toggle favorite:', animal.id);
                       }}
                     />

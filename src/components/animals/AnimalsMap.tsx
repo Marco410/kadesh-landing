@@ -1,11 +1,30 @@
 "use client";
 
 import { useMemo, useCallback, useEffect, useState } from 'react';
-import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, Marker, InfoWindow, MarkerClustererF } from '@react-google-maps/api';
+import type { ClusterIconStyle, TCalculator } from '@react-google-maps/marker-clusterer';
 import { useTheme } from 'next-themes';
 import { LostAnimal } from './types';
 import { darkMapStyles, getStatusColor, lightMapStyles } from './constants';
 import AnimalInfoWindow from './AnimalInfoWindow';
+
+// Estilos para los clusters: círculo naranja con la cantidad (3 tamaños según cantidad)
+function getClusterStyles(): ClusterIconStyle[] {
+  if (typeof btoa === 'undefined') return [];
+  const svg = (size: number) =>
+    btoa(`<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg"><circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 2}" fill="#f97316" stroke="#fff" stroke-width="2"/></svg>`);
+  return [
+    { url: `data:image/svg+xml;base64,${svg(44)}`, height: 44, width: 44, textColor: '#ffffff', textSize: 14, fontWeight: 'bold' },
+    { url: `data:image/svg+xml;base64,${svg(52)}`, height: 52, width: 52, textColor: '#ffffff', textSize: 16, fontWeight: 'bold' },
+    { url: `data:image/svg+xml;base64,${svg(60)}`, height: 60, width: 60, textColor: '#ffffff', textSize: 18, fontWeight: 'bold' },
+  ];
+}
+
+const clusterCalculator: TCalculator = (markers, numStyles) => ({
+  text: String(markers.length),
+  index: Math.min(Math.ceil(Math.log10(markers.length + 1)), numStyles),
+  title: `${markers.length} animal${markers.length !== 1 ? 'es' : ''}`,
+});
 
 interface AnimalsMapProps {
   animals: LostAnimal[];
@@ -150,6 +169,34 @@ export default function AnimalsMap({
     setMap(mapInstance);
   }, []);
 
+  // Fit map bounds to show all animal markers (and user location) with camera centered
+  const animalsWithCoords = useMemo(
+    () => animals.filter((a) => a.latitude != null && a.longitude != null),
+    [animals],
+  );
+
+  useEffect(() => {
+    if (!map || typeof window === 'undefined' || !window.google?.maps) return;
+
+    const points: { lat: number; lng: number }[] = [
+      ...animalsWithCoords.map((a) => ({ lat: a.latitude!, lng: a.longitude! })),
+      ...(userLocation ? [userLocation] : []),
+    ];
+
+    if (points.length === 0) return;
+
+    const bounds = new window.google.maps.LatLngBounds();
+
+    if (points.length === 1) {
+      map.setCenter(points[0]);
+      map.setZoom(12);
+      return;
+    }
+
+    points.forEach((p) => bounds.extend(p));
+    map.fitBounds(bounds, { top: 48, right: 48, bottom: 48, left: 48 });
+  }, [map, animalsWithCoords, userLocation]);
+
   // Get user location automatically when component mounts
   useEffect(() => {
     if (!mounted || typeof window === 'undefined' || !window.navigator?.geolocation) {
@@ -290,6 +337,8 @@ export default function AnimalsMap({
     );
   }
 
+  const clusterStylesMemo = useMemo(() => getClusterStyles(), []);
+
   // Memoize map options to ensure they update when theme changes
   const mapOptions = useMemo(() => ({
     styles: isDarkMode ? darkMapStyles : lightMapStyles,
@@ -302,9 +351,11 @@ export default function AnimalsMap({
 
   return (
     <div className="w-full overflow-hidden shadow-lg relative" style={{ height }}>
-      <LoadScript googleMapsApiKey={googleMapsApiKey}>
+      <LoadScript
+        googleMapsApiKey={googleMapsApiKey}
+        loadingElement={<div className="w-full animate-pulse bg-[#f5f5f5] dark:bg-[#1e1e1e]" style={{ height }} />}
+      >
         <GoogleMap
-          key={`map-${isDarkMode ? 'dark' : 'light'}`}
           mapContainerStyle={mapContainerStyle}
           center={mapCenter}
           zoom={animals.length > 1 ? 13 : 10}
@@ -312,7 +363,7 @@ export default function AnimalsMap({
           onUnmount={onUnmount}
           options={mapOptions}
         >
-          {/* User location marker */}
+          {/* User location marker (no cluster) */}
           {userLocation && (
             <Marker
               position={userLocation}
@@ -321,51 +372,56 @@ export default function AnimalsMap({
             />
           )}
 
-          {animals
-            .filter(animal => animal.latitude !== undefined && animal.longitude !== undefined)
-            .map((animal) => {
-              // Always ensure we have a valid icon - use from state if loaded, otherwise create default immediately
-              const defaultIcon = createDefaultIcon(getStatusColor(animal.status));
-              const icon: string | google.maps.Icon = markerIcons[animal.id] || defaultIcon;
-              
-              // Ensure icon has cursor pointer
-              const iconWithCursor = typeof icon === 'object' && 'url' in icon
-                ? { ...icon, cursor: 'pointer' as const }
-                : icon;
-              
-              return (
-              <Marker
-                key={animal.id}
-                position={{
-                  lat: animal.latitude!,
-                  lng: animal.longitude!,
-                }}
-                onClick={() => handleMarkerClick(animal)}
-                icon={iconWithCursor}
-                cursor="pointer"
-              >
-                {selectedAnimal?.id === animal.id && (
-                  <InfoWindow
-                    position={{
-                      lat: animal.latitude!,
-                      lng: animal.longitude!,
-                    }}
-                    onCloseClick={() => onAnimalClick?.(null as any)}
-                  >
-                    <AnimalInfoWindow
-                      animal={animal}
-                      isDarkMode={isDarkMode}
-                      onClose={() => onAnimalClick?.(null as any)}
-                    />
-                  </InfoWindow>
-                )}
-              </Marker>
-              );
-            })}
+          {/* Animal markers with clustering: al alejar se agrupan y muestran la cantidad */}
+          <MarkerClustererF
+            options={{
+              ...(clusterStylesMemo.length > 0 && { styles: clusterStylesMemo }),
+              calculator: clusterCalculator,
+              averageCenter: true,
+              minimumClusterSize: 2,
+              maxZoom: 16,
+              zoomOnClick: true,
+            }}
+          >
+            {(clusterer) => (
+              <>
+                {animals
+                  .filter((a) => a.latitude != null && a.longitude != null)
+                  .map((animal) => {
+                  const defaultIcon = createDefaultIcon(getStatusColor(animal.status));
+                  const icon: string | google.maps.Icon = markerIcons[animal.id] || defaultIcon;
+                  const iconWithCursor =
+                    typeof icon === 'object' && 'url' in icon ? { ...icon, cursor: 'pointer' as const } : icon;
+                  return (
+                    <Marker
+                      key={animal.id}
+                      position={{ lat: animal.latitude!, lng: animal.longitude! }}
+                      onClick={() => handleMarkerClick(animal)}
+                      icon={iconWithCursor}
+                      cursor="pointer"
+                      clusterer={clusterer}
+                    >
+                      {selectedAnimal?.id === animal.id && (
+                        <InfoWindow
+                          position={{ lat: animal.latitude!, lng: animal.longitude! }}
+                          onCloseClick={() => onAnimalClick?.(null as any)}
+                        >
+                          <AnimalInfoWindow
+                            animal={animal}
+                            isDarkMode={isDarkMode}
+                            onClose={() => onAnimalClick?.(null as any)}
+                          />
+                        </InfoWindow>
+                      )}
+                    </Marker>
+                  );
+                })}
+              </>
+            )}
+          </MarkerClustererF>
         </GoogleMap>
       </LoadScript>
       
-      {/* Button to center on user location - only after mount to avoid hydration mismatch */}
       {mounted && typeof window !== 'undefined' && window.navigator?.geolocation && (
         <button
           onClick={handleCenterOnUser}

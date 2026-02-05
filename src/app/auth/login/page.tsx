@@ -107,9 +107,9 @@ export default function LoginPage() {
               }}
               className="w-full"
               classNames={{
-                tabList: "w-full bg-[#f5f5f5] dark:bg-[#2a2a2a] rounded-lg p-1",
-                tab: "flex-1 text-sm font-semibold data-[selected=true]:bg-white dark:data-[selected=true]:bg-[#1e1e1e] data-[selected=true]:text-orange-500 dark:data-[selected=true]:text-orange-400",
-                tabContent: "text-[#616161] dark:text-[#b0b0b0]",
+                tabList: "w-full bg-[#f5f5f5] dark:bg-[#2a2a2a] rounded-lg p-1 gap-1",
+                tab: "flex-1 text-sm font-semibold rounded-md transition-all duration-200 data-[selected=true]:bg-orange-500 dark:data-[selected=true]:bg-orange-500 data-[selected=true]:text-white dark:data-[selected=true]:text-white data-[hover=true]:bg-[#e8e8e8] dark:data-[hover=true]:bg-[#353535] data-[selected=false]:text-[#616161] dark:data-[selected=false]:text-[#b0b0b0]",
+                tabContent: "data-[selected=true]:!text-white dark:data-[selected=true]:!text-white data-[selected=false]:text-[#616161] dark:data-[selected=false]:text-[#b0b0b0]",
                 panel: "mt-6",
               }}
             >

@@ -17,9 +17,7 @@ export default function AnimalDetailPage() {
   const router = useRouter();
   const animalId = params?.id as string;
 
-
-  const { animal, logs, loading, error } = useAnimalDetail(animalId || '');
-
+  const { animal, logs, loading, error, refetch } = useAnimalDetail(animalId || '');
 
   if (loading) {
     return (
@@ -92,7 +90,12 @@ export default function AnimalDetailPage() {
         </div>
 
         <div className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-sm border border-[#e0e0e0] dark:border-[#3a3a3a] p-6">
-          <LogTimeline logs={logs} />
+          <LogTimeline
+            logs={logs ?? []}
+            animal={animal}
+            animalName={animal?.name}
+            onLogCreated={async () => { await refetch(); }}
+          />
         </div>
 
         <div className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-sm border border-[#e0e0e0] dark:border-[#3a3a3a] p-6">

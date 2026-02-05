@@ -10,7 +10,7 @@ interface AnimalInfoSectionProps {
 }
 
 export default function AnimalInfoSection({ animal }: AnimalInfoSectionProps) {
-  const lastLog = animal.logs && animal.logs.length > 0 ? animal.logs[animal.logs.length - 1] : null;
+  const lastLog = animal.logs && animal.logs.length > 0 ? animal.logs[0] : null;
   const statusColor = getStatusColor(lastLog?.status || 'register');
   const statusLabel = getStatusLabel(lastLog?.status || 'register');
 

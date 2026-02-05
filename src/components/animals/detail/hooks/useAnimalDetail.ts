@@ -35,7 +35,7 @@ export interface AnimalDetail {
     lng?: number | null;
     notes?: string | null;
     status: string;
-    date_status?: string | null;
+    date_status?: string;
   }>;
   user: {
     id: string;
@@ -61,6 +61,9 @@ interface GetAnimalQueryVariables {
   where: {
     id: string;
   };
+  orderBy: Array<{
+    date_status?: 'asc' | 'desc';
+  }>;
 }
 
 export function useAnimalDetail(animalId: string) {
@@ -71,6 +74,11 @@ export function useAnimalDetail(animalId: string) {
         where: {
           id: animalId,
         },
+        "orderBy": [
+          {
+            date_status: 'desc',
+          },
+        ],
       },
       fetchPolicy: 'cache-and-network',
       skip: !animalId,
@@ -79,18 +87,18 @@ export function useAnimalDetail(animalId: string) {
 
   const animal = data?.animal || null;
   
-  // Sort logs by createdAt descending (most recent first)
+/*   // Sort logs by createdAt descending (most recent first)
   const sortedLogs = animal?.logs
     ? [...animal.logs].sort((a, b) => {
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
+        const dateA = new Date(a.date_status || '').getTime();
+        const dateB = new Date(b.date_status || '').getTime();
         return dateB - dateA;
       })
     : [];
-
+ */
   return {
     animal,
-    logs: sortedLogs,
+    logs: animal?.logs,  
     loading,
     error,
     refetch,

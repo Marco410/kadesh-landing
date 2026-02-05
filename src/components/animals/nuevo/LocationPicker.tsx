@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { useTheme } from 'next-themes';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Location01Icon } from '@hugeicons/core-free-icons';
+import { darkMapStyles, lightMapStyles } from '../constants';
 
 interface LocationPickerProps {
   lat: string;
@@ -15,6 +17,7 @@ interface LocationPickerProps {
   onLocationChange: (lat: string, lng: string) => void;
   onAddressChange?: (address: string, city: string, state: string, country: string) => void;
   className?: string;
+  isVisible?: boolean;
 }
 
 const mapContainerStyle = {
@@ -36,20 +39,86 @@ export default function LocationPicker({
   country = '', 
   onLocationChange, 
   onAddressChange,
-  className = '' 
+  className = '',
+  isVisible = true
 }: LocationPickerProps) {
   const [mapCenter, setMapCenter] = useState(defaultCenter);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [mapLoadError, setMapLoadError] = useState<string | null>(null);
   const [localAddress, setLocalAddress] = useState(address);
   const [localCity, setLocalCity] = useState(city);
   const [localState, setLocalState] = useState(state);
   const [localCountry, setLocalCountry] = useState(country);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-  // Geocoding function to get address from coordinates
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDarkMode = mounted && resolvedTheme === 'dark';
+
+  useEffect(() => {
+    if (map && mounted) {
+      const newStyles = isDarkMode ? darkMapStyles : lightMapStyles;
+      map.setOptions({
+        styles: newStyles,
+      });
+    }
+  }, [isDarkMode, map, mounted]);
+
+  useEffect(() => {
+    if (!googleMapsApiKey || !isVisible) {
+      setIsMapLoaded(false);
+      return;
+    }
+
+    const checkGoogleMapsLoaded = () => {
+      if (typeof window !== 'undefined' && window.google && window.google.maps) {
+        setIsMapLoaded(true);
+        setMapLoadError(null);
+        return true;
+      }
+      return false;
+    };
+
+    setIsMapLoaded(false);
+    setMapLoadError(null);
+
+    const initTimer = setTimeout(() => {
+      if (checkGoogleMapsLoaded()) {
+        return;
+      }
+
+      const interval = setInterval(() => {
+        if (checkGoogleMapsLoaded()) {
+          clearInterval(interval);
+        }
+      }, 100);
+
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+        if (!checkGoogleMapsLoaded()) {
+          setMapLoadError('El mapa está tardando en cargar. Por favor, verifica tu conexión a internet.');
+        }
+      }, 10000);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
+    }, 100);
+
+    return () => {
+      clearTimeout(initTimer);
+    };
+  }, [googleMapsApiKey, isVisible]);
+
   const reverseGeocode = useCallback((latitude: number, longitude: number) => {
-    // Check if Google Maps is loaded
     if (typeof window === 'undefined' || !window.google || !window.google.maps || !window.google.maps.Geocoder) {
       return;
     }
@@ -69,7 +138,6 @@ export default function LocationPicker({
           let stateName = '';
           let countryName = '';
 
-          // Parse address components
           result.address_components.forEach((component) => {
             const types = component.types;
             
@@ -88,7 +156,6 @@ export default function LocationPicker({
             }
           });
 
-          // If no street address found, use formatted_address
           if (!streetAddress && result.formatted_address) {
             streetAddress = result.formatted_address;
           }
@@ -106,14 +173,12 @@ export default function LocationPicker({
     );
   }, [onAddressChange]);
 
-  // Update map center when lat/lng changes
   useEffect(() => {
     const latNum = parseFloat(lat);
     const lngNum = parseFloat(lng);
     
     if (!isNaN(latNum) && !isNaN(lngNum)) {
       setMapCenter({ lat: latNum, lng: lngNum });
-      // Reverse geocode when coordinates change (with a small delay to ensure Google Maps is loaded)
       const timer = setTimeout(() => {
         reverseGeocode(latNum, lngNum);
       }, 100);
@@ -121,7 +186,6 @@ export default function LocationPicker({
     }
   }, [lat, lng, reverseGeocode]);
 
-  // Sync local state with props
   useEffect(() => {
     setLocalAddress(address);
     setLocalCity(city);
@@ -129,7 +193,6 @@ export default function LocationPicker({
     setLocalCountry(country);
   }, [address, city, state, country]);
 
-  // Get user's current location
   const handleUseCurrentLocation = useCallback(() => {
     if (!navigator.geolocation) {
       alert('La geolocalización no está disponible en tu navegador');
@@ -161,7 +224,6 @@ export default function LocationPicker({
     );
   }, [onLocationChange, reverseGeocode]);
 
-  // Handle map click
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
     if (e.latLng) {
       const newLat = e.latLng.lat().toString();
@@ -171,7 +233,6 @@ export default function LocationPicker({
     }
   }, [onLocationChange, reverseGeocode]);
 
-  // Handle manual input change
   const handleLatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newLat = e.target.value;
     onLocationChange(newLat, lng);
@@ -204,13 +265,89 @@ export default function LocationPicker({
 
   const hasValidCoordinates = !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng));
 
+  const onMapLoad = useCallback((mapInstance: google.maps.Map) => {
+    setMap(mapInstance);
+    setIsMapLoaded(true);
+    setMapLoadError(null);
+  }, []);
+
+  const onMapUnmount = useCallback(() => {
+    setMap(null);
+  }, []);
+
+  const mapOptions = useMemo(() => {
+    const baseStyles = isDarkMode ? darkMapStyles : lightMapStyles;
+    
+    const additionalStyles = [
+      {
+        featureType: 'poi',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }],
+      },
+      {
+        featureType: 'poi.business',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }],
+      },
+      {
+        featureType: 'poi.attraction',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }],
+      },
+      {
+        featureType: 'poi.place_of_worship',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }],
+      },
+      {
+        featureType: 'poi.school',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }],
+      },
+      {
+        featureType: 'poi.sports_complex',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }],
+      },
+      {
+        featureType: 'transit',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }],
+      },
+      {
+        featureType: 'transit.station',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }],
+      },
+      {
+        featureType: 'transit.line',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }],
+      },
+    ];
+
+    return {
+      styles: [...baseStyles, ...additionalStyles],
+      disableDefaultUI: true,
+      zoomControl: true,
+      streetViewControl: false,
+      mapTypeControl: false,
+      fullscreenControl: true,
+    };
+  }, [isDarkMode]);
+
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Header with button */}
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff]">
-          Ubicación <span className="text-red-500">*</span>
-        </label>
+        <div>
+          <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff]">
+            Ubicación <span className="text-red-500">*</span>
+          </label>
+          <p className="text-xs text-[#616161] dark:text-[#b0b0b0] mt-1">
+            Da clic en el mapa para seleccionar una ubicación.
+          </p>
+        </div>
         <button
           type="button"
           onClick={handleUseCurrentLocation}
@@ -240,27 +377,52 @@ export default function LocationPicker({
       </div>
 
       {/* Map */}
-      <div className="rounded-xl overflow-hidden shadow-md border border-[#e0e0e0] dark:border-[#3a3a3a] ">
-        <LoadScript googleMapsApiKey={googleMapsApiKey}>
+      <div className="rounded-xl overflow-hidden shadow-md border border-[#e0e0e0] dark:border-[#3a3a3a] relative">
+        {mapLoadError ? (
+          <div className="w-full h-[400px] bg-[#f5f5f5] dark:bg-[#1e1e1e] flex flex-col items-center justify-center p-6">
+            <p className="text-red-500 dark:text-red-400 text-sm font-medium mb-2">
+              Error al cargar el mapa
+            </p>
+            <p className="text-[#616161] dark:text-[#b0b0b0] text-xs text-center mb-4">
+              {mapLoadError}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setMapLoadError(null);
+                setIsMapLoaded(false);
+                // Force re-check
+                if (typeof window !== 'undefined' && window.google && window.google.maps) {
+                  setIsMapLoaded(true);
+                }
+              }}
+              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              Reintentar
+            </button>
+          </div>
+        ) : !isMapLoaded ? (
+          <div className="w-full h-[400px] bg-[#f5f5f5] dark:bg-[#1e1e1e] flex items-center justify-center absolute inset-0 z-10">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-3"></div>
+              <p className="text-[#616161] dark:text-[#b0b0b0] text-sm">Cargando mapa...</p>
+            </div>
+          </div>
+        ) : null}
+        <LoadScript 
+          googleMapsApiKey={googleMapsApiKey || ''}
+          loadingElement={<div className="w-full h-[400px]" />}
+          key={isMapLoaded ? 'loaded' : 'loading'}
+        >
           <GoogleMap
+            key={`location-picker-map-${isDarkMode ? 'dark' : 'light'}`}
             mapContainerStyle={mapContainerStyle}
             center={mapCenter}
             zoom={hasValidCoordinates ? 15 : 10}
             onClick={handleMapClick}
-            options={{
-              styles: [
-                {
-                  featureType: 'poi',
-                  elementType: 'labels',
-                  stylers: [{ visibility: 'off' }],
-                },
-              ],
-              disableDefaultUI: true,
-              zoomControl: true,
-              streetViewControl: false,
-              mapTypeControl: false,
-              fullscreenControl: true,
-            }}
+            onLoad={onMapLoad}
+            onUnmount={onMapUnmount}
+            options={mapOptions}
           >
             {hasValidCoordinates && (
               <Marker

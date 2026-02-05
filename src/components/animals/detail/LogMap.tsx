@@ -134,6 +134,7 @@ export default function LogMap({ lat, lng, status, height = '300px' }: LogMapPro
     );
   }
 
+
   const mapOptions = useMemo(() => ({
     styles: isDarkMode ? darkMapStyles : lightMapStyles,
     disableDefaultUI: true,
@@ -143,7 +144,6 @@ export default function LogMap({ lat, lng, status, height = '300px' }: LogMapPro
     fullscreenControl: false,
   }), [isDarkMode]);
 
-  // Don't render map if coordinates are invalid
   if (validLat === null || validLng === null) {
     return (
       <div 
@@ -159,9 +159,8 @@ export default function LogMap({ lat, lng, status, height = '300px' }: LogMapPro
 
   return (
     <div className="w-full overflow-hidden rounded-lg shadow-lg" style={{ height }}>
-      <LoadScript googleMapsApiKey={googleMapsApiKey}>
+      <LoadScript googleMapsApiKey={googleMapsApiKey} loadingElement={<div className="w-full animate-pulse bg-[#f5f5f5] dark:bg-[#1e1e1e]" style={{ height }} />}>
         <GoogleMap
-          key={`log-map-${isDarkMode ? 'dark' : 'light'}`}
           mapContainerStyle={mapContainerStyle}
           center={mapCenter}
           zoom={15}

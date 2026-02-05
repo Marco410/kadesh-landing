@@ -178,6 +178,57 @@ export const CREATE_ANIMAL_LOG_MUTATION = gql`
   }
 `;
 
+export interface CreateAnimalLogVariables {
+  data: {
+    animal: { connect: { id: string } };
+    status: string;
+    notes: string;
+    lat: string;
+    lng: string;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    last_seen: boolean;
+    date_status: string;
+  };
+}
+
+export interface CreateAnimalLogResponse {
+  createAnimalLog: {
+    id: string;
+    lat: string | null;
+    lng: string | null;
+    animal: {
+      name: string;
+    };
+    notes: string | null;
+    status: string;
+    last_seen: boolean | null;
+    createdAt: string;
+  };
+}
+
+export const DELETE_ANIMAL_LOG_MUTATION = gql`
+  mutation DeleteAnimalLog($where: AnimalLogWhereUniqueInput!) {
+    deleteAnimalLog(where: $where) {
+      id
+    }
+  }
+`;
+
+export interface DeleteAnimalLogVariables {
+  where: {
+    id: string;
+  };
+}
+
+export interface DeleteAnimalLogResponse {
+  deleteAnimalLog: {
+    id: string;
+  };
+}
+
 export const CREATE_ANIMAL_MULTIMEDIA_MUTATION = gql`
   mutation CreateAnimalMultimedias($data: [AnimalMultimediaCreateInput!]!) {
     createAnimalMultimedias(data: $data) {
@@ -194,7 +245,7 @@ export const CREATE_ANIMAL_MULTIMEDIA_MUTATION = gql`
 `;
 
 export const GET_ANIMAL_QUERY = gql`
-  query GetAnimal($where: AnimalWhereUniqueInput!) {
+  query GetAnimal($where: AnimalWhereUniqueInput!, $orderBy: [AnimalLogOrderByInput!]!) {
     animal(where: $where) {
       animal_breed {
         breed
@@ -204,7 +255,7 @@ export const GET_ANIMAL_QUERY = gql`
       }
       createdAt
       id
-      logs {
+      logs (orderBy: $orderBy)  {
         address
         city
         country

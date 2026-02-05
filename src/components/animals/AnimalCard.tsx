@@ -38,11 +38,13 @@ export default function AnimalCard({
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3, delay: index * 0.05 }}
         onClick={onClick}
-        className={`bg-white dark:bg-[#1e1e1e] rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 flex flex-row cursor-pointer border-2 ${
-          isSelected 
-            ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-900/10' 
-            : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
-        }`}
+        className={`rounded-lg overflow-hidden transition-all duration-200 flex flex-row cursor-pointer
+          bg-white shadow-md hover:shadow-lg
+          dark:bg-[#2a2a2a] dark:shadow-md dark:shadow-black/30 dark:hover:shadow-lg dark:hover:shadow-black/40
+          ${isSelected 
+            ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-900/20 dark:border-orange-500' 
+            : 'border-[#e5e5e5] hover:border-[#d0d0d0] dark:border-[#404040] dark:hover:border-[#505050]'
+          }`}
       >
         {/* Image */}
         <div className="relative w-24 flex-shrink-0 bg-gray-200 dark:bg-gray-800">
@@ -68,7 +70,7 @@ export default function AnimalCard({
             <h3 className="text-sm font-bold text-[#212121] dark:text-[#ffffff] truncate">
               {animal.name}
             </h3>
-            <div className={`px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0` } style={{ backgroundColor: getStatusColor(animal.status) }}>
+            <div className={`px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0 text-white` } style={{ backgroundColor: getStatusColor(animal.status) }}>
               {getStatusLabel(animal.status)}
             </div>
           </div>
@@ -163,7 +165,7 @@ export default function AnimalCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       whileHover={{ y: -5 }}
-      className="bg-white dark:bg-[#1e1e1e] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col"
+      className="bg-white dark:bg-[#2a2a2a] rounded-xl overflow-hidden shadow-lg hover:shadow-xl dark:shadow-lg dark:shadow-black/30 dark:hover:shadow-xl dark:hover:shadow-black/40 border border-transparent dark:border-[#404040] transition-all duration-300 flex flex-col"
     >
       <div className="relative w-full bg-gray-200 dark:bg-gray-800">
         {animal.image?.url ? (

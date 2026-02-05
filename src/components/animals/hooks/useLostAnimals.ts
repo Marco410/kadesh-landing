@@ -4,9 +4,8 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_NEARBY_ANIMALS_QUERY, GET_ANIMAL_TYPES_QUERY } from '../queries';
 import { LostAnimal, AnimalFilters, AnimalType } from '../types';
+import { DEFAULT_ANIMALS_PER_PAGE, DEFAULT_RADIUS } from 'kadesh/constants/constans';
 
-const DEFAULT_ANIMALS_PER_PAGE = 12;
-const DEFAULT_RADIUS = 50; // Default radius in km
 
 // Function to normalize text by removing accents
 function normalizeText(text: string): string {
@@ -16,7 +15,6 @@ function normalizeText(text: string): string {
     .toLowerCase();
 }
 
-// Interface matching the new getNearbyAnimals response
 interface NearbyAnimal {
   id: string;
   name: string;
@@ -50,9 +48,7 @@ interface NearbyAnimal {
   }>;
 }
 
-// Transform nearby animal to LostAnimal format
 function transformAnimal(animal: NearbyAnimal): LostAnimal {
-  // Build location string from available address components
   const locationParts = [];
   if (animal.address) locationParts.push(animal.address);
   if (animal.city) locationParts.push(animal.city);
@@ -65,10 +61,8 @@ function transformAnimal(animal: NearbyAnimal): LostAnimal {
       ? `${animal.lat}, ${animal.lng}` 
       : 'Ubicación no disponible';
 
-  // Get first image from multimedia
   const image = animal.multimedia?.[0];
 
-  // Map animal type name to AnimalType (convert to lowercase and handle mapping)
   const typeName = animal.animal_type?.name?.toLowerCase() || '';
   const typeMap: Record<string, AnimalType> = {
     'dog': 'perro',
@@ -89,9 +83,9 @@ function transformAnimal(animal: NearbyAnimal): LostAnimal {
     longitude: animal.lng ? parseFloat(animal.lng) : undefined,
     distance: animal.distance || 0.01,
     image: image ? { url: image.url } : undefined,
-    description: '', // Not available in new response
+    description: '',
     createdAt: animal.createdAt,
-    isFavorite: false, // TODO: Implement favorites
+    isFavorite: false,
   };
 }
 

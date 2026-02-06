@@ -1,47 +1,32 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import ConfirmModal from '../shared/ConfirmModal';
+import { useNearbyPetPlaces } from 'kadesh/components/veterinaries/hooks/useNearbyPetPlaces';
+import VeterinaryCard from 'kadesh/components/veterinaries/VeterinaryCard';
+import { DEFAULT_RADIUS_VETERINARIES } from 'kadesh/constants/constans';
 
-const MOCK_VETS = [
-  {
-    id: 1,
-    name: "Veterinaria San Patricio",
-    location: "Ciudad de México",
-    rating: 4.8,
-    specialties: ["Emergencias", "Cirugía"]
-  },
-  {
-    id: 2,
-    name: "Clínica Animal Care",
-    location: "Guadalajara",
-    rating: 4.9,
-    specialties: ["Dermatología", "Cardiología"]
-  },
-  {
-    id: 3,
-    name: "Vet Express 24/7",
-    location: "Monterrey",
-    rating: 4.7,
-    specialties: ["Urgencias", "Medicina general"]
-  },
-  {
-    id: 4,
-    name: "Centro Veterinario Luna",
-    location: "Puebla",
-    rating: 4.9,
-    specialties: ["Oncología", "Neurología"]
-  },
-];
+const NEARBY_LIMIT = 4;
 
 export default function VeterinariansSection() {
-  const [showModal, setShowModal] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(undefined);
 
-  const handleCardClick = () => {
-    setShowModal(true);
-  };
+  useEffect(() => {
+    if (typeof window === 'undefined' || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) =>
+        setUserLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        }),
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+    );
+  }, []);
+
+  const { allPlaces, loading, hasLocation } = useNearbyPetPlaces(userLocation, NEARBY_LIMIT);
+  const nearbyVets = allPlaces;
 
   return (
     <section id="veterinarias" className="w-full py-20 bg-white dark:bg-[#121212]">
@@ -54,56 +39,65 @@ export default function VeterinariansSection() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white mb-4">
-            Veterinarias aliadas
+            Veterinarias cercanas
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-400">
-            Profesionales comprometidos con el bienestar animal
+            Profesionales comprometidos con el bienestar animal. Encuentra veterinarias cercanas a ti en un radio de {DEFAULT_RADIUS_VETERINARIES} km.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {MOCK_VETS.map((vet, index) => (
-            <motion.button
-              key={vet.id}
-              onClick={handleCardClick}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-gray-50 dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-200 dark:border-gray-800 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 w-full"
-              aria-label={`Ver detalles de ${vet.name}`}
-            >
-              <div className="mb-4">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-3">
-                  {vet.name.charAt(0)}
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  {vet.name}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
-                  📍 {vet.location}
-                </p>
-                <div className="flex items-center gap-1 mb-3">
-                  <span className="text-yellow-500">⭐</span>
-                  <span className="text-gray-700 dark:text-gray-300 font-semibold">
-                    {vet.rating}
-                  </span>
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            {Array.from({ length: NEARBY_LIMIT }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-gray-50 dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-200 dark:border-gray-800 animate-pulse"
+              >
+                <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full mb-3" />
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-3" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-12 mb-3" />
+                <div className="flex gap-2 mt-3">
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-16" />
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-20" />
                 </div>
               </div>
-              
-              <div className="flex flex-wrap gap-2">
-                {vet.specialties.map((spec, i) => (
-                  <span
-                    key={i}
-                    className="px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs rounded-full"
-                  >
-                    {spec}
-                  </span>
-                ))}
-              </div>
-            </motion.button>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && !hasLocation && (
+          <p className="text-center text-gray-600 dark:text-gray-400 mb-10">
+            Activa tu ubicación para ver veterinarias cercanas a ti.
+          </p>
+        )}
+
+        {!loading && hasLocation && nearbyVets.length === 0 && (
+          <p className="text-center text-gray-600 dark:text-gray-400 mb-10">
+            No encontramos veterinarias cercanas en tu zona. Revisa el directorio completo.
+          </p>
+        )}
+
+        {!loading && nearbyVets.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            {nearbyVets.map((place, index) => (
+              <motion.div
+                key={place.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="h-full min-h-0 overflow-hidden"
+              >
+                <VeterinaryCard
+                  place={place}
+                  variant="horizontal"
+                  href="/veterinarias"
+                />
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <motion.div
@@ -117,7 +111,7 @@ export default function VeterinariansSection() {
               Registra tu veterinaria
             </Link>
           </motion.div>
-          
+
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -131,17 +125,6 @@ export default function VeterinariansSection() {
           </motion.div>
         </div>
       </div>
-
-      <ConfirmModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onConfirm={() => setShowModal(false)}
-        title="¡Próximamente! 🐾"
-        message="Estamos trabajando muy duro para traerte esta sección muy pronto. Mientras tanto, puedes explorar otras partes de KADESH o contactarnos si necesitas ayuda."
-        confirmText="Entendido"
-        cancelText=""
-        confirmButtonColor="orange"
-      />
     </section>
   );
 }

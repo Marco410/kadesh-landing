@@ -280,48 +280,44 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
                       strokeWidth={2}
                     />
                   </span>
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3 sm:gap-4">
                     <div 
-                      className="flex-1 cursor-pointer"
+                      className="flex-1 min-w-0 cursor-pointer"
                       onClick={() => handleLogClick(log.id)}
                     >
-                      <div className="flex flex-wrap items-center mb-2">
+                      <div className="flex flex-wrap items-center gap-x-1 gap-y-1 mb-2">
                         <time
-                          className="flex items-center gap-1 bg-[#f5f5f5] dark:bg-[#2a2a2a] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] text-xs font-semibold px-2 py-1 rounded-md"
+                          className="flex items-center gap-1 bg-[#f5f5f5] dark:bg-[#2a2a2a] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] text-xs font-semibold px-2 py-1 rounded-md shrink-0"
                           title={new Date(log.date_status || '').toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })}
                         >
                           {formatDate(log.date_status || '')}
                         </time>
-                        <span className="mx-1">·</span>
+                        <span className="hidden sm:inline text-[#757575] dark:text-[#bdbdbd]">·</span>
                         <time
-                          className="flex items-center gap-1 text-[#757575] dark:text-[#bdbdbd] text-xs py-1 rounded-md bg-transparent"
+                          className="flex flex-wrap items-center gap-x-0.5 gap-y-0 text-[#757575] dark:text-[#bdbdbd] text-xs py-1 rounded-md bg-transparent min-w-0"
                           title="Fecha y hora completa"
                         >
-                          <span>
-                            {formatDateWithDay(log.date_status || '')}
-                          </span>
-                          <span className="mx-1">|</span>
-                          <span>
-                            {formatTime(log.date_status || '')}
-                          </span>
+                          <span>{formatDateWithDay(log.date_status || '')}</span>
+                          <span className="mx-0.5 sm:mx-1">|</span>
+                          <span className="shrink-0">{formatTime(log.date_status || '')}</span>
                         </time>
                       </div>
-                      <h3 className="flex items-center gap-2 mb-2 text-base font-semibold text-[#212121] dark:text-[#ffffff]">
-                        {statusLabel}
+                      <h3 className="flex flex-wrap items-center gap-x-2 gap-y-1.5 mb-2 text-base font-semibold text-[#212121] dark:text-[#ffffff]">
+                        <span className="basis-full sm:basis-auto">{statusLabel}</span>
                         {isLatest && (
                           <span
-                            className="px-2 py-0.5 rounded-full text-xs font-medium text-white shadow-sm"
+                            className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium text-white shadow-sm shrink-0 w-fit"
                             style={{ backgroundColor: statusColor }}
                           >
                             Más reciente
                           </span>
                         )}
                         {isSelectedWithMap && (
-                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500 text-white shadow-sm flex items-center gap-1">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500 text-white shadow-sm shrink-0 w-fit">
                             <HugeiconsIcon
                               icon={ArrowRightIcon}
                               size={12}
-                              className="text-white"
+                              className="text-white shrink-0"
                               strokeWidth={2}
                             />
                             En el mapa

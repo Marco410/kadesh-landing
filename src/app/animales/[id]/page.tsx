@@ -76,7 +76,7 @@ export default function AnimalDetailPage() {
   return (
     <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
       <Navigation />
-      <div className="h-25 bg-gradient-to-b from-orange-500 via-orange-400/70 to-orange-50/30 dark:from-[#0a0a0a] dark:via-[#0a0a0a] dark:to-transparent"></div>
+      <div className="h-25 "></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 ">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-sm border border-[#e0e0e0] dark:border-[#3a3a3a] overflow-hidden">

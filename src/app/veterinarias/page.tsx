@@ -5,7 +5,8 @@ import { Navigation, Footer } from 'kadesh/components/layout';
 import { VeterinaryCard, VeterinariesMap, useNearbyPetPlaces } from 'kadesh/components/veterinaries';
 import type { PetPlace } from 'kadesh/components/veterinaries';
 import { motion } from 'framer-motion';
-import { DEFAULT_RADIUS, DEFAULT_RADIUS_VETERINARIES } from 'kadesh/constants/constans';
+import { DEFAULT_RADIUS_VETERINARIES, RADIUS_OPTIONS_VETERINARIES } from 'kadesh/constants/constans';
+
 
 export default function VeterinariesPage() {
   const [userLocation, setUserLocation] = useState<
@@ -14,6 +15,7 @@ export default function VeterinariesPage() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
   const [selectedPlace, setSelectedPlace] = useState<PetPlace | null>(null);
+  const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS_VETERINARIES);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
@@ -58,7 +60,7 @@ export default function VeterinariesPage() {
     hasNextPage,
     hasPreviousPage,
     hasLocation,
-  } = useNearbyPetPlaces(userLocation, 10);
+  } = useNearbyPetPlaces(userLocation, 10, radiusKm);
 
   const handlePlaceClick = (place: PetPlace | null) => {
     setSelectedPlace(place);
@@ -69,7 +71,7 @@ export default function VeterinariesPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
+    <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a] pt-[72px]">
       <Navigation />
 
       <section className="w-full py-4 bg-gradient-to-br from-orange-500 to-orange-600">
@@ -105,27 +107,80 @@ export default function VeterinariesPage() {
               <p className="text-xs text-red-500 dark:text-red-400 mb-2">{locationError}</p>
             )}
             {hasLocation && !locationError && (
-              <p className="text-xs text-green-600 dark:text-green-400 mb-2">
-                Radio de {DEFAULT_RADIUS_VETERINARIES} km desde tu ubicación
-              </p>
+              <>
+                <p className="text-xs text-green-600 dark:text-green-400 mb-2">
+                  Radio de {radiusKm} km desde tu ubicación
+                </p>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">Radio:</span>
+                  {RADIUS_OPTIONS_VETERINARIES.map((km) => (
+                    <button
+                      key={km}
+                      type="button"
+                      onClick={() => setRadiusKm(km)}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                        radiusKm === km
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-[#f0f0f0] dark:bg-[#2a2a2a] text-[#212121] dark:text-[#e0e0e0] hover:bg-[#e0e0e0] dark:hover:bg-[#3a3a3a]'
+                      }`}
+                    >
+                      {km} km
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
           <div className="flex-1 overflow-y-auto p-4">
             {(locationLoading || placesLoading) && places.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] mb-2">
-                  {locationLoading ? 'Obteniendo ubicación...' : 'Cargando veterinarias...'}
-                </h3>
+              <div className="space-y-3">
+                {locationLoading && (
+                  <p className="text-xs text-orange-500 dark:text-orange-400 mb-2">
+                    Obteniendo tu ubicación...
+                  </p>
+                )}
+                <div className="grid grid-cols-2 gap-3">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a] overflow-hidden bg-[#f5f5f5] dark:bg-[#2a2a2a] animate-pulse"
+                    >
+                      <div className="aspect-[4/3] bg-[#e0e0e0] dark:bg-[#3a3a3a]" />
+                      <div className="p-3 space-y-2">
+                        <div className="h-4 w-3/4 rounded bg-[#e0e0e0] dark:bg-[#3a3a3a]" />
+                        <div className="h-3 w-1/2 rounded bg-[#e0e0e0] dark:bg-[#3a3a3a]" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : places.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-[#616161] dark:text-[#b0b0b0]">
+              <div className="text-center py-12 px-2">
+                <p className="text-[#616161] dark:text-[#b0b0b0] mb-3">
                   {locationError
-                    ? 'Activa la ubicación para ver veterinarias cercanas.'
+                    ? 'Activa la ubicación en tu navegador para ver veterinarias cerca de ti.'
                     : 'No hay veterinarias en este radio.'}
                 </p>
+                {hasLocation && !locationError && (
+                  <>
+                    <p className="text-sm text-[#212121] dark:text-[#e0e0e0] font-medium mb-2">
+                      Prueba aumentar el radio de búsqueda
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {RADIUS_OPTIONS_VETERINARIES.filter((km) => km !== radiusKm).map((km) => (
+                        <button
+                          key={km}
+                          type="button"
+                          onClick={() => setRadiusKm(km)}
+                          className="px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors"
+                        >
+                          {km} km
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <>
@@ -135,7 +190,7 @@ export default function VeterinariesPage() {
                       key={place.id}
                       id={`veterinary-${place.id}`}
                       onClick={() => handlePlaceClick(place)}
-                      className="h-full min-h-0"
+                      className="h-full min-h-0 cursor-pointer"
                     >
                       <VeterinaryCard
                         place={place}

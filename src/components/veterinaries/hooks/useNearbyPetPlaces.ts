@@ -27,7 +27,8 @@ export interface GetNearbyPetPlacesQueryVariables {
 
 export function useNearbyPetPlaces(
   userLocation?: { lat: number | null; lng: number | null },
-  limit?: number
+  limit?: number,
+  radiusKm?: number
 ) {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -36,11 +37,11 @@ export function useNearbyPetPlaces(
     return {
       lat: userLocation.lat,
       lng: userLocation.lng,
-      radius: DEFAULT_RADIUS_VETERINARIES,
+      radius: radiusKm ?? DEFAULT_RADIUS_VETERINARIES,
       limit: limit ?? FETCH_LIMIT_VETERINARIES,
       type: 'veterinary',
     };
-  }, [userLocation, limit]);
+  }, [userLocation, limit, radiusKm]);
 
   const { data, loading } = useQuery<
     GetNearbyPetPlacesQueryResult,

@@ -26,13 +26,13 @@ export interface GetNearbyPetPlacesQueryVariables {
 }
 
 export function useNearbyPetPlaces(
-  userLocation?: { lat: number; lng: number },
+  userLocation?: { lat: number | null; lng: number | null },
   limit?: number
 ) {
   const [currentPage, setCurrentPage] = useState(1);
 
   const input = useMemo<NearbyPetPlacesInput | null>(() => {
-    if (!userLocation) return null;
+    if (userLocation === undefined) return null;
     return {
       lat: userLocation.lat,
       lng: userLocation.lng,
@@ -87,6 +87,6 @@ export function useNearbyPetPlaces(
     previousPage,
     hasNextPage: currentPage < totalPages,
     hasPreviousPage: currentPage > 1,
-    hasLocation: !!userLocation,
+    hasLocation: !!userLocation && userLocation.lat != null && userLocation.lng != null,
   };
 }

@@ -79,8 +79,8 @@ export interface PetPlace {
 }
 
 export interface NearbyPetPlacesInput {
-  lat: number;
-  lng: number;
+  lat: number | null;
+  lng: number | null;
   radius?: number;
   limit?: number;
   type: string;
@@ -91,4 +91,67 @@ export interface PetPlaceWhereInput {
   types?: {
     some?: { value?: { equals?: string } };
   };
+}
+
+export interface PetPlaceWhereUniqueInput {
+  id?: string;
+}
+
+/** Schedule row for detail page (day, timeIni, timeEnd) */
+export interface PetPlaceSchedule {
+  day: string;
+  timeIni: string | null;
+  timeEnd: string | null;
+  createdAt?: string;
+}
+
+/** Pet place detail (single place by id) - matches GET_PET_PLACE query */
+export interface PetPlaceDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  address: string | null;
+  street: string | null;
+  state: string | null;
+  municipality: string | null;
+  country: string | null;
+  cp: string | null;
+  lat: string;
+  lng: string;
+  phone: string | null;
+  website: string | null;
+  isOpen: boolean | null;
+  views: string | null;
+  averageRating: number | null;
+  reviewsCount: number | null;
+  pet_place_likesCount?: number | null;
+  createdAt: string;
+  pet_place_reviews: Array<{
+    google_user: string | null;
+    id: string;
+    rating: number | null;
+    review: string | null;
+    createdAt: string;
+    user: {
+      id: string;
+      name: string;
+      lastName: string | null;
+      username: string;
+      verified: boolean;
+      profileImage: { url: string } | null;
+    } | null;
+  }>;
+  pet_place_reviewsCount: number | null;
+  pet_place_schedules: PetPlaceSchedule[];
+  pet_place_social_media: Array<{ link: string | null; social_media: string | null }>;
+  services: Array<{ id: string; name: string | null; slug: string | null; description: string | null }>;
+  user: {
+    id: string;
+    name: string;
+    lastName: string | null;
+    secondLastName?: string | null;
+    username: string;
+    verified: boolean;
+    profileImage: { url: string } | null;
+  } | null;
 }

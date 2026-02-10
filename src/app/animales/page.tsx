@@ -121,7 +121,7 @@ export default function LostAnimalsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
+    <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a] pt-[72px]">
       <Navigation />
       
       {/* Hero Section - Compact */}
@@ -143,8 +143,8 @@ export default function LostAnimalsPage() {
         </div>
       </section>
 
-      {/* CTA Button - Fixed Bottom Center */}
-      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
+      {/* CTA Button - Fixed Bottom Center (safe area en móvil) */}
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 pb-[env(safe-area-inset-bottom)] md:pb-0">
         <motion.button
           onClick={handleReportAnimalClick}
           disabled={userLoading}
@@ -206,30 +206,41 @@ export default function LostAnimalsPage() {
             />
           </div>
 
-          {/* Cards List - Scrollable */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {/* Cards List - Scrollable (pb-24 para no tapar con el botón flotante) */}
+          <div className="flex-1 overflow-y-auto p-4 pb-24 md:pb-4 space-y-3">
             {(locationLoading || animalsLoading) && animals.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-                <h3 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] mb-2">
-                  {locationLoading ? 'Obteniendo tu ubicación...' : 'Cargando animales...'}
-                </h3>
-                <p className="text-sm text-[#616161] dark:text-[#b0b0b0]">
-                  Por favor espera
-                </p>
+              <div className="space-y-3">
+                {locationLoading && (
+                  <p className="text-xs text-orange-500 dark:text-orange-400 mb-2">
+                    Obteniendo tu ubicación...
+                  </p>
+                )}
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="flex gap-3 p-3 rounded-xl bg-[#f0f0f0] dark:bg-[#2a2a2a] border border-[#e0e0e0] dark:border-[#3a3a3a] animate-pulse"
+                  >
+                    <div className="w-24 h-24 rounded-lg bg-[#e0e0e0] dark:bg-[#3a3a3a] flex-shrink-0" />
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="h-4 w-3/4 rounded bg-[#e0e0e0] dark:bg-[#3a3a3a]" />
+                      <div className="h-3 w-1/2 rounded bg-[#e0e0e0] dark:bg-[#3a3a3a]" />
+                      <div className="h-3 w-full rounded bg-[#e0e0e0] dark:bg-[#3a3a3a]" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : animals.length === 0 ? (
-              <div className="text-center py-12">
-                <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="text-center py-12 px-2">
+                <svg className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <h3 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] mb-2">
-                  No se encontraron animales reportados
+                  No se encontraron animales
                 </h3>
-                <p className="text-sm text-[#616161] dark:text-[#b0b0b0] mb-4">
-                  {locationError 
-                    ? 'No se pudo obtener tu ubicación. Intenta ajustar los filtros o permite el acceso a tu ubicación.'
-                    : 'Intenta ajustar los filtros'}
+                <p className="text-sm text-[#616161] dark:text-[#b0b0b0] mb-4 max-w-xs mx-auto">
+                  {locationError
+                    ? 'Activa la ubicación en tu navegador para ver animales cerca de ti, o usa los filtros para buscar por tipo, estatus o ubicación.'
+                    : 'Prueba cambiando o limpiando los filtros para ver más resultados.'}
                 </p>
                 <button
                   onClick={clearFilters}
@@ -245,6 +256,7 @@ export default function LostAnimalsPage() {
                     key={animal.id}
                     id={`animal-${animal.id}`}
                     onClick={() => handleAnimalClick(animal)}
+                    className="cursor-pointer"
                   >
                     <AnimalCard
                       isDarkMode={isDarkMode}

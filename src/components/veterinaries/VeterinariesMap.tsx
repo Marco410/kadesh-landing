@@ -162,20 +162,17 @@ export default function VeterinariesMap({
     [isDarkMode]
   );
 
-  return (
-    <div className="w-full overflow-hidden relative" style={{ height }}>
-      <LoadScript
-        googleMapsApiKey={apiKey}
-        loadingElement={<div className="w-full animate-pulse bg-[#f5f5f5] dark:bg-[#1e1e1e]" style={{ height }} />}
-      >
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          center={mapCenter}
-          zoom={placesWithCoords.length > 1 ? 12 : 10}
-          onLoad={onLoad}
-          onUnmount={onUnmount}
-          options={mapOptions}
-        >
+  const mapContent = (
+    <GoogleMap
+      mapContainerStyle={mapContainerStyle}
+      center={mapCenter}
+      zoom={placesWithCoords.length > 1 ? 12 : 10}
+      onLoad={onLoad}
+      onUnmount={onUnmount}
+      options={mapOptions}
+    >
+      {map && (
+        <>
           {userLocation && (
             <Marker position={userLocation} icon={createUserLocationIcon()} zIndex={1000} />
           )}
@@ -262,7 +259,18 @@ export default function VeterinariesMap({
               </Marker>
             );
           })}
-        </GoogleMap>
+        </>
+      )}
+    </GoogleMap>
+  );
+
+  return (
+    <div className="w-full overflow-hidden relative" style={{ height }}>
+      <LoadScript
+        googleMapsApiKey={apiKey}
+        loadingElement={<div className="w-full animate-pulse bg-[#f5f5f5] dark:bg-[#1e1e1e]" style={{ height }} />}
+      >
+        {mapContent}
       </LoadScript>
     </div>
   );

@@ -18,19 +18,19 @@ const ROADMAP_ITEMS = [
   {
     id: 3,
     title: "Directorio",
-    status: "in-progress",
+    status: "completed",
     description: "Encuentra fácilmente veterinarias, refugios, hospitales y animales cercanos a tu ubicación."
   },
   {
     id: 4,
     title: "Rescate de animales",
-    status: "in-progress",
+    status: "completed",
     description: "Visualiza en el mapa la última ubicación reportada de animales en situación de calle o extraviados."
   },
   {
     id: 5,
     title: "Sistema de adopciones",
-    status: "pending",
+    status: "in-progress",
     description: "Plataforma de adopción y matching"
   },
   {
@@ -42,7 +42,7 @@ const ROADMAP_ITEMS = [
   {
     id: 7,
     title: "Sistema de donaciones",
-    status: "pending",
+    status: "in-progress",
     description: "Integración de pagos y transparencia"
   },
   {
@@ -54,7 +54,7 @@ const ROADMAP_ITEMS = [
   {
     id: 9,
     title: "Anuncios",
-    status: "pending",
+    status: "in-progress",
     description: "Publica anuncios de animales en adopción, rescates, etc."
   },
   {
@@ -96,7 +96,7 @@ const ROADMAP_ITEMS = [
   {
     id: 16,
     title: "Estatus de rescates",
-    status: "in-progress",
+    status: "completed",
     description: "Sigue el avance de cada rescate en tiempo real: actualizaciones, comentarios, fotos y logros para que todos puedan apoyar y celebrar juntos."
   }
 ];

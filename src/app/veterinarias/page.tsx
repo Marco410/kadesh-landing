@@ -8,7 +8,9 @@ import { motion } from 'framer-motion';
 import { DEFAULT_RADIUS, DEFAULT_RADIUS_VETERINARIES } from 'kadesh/constants/constans';
 
 export default function VeterinariesPage() {
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(undefined);
+  const [userLocation, setUserLocation] = useState<
+    { lat: number; lng: number } | { lat: null; lng: null } | undefined
+  >(undefined);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
   const [selectedPlace, setSelectedPlace] = useState<PetPlace | null>(null);
@@ -16,6 +18,7 @@ export default function VeterinariesPage() {
   useEffect(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
       setLocationError('La geolocalización no está disponible');
+      setUserLocation({ lat: null, lng: null });
       setLocationLoading(false);
       return;
     }
@@ -32,9 +35,10 @@ export default function VeterinariesPage() {
       (error) => {
         const message =
           error.code === error.PERMISSION_DENIED
-            ? 'Permiso de ubicación denegado. Activa la ubicación para ver veterinarias cercanas.'
+            ? 'Permiso de ubicación denegado. Activa la ubicación para ver veterinarias cercanas. 🗺️'
             : 'No se pudo obtener tu ubicación';
         setLocationError(message);
+        setUserLocation({ lat: null, lng: null });
         setLocationLoading(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -86,9 +90,7 @@ export default function VeterinariesPage() {
         </div>
       </section>
 
-      {/* 50/50 layout: left list (2-col grid, pagination), right map */}
       <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-140px)] lg:overflow-hidden">
-        {/* Left: grid of veterinaries - 50% on desktop */}
         <div className="w-full lg:w-1/2 flex flex-col bg-white dark:bg-[#1e1e1e] border-t lg:border-r border-[#e0e0e0] dark:border-[#3a3a3a] lg:order-1 lg:h-full">
           <div className="flex-shrink-0 p-4 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">
             <h2 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] mb-2">
@@ -201,7 +203,6 @@ export default function VeterinariesPage() {
           </div>
         </div>
 
-        {/* Right: map - 50% on desktop */}
         <div className="w-full lg:w-1/2 relative min-w-0 h-[350px] lg:h-full flex-shrink-0 lg:order-2">
           <VeterinariesMap
             places={allPlaces}

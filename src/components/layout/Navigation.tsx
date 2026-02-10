@@ -128,6 +128,13 @@ export default function Navigation() {
     }
   };
 
+  const isDark = mounted && (resolvedTheme === 'dark');
+  const isHomePage = pathname === Routes.home;
+  const atTopLight = !scrolled && !isDark && !isHomePage;
+  const navLinkClass = atTopLight
+    ? 'text-gray-800 hover:text-orange-600 transition-colors duration-200'
+    : 'text-white hover:text-orange-100 transition-colors duration-200';
+
   return (
     <>
       <nav 
@@ -138,7 +145,7 @@ export default function Navigation() {
         }`}
       >
         <Link href={Routes.home} className="flex items-center">
-          <Logo size={48} />
+          <Logo size={48} className={atTopLight ? 'invert' : ''} />
         </Link>
         
         {/* Desktop Navigation */}
@@ -147,7 +154,7 @@ export default function Navigation() {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="font-semibold text-sm text-white hover:text-orange-100 transition-colors duration-200 flex items-center gap-1"
+              className={`font-semibold text-sm flex items-center gap-1 ${navLinkClass}`}
             >
               Inicio
               <svg 
@@ -185,10 +192,26 @@ export default function Navigation() {
             </AnimatePresence>
           </div>
 
+          {/* Veterinarias Link */}
+          <Link
+            href={Routes.veterinaries.index}
+            className={`font-semibold text-sm ${navLinkClass}`}
+          >
+            Veterinarias
+          </Link>
+
+          {/* Animales Link */}
+          <Link
+            href={Routes.animals.index}
+            className={`font-semibold text-sm ${navLinkClass}`}
+          >
+            Animales
+          </Link>
+
           {/* Blog Link */}
           <Link
             href={Routes.blog.index}
-            className="font-semibold text-sm text-white hover:text-orange-100 transition-colors duration-200"
+            className={`font-semibold text-sm ${navLinkClass}`}
           >
             Blog
           </Link>
@@ -196,7 +219,7 @@ export default function Navigation() {
           {/* Conócenos Link */}
           <Link
             href={Routes.conocenos}
-            className="font-semibold text-sm text-white hover:text-orange-100 transition-colors duration-200"
+            className={`font-semibold text-sm ${navLinkClass}`}
           >
             Conócenos
           </Link>
@@ -204,7 +227,7 @@ export default function Navigation() {
           {/* Contacto Link */}
           <Link
             href={Routes.contact}
-            className="font-semibold text-sm text-white hover:text-orange-100 transition-colors duration-200"
+            className={`font-semibold text-sm ${navLinkClass}`}
           >
             Contacto
           </Link>
@@ -214,7 +237,7 @@ export default function Navigation() {
             <button
               onClick={toggleTheme}
               type="button"
-              className="p-2 rounded-lg transition-colors duration-200 text-white hover:bg-white/10"
+              className={`p-2 rounded-lg transition-colors duration-200 ${atTopLight ? 'text-gray-800 hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}
               aria-label="Toggle theme"
             >
               {(resolvedTheme || theme) === 'dark' ? (
@@ -234,7 +257,7 @@ export default function Navigation() {
             <div className="relative" ref={avatarDropdownRef}>
               <button
                 onClick={() => setAvatarDropdownOpen(!avatarDropdownOpen)}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors overflow-hidden"
+                className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors overflow-hidden ${atTopLight ? 'bg-gray-200 hover:bg-gray-300 text-gray-800' : 'bg-white/10 hover:bg-white/20 text-white'}`}
               >
                 {user.profileImage?.url ? (
                   <Image
@@ -245,7 +268,7 @@ export default function Navigation() {
                     className="object-cover"
                   />
                 ) : (
-                  <span className="text-white font-semibold text-sm">
+                  <span className={`font-semibold text-sm ${atTopLight ? 'text-gray-800' : 'text-white'}`}>
                     {user.name?.charAt(0) || 'U'}
                   </span>
                 )}
@@ -278,7 +301,9 @@ export default function Navigation() {
           ) : (
             <Link
               href={Routes.auth.login}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-sm rounded-lg transition-colors duration-200"
+              className={`px-4 py-2 font-semibold text-sm rounded-lg transition-colors duration-200 ${
+                atTopLight ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-white/10 hover:bg-white/20 text-white'
+              }`}
             >
               Iniciar Sesión
             </Link>
@@ -289,25 +314,25 @@ export default function Navigation() {
         <button
           onClick={() => setOpened(!opened)}
           className={`lg:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1.5 z-50 ${
-            scrolled ? 'text-gray-700 dark:text-gray-300' : 'text-white'
+            atTopLight ? 'text-gray-800' : scrolled ? 'text-gray-700 dark:text-gray-300' : 'text-white'
           }`}
           aria-label="Toggle menu"
         >
           <motion.span
             className={`w-6 h-0.5 rounded transition-all ${
-              scrolled ? 'bg-gray-700 dark:bg-gray-300' : 'bg-white'
+              atTopLight ? 'bg-gray-800' : scrolled ? 'bg-gray-700 dark:bg-gray-300' : 'bg-white'
             }`}
             animate={opened ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
           />
           <motion.span
             className={`w-6 h-0.5 rounded transition-all ${
-              scrolled ? 'bg-gray-700 dark:bg-gray-300' : 'bg-white'
+              atTopLight ? 'bg-gray-800' : scrolled ? 'bg-gray-700 dark:bg-gray-300' : 'bg-white'
             }`}
             animate={opened ? { opacity: 0 } : { opacity: 1 }}
           />
           <motion.span
             className={`w-6 h-0.5 rounded transition-all ${
-              scrolled ? 'bg-gray-700 dark:bg-gray-300' : 'bg-white'
+              atTopLight ? 'bg-gray-800' : scrolled ? 'bg-gray-700 dark:bg-gray-300' : 'bg-white'
             }`}
             animate={opened ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
           />
@@ -411,6 +436,24 @@ export default function Navigation() {
                     </AnimatePresence>
                   </div>
 
+                  {/* Veterinarias Link Mobile */}
+                  <Link
+                    href={Routes.veterinaries.index}
+                    onClick={() => setOpened(false)}
+                    className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
+                  >
+                    Veterinarias
+                  </Link>
+
+                  {/* Animales Link Mobile */}
+                  <Link
+                    href={Routes.animals.index}
+                    onClick={() => setOpened(false)}
+                    className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
+                  >
+                    Animales
+                  </Link>
+                  
                   {/* Blog Link Mobile */}
                   <Link
                     href={Routes.blog.index}

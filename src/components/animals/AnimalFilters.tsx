@@ -22,6 +22,14 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
     filters.location || 
     filters.favoritesOnly;
 
+  const activeFiltersCount = [
+    filters.type,
+    filters.breed,
+    filters.status,
+    filters.location,
+    filters.favoritesOnly,
+  ].filter(Boolean).length;
+
   return (
     <div className="bg-transparent">
       <div className="flex items-center justify-between mb-3">
@@ -30,7 +38,7 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
           className="text-sm font-medium text-[#212121] dark:text-[#ffffff] hover:text-orange-500 dark:hover:text-orange-400 flex items-center gap-2"
         >
           <svg 
-            className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
+            className={`w-4 h-4 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`} 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -38,6 +46,11 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
           Filtros
+          {activeFiltersCount > 0 && (
+            <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-orange-500 text-white text-xs font-semibold">
+              {activeFiltersCount}
+            </span>
+          )}
         </button>
         {hasActiveFilters && (
           <button

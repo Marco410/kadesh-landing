@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
+  ArrowRight01Icon,
   Call02Icon,
   MapPinIcon,
   PinLocation03Icon,
   StarIcon,
 } from '@hugeicons/core-free-icons';
+import { Routes } from 'kadesh/core/routes';
 import type { PetPlace } from './types';
 
 type CardVariant = 'vertical' | 'horizontal';
@@ -47,7 +49,7 @@ export default function VeterinaryCard({
   const displayName = place.name?.trim() || 'Veterinaria';
   const initial = (displayName[0] ?? 'V').toUpperCase();
   const distanceStr = formatDistance(place.distance ?? undefined);
-  const locationLine = [place.municipality, place.state].filter(Boolean).join(', ') || place.address || place.street;
+  const locationLine = [place.municipality, place.state, place.country].filter(Boolean).join(', ') || place.address || place.street;
   const rating =
     place.averageRating != null && !Number.isNaN(place.averageRating)
       ? place.averageRating
@@ -67,7 +69,9 @@ export default function VeterinaryCard({
     : 'min-h-[140px] p-4';
 
   const rowSpacing = 'mb-1.5';
-  const content = (
+  const detailHref = Routes.veterinaries.detail(place.id);
+
+  const mainContent = (
     <>
       <div className={`flex gap-4 flex-1 min-w-0 ${isHorizontal ? 'flex-row' : ''}`}>
         <span
@@ -91,15 +95,6 @@ export default function VeterinaryCard({
               <span>{distanceStr}</span>
             </p>
           )}
-          {locationLine && (
-            <p
-              className={`text-xs text-[#616161] dark:text-[#b0b0b0] truncate flex items-center gap-1.5 ${rowSpacing}`}
-              title={locationLine}
-            >
-              <HugeiconsIcon icon={MapPinIcon} size={12} className="flex-shrink-0 text-orange-500 dark:text-orange-400" strokeWidth={1.5} />
-              <span className="truncate">{locationLine}</span>
-            </p>
-          )}
           {(rating != null || reviewsCount > 0) && (
             <p className={`text-xs text-[#212121] dark:text-white flex items-center gap-1.5 ${rowSpacing}`}>
               <HugeiconsIcon icon={StarIcon} size={12} className="flex-shrink-0 text-amber-500" strokeWidth={1.5} />
@@ -113,14 +108,23 @@ export default function VeterinaryCard({
           )}
           {place.phone && (
             <a
-              href={`tel:${place.phone.replace(/\s/g, '')}`}
-              onClick={(e) => e.stopPropagation()}
-              className={`text-xs text-blue-600 dark:text-blue-400 truncate block hover:underline flex items-center gap-1.5 ${rowSpacing}`}
-              title={place.phone}
+            href={`tel:${place.phone.replace(/\s/g, '')}`}
+            onClick={(e) => e.stopPropagation()}
+            className={`text-xs text-blue-600 dark:text-blue-400 truncate block hover:underline flex items-center gap-1.5 ${rowSpacing}`}
+            title={place.phone}
             >
               <HugeiconsIcon icon={Call02Icon} size={12} className="flex-shrink-0 text-blue-500 dark:text-blue-400" strokeWidth={1.5} />
               <span>{place.phone}</span>
             </a>
+          )}
+          {locationLine && (
+            <p
+              className={`text-xs text-[#616161] dark:text-[#b0b0b0] truncate flex items-center gap-1.5 ${rowSpacing}`}
+              title={locationLine}
+            >
+              <HugeiconsIcon icon={MapPinIcon} size={12} className="flex-shrink-0 text-orange-500 dark:text-orange-400" strokeWidth={1.5} />
+              <span className="truncate">{locationLine}</span>
+            </p>
           )}
           {place.isOpen != null && (
             <span
@@ -150,19 +154,49 @@ export default function VeterinaryCard({
     </>
   );
 
+  const detailsButton = (
+    <Link
+      href={detailHref}
+      onClick={(e) => e.stopPropagation()}
+      className={`mt-auto w-full inline-flex items-center justify-center gap-1.5 font-semibold text-sm rounded-lg py-2 px-3 transition-colors ${
+        isHorizontal
+          ? 'bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600'
+          : 'bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:hover:bg-orange-900/50'
+      }`}
+    >
+      Ver detalles
+      <HugeiconsIcon icon={ArrowRight01Icon} size={14} className="flex-shrink-0" strokeWidth={2} />
+    </Link>
+  );
+
   const className = `${baseClass} ${sizeClass}`.trim();
 
   if (href) {
     return (
-      <Link href={href} className={className} aria-label={`Ver ${displayName} en el directorio`}>
-        {content}
-      </Link>
+      <div className={className}>
+        <Link href={href} className="block flex-1 min-h-0 min-w-0" aria-label={`Ver ${displayName} en el directorio`}>
+          {mainContent}
+        </Link>
+        {detailsButton}
+      </div>
     );
   }
 
   return (
-    <button type="button" onClick={onClick} className={className}>
-      {content}
-    </button>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+      className={className}
+    >
+      {mainContent}
+      {detailsButton}
+    </div>
   );
 }

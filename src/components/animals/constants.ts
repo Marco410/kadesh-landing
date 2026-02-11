@@ -6,6 +6,7 @@ export const ANIMAL_LOGS_OPTIONS = [
   { label: "En familia", value: "in_family" },
   { label: "Perdido", value: "lost" },
   { label: "Encontrado", value: "found" },
+  { label: "En adopción", value: "in_adoption" },
 ];
 
 export const ANIMAL_SEX_OPTIONS = [
@@ -50,6 +51,8 @@ export const getStatusColor = (status: string) => {
       return '#ef4444'; // red-500 - Perdido
     case 'found':
       return '#10b981'; // green-500 - Encontrado
+    case 'in_adoption':
+      return '#9333ea'; // purple-500 - En adopción
     default:
       return '#6b7280'; // gray-500
   }
@@ -71,6 +74,8 @@ export const getStatusLabel = (status: string) => {
       return 'Perdido';
     case 'found':
       return 'Encontrado';
+    case 'in_adoption':
+      return 'En adopción';
     default:
       return status;
   }
@@ -81,6 +86,7 @@ export const statusIcons: Record<string, string> = {
   found: '✅',
   lost: '🔍',
   rescued: '🆘',
+  in_adoption: '💖',
 };
 
 export const getTypeLabel = (type: string) => {

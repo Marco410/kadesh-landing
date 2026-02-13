@@ -90,9 +90,10 @@ function transformAnimal(animal: NearbyAnimal): LostAnimal {
 }
 
 export function useLostAnimals(
-  initialFilters?: AnimalFilters, 
+  initialFilters?: AnimalFilters,
   animalsPerPage?: number,
-  userLocation?: { lat: number; lng: number }
+  userLocation?: { lat: number | null; lng: number | null },
+  radiusKm?: number
 ) {
   const ANIMALS_PER_PAGE = animalsPerPage || DEFAULT_ANIMALS_PER_PAGE;
   const [currentPage, setCurrentPage] = useState(1);
@@ -112,18 +113,20 @@ export function useLostAnimals(
     'otro': 'other',
   };
 
-  // Build input for getNearbyAnimals query
+  // Build input for getNearbyAnimals query (lat/lng null = backend returns all)
   const queryInput = useMemo(() => {
     const input: any = {
       limit: 500, // Get enough for client-side filtering and pagination
       skip: 0,
     };
 
-    // Add location and radius if provided
-    if (userLocation) {
-      input.lat = userLocation.lat;
-      input.lng = userLocation.lng;
-      input.radius = DEFAULT_RADIUS;
+    // Location: send lat/lng (null = show all; numbers = nearby with radius)
+    const lat = userLocation?.lat ?? null;
+    const lng = userLocation?.lng ?? null;
+    input.lat = lat;
+    input.lng = lng;
+    if (lat != null && lng != null) {
+      input.radius = radiusKm ?? DEFAULT_RADIUS;
     }
 
     // Filter by animal type - need to find the ID from animalTypesData
@@ -158,7 +161,7 @@ export function useLostAnimals(
     }
 
     return input;
-  }, [filters, userLocation, animalTypesData, ANIMALS_PER_PAGE]);
+  }, [filters, userLocation, radiusKm, animalTypesData, ANIMALS_PER_PAGE]);
 
   // Query animals using getNearbyAnimals
   const { data, loading, error } = useQuery(GET_NEARBY_ANIMALS_QUERY, {

@@ -379,7 +379,7 @@ export default function AnimalsMap({
               calculator: clusterCalculator,
               averageCenter: true,
               minimumClusterSize: 2,
-              maxZoom: 16,
+              maxZoom: 20,
               zoomOnClick: true,
             }}
           >

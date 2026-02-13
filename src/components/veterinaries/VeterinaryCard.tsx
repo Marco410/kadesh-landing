@@ -59,44 +59,44 @@ export default function VeterinaryCard({
   const serviceTags = (place.services ?? []).filter((s) => s.name).slice(0, 2).map((s) => s.name!);
   const showServices = !isHorizontal && serviceTags.length > 0;
 
-  const baseClass = `w-full h-full text-left rounded-xl border-2 transition-all flex flex-col gap-3 ${
+  const baseClass = `w-full h-full text-left rounded-xl border-2 transition-all flex flex-col ${
     isSelected
       ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-500'
       : 'border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] hover:border-orange-300 dark:hover:border-orange-600'
   }`;
   const sizeClass = isHorizontal
-    ? 'min-h-[160px] p-6 rounded-2xl shadow-lg hover:shadow-xl'
-    : 'min-h-[140px] p-4';
+    ? 'min-h-[160px] p-6 rounded-2xl shadow-lg hover:shadow-xl gap-3'
+    : 'min-h-[160px] sm:min-h-[140px] p-4 gap-3';
 
   const rowSpacing = 'mb-1.5';
   const detailHref = Routes.veterinaries.detail(place.id);
 
   const mainContent = (
     <>
-      <div className={`flex gap-4 flex-1 min-w-0 ${isHorizontal ? 'flex-row' : ''}`}>
+      <div className={`flex gap-3 sm:gap-4 flex-1 min-w-0 ${isHorizontal ? 'flex-row' : ''}`}>
         <span
           className={`flex-shrink-0 rounded-full flex items-center justify-center bg-orange-500 text-white font-bold ${
-            isHorizontal ? 'w-16 h-16 text-2xl' : 'w-10 h-10 text-sm'
+            isHorizontal ? 'w-16 h-16 text-2xl' : 'w-12 h-12 sm:w-10 sm:h-10 text-base sm:text-sm'
           }`}
           aria-hidden
         >
           {initial}
         </span>
-        <span className="flex-1 min-w-0 flex flex-col gap-1">
+        <span className="flex-1 min-w-0 flex flex-col gap-1.5 sm:gap-1 overflow-hidden">
           <h3
-            className={`font-bold text-[#212121] dark:text-white truncate ${isHorizontal ? 'text-xl' : ''}`}
+            className={`font-bold text-[#212121] dark:text-white line-clamp-2 sm:truncate ${isHorizontal ? 'text-xl' : 'text-sm sm:text-base'}`}
             title={displayName}
           >
             {displayName}
           </h3>
           {distanceStr && (
-            <p className={`text-xs text-orange-600 dark:text-orange-400 font-medium flex items-center gap-1.5 ${rowSpacing}`}>
+            <p className={`text-xs text-orange-600 dark:text-orange-400 font-medium flex items-center gap-1.5 shrink-0 ${rowSpacing}`}>
               <HugeiconsIcon icon={PinLocation03Icon} size={12} className="flex-shrink-0 text-orange-500 dark:text-orange-400" strokeWidth={1.5} />
-              <span>{distanceStr}</span>
+              <span className="truncate">{distanceStr}</span>
             </p>
           )}
           {(rating != null || reviewsCount > 0) && (
-            <p className={`text-xs text-[#212121] dark:text-white flex items-center gap-1.5 ${rowSpacing}`}>
+            <p className={`text-xs text-[#212121] dark:text-white flex items-center gap-1.5 shrink-0 ${rowSpacing}`}>
               <HugeiconsIcon icon={StarIcon} size={12} className="flex-shrink-0 text-amber-500" strokeWidth={1.5} />
               {rating != null && <span>{rating.toFixed(1)}</span>}
               {reviewsCount > 0 && (
@@ -108,27 +108,27 @@ export default function VeterinaryCard({
           )}
           {place.phone && (
             <a
-            href={`tel:${place.phone.replace(/\s/g, '')}`}
-            onClick={(e) => e.stopPropagation()}
-            className={`text-xs text-blue-600 dark:text-blue-400 truncate block hover:underline flex items-center gap-1.5 ${rowSpacing}`}
-            title={place.phone}
+              href={`tel:${place.phone.replace(/\s/g, '')}`}
+              onClick={(e) => e.stopPropagation()}
+              className={`text-xs text-blue-600 dark:text-blue-400 truncate hover:underline flex items-center gap-1.5 min-w-0 ${rowSpacing}`}
+              title={place.phone}
             >
               <HugeiconsIcon icon={Call02Icon} size={12} className="flex-shrink-0 text-blue-500 dark:text-blue-400" strokeWidth={1.5} />
-              <span>{place.phone}</span>
+              <span className="truncate">{place.phone}</span>
             </a>
           )}
           {locationLine && (
             <p
-              className={`text-xs text-[#616161] dark:text-[#b0b0b0] truncate flex items-center gap-1.5 ${rowSpacing}`}
+              className={`text-xs text-[#616161] dark:text-[#b0b0b0] flex items-start gap-1.5 min-w-0 ${rowSpacing}`}
               title={locationLine}
             >
-              <HugeiconsIcon icon={MapPinIcon} size={12} className="flex-shrink-0 text-orange-500 dark:text-orange-400" strokeWidth={1.5} />
-              <span className="truncate">{locationLine}</span>
+              <HugeiconsIcon icon={MapPinIcon} size={12} className="flex-shrink-0 mt-0.5 text-orange-500 dark:text-orange-400" strokeWidth={1.5} />
+              <span className="line-clamp-2 break-words">{locationLine}</span>
             </p>
           )}
           {place.isOpen != null && (
             <span
-              className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full w-fit ${
+              className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full w-fit shrink-0 ${
                 place.isOpen
                   ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
                   : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
@@ -158,7 +158,7 @@ export default function VeterinaryCard({
     <Link
       href={detailHref}
       onClick={(e) => e.stopPropagation()}
-      className={`mt-auto w-full inline-flex items-center justify-center gap-1.5 font-semibold text-sm rounded-lg py-2 px-3 transition-colors ${
+      className={`mt-auto w-full inline-flex items-center justify-center gap-1.5 font-semibold text-sm rounded-lg py-2.5 sm:py-2 px-3 transition-colors min-h-[44px] sm:min-h-0 ${
         isHorizontal
           ? 'bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600'
           : 'bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:hover:bg-orange-900/50'

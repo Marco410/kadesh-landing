@@ -11,16 +11,19 @@ import { Routes } from 'kadesh/core/routes';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AddCircleIcon } from '@hugeicons/core-free-icons';
 import { useTheme } from 'next-themes';
-import { DEFAULT_RADIUS } from 'kadesh/constants/constans';
+import { DEFAULT_RADIUS, RADIUS_OPTIONS_ANIMALS } from 'kadesh/constants/constans';
 
 export default function LostAnimalsPage() {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
   const [selectedAnimal, setSelectedAnimal] = useState<LostAnimal | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(undefined);
+  const [userLocation, setUserLocation] = useState<
+    { lat: number; lng: number } | { lat: null; lng: null } | undefined
+  >(undefined);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
+  const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -33,6 +36,7 @@ export default function LostAnimalsPage() {
   useEffect(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
       setLocationError('La geolocalización no está disponible en tu navegador');
+      setUserLocation({ lat: null, lng: null });
       setLocationLoading(false);
       return;
     }
@@ -62,6 +66,7 @@ export default function LostAnimalsPage() {
             break;
         }
         setLocationError(errorMessage);
+        setUserLocation({ lat: null, lng: null });
         setLocationLoading(false);
       },
       {
@@ -87,7 +92,7 @@ export default function LostAnimalsPage() {
     hasNextPage,
     hasPreviousPage,
     loading: animalsLoading,
-  } = useLostAnimals(undefined, undefined, userLocation);
+  } = useLostAnimals(undefined, undefined, userLocation, radiusKm);
 
   const handleAnimalClick = (animal: LostAnimal | null) => {
     setSelectedAnimal(animal);
@@ -193,12 +198,32 @@ export default function LostAnimalsPage() {
                   {locationError}
                 </p>
               )}
-              {userLocation && !locationError && (
-                <p className="text-xs text-green-600 dark:text-green-400 mb-2">
-                  Mostrando animales cercanos a tu ubicación en un radio de {DEFAULT_RADIUS} km
-                </p>
+              {userLocation && userLocation.lat != null && userLocation.lng != null && !locationError && (
+                <>
+                  <p className="text-xs text-green-600 dark:text-green-400 mb-2">
+                    Radio de {radiusKm} km desde tu ubicación
+                  </p>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">Radio:</span>
+                    {RADIUS_OPTIONS_ANIMALS.map((km) => (
+                      <button
+                        key={km}
+                        type="button"
+                        onClick={() => setRadiusKm(km)}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                          radiusKm === km
+                            ? 'bg-orange-500 text-white'
+                            : 'bg-[#f0f0f0] dark:bg-[#2a2a2a] text-[#212121] dark:text-[#e0e0e0] hover:bg-[#e0e0e0] dark:hover:bg-[#3a3a3a]'
+                        }`}
+                      >
+                        {km} km
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
+            
             <AnimalFilters
               filters={filters}
               onFiltersChange={updateFilters}

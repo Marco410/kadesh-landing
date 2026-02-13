@@ -1,10 +1,29 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, Marker, InfoWindow, MarkerClustererF } from '@react-google-maps/api';
+import type { ClusterIconStyle, TCalculator } from '@react-google-maps/marker-clusterer';
 import { useTheme } from 'next-themes';
 import type { PetPlace } from './types';
 import { darkMapStyles, lightMapStyles } from 'kadesh/components/animals/constants';
+
+// Estilos para los clusters: círculo naranja con la cantidad (3 tamaños)
+function getClusterStyles(): ClusterIconStyle[] {
+  if (typeof btoa === 'undefined') return [];
+  const svg = (size: number) =>
+    btoa(`<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg"><circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 2}" fill="#f97316" stroke="#fff" stroke-width="2"/></svg>`);
+  return [
+    { url: `data:image/svg+xml;base64,${svg(44)}`, height: 44, width: 44, textColor: '#ffffff', textSize: 14, fontWeight: 'bold' },
+    { url: `data:image/svg+xml;base64,${svg(52)}`, height: 52, width: 52, textColor: '#ffffff', textSize: 16, fontWeight: 'bold' },
+    { url: `data:image/svg+xml;base64,${svg(60)}`, height: 60, width: 60, textColor: '#ffffff', textSize: 18, fontWeight: 'bold' },
+  ];
+}
+
+const clusterCalculator: TCalculator = (markers, numStyles) => ({
+  text: String(markers.length),
+  index: Math.min(Math.ceil(Math.log10(markers.length + 1)), numStyles),
+  title: `${markers.length} veterinaria${markers.length !== 1 ? 's' : ''}`,
+});
 
 interface VeterinariesMapProps {
   places: PetPlace[];
@@ -162,6 +181,8 @@ export default function VeterinariesMap({
     [isDarkMode]
   );
 
+  const clusterStylesMemo = useMemo(() => getClusterStyles(), []);
+
   const mapContent = (
     <GoogleMap
       mapContainerStyle={mapContainerStyle}
@@ -176,89 +197,105 @@ export default function VeterinariesMap({
           {userLocation && (
             <Marker position={userLocation} icon={createUserLocationIcon()} zIndex={1000} />
           )}
-          {placesWithCoords.map((place) => {
-            const position = { lat: parseFloat(place.lat), lng: parseFloat(place.lng) };
-            const isSelected = selectedPlace?.id === place.id;
-            return (
-              <Marker
-                key={place.id}
-                position={position}
-                icon={defaultIcon ?? undefined}
-                cursor="pointer"
-                onClick={() => onPlaceClick(place)}
-              >
-                {isSelected && (
-                  <InfoWindow position={position} onCloseClick={() => onPlaceClick(null)}>
-                    <div
-                      className={`p-3 min-w-[200px] max-w-[280px] ${isDarkMode ? 'bg-[#1e1e1e]' : ''}`}
+          <MarkerClustererF
+            options={{
+              ...(clusterStylesMemo.length > 0 && { styles: clusterStylesMemo }),
+              calculator: clusterCalculator,
+              averageCenter: true,
+              minimumClusterSize: 2,
+              maxZoom: 20,
+              zoomOnClick: true,
+            }}
+          >
+            {(clusterer) => (
+              <>
+                {placesWithCoords.map((place) => {
+                  const position = { lat: parseFloat(place.lat), lng: parseFloat(place.lng) };
+                  const isSelected = selectedPlace?.id === place.id;
+                  return (
+                    <Marker
+                      key={place.id}
+                      position={position}
+                      icon={defaultIcon ?? undefined}
+                      cursor="pointer"
+                      onClick={() => onPlaceClick(place)}
+                      clusterer={clusterer}
                     >
-                      <h3
-                        className={`font-bold text-base leading-tight mb-2 ${
-                          isDarkMode ? 'text-white' : 'text-[#212121]'
-                        }`}
-                      >
-                        {place.name?.trim() || 'Veterinaria'}
-                      </h3>
-                      {typeof place.distance === 'number' && !Number.isNaN(place.distance) && (
-                        <p
-                          className={`text-sm font-medium mb-1.5 ${
-                            isDarkMode ? 'text-orange-400' : 'text-orange-600'
-                          }`}
-                        >
-                          {place.distance < 1
-                            ? `${Math.round(place.distance * 1000)} m`
-                            : `${place.distance.toFixed(1)} km`}{' '}
-                          de ti
-                        </p>
+                      {isSelected && (
+                        <InfoWindow position={position} onCloseClick={() => onPlaceClick(null)}>
+                          <div
+                            className={`p-3 min-w-[200px] max-w-[280px] ${isDarkMode ? 'bg-[#1e1e1e]' : ''}`}
+                          >
+                            <h3
+                              className={`font-bold text-base leading-tight mb-2 ${
+                                isDarkMode ? 'text-white' : 'text-[#212121]'
+                              }`}
+                            >
+                              {place.name?.trim() || 'Veterinaria'}
+                            </h3>
+                            {typeof place.distance === 'number' && !Number.isNaN(place.distance) && (
+                              <p
+                                className={`text-sm font-medium mb-1.5 ${
+                                  isDarkMode ? 'text-orange-400' : 'text-orange-600'
+                                }`}
+                              >
+                                {place.distance < 1
+                                  ? `${Math.round(place.distance * 1000)} m`
+                                  : `${place.distance.toFixed(1)} km`}{' '}
+                                de ti
+                              </p>
+                            )}
+                            {[place.municipality, place.state].filter(Boolean).length > 0 && (
+                              <p
+                                className={`text-sm mb-1.5 ${
+                                  isDarkMode ? 'text-[#b0b0b0]' : 'text-[#616161]'
+                                }`}
+                              >
+                                {[place.municipality, place.state].filter(Boolean).join(', ')}
+                              </p>
+                            )}
+                            {place.address && !place.municipality && (
+                              <p
+                                className={`text-sm mb-1.5 truncate ${isDarkMode ? 'text-[#b0b0b0]' : 'text-[#616161]'}`}
+                                title={place.address}
+                              >
+                                {place.address}
+                              </p>
+                            )}
+                            {place.isOpen != null && place.isOpen && (
+                              <span
+                                className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full mb-1.5 ${
+                                  place.isOpen
+                                    ? isDarkMode
+                                      ? 'bg-green-900/40 text-green-300'
+                                      : 'bg-green-100 text-green-700'
+                                    : isDarkMode
+                                      ? 'bg-gray-700 text-gray-300'
+                                      : 'bg-gray-100 text-gray-600'
+                                }`}
+                              >
+                                Abierto
+                              </span>
+                            )}
+                            {place.phone && (
+                              <a
+                                href={`tel:${place.phone.replace(/\s/g, '')}`}
+                                className={`block text-sm font-medium hover:underline ${
+                                  isDarkMode ? 'text-orange-400' : 'text-orange-600'
+                                }`}
+                              >
+                                {place.phone}
+                              </a>
+                            )}
+                          </div>
+                        </InfoWindow>
                       )}
-                      {[place.municipality, place.state].filter(Boolean).length > 0 && (
-                        <p
-                          className={`text-sm mb-1.5 ${
-                            isDarkMode ? 'text-[#b0b0b0]' : 'text-[#616161]'
-                          }`}
-                        >
-                          {[place.municipality, place.state].filter(Boolean).join(', ')}
-                        </p>
-                      )}
-                      {place.address && !place.municipality && (
-                        <p
-                          className={`text-sm mb-1.5 truncate ${isDarkMode ? 'text-[#b0b0b0]' : 'text-[#616161]'}`}
-                          title={place.address}
-                        >
-                          {place.address}
-                        </p>
-                      )}
-                      {place.isOpen != null && place.isOpen && (
-                        <span
-                          className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full mb-1.5 ${
-                            place.isOpen
-                              ? isDarkMode
-                                ? 'bg-green-900/40 text-green-300'
-                                : 'bg-green-100 text-green-700'
-                              : isDarkMode
-                                ? 'bg-gray-700 text-gray-300'
-                                : 'bg-gray-100 text-gray-600'
-                          }`}
-                        >
-                          Abierto
-                        </span>
-                      )}
-                      {place.phone && (
-                        <a
-                          href={`tel:${place.phone.replace(/\s/g, '')}`}
-                          className={`block text-sm font-medium hover:underline ${
-                            isDarkMode ? 'text-orange-400' : 'text-orange-600'
-                          }`}
-                        >
-                          {place.phone}
-                        </a>
-                      )}
-                    </div>
-                  </InfoWindow>
-                )}
-              </Marker>
-            );
-          })}
+                    </Marker>
+                  );
+                })}
+              </>
+            )}
+          </MarkerClustererF>
         </>
       )}
     </GoogleMap>

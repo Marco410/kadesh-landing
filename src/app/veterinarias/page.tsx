@@ -93,7 +93,17 @@ export default function VeterinariesPage() {
       </section>
 
       <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-140px)] lg:overflow-hidden">
-        <div className="w-full lg:w-1/2 flex flex-col bg-white dark:bg-[#1e1e1e] border-t lg:border-r border-[#e0e0e0] dark:border-[#3a3a3a] lg:order-1 lg:h-full">
+        {/* Map: first on mobile (order-1), second on desktop (lg:order-2) */}
+        <div className="w-full lg:w-1/2 relative min-w-0 h-[320px] lg:h-full flex-shrink-0 order-1 lg:order-2">
+          <VeterinariesMap
+            places={allPlaces}
+            selectedPlace={selectedPlace}
+            onPlaceClick={handlePlaceClick}
+            height="100%"
+          />
+        </div>
+        {/* List: second on mobile (order-2), first on desktop (lg:order-1) */}
+        <div className="w-full lg:w-1/2 flex flex-col bg-white dark:bg-[#1e1e1e] border-t lg:border-r border-[#e0e0e0] dark:border-[#3a3a3a] order-2 lg:order-1 lg:h-full">
           <div className="flex-shrink-0 p-4 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">
             <h2 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] mb-2">
               Veterinarias ({totalPlaces})
@@ -140,7 +150,7 @@ export default function VeterinariesPage() {
                     Obteniendo tu ubicación...
                   </p>
                 )}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
@@ -160,31 +170,12 @@ export default function VeterinariesPage() {
                 <p className="text-[#616161] dark:text-[#b0b0b0] mb-3">
                   {locationError
                     ? 'Activa la ubicación en tu navegador para ver veterinarias cerca de ti.'
-                    : 'No hay veterinarias en este radio.'}
+                    : 'No hay veterinarias cercanas.'}
                 </p>
-                {hasLocation && !locationError && (
-                  <>
-                    <p className="text-sm text-[#212121] dark:text-[#e0e0e0] font-medium mb-2">
-                      Prueba aumentar el radio de búsqueda
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {RADIUS_OPTIONS_VETERINARIES.filter((km) => km !== radiusKm).map((km) => (
-                        <button
-                          key={km}
-                          type="button"
-                          onClick={() => setRadiusKm(km)}
-                          className="px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors"
-                        >
-                          {km} km
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-3 items-stretch">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
                   {places.map((place) => (
                     <div
                       key={place.id}
@@ -256,15 +247,6 @@ export default function VeterinariesPage() {
               </>
             )}
           </div>
-        </div>
-
-        <div className="w-full lg:w-1/2 relative min-w-0 h-[350px] lg:h-full flex-shrink-0 lg:order-2">
-          <VeterinariesMap
-            places={allPlaces}
-            selectedPlace={selectedPlace}
-            onPlaceClick={handlePlaceClick}
-            height="100%"
-          />
         </div>
       </div>
 

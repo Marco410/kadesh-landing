@@ -1,13 +1,13 @@
-import { ApolloClient, InMemoryCache } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
-import { ApolloLink } from '@apollo/client';
+import { ApolloClient, InMemoryCache } from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
+import { ApolloLink } from "@apollo/client";
 // @ts-ignore
-import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
+import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 
-const SESSION_TOKEN_KEY = 'keystonejs-session-token';
+const SESSION_TOKEN_KEY = "keystonejs-session-token";
 
 const authLink = setContext((_, { headers }) => {
-  if (typeof window === 'undefined') return { headers };
+  if (typeof window === "undefined") return { headers };
   const token = window.localStorage?.getItem(SESSION_TOKEN_KEY);
   if (!token) return { headers };
   return {
@@ -20,9 +20,9 @@ const authLink = setContext((_, { headers }) => {
 
 const uploadLink = createUploadLink({
   uri: process.env.NEXT_PUBLIC_API_URL,
-  credentials: 'include',
+  credentials: "include",
   headers: {
-    'apollo-require-preflight': 'true',
+    "apollo-require-preflight": "true",
   },
 });
 
@@ -30,15 +30,14 @@ export const createApolloClient = () => {
   return new ApolloClient({
     link: ApolloLink.from([authLink, uploadLink]),
     cache: new InMemoryCache(),
-    credentials: 'include',
+    credentials: "include",
     defaultOptions: {
       watchQuery: {
-        fetchPolicy: 'cache-and-network',
+        fetchPolicy: "cache-and-network",
       },
     },
   });
 };
-
 
 const client = createApolloClient();
 export default client;

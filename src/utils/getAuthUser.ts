@@ -7,11 +7,10 @@ export async function getAuthenticatedUser(): Promise<any | null> {
 
     const { data } = await client.query({
       query: AUTHENTICATED_ITEM_QUERY,
-      fetchPolicy: 'network-only',
+      fetchPolicy: "network-only",
     });
-    return data?.authenticatedItem ?? null; 
+    return data?.authenticatedItem ?? null;
   } catch (error) {
-
     return null;
   }
 }

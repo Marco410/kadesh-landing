@@ -14,7 +14,7 @@ export interface User {
   } | null;
   roles?: {
     name: string;
-  } | null;
+  }[] | null;
   birthday?: string | null;
   age?: string | null;
   createdAt: string;

@@ -4,6 +4,8 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 import { getAuthenticatedUser } from "./getAuthUser";
 import { AuthenticatedItem } from "./types";
 
+const SESSION_TOKEN_KEY = "keystonejs-session-token";
+
 interface UserContextType {
   user: AuthenticatedItem | undefined;
   loading: boolean;
@@ -26,7 +28,16 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
     try {
       const userData = await getAuthenticatedUser();
-      setUser(userData || undefined);
+      const hasToken =
+        typeof window !== "undefined" &&
+        !!window.localStorage?.getItem(SESSION_TOKEN_KEY);
+      if (userData) {
+        setUser(userData);
+      } else if (!hasToken) {
+        setUser(undefined);
+      }
+      // Si hay token pero getAuthenticatedUser devolvió null (ej. sesión Google
+      // que el backend aún no refleja), no pisamos el user actual.
     } catch (error) {
       setUser(undefined);
     } finally {

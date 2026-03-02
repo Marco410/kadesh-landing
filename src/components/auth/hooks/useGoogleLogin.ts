@@ -55,7 +55,7 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
     AuthenticateUserWithGoogleResponse,
     AuthenticateUserWithGoogleVariables
   >(AUTHENTICATE_USER_WITH_GOOGLE_MUTATION, {
-    onCompleted: (data) => {
+    onCompleted: async (data) => {
       const result = data?.authenticateUserWithGoogle;
       if (!result) {
         setError("Error al iniciar sesión con Google");
@@ -64,14 +64,12 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
       }
 
       if (result.__typename === "UserAuthenticationWithGoogleSuccess") {
-        const { sessionToken, item } = result;
-
-        if (sessionToken && typeof window !== "undefined") {
-          localStorage.setItem("keystonejs-session-token", sessionToken);
-          const expires = new Date();
-          expires.setTime(expires.getTime() + 30 * 24 * 60 * 60 * 1000);
-          const isSecure = window.location.protocol === "https:";
-          document.cookie = `keystonejs-session=${sessionToken}; expires=${expires.toUTCString()}; path=/; SameSite=Lax${isSecure ? "; Secure" : ""}`;
+        const { item } = result;
+        // En Google login NO guardamos el `sessionToken` custom en localStorage/cookie,
+        // porque Keystone autentica `authenticatedItem` con su propia sesión (cookie)
+        // iniciada en el backend. Guardar un token distinto rompe la sesión.
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("keystonejs-session-token");
         }
         const u = item as AuthenticatedItem & {
           roles?: Array<{ name: string; __typename?: string }>;
@@ -95,14 +93,13 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
           createdAt: u.createdAt ?? new Date().toISOString(),
         };
         setUser(userFromLogin);
-        refreshUser().then(() => {
-          setLoading(false);
-          if (options?.redirectTo) {
-            router.push(options.redirectTo);
-          } else {
-            router.push(Routes.home);
-          }
-        });
+        await refreshUser();
+        setLoading(false);
+        if (options?.redirectTo) {
+          router.push(options.redirectTo);
+        } else {
+          router.push(Routes.home);
+        }
       } else if (result.__typename === "UserAuthenticationWithGoogleFailure") {
         setError(result.message || "No se pudo iniciar sesión con Google");
         setLoading(false);

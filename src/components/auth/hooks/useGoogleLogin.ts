@@ -64,12 +64,21 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
       }
 
       if (result.__typename === "UserAuthenticationWithGoogleSuccess") {
-        const { item } = result;
+        const { item, sessionToken } = result;
         // En Google login NO guardamos el `sessionToken` custom en localStorage/cookie,
         // porque Keystone autentica `authenticatedItem` con su propia sesión (cookie)
         // iniciada en el backend. Guardar un token distinto rompe la sesión.
         if (typeof window !== "undefined") {
           localStorage.removeItem("keystonejs-session-token");
+        }
+        console.log("result", result);
+
+        if (sessionToken){
+          localStorage.setItem("keystonejs-session-token", sessionToken);
+          const expires = new Date();
+          expires.setTime(expires.getTime() + 30 * 24 * 60 * 60 * 1000);
+          const isSecure = window.location.protocol === "https:";
+          document.cookie = `keystonejs-session=${sessionToken}; expires=${expires.toUTCString()}; path=/; SameSite=Lax${isSecure ? "; Secure" : ""}`;
         }
         const u = item as AuthenticatedItem & {
           roles?: Array<{ name: string; __typename?: string }>;

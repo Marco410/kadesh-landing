@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const AUTHENTICATED_ITEM_QUERY = gql(`
   query AuthenticatedItem {
@@ -15,7 +15,7 @@ export const AUTHENTICATED_ITEM_QUERY = gql(`
         profileImage {
           url
         }
-        roles{
+        roles {
           name
         }
         birthday
@@ -55,6 +55,36 @@ export const AUTHENTICATE_USER_MUTATION = gql`
   }
 `;
 
+/** Backend must implement this mutation (e.g. custom resolver or Keystone auth plugin). */
+export const AUTHENTICATE_USER_WITH_GOOGLE_MUTATION = gql`
+  mutation AuthenticateUserWithGoogle($idToken: String!) {
+    authenticateUserWithGoogle(idToken: $idToken) {
+      ... on UserAuthenticationWithGoogleSuccess {
+        sessionToken
+        item {
+          id
+          lastName
+          name
+          phone
+          email
+          profileImage {
+            url
+          }
+          roles {
+            name
+          }
+          secondLastName
+          username
+          verified
+        }
+      }
+      ... on UserAuthenticationWithGoogleFailure {
+        message
+      }
+    }
+  }
+`;
+
 export const CREATE_USER_MUTATION = gql`
   mutation CreateUser($data: UserCreateInput!) {
     createUser(data: $data) {
@@ -74,7 +104,7 @@ export interface AuthenticateUserVariables {
 export interface AuthenticateUserResponse {
   authenticateUserWithPassword:
     | {
-        __typename: 'UserAuthenticationWithPasswordSuccess';
+        __typename: "UserAuthenticationWithPasswordSuccess";
         sessionToken: string;
         item: {
           id: string;
@@ -94,7 +124,40 @@ export interface AuthenticateUserResponse {
         };
       }
     | {
-        __typename: 'UserAuthenticationWithPasswordFailure';
+        __typename: "UserAuthenticationWithPasswordFailure";
+        message: string;
+      }
+    | null;
+}
+
+export interface AuthenticateUserWithGoogleVariables {
+  idToken: string;
+}
+
+export interface AuthenticateUserWithGoogleResponse {
+  authenticateUserWithGoogle:
+    | {
+        __typename: "UserAuthenticationWithGoogleSuccess";
+        sessionToken: string;
+        item: {
+          id: string;
+          lastName: string;
+          name: string;
+          phone: string | null;
+          email: string;
+          profileImage: {
+            url: string;
+          } | null;
+          roles: {
+            name: string;
+          }[];
+          secondLastName: string | null;
+          username: string;
+          verified: boolean;
+        };
+      }
+    | {
+        __typename: "UserAuthenticationWithGoogleFailure";
         message: string;
       }
     | null;

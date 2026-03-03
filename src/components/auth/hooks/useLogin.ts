@@ -69,8 +69,7 @@ export function useLogin(options?: UseLoginOptions) {
         "UserAuthenticationWithPasswordFailure"
       ) {
         setError(
-          data.authenticateUserWithPassword.message ||
-            "Credenciales incorrectas",
+            "El correo electrónico o la contraseña ingresados son incorrectos. Por favor verifica tus datos e intenta nuevamente."
         );
       }
     },

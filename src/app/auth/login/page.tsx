@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Tabs, Tab } from "@heroui/tabs";
 import Logo from "kadesh/components/shared/Logo";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { EyeIcon, ViewOffIcon } from "@hugeicons/core-free-icons";
 import {
   useLogin,
   useRegister,
@@ -18,6 +20,7 @@ function LoginPageContent() {
 
   const [selectedTab, setSelectedTab] = useState(initialTab);
   const [successMessage, setSuccessMessage] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   const {
     email: loginEmail,
@@ -174,15 +177,34 @@ function LoginPageContent() {
                     >
                       Contraseña <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      id="login-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all"
-                    />
+                    <div className="relative">
+                      <input
+                        id="login-password"
+                        type={showLoginPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        required
+                        className="w-full px-4 py-3 pr-12 rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowLoginPassword((prev) => !prev)
+                        }
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-[#616161] dark:text-[#b0b0b0] hover:text-[#212121] dark:hover:text-[#ffffff] hover:bg-[#f0f0f0] dark:hover:bg-[#2a2a2a] transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-[#1e1e1e]"
+                        aria-label={
+                          showLoginPassword
+                            ? "Ocultar contraseña"
+                            : "Mostrar contraseña"
+                        }
+                      >
+                        <HugeiconsIcon
+                          icon={showLoginPassword ? ViewOffIcon : EyeIcon}
+                          className="size-5"
+                        />
+                      </button>
+                    </div>
                   </div>
 
                   <button

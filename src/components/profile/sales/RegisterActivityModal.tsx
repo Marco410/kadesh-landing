@@ -63,8 +63,10 @@ export default function RegisterActivityModal({
 
   const activitiesWhere: TechSalesActivitiesVariables["where"] = {
     AND: [
-      { assignedSeller: { id: { equals: userId } } },
-      { businessLead: { id: { equals: leadId } } },
+      {
+        assignedSeller: { id: { equals: userId } },
+        businessLead: { id: { equals: leadId } },
+      },
     ],
   };
 

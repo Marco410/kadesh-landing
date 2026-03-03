@@ -20,12 +20,8 @@ import {
 import { Routes } from "kadesh/core/routes";
 import { Footer, Navigation } from "kadesh/components/layout";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  ArrowLeft01Icon,
-  Calendar02Icon,
-  FileAttachmentIcon,
-  MessageEditIcon,
-} from "@hugeicons/core-free-icons";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import { LeadCrmActions } from "kadesh/components/profile/sales/detail_lead";
 import { getCategoryLabel } from "kadesh/components/blog/constants";
 import { sileo } from "sileo";
 import { useUser } from "kadesh/utils/UserContext";
@@ -98,7 +94,6 @@ export default function LeadDetailPage() {
   const router = useRouter();
   const { user } = useUser();
   const id = typeof params?.id === "string" ? params.id : "";
-  const [activityModalOpen, setActivityModalOpen] = useState(false);
 
   const { data, loading, error } = useQuery<
     TechBusinessLeadResponse,
@@ -220,15 +215,6 @@ export default function LeadDetailPage() {
         description: "Intenta de nuevo más tarde.",
       });
     }
-  };
-  const handleNewProposal = () => {
-    // TODO: open modal or route to create TechProposal for this lead
-  };
-  const handleNewActivity = () => {
-    setActivityModalOpen(true);
-  };
-  const handleNewFollowUp = () => {
-    // TODO: open modal or route to create TechFollowUpTask for this lead
   };
 
   return (
@@ -471,46 +457,10 @@ export default function LeadDetailPage() {
                 </button>
               </div>
             </div>
-            <div className="p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-3">
-                Acciones CRM
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={handleNewProposal}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#212121] dark:text-[#ffffff] text-sm font-medium hover:bg-[#f5f5f5] dark:hover:bg-[#333] focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
-                  <HugeiconsIcon icon={FileAttachmentIcon} size={16} className="text-orange-500" />
-                  Enviar propuesta
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNewActivity}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#212121] dark:text-[#ffffff] text-sm font-medium hover:bg-[#f5f5f5] dark:hover:bg-[#333] focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
-                  <HugeiconsIcon icon={MessageEditIcon} size={16} className="text-orange-500" />
-                  Registrar actividad
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNewFollowUp}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#212121] dark:text-[#ffffff] text-sm font-medium hover:bg-[#f5f5f5] dark:hover:bg-[#333] focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
-                  <HugeiconsIcon icon={Calendar02Icon} size={16} className="text-orange-500" />
-                  Programar seguimiento
-                </button>
-              </div>
-            </div>
+            <LeadCrmActions leadId={id} userId={user?.id ?? ""} />
           </div>
         </div>
       </div>
-      <RegisterActivityModal
-        isOpen={activityModalOpen}
-        onClose={() => setActivityModalOpen(false)}
-        leadId={id}
-        userId={user?.id ?? ""}
-      />
       <Footer />
     </div>
   );

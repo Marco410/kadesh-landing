@@ -193,10 +193,10 @@ export const TECH_SALES_ACTIVITIES_QUERY = gql`
 
 export interface TechSalesActivitiesVariables {
   where: {
-    AND: Array<
-      | { assignedSeller: { id: { equals: string } } }
-      | { businessLead: { id: { equals: string } } }
-    >;
+    AND: Array<{
+      assignedSeller: { id: { equals: string } };
+      businessLead: { id: { equals: string } };
+    }>;
   };
 }
 

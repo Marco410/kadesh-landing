@@ -11,3 +11,10 @@ export const RADIUS_OPTIONS_VETERINARIES = [5, 10, 15, 20, 30] as const;
 
 export const VETERINARIES_PER_PAGE = 10;
 export const FETCH_LIMIT_VETERINARIES = 100;
+
+
+export enum Role {
+  USER = "user",
+  AUTHOR = "author",
+  VENDEDOR = "vendedor",
+}

@@ -243,7 +243,6 @@ export interface GetUserCommentsVariables {
     createdAt?: 'asc' | 'desc';
   }>;
 }
-
 export const DELETE_POST_COMMENT_MUTATION = gql`
   mutation DeletePostComment($where: PostCommentWhereUniqueInput!) {
     deletePostComment(where: $where) {

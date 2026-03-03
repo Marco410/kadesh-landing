@@ -19,6 +19,17 @@ interface UserPostsSectionProps {
   userId: string;
 }
 
+interface UserCommentItem {
+  id: string;
+  comment: string;
+  createdAt: string;
+  post: {
+    url: string;
+    title: string;
+    image?: { url: string } | null;
+  };
+}
+
 export default function UserPostsSection({ userId }: UserPostsSectionProps) {
   const [selectedTab, setSelectedTab] = useState('favorites');
 
@@ -140,7 +151,7 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
             />
           ) : (
             <div className="grid grid-cols-1 gap-6">
-              {comments.map((comment) => (
+              {comments.map((comment: UserCommentItem) => (
               <div
                 key={comment.id}
                 className="block bg-white dark:bg-[#2a2a2a] rounded-lg p-4 hover:shadow-md transition-all duration-300 relative group"

@@ -50,6 +50,7 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
   const initialized = useRef(false);
   const buttonRendered = useRef(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const renderedOnContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [authenticateWithGoogle] = useMutation<
     AuthenticateUserWithGoogleResponse,
@@ -134,11 +135,17 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
   const initAndRenderButton = useCallback(() => {
     const container = containerRef.current;
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (!container || !clientId || buttonRendered.current) return;
+    if (!container || !clientId) return;
+    // Re-render if we're on a different container (e.g. switched tab)
+    if (buttonRendered.current && renderedOnContainerRef.current === container)
+      return;
 
     loadGoogleGsiScript()
       .then((google) => {
-        if (!containerRef.current || buttonRendered.current) return;
+        if (!containerRef.current) return;
+        const target = containerRef.current;
+        if (buttonRendered.current && renderedOnContainerRef.current === target)
+          return;
 
         if (!initialized.current) {
           google.accounts.id.initialize({
@@ -149,15 +156,18 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
           initialized.current = true;
         }
 
-        google.accounts.id.renderButton(container, {
+        google.accounts.id.renderButton(target, {
           type: "standard",
           theme: "outline",
           size: "large",
           text: "continue_with",
-          width: container.offsetWidth || 384,
+          shape: "pill",
+          logo_alignment: "left",
+          width: Math.max(target.offsetWidth || 0, 320),
           locale: "es",
         });
         buttonRendered.current = true;
+        renderedOnContainerRef.current = target;
       })
       .catch((err) => {
         setError(
@@ -170,7 +180,15 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
   const googleButtonRef = useCallback(
     (el: HTMLDivElement | null) => {
       containerRef.current = el;
-      if (el) initAndRenderButton();
+      if (!el) {
+        renderedOnContainerRef.current = null;
+        return;
+      }
+      // When switching tabs we get a new container; allow re-render on it
+      if (el !== renderedOnContainerRef.current) {
+        buttonRendered.current = false;
+      }
+      initAndRenderButton();
     },
     [initAndRenderButton],
   );

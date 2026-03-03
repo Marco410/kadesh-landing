@@ -26,6 +26,48 @@ export const AUTHENTICATED_ITEM_QUERY = gql(`
   }
 `);
 
+export const USER_QUERY = gql`
+  query User($where: UserWhereUniqueInput!) {
+    user(where: $where) {
+      age
+      birthday
+      createdAt
+      email
+      id
+      lastName
+      name
+      phone
+      profileImage {
+        url
+      }
+      secondLastName
+      username
+      verified
+    }
+  }
+`;
+
+export interface UserQueryVariables {
+  where: { id: string };
+}
+
+export interface UserQueryResponse {
+  user: {
+    id: string;
+    name: string;
+    lastName: string;
+    secondLastName: string | null;
+    username: string;
+    email: string;
+    verified: boolean;
+    phone: string | null;
+    profileImage: { url: string } | null;
+    birthday: string | null;
+    age: number | null;
+    createdAt: string;
+  } | null;
+}
+
 export const AUTHENTICATE_USER_MUTATION = gql`
   mutation AuthenticateUserWithPassword($email: String!, $password: String!) {
     authenticateUserWithPassword(email: $email, password: $password) {
@@ -95,6 +137,46 @@ export const CREATE_USER_MUTATION = gql`
     }
   }
 `;
+
+export const UPDATE_USER_MUTATION = gql`
+  mutation UpdateUser($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {
+    updateUser(where: $where, data: $data) {
+      id
+      name
+      lastName
+      secondLastName
+      phone
+      birthday
+      profileImage {
+        url
+      }
+    }
+  }
+`;
+
+export interface UpdateUserVariables {
+  where: { id: string };
+  data: {
+    name?: string;
+    lastName?: string;
+    secondLastName?: string | null;
+    phone?: string | null;
+    birthday?: string | null;
+    profileImage?: { upload: File } | { disconnect?: boolean };
+  };
+}
+
+export interface UpdateUserResponse {
+  updateUser: {
+    id: string;
+    name: string;
+    lastName: string;
+    secondLastName: string | null;
+    phone: string | null;
+    birthday: string | null;
+    profileImage: { url: string } | null;
+  } | null;
+}
 
 export interface AuthenticateUserVariables {
   email: string;

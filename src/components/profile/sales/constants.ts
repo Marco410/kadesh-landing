@@ -131,3 +131,16 @@ export const PROPOSAL_STATUS = {
   RECHAZADA: "Rechazada",
   COMPRADA: "Comprada",
 } as const;
+
+export const FOLLOW_UP_TASK_STATUS = {
+  PENDIENTE: "Pendiente",
+  COMPLETADO: "Completado",
+  CANCELADO: "Cancelado",
+  POSPUESTO: "Pospuesto",
+} as const;
+
+export const TASK_PRIORITY = {
+  BAJA: "Baja",
+  MEDIA: "Media",
+  ALTA: "Alta",
+} as const;

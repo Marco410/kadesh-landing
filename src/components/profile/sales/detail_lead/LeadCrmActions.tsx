@@ -10,13 +10,17 @@ import {
 } from "@hugeicons/core-free-icons";
 import RegisterActivityModal from "./RegisterActivityModal";
 import RegisterProposalModal from "./RegisterProposalModal";
+import RegisterFollowUpModal from "./RegisterFollowUpModal";
 import {
   TECH_SALES_ACTIVITIES_COUNT_QUERY,
   TECH_PROPOSALS_COUNT_QUERY,
+  TECH_FOLLOW_UP_TASKS_COUNT_QUERY,
   type TechSalesActivitiesVariables,
   type TechSalesActivitiesCountResponse,
   type TechProposalsVariables,
   type TechProposalsCountResponse,
+  type TechFollowUpTasksVariables,
+  type TechFollowUpTasksCountResponse,
 } from "kadesh/components/profile/sales/queries";
 
 const buttonClassName =
@@ -33,6 +37,7 @@ export default function LeadCrmActions({
 }: LeadCrmActionsProps) {
   const [activityModalOpen, setActivityModalOpen] = useState(false);
   const [proposalModalOpen, setProposalModalOpen] = useState(false);
+  const [followUpModalOpen, setFollowUpModalOpen] = useState(false);
 
   const activitiesWhere: TechSalesActivitiesVariables["where"] = {
     AND: [
@@ -44,6 +49,15 @@ export default function LeadCrmActions({
   };
 
   const proposalsWhere: TechProposalsVariables["where"] = {
+    AND: [
+      {
+        assignedSeller: { id: { equals: userId } },
+        businessLead: { id: { equals: leadId } },
+      },
+    ],
+  };
+
+  const followUpTasksWhere: TechFollowUpTasksVariables["where"] = {
     AND: [
       {
         assignedSeller: { id: { equals: userId } },
@@ -70,8 +84,18 @@ export default function LeadCrmActions({
     fetchPolicy: "network-only",
   });
 
+  const { data: followUpCountData } = useQuery<
+    TechFollowUpTasksCountResponse,
+    TechFollowUpTasksVariables
+  >(TECH_FOLLOW_UP_TASKS_COUNT_QUERY, {
+    variables: { where: followUpTasksWhere },
+    skip: !leadId || !userId,
+    fetchPolicy: "network-only",
+  });
+
   const activitiesCount = countData?.techSalesActivitiesCount ?? 0;
   const proposalsCount = proposalsCountData?.techProposalsCount ?? 0;
+  const followUpCount = followUpCountData?.techFollowUpTasksCount ?? 0;
 
   const handleNewProposal = () => {
     setProposalModalOpen(true);
@@ -80,11 +104,14 @@ export default function LeadCrmActions({
     setActivityModalOpen(true);
   };
   const handleNewFollowUp = () => {
-    // TODO: open modal or route to create TechFollowUpTask for this lead
+    setFollowUpModalOpen(true);
   };
 
   return (
     <div className="flex flex-col gap-4 p-4">
+       <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0]">
+          Acciones
+        </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] p-4 shadow-sm">
             <p className="text-sm font-medium text-[#616161] dark:text-[#b0b0b0]">
@@ -107,14 +134,12 @@ export default function LeadCrmActions({
             Seguimientos programados
             </p>
             <p className="text-2xl font-bold text-[#212121] dark:text-[#ffffff] mt-1">
-              {activitiesCount}
+              {followUpCount}
             </p>
         </div>
       </div>
       <div className="">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-3">
-          Acciones
-        </p>
+       
         <div className="flex flex-row gap-3 ">
           <button
             type="button"
@@ -151,6 +176,12 @@ export default function LeadCrmActions({
       <RegisterProposalModal
         isOpen={proposalModalOpen}
         onClose={() => setProposalModalOpen(false)}
+        leadId={leadId}
+        userId={userId}
+      />
+      <RegisterFollowUpModal
+        isOpen={followUpModalOpen}
+        onClose={() => setFollowUpModalOpen(false)}
         leadId={leadId}
         userId={userId}
       />

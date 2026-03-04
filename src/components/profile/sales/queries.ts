@@ -481,3 +481,139 @@ export interface UpdateTechProposalMutation {
     businessLead: { businessName: string } | null;
   };
 }
+
+// --- TechFollowUpTask ---
+
+export const TECH_FOLLOW_UP_TASKS_QUERY = gql`
+  query TechFollowUpTasks($where: TechFollowUpTaskWhereInput!) {
+    techFollowUpTasks(where: $where) {
+      id
+      scheduledDate
+      status
+      priority
+      notes
+      createdAt
+      updatedAt
+      businessLead {
+        id
+        businessName
+      }
+    }
+  }
+`;
+
+export const TECH_FOLLOW_UP_TASKS_COUNT_QUERY = gql`
+  query TechFollowUpTasksCount($where: TechFollowUpTaskWhereInput!) {
+    techFollowUpTasksCount(where: $where)
+  }
+`;
+
+export interface TechFollowUpTasksVariables {
+  where: {
+    AND: Array<{
+      assignedSeller: { id: { equals: string } };
+      businessLead: { id: { equals: string } };
+    }>;
+  };
+}
+
+export interface TechFollowUpTasksResponse {
+  techFollowUpTasks: Array<{
+    id: string;
+    scheduledDate: string;
+    status: string;
+    priority: string;
+    notes: string | null;
+    createdAt: string;
+    updatedAt: string | null;
+    businessLead: { id: string; businessName: string } | null;
+  }>;
+}
+
+export interface TechFollowUpTasksCountResponse {
+  techFollowUpTasksCount: number;
+}
+
+export const CREATE_TECH_FOLLOW_UP_TASK_MUTATION = gql`
+  mutation CreateTechFollowUpTask($data: TechFollowUpTaskCreateInput!) {
+    createTechFollowUpTask(data: $data) {
+      id
+      scheduledDate
+      status
+      priority
+      notes
+      businessLead {
+        businessName
+      }
+      assignedSeller {
+        name
+      }
+      createdAt
+    }
+  }
+`;
+
+export interface CreateTechFollowUpTaskVariables {
+  data: {
+    scheduledDate: string;
+    status?: string | null;
+    priority?: string | null;
+    notes?: string | null;
+    businessLead: { connect: { id: string } };
+    assignedSeller: { connect: { id: string } };
+  };
+}
+
+export interface CreateTechFollowUpTaskMutation {
+  createTechFollowUpTask: {
+    id: string;
+    scheduledDate: string;
+    status: string;
+    priority: string;
+    notes: string | null;
+    businessLead: { businessName: string } | null;
+    assignedSeller: { name: string } | null;
+    createdAt: string;
+  };
+}
+
+export const UPDATE_TECH_FOLLOW_UP_TASK_MUTATION = gql`
+  mutation UpdateTechFollowUpTask(
+    $where: TechFollowUpTaskWhereUniqueInput!
+    $data: TechFollowUpTaskUpdateInput!
+  ) {
+    updateTechFollowUpTask(where: $where, data: $data) {
+      id
+      scheduledDate
+      status
+      priority
+      notes
+      updatedAt
+      businessLead {
+        businessName
+      }
+    }
+  }
+`;
+
+export interface UpdateTechFollowUpTaskVariables {
+  where: { id: string };
+  data: {
+    scheduledDate?: string | null;
+    status?: string | null;
+    priority?: string | null;
+    notes?: string | null;
+  };
+}
+
+export interface UpdateTechFollowUpTaskMutation {
+  updateTechFollowUpTask: {
+    id: string;
+    scheduledDate: string;
+    status: string;
+    priority: string;
+    notes: string | null;
+    updatedAt: string | null;
+    businessLead: { businessName: string } | null;
+  };
+}

@@ -13,7 +13,6 @@ import {
   type UpdateTechBusinessLeadMutation,
 } from "kadesh/components/profile/sales/queries";
 import {
-  GOOGLE_PLACE_CATEGORIES,
   PIPELINE_STATUS,
   PIPELINE_STATUS_COLORS,
 } from "kadesh/components/profile/sales/constants";
@@ -25,7 +24,7 @@ import { LeadCrmActions } from "kadesh/components/profile/sales/detail_lead";
 import { getCategoryLabel } from "kadesh/components/blog/constants";
 import { sileo } from "sileo";
 import { useUser } from "kadesh/utils/UserContext";
-import RegisterActivityModal from "kadesh/components/profile/sales/RegisterActivityModal";
+
 
 const PIPELINE_OPTIONS = Object.values(PIPELINE_STATUS);
 const DEFAULT_PIPELINE_HEADER =
@@ -221,20 +220,23 @@ export default function LeadDetailPage() {
     <div className="min-h-screen bg-[#f8f8f8] dark:bg-[#121212]">
       <Navigation />
       <div className="w-full max-w-[1920px] mx-auto px-15 pt-20 pb-8">
-        <div className="flex flex-wrap items-center gap-3 mb-4">
-          <Link
-            href={`${Routes.profile}?tab=ventas`}
-            className="inline-flex items-center gap-1.5 text-sm text-[#616161] dark:text-[#b0b0b0] hover:text-orange-500 dark:hover:text-orange-400"
-          >
-            <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
-            Volver a Ventas
-          </Link>
-          <h1 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] truncate">
-            {lead.businessName || "Lead sin nombre"}
-          </h1>
+        <div className="flex flex-wrap items-center gap-3 mb-4 justify-between">
+          <div className="flex flex-row gap-2">
+            <Link
+              href={`${Routes.profile}?tab=ventas`}
+              className="inline-flex items-center gap-1.5 text-sm text-[#616161] dark:text-[#b0b0b0] hover:text-orange-500 dark:hover:text-orange-400"
+              >
+              <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
+              Volver a Ventas
+            </Link>
+            <h1 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] truncate">
+              {lead.businessName || "Lead sin nombre"}
+            </h1>
+          </div>
+          <SaveLeadButton saving={saving} handleSaveLead={handleSaveLead} />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <SectionCard
             title="Información de la empresa"
             headerClassName={`px-3 py-2 text-xs font-semibold uppercase tracking-wide border-b border-[#e0e0e0] dark:border-[#3a3a3a] ${
@@ -406,6 +408,8 @@ export default function LeadDetailPage() {
           </SectionCard>
         </div>
 
+        <SaveLeadButton saving={saving} handleSaveLead={handleSaveLead} />
+
         <div className="rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] overflow-hidden">
           <h2 className={`px-4 py-3 text-sm font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] bg-[#f5f5f5] dark:bg-[#2a2a2a] border-b border-[#e0e0e0] dark:border-[#3a3a3a] ${
               PIPELINE_STATUS_COLORS[pipelineStatus] ?? DEFAULT_PIPELINE_HEADER
@@ -446,22 +450,31 @@ export default function LeadDetailPage() {
                   className="w-full rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-3 py-2 text-[#212121] dark:text-[#ffffff] text-sm placeholder-[#9ca3af] focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-y min-h-[80px]"
                 />
               </div>
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={handleSaveLead}
-                  disabled={saving}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-[#1e1e1e] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {saving ? "Guardando..." : "Guardar cambios"}
-                </button>
-              </div>
+             
             </div>
             <LeadCrmActions leadId={id} userId={user?.id ?? ""} />
           </div>
         </div>
+        <SaveLeadButton saving={saving} handleSaveLead={handleSaveLead} />
       </div>
       <Footer />
     </div>
+  );
+}
+
+
+export function SaveLeadButton({ saving, handleSaveLead, }: { saving: boolean, handleSaveLead: () => void }) {
+  return (
+    <div className="flex flex-wrap gap-3 pt-4 pb-4 justify-end">
+      <button
+        type="button"
+        onClick={handleSaveLead}
+        disabled={saving}
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-[#1e1e1e] disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {saving ? "Guardando..." : "Guardar cambios"}
+      </button>
+    </div>
+
   );
 }

@@ -123,3 +123,11 @@ export const SALES_ACTIVITY_TYPE = {
   EMAIL: "Email",
   REUNION: "Reunión",
 } as const;
+
+export const PROPOSAL_STATUS = {
+  ENVIADA: "Enviada",
+  PENDIENTE: "Pendiente",
+  ACEPTADA: "Aceptada",
+  RECHAZADA: "Rechazada",
+  COMPRADA: "Comprada",
+} as const;

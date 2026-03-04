@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useQuery, useMutation } from "@apollo/client";
 import {
   TECH_SALES_ACTIVITIES_QUERY,
+  TECH_SALES_ACTIVITIES_COUNT_QUERY,
   CREATE_TECH_SALES_ACTIVITY_MUTATION,
   type TechSalesActivitiesVariables,
   type TechSalesActivitiesResponse,
@@ -76,6 +77,7 @@ export default function RegisterActivityModal({
   >(TECH_SALES_ACTIVITIES_QUERY, {
     variables: { where: activitiesWhere },
     skip: !isOpen || !leadId || !userId,
+    fetchPolicy: "network-only",
   });
 
   const [createActivity, { loading: submitting }] = useMutation<
@@ -84,10 +86,14 @@ export default function RegisterActivityModal({
   >(CREATE_TECH_SALES_ACTIVITY_MUTATION, {
     refetchQueries: [
       { query: TECH_SALES_ACTIVITIES_QUERY, variables: { where: activitiesWhere } },
+      { query: TECH_SALES_ACTIVITIES_COUNT_QUERY, variables: { where: activitiesWhere } },
     ],
   });
 
   const activities = activitiesData?.techSalesActivities ?? [];
+
+  type ActivityItem = (typeof activities)[number];
+  const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -95,6 +101,7 @@ export default function RegisterActivityModal({
       setActivityDate(formatDateTimeLocal(new Date()));
       setResult("");
       setComments("");
+      setSelectedActivity(null);
     }
   }, [isOpen]);
 
@@ -199,7 +206,16 @@ export default function RegisterActivityModal({
                         {activities.map((a) => (
                           <tr
                             key={a.id}
-                            className="border-b border-[#e0e0e0] dark:border-[#3a3a3a] hover:bg-[#fafafa] dark:hover:bg-[#252525]"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => setSelectedActivity(a)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                setSelectedActivity(a);
+                              }
+                            }}
+                            className="border-b border-[#e0e0e0] dark:border-[#3a3a3a] hover:bg-[#fafafa] dark:hover:bg-[#252525] cursor-pointer transition-colors"
                           >
                             <td className="px-3 py-2 text-[#616161] dark:text-[#b0b0b0] whitespace-nowrap">
                               {formatDateShort(a.activityDate)}
@@ -220,6 +236,83 @@ export default function RegisterActivityModal({
                   </div>
                 )}
               </div>
+
+              {/* Modal detalle del registro */}
+              <AnimatePresence>
+                {selectedActivity && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4"
+                      onClick={() => setSelectedActivity(null)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                      className="fixed inset-0 z-[80] flex items-center justify-center p-4 pointer-events-none"
+                    >
+                      <div
+                        className="bg-[#ffffff] dark:bg-[#1e1e1e] rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] overflow-hidden pointer-events-auto border border-[#e0e0e0] dark:border-[#3a3a3a] flex flex-col"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex justify-between items-center p-4 border-b border-[#e0e0e0] dark:border-[#3a3a3a] bg-[#f5f5f5] dark:bg-[#2a2a2a]">
+                          <h4 className="text-lg font-bold text-[#212121] dark:text-[#ffffff]">
+                            Detalle de actividad
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedActivity(null)}
+                            className="text-2xl font-bold text-[#616161] dark:text-[#b0b0b0] hover:text-[#212121] dark:hover:text-[#ffffff] w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#e5e5e5] dark:hover:bg-[#333]"
+                            aria-label="Cerrar"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <div className="p-4 overflow-y-auto space-y-4">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">Fecha y hora</p>
+                            <p className="text-sm text-[#212121] dark:text-[#ffffff]">
+                              {formatDateShort(selectedActivity.activityDate)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">Tipo</p>
+                            <p className="text-sm text-[#212121] dark:text-[#ffffff]">{selectedActivity.type}</p>
+                          </div>
+                          {selectedActivity.businessLead && (
+                            <div>
+                              <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">Empresa</p>
+                              <p className="text-sm text-[#212121] dark:text-[#ffffff]">{selectedActivity.businessLead.businessName}</p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">Resultado de la interacción</p>
+                            <p className="text-sm text-[#212121] dark:text-[#ffffff] whitespace-pre-wrap break-words">
+                              {selectedActivity.result ?? "—"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">Comentarios</p>
+                            <p className="text-sm text-[#212121] dark:text-[#ffffff] whitespace-pre-wrap break-words">
+                              {selectedActivity.comments ?? "—"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">Registrado</p>
+                            <p className="text-sm text-[#212121] dark:text-[#ffffff]">
+                              {formatDateShort(selectedActivity.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
 
               <div className="border-t border-[#e0e0e0] dark:border-[#3a3a3a] pt-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-3 px-6">

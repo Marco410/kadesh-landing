@@ -174,6 +174,16 @@ export interface UpdateTechBusinessLeadMutation {
   };
 }
 
+export const TECH_SALES_ACTIVITIES_COUNT_QUERY = gql`
+  query TechSalesActivitiesCount($where: TechSalesActivityWhereInput!) {
+    techSalesActivitiesCount(where: $where)
+  }
+`;
+
+export interface TechSalesActivitiesCountResponse {
+  techSalesActivitiesCount: number;
+}
+
 export const TECH_SALES_ACTIVITIES_QUERY = gql`
   query TechSalesActivities($where: TechSalesActivityWhereInput!) {
     techSalesActivities(where: $where) {
@@ -242,5 +252,100 @@ export interface CreateTechSalesActivityMutation {
     activityDate: string;
     result: string | null;
     comments: string | null;
+  };
+}
+
+// --- TechProposal ---
+
+export const TECH_PROPOSALS_QUERY = gql`
+  query TechProposals($where: TechProposalWhereInput!) {
+    techProposals(where: $where) {
+      id
+      sentDate
+      amount
+      status
+      fileOrUrl
+      createdAt
+      updatedAt
+      businessLead {
+        id
+        businessName
+      }
+    }
+  }
+`;
+
+export const TECH_PROPOSALS_COUNT_QUERY = gql`
+  query TechProposalsCount($where: TechProposalWhereInput!) {
+    techProposalsCount(where: $where)
+  }
+`;
+
+export interface TechProposalsVariables {
+  where: {
+    AND: Array<{
+      assignedSeller: { id: { equals: string } };
+      businessLead: { id: { equals: string } };
+    }>;
+  };
+}
+
+export interface TechProposalsResponse {
+  techProposals: Array<{
+    id: string;
+    sentDate: string;
+    amount: number | null;
+    status: string;
+    fileOrUrl: string | null;
+    createdAt: string;
+    updatedAt: string | null;
+    businessLead: { id: string; businessName: string } | null;
+  }>;
+}
+
+export interface TechProposalsCountResponse {
+  techProposalsCount: number;
+}
+
+export const CREATE_TECH_PROPOSAL_MUTATION = gql`
+  mutation CreateTechProposal($data: TechProposalCreateInput!) {
+    createTechProposal(data: $data) {
+      id
+      sentDate
+      amount
+      status
+      fileOrUrl
+      businessLead {
+        businessName
+      }
+      assignedSeller {
+        name
+      }
+      createdAt
+    }
+  }
+`;
+
+export interface CreateTechProposalVariables {
+  data: {
+    sentDate: string;
+    amount?: number | null;
+    status?: string | null;
+    fileOrUrl?: string | null;
+    businessLead: { connect: { id: string } };
+    assignedSeller: { connect: { id: string } };
+  };
+}
+
+export interface CreateTechProposalMutation {
+  createTechProposal: {
+    id: string;
+    sentDate: string;
+    amount: number | null;
+    status: string;
+    fileOrUrl: string | null;
+    businessLead: { businessName: string } | null;
+    assignedSeller: { name: string } | null;
+    createdAt: string;
   };
 }

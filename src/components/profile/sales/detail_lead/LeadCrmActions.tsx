@@ -22,9 +22,10 @@ import {
   type TechFollowUpTasksVariables,
   type TechFollowUpTasksCountResponse,
 } from "kadesh/components/profile/sales/queries";
+import { EVENT_COLORS } from "../constants";
 
 const buttonClassName =
-  "inline-flex text-center items-center gap-2 px-4 py-2.5 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#212121] dark:text-[#ffffff] text-sm font-medium hover:bg-[#f5f5f5] dark:hover:bg-[#333] focus:outline-none focus:ring-2 focus:ring-orange-500 w-full";
+  "inline-flex text-center items-center gap-2 px-4 py-2.5 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] text-sm font-medium hover:bg-[#f5f5f5] dark:hover:bg-[#333] focus:outline-none focus:ring-2 focus:ring-orange-500 w-full";
 
 export interface LeadCrmActionsProps {
   leadId: string;
@@ -144,25 +145,25 @@ export default function LeadCrmActions({
           <button
             type="button"
             onClick={handleNewActivity}
-            className={buttonClassName}
+            className={`${buttonClassName} ${EVENT_COLORS.activity}`}
           >
-            <HugeiconsIcon icon={MessageEditIcon} size={16} className="text-orange-500" />
+            <HugeiconsIcon icon={MessageEditIcon} size={16} className="text-white" />
             Registrar actividad
           </button>
           <button
             type="button"
             onClick={handleNewProposal}
-            className={buttonClassName}
+            className={`${buttonClassName} ${EVENT_COLORS.proposal}`}
           >
-            <HugeiconsIcon icon={FileAttachmentIcon} size={16} className="text-orange-500" />
+            <HugeiconsIcon icon={FileAttachmentIcon} size={16} className="text-white" />
             Registrar propuesta
           </button>
           <button
             type="button"
             onClick={handleNewFollowUp}
-            className={buttonClassName}
+              className={`${buttonClassName} ${EVENT_COLORS.followup}`}
           >
-            <HugeiconsIcon icon={Calendar02Icon} size={16} className="text-orange-500" />
+            <HugeiconsIcon icon={Calendar02Icon} size={16} className="text-white" />
             Programar seguimiento
           </button>
         </div>

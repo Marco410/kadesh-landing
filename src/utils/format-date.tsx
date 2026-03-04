@@ -57,3 +57,16 @@ export const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: true });
   };
+
+  export function formatDateShort(value: string | null | undefined): string {
+    if (!value) return "—";
+    const iso = value.includes("T") ? value : `${value.slice(0, 10)}T12:00:00`;
+    const d = new Date(iso);
+    return d.toLocaleDateString("es-MX", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }

@@ -17,17 +17,11 @@ import {
 } from "kadesh/components/profile/sales/queries";
 import { PROPOSAL_STATUS } from "kadesh/components/profile/sales/constants";
 import { sileo } from "sileo";
+import { formatDateShort } from "kadesh/utils/format-date";
+import ProposalDetailModal from "./ProposalDetailModal";
 
 const PROPOSAL_STATUS_OPTIONS = Object.values(PROPOSAL_STATUS);
 
-function formatDateShort(value: string | null | undefined): string {
-  if (!value) return "—";
-  return new Date(value).toLocaleDateString("es-MX", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 function formatDateForInput(value: string): string {
   if (!value) return "";
@@ -99,7 +93,7 @@ export default function RegisterProposalModal({
   const proposals = proposalsData?.techProposals ?? [];
 
   type ProposalItem = (typeof proposals)[number];
-  const [selectedProposal, setSelectedProposal] = useState<ProposalItem | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingProposal, setEditingProposal] = useState<ProposalItem | null>(null);
 
   const submitting = creating || updating;
@@ -111,13 +105,14 @@ export default function RegisterProposalModal({
       setAmount("");
       setStatus(PROPOSAL_STATUS.ENVIADA);
       setFileOrUrl("");
-      setSelectedProposal(null);
+      setSelectedId(null);
       setEditingProposal(null);
     }
   }, [isOpen]);
 
   const fillFormForEdit = (p: ProposalItem) => {
     setEditingProposal(p);
+    setSelectedId(null);
     setSentDate(formatDateForInput(p.sentDate));
     setAmount(p.amount != null ? String(p.amount) : "");
     setStatus(p.status);
@@ -259,11 +254,11 @@ export default function RegisterProposalModal({
                             key={p.id}
                             role="button"
                             tabIndex={0}
-                            onClick={() => setSelectedProposal(p)}
+                            onClick={() => setSelectedId(p.id)}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" || e.key === " ") {
                                 e.preventDefault();
-                                setSelectedProposal(p);
+                                setSelectedId(p.id);
                               }
                             }}
                             className={`border-b border-[#e0e0e0] dark:border-[#3a3a3a] hover:bg-[#fafafa] dark:hover:bg-[#252525] cursor-pointer transition-colors ${
@@ -301,103 +296,11 @@ export default function RegisterProposalModal({
                 )}
               </div>
 
-              {/* Modal detalle de la propuesta */}
-              <AnimatePresence>
-                {selectedProposal && (
-                  <>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4"
-                      onClick={() => setSelectedProposal(null)}
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                      className="fixed inset-0 z-[80] flex items-center justify-center p-4 pointer-events-none"
-                    >
-                      <div
-                        className="bg-[#ffffff] dark:bg-[#1e1e1e] rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] overflow-hidden pointer-events-auto border border-[#e0e0e0] dark:border-[#3a3a3a] flex flex-col"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex justify-between items-center p-4 border-b border-[#e0e0e0] dark:border-[#3a3a3a] bg-[#f5f5f5] dark:bg-[#2a2a2a]">
-                          <h4 className="text-lg font-bold text-[#212121] dark:text-[#ffffff]">
-                            Detalle de propuesta
-                          </h4>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedProposal(null)}
-                            className="text-2xl font-bold text-[#616161] dark:text-[#b0b0b0] hover:text-[#212121] dark:hover:text-[#ffffff] w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#e5e5e5] dark:hover:bg-[#333]"
-                            aria-label="Cerrar"
-                          >
-                            ×
-                          </button>
-                        </div>
-                        <div className="p-4 overflow-y-auto space-y-4">
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">Fecha envío</p>
-                            <p className="text-sm text-[#212121] dark:text-[#ffffff]">
-                              {formatDateShort(selectedProposal.sentDate)}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">Monto</p>
-                            <p className="text-sm text-[#212121] dark:text-[#ffffff]">
-                              {selectedProposal.amount != null
-                                ? `$${Number(selectedProposal.amount).toLocaleString("es-MX")}`
-                                : "—"}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">Estado</p>
-                            <p className="text-sm text-[#212121] dark:text-[#ffffff]">{selectedProposal.status}</p>
-                          </div>
-                          {selectedProposal.businessLead && (
-                            <div>
-                              <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">Empresa</p>
-                              <p className="text-sm text-[#212121] dark:text-[#ffffff]">{selectedProposal.businessLead.businessName}</p>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">URL</p>
-                            <p className="text-sm text-[#212121] dark:text-[#ffffff] whitespace-pre-wrap break-all">
-                              {selectedProposal.fileOrUrl ? (
-                                <a
-                                  href={selectedProposal.fileOrUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-orange-500 hover:underline"
-                                >
-                                  {selectedProposal.fileOrUrl}
-                                </a>
-                              ) : (
-                                "—"
-                              )}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">Registrado</p>
-                            <p className="text-sm text-[#212121] dark:text-[#ffffff]">
-                              {formatDateShort(selectedProposal.createdAt)}
-                            </p>
-                          </div>
-                          {selectedProposal.updatedAt && (
-                            <div>
-                              <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-1">Actualizado</p>
-                              <p className="text-sm text-[#212121] dark:text-[#ffffff]">
-                                {formatDateShort(selectedProposal.updatedAt)}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
+              <ProposalDetailModal
+                proposalId={selectedId}
+                isOpen={!!selectedId}
+                onClose={() => setSelectedId(null)}
+              />
 
               <div className="border-t border-[#e0e0e0] dark:border-[#3a3a3a] pt-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-3 px-6">

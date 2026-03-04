@@ -73,19 +73,12 @@ export default function SalesLeadsTable({ leads }: SalesLeadsTableProps) {
             <th className="text-left px-4 py-3 font-semibold text-[#212121] dark:text-[#ffffff] whitespace-nowrap">
               Estado
             </th>
-            <th className="text-left px-4 py-3 font-semibold text-[#212121] dark:text-[#ffffff] whitespace-nowrap max-w-[200px]">
-              Dirección
-            </th>
             <th className="text-left px-4 py-3 font-semibold text-[#212121] dark:text-[#ffffff] whitespace-nowrap">
-              Primer contacto
-            </th>
-            <th className="text-left px-4 py-3 font-semibold text-[#212121] dark:text-[#ffffff] whitespace-nowrap">
-              Próx. seguimiento
+              País
             </th>
             <th className="text-left px-4 py-3 font-semibold text-[#212121] dark:text-[#ffffff] whitespace-nowrap">
               Oportunidad
             </th>
-            
             <th className="text-center px-4 py-3 font-semibold text-[#212121] dark:text-[#ffffff] whitespace-nowrap">
               Rating
             </th>
@@ -150,17 +143,8 @@ export default function SalesLeadsTable({ leads }: SalesLeadsTableProps) {
               <td className="px-4 py-3 text-[#616161] dark:text-[#b0b0b0]">
                 {lead.state ?? "—"}
               </td>
-              <td
-                className="px-4 py-3 text-[#616161] dark:text-[#b0b0b0] max-w-[200px] truncate"
-                title={lead.address ?? undefined}
-              >
-                {lead.address ?? "—"}
-              </td>
-              <td className="px-4 py-3 text-[#616161] dark:text-[#b0b0b0] whitespace-nowrap">
-                {formatDate(lead.status?.firstContactDate)}
-              </td>
-              <td className="px-4 py-3 text-[#616161] dark:text-[#b0b0b0] whitespace-nowrap">
-                {formatDate(lead.status?.nextFollowUpDate)}
+              <td className="px-4 py-3 text-[#616161] dark:text-[#b0b0b0]">
+                {lead.country ?? "—"}
               </td>
               <td className="px-4 py-3 text-[#616161] dark:text-[#b0b0b0]">
                 {lead.status?.opportunityLevel ?? "—"}

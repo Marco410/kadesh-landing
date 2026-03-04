@@ -144,3 +144,15 @@ export const TASK_PRIORITY = {
   MEDIA: "Media",
   ALTA: "Alta",
 } as const;
+
+export const EVENT_COLORS = {
+  activity: "bg-orange-500",
+  proposal: "bg-blue-500",
+  followup: "bg-emerald-500",
+} as const;
+
+export const EVENT_LABELS = {
+  activity: "Actividad",
+  proposal: "Propuesta",
+  followup: "Seguimiento",
+} as const;

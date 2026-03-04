@@ -9,6 +9,7 @@ export const TECH_BUSINESS_LEADS_QUERY = gql`
       category
       city
       state
+      country
       createdAt
       phone
       rating
@@ -40,6 +41,7 @@ export interface TechBusinessLeadsResponse {
     category: string | null;
     city: string | null;
     state: string | null;
+    country: string | null;
     createdAt: string;
     phone: string | null;
     rating: number | null;
@@ -311,6 +313,39 @@ export interface TechSalesActivitiesResponse {
   }>;
 }
 
+export const TECH_SALES_ACTIVITY_QUERY = gql`
+  query TechSalesActivity($where: TechSalesActivityWhereUniqueInput!) {
+    techSalesActivity(where: $where) {
+      id
+      activityDate
+      type
+      result
+      comments
+      createdAt
+      businessLead {
+        id
+        businessName
+      }
+    }
+  }
+`;
+
+export interface TechSalesActivityVariables {
+  where: { id: string };
+}
+
+export interface TechSalesActivityResponse {
+  techSalesActivity: {
+    id: string;
+    activityDate: string;
+    type: string;
+    result: string | null;
+    comments: string | null;
+    createdAt: string;
+    businessLead: { id: string; businessName: string } | null;
+  } | null;
+}
+
 export const CREATE_TECH_SALES_ACTIVITY_MUTATION = gql`
   mutation CreateTechSalesActivity($data: TechSalesActivityCreateInput!) {
     createTechSalesActivity(data: $data) {
@@ -394,6 +429,41 @@ export interface TechProposalsResponse {
 
 export interface TechProposalsCountResponse {
   techProposalsCount: number;
+}
+
+export const TECH_PROPOSAL_QUERY = gql`
+  query TechProposal($where: TechProposalWhereUniqueInput!) {
+    techProposal(where: $where) {
+      id
+      sentDate
+      amount
+      status
+      fileOrUrl
+      createdAt
+      updatedAt
+      businessLead {
+        id
+        businessName
+      }
+    }
+  }
+`;
+
+export interface TechProposalVariables {
+  where: { id: string };
+}
+
+export interface TechProposalResponse {
+  techProposal: {
+    id: string;
+    sentDate: string;
+    amount: number | null;
+    status: string;
+    fileOrUrl: string | null;
+    createdAt: string;
+    updatedAt: string | null;
+    businessLead: { id: string; businessName: string } | null;
+  } | null;
 }
 
 export const CREATE_TECH_PROPOSAL_MUTATION = gql`
@@ -532,6 +602,41 @@ export interface TechFollowUpTasksResponse {
 
 export interface TechFollowUpTasksCountResponse {
   techFollowUpTasksCount: number;
+}
+
+export const TECH_FOLLOW_UP_TASK_QUERY = gql`
+  query TechFollowUpTask($where: TechFollowUpTaskWhereUniqueInput!) {
+    techFollowUpTask(where: $where) {
+      id
+      scheduledDate
+      status
+      priority
+      notes
+      createdAt
+      updatedAt
+      businessLead {
+        id
+        businessName
+      }
+    }
+  }
+`;
+
+export interface TechFollowUpTaskVariables {
+  where: { id: string };
+}
+
+export interface TechFollowUpTaskResponse {
+  techFollowUpTask: {
+    id: string;
+    scheduledDate: string;
+    status: string;
+    priority: string;
+    notes: string | null;
+    createdAt: string;
+    updatedAt: string | null;
+    businessLead: { id: string; businessName: string } | null;
+  } | null;
 }
 
 export const CREATE_TECH_FOLLOW_UP_TASK_MUTATION = gql`

@@ -8,36 +8,22 @@ import {
 } from "kadesh/components/profile/sales/constants";
 import { Routes } from "kadesh/core/routes";
 import { getCategoryLabel } from "./helpers/category";
+import { ApolloError } from "@apollo/client";
 
 
 
 const DEFAULT_PIPELINE_COLOR =
   "bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300";
 
-function formatDate(value: string | null | undefined): string {
-  if (!value) return "—";
-  return new Date(value).toLocaleDateString("es-MX", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function formatCurrency(value: number | null | undefined): string {
-  if (value == null) return "—";
-  return new Intl.NumberFormat("es-MX", {
-    style: "currency",
-    currency: "MXN",
-  }).format(value);
-}
-
 type LeadItem = TechBusinessLeadsResponse["techBusinessLeads"][number];
 
 interface SalesLeadsTableProps {
   leads: LeadItem[];
+  loading: boolean;
+  error: ApolloError | undefined;
 }
 
-export default function SalesLeadsTable({ leads }: SalesLeadsTableProps) {
+export default function SalesLeadsTable({ leads, loading, error }: SalesLeadsTableProps) {
   const router = useRouter();
 
   if (leads.length === 0) {
@@ -46,6 +32,22 @@ export default function SalesLeadsTable({ leads }: SalesLeadsTableProps) {
         <div className="p-8 rounded-xl bg-[#f5f5f5] dark:bg-[#2a2a2a] border border-[#e0e0e0] dark:border-[#3a3a3a] text-center text-[#616161] dark:text-[#b0b0b0]">
           No hay leads.
         </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center py-16">
+        <span className="animate-spin size-10 border-2 border-orange-500 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full p-6 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm">
+        No se pudieron cargar los leads. Intenta de nuevo más tarde.
       </div>
     );
   }

@@ -30,19 +30,11 @@ import LeadDetailCalendar from "./LeadDetailCalendar";
 import { getCategoryLabel } from "kadesh/components/blog/constants";
 import { sileo } from "sileo";
 import { useUser } from "kadesh/utils/UserContext";
+import { formatDateShort } from "kadesh/utils/format-date";
 
 const PIPELINE_OPTIONS = Object.values(PIPELINE_STATUS);
 const DEFAULT_PIPELINE_HEADER =
   "bg-[#f5f5f5] dark:bg-[#2a2a2a] text-[#616161] dark:text-[#b0b0b0]";
-
-function formatDate(value: string | null | undefined): string {
-  if (!value) return "—";
-  return new Date(value).toLocaleDateString("es-MX", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 function formatCurrency(value: number | null | undefined): string {
   if (value == null) return "—";
@@ -165,6 +157,7 @@ export default function DetailLeadSection() {
   const [xTwitter, setXTwitter] = useState("");
   const [productOffered, setProductOffered] = useState("");
   const [hasWebsite, setHasWebsite] = useState<boolean | null>(null);
+  const [firstContactDate, setFirstContactDate] = useState("");
 
   useEffect(() => {
     if (lead) {
@@ -176,12 +169,14 @@ export default function DetailLeadSection() {
       setXTwitter(lead.xTwitter ?? "");
       setProductOffered(status?.productOffered ?? "");
       setHasWebsite(lead.hasWebsite ?? null);
+      setFirstContactDate(status?.firstContactDate?.slice(0, 10) ?? "");
     }
   }, [
     lead?.id,
     status?.pipelineStatus,
     status?.notes,
     status?.productOffered,
+    status?.firstContactDate,
     lead?.facebook,
     lead?.instagram,
     lead?.tiktok,
@@ -255,6 +250,7 @@ export default function DetailLeadSection() {
         statusData.pipelineStatus = pipelineStatus || null;
       if (notes.length > 0) statusData.notes = notes;
       if (productOffered.length > 0) statusData.productOffered = productOffered;
+      statusData.firstContactDate = firstContactDate.trim() ? firstContactDate.trim().slice(0, 10) : null;
 
       if (status) {
         if (Object.keys(statusData).length > 0) {
@@ -490,17 +486,28 @@ export default function DetailLeadSection() {
           }`}
         >
           <dl className="space-y-0">
-            <Field
-              label="Primer contacto"
-              value={formatDate(status?.firstContactDate)}
-            />
+            <div className="grid grid-cols-[100px_1fr] gap-2 py-1.5 text-sm border-b border-[#e8e8e8] dark:border-[#333] last:border-0 items-center">
+              <label
+                htmlFor="lead-first-contact"
+                className="font-medium text-[#616161] dark:text-[#b0b0b0] shrink-0"
+              >
+                Primer contacto
+              </label>
+              <input
+                id="lead-first-contact"
+                type="date"
+                value={firstContactDate}
+                onChange={(e) => setFirstContactDate(e.target.value)}
+                className="w-full min-w-0 rounded border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-2 py-1.5 text-[#212121] dark:text-[#ffffff] text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              />
+            </div>
             <Field
               label="Próx. seguimiento"
-              value={formatDate(status?.nextFollowUpDate)}
+              value={formatDateShort(status?.nextFollowUpDate)}
             />
             <Field
-              label="Actualizado"
-              value={lead.updatedAt ? formatDate(lead.updatedAt) : "—"}
+              label="Última actualización"
+              value={lead.updatedAt ? formatDateShort(lead.updatedAt) : "—"}
             />
           </dl>
         </SectionCard>

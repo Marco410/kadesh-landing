@@ -1,8 +1,32 @@
 import { gql } from "@apollo/client";
 
+export const USER_COMPANY_CATEGORIES_QUERY = gql`
+  query UserCompanyCategories($where: UserWhereUniqueInput!) {
+    user(where: $where) {
+      id
+      company {
+        allowedGooglePlaceCategories
+      }
+    }
+  }
+`;
+
+export interface UserCompanyCategoriesVariables {
+  where: { id: string };
+}
+
+export interface UserCompanyCategoriesResponse {
+  user: {
+    id: string;
+    company: {
+      allowedGooglePlaceCategories: string[];
+    } | null;
+  } | null;
+}
+
 export const TECH_BUSINESS_LEADS_QUERY = gql`
-  query TechBusinessLeads($where: TechBusinessLeadWhereInput!) {
-    techBusinessLeads(where: $where) {
+  query TechBusinessLeads($where: TechBusinessLeadWhereInput!, $take: Int, $skip: Int) {
+    techBusinessLeads(where: $where, take: $take, skip: $skip) {
       id
       address
       businessName
@@ -30,7 +54,11 @@ export interface TechBusinessLeadsVariables {
   where: {
     salesPerson?: { id: { equals: string } };
     status?: { pipelineStatus?: { equals: string | null } };
+    category?: { equals: string } | { in: string[] };
+    businessName?: { contains: string; mode?: "insensitive" };
   };
+  take?: number;
+  skip?: number;
 }
 
 export interface TechBusinessLeadsResponse {
@@ -55,6 +83,28 @@ export interface TechBusinessLeadsResponse {
       pipelineStatus: string | null;
     } | null;
   }>;
+}
+
+export const TECH_BUSINESS_LEADS_COUNT_QUERY = gql`
+  query TechBusinessLeadsCount($where: TechBusinessLeadWhereInput!) {
+    techBusinessLeadsCount(where: $where)
+  }
+`;
+
+export interface TechBusinessLeadsCountVariables {
+  where: {
+    salesPerson?: { id: { equals: string } };
+    status?: {
+      pipelineStatus?: { equals: string | null };
+      firstContactDate?: { not: null } | null;
+    };
+    category?: { equals: string } | { in: string[] };
+    businessName?: { contains: string; mode?: "insensitive" };
+  };
+}
+
+export interface TechBusinessLeadsCountResponse {
+  techBusinessLeadsCount: number;
 }
 
 export const TECH_BUSINESS_LEAD_QUERY = gql`
@@ -411,6 +461,23 @@ export interface TechProposalsVariables {
       assignedSeller: { id: { equals: string } };
       businessLead: { id: { equals: string } };
     }>;
+  };
+}
+
+/** Variables para filtrar propuestas por vendedor y estado (ej. comisiones = status Comprada) */
+export interface TechProposalsBySellerAndStatusVariables {
+  where: {
+    AND: [
+      { assignedSeller: { id: { equals: string } } },
+      { status: { equals: string } },
+    ];
+  };
+}
+
+/** Variables para filtrar solo por vendedor (todas las propuestas del usuario) */
+export interface TechProposalsBySellerVariables {
+  where: {
+    assignedSeller: { id: { equals: string } };
   };
 }
 

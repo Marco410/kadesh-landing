@@ -39,7 +39,7 @@ export default function SalesSection({ userId }: SalesSectionProps) {
       where: {
         salesPerson: { id: { equals: userId } },
         ...(selectedPipeline != null && {
-          pipelineStatus: { equals: selectedPipeline },
+          status: { pipelineStatus: { equals: selectedPipeline } },
         }),
       },
     },
@@ -49,13 +49,13 @@ export default function SalesSection({ userId }: SalesSectionProps) {
   const leads = data?.techBusinessLeads ?? [];
 
   const clientesGanados = leads.filter(
-    (l) => l.pipelineStatus?.toLowerCase().includes("ganad") ?? false,
+    (l) => l.status?.pipelineStatus?.toLowerCase().includes("ganad") ?? false,
   ).length;
   const ganancias = leads.reduce(
-    (sum, l) => sum + (l.estimatedValue ?? 0),
+    (sum, l) => sum + (l.status?.estimatedValue ?? 0),
     0,
   );
-  const contactados = leads.filter((l) => l.firstContactDate != null).length;
+  const contactados = leads.filter((l) => l.status?.firstContactDate != null).length;
 
   if (loading) {
     return (
@@ -78,7 +78,7 @@ export default function SalesSection({ userId }: SalesSectionProps) {
   return (
     <div className="w-full space-y-6">
       {/* Estadísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] p-4 shadow-sm">
           <p className="text-sm font-medium text-[#616161] dark:text-[#b0b0b0]">
             Clientes ganados
@@ -90,6 +90,14 @@ export default function SalesSection({ userId }: SalesSectionProps) {
         <div className="rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] p-4 shadow-sm">
           <p className="text-sm font-medium text-[#616161] dark:text-[#b0b0b0]">
             Mis comisiones
+          </p>
+          <p className="text-2xl font-bold text-[#212121] dark:text-[#ffffff] mt-1">
+            {formatCurrency(ganancias)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] p-4 shadow-sm">
+          <p className="text-sm font-medium text-[#616161] dark:text-[#b0b0b0]">
+            Comisiones sin cierre
           </p>
           <p className="text-2xl font-bold text-[#212121] dark:text-[#ffffff] mt-1">
             {formatCurrency(ganancias)}

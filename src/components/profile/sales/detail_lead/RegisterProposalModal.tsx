@@ -7,10 +7,13 @@ import {
   TECH_PROPOSALS_QUERY,
   TECH_PROPOSALS_COUNT_QUERY,
   CREATE_TECH_PROPOSAL_MUTATION,
+  UPDATE_TECH_PROPOSAL_MUTATION,
   type TechProposalsVariables,
   type TechProposalsResponse,
   type CreateTechProposalVariables,
   type CreateTechProposalMutation,
+  type UpdateTechProposalVariables,
+  type UpdateTechProposalMutation,
 } from "kadesh/components/profile/sales/queries";
 import { PROPOSAL_STATUS } from "kadesh/components/profile/sales/constants";
 import { sileo } from "sileo";
@@ -73,10 +76,20 @@ export default function RegisterProposalModal({
     fetchPolicy: "network-only",
   });
 
-  const [createProposal, { loading: submitting }] = useMutation<
+  const [createProposal, { loading: creating }] = useMutation<
     CreateTechProposalMutation,
     CreateTechProposalVariables
   >(CREATE_TECH_PROPOSAL_MUTATION, {
+    refetchQueries: [
+      { query: TECH_PROPOSALS_QUERY, variables: { where: proposalsWhere } },
+      { query: TECH_PROPOSALS_COUNT_QUERY, variables: { where: proposalsWhere } },
+    ],
+  });
+
+  const [updateProposal, { loading: updating }] = useMutation<
+    UpdateTechProposalMutation,
+    UpdateTechProposalVariables
+  >(UPDATE_TECH_PROPOSAL_MUTATION, {
     refetchQueries: [
       { query: TECH_PROPOSALS_QUERY, variables: { where: proposalsWhere } },
       { query: TECH_PROPOSALS_COUNT_QUERY, variables: { where: proposalsWhere } },
@@ -87,6 +100,10 @@ export default function RegisterProposalModal({
 
   type ProposalItem = (typeof proposals)[number];
   const [selectedProposal, setSelectedProposal] = useState<ProposalItem | null>(null);
+  const [editingProposal, setEditingProposal] = useState<ProposalItem | null>(null);
+
+  const submitting = creating || updating;
+  const isEditing = editingProposal != null;
 
   useEffect(() => {
     if (isOpen) {
@@ -95,12 +112,21 @@ export default function RegisterProposalModal({
       setStatus(PROPOSAL_STATUS.ENVIADA);
       setFileOrUrl("");
       setSelectedProposal(null);
+      setEditingProposal(null);
     }
   }, [isOpen]);
 
+  const fillFormForEdit = (p: ProposalItem) => {
+    setEditingProposal(p);
+    setSentDate(formatDateForInput(p.sentDate));
+    setAmount(p.amount != null ? String(p.amount) : "");
+    setStatus(p.status);
+    setFileOrUrl(p.fileOrUrl ?? "");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userId) {
+    if (!userId && !isEditing) {
       sileo.warning({ title: "Debes iniciar sesión para enviar una propuesta" });
       return;
     }
@@ -114,23 +140,43 @@ export default function RegisterProposalModal({
       return;
     }
     try {
-      await createProposal({
-        variables: {
-          data: {
-            sentDate: sentDate || formatDateForInput(new Date().toISOString()),
-            amount: amountNum ?? undefined,
-            status: status || PROPOSAL_STATUS.ENVIADA,
-            fileOrUrl: fileOrUrl.trim(),
-            businessLead: { connect: { id: leadId } },
-            assignedSeller: { connect: { id: userId } },
+      if (isEditing && editingProposal) {
+        await updateProposal({
+          variables: {
+            where: { id: editingProposal.id },
+            data: {
+              sentDate: sentDate || formatDateForInput(new Date().toISOString()),
+              amount: amountNum,
+              status: status || PROPOSAL_STATUS.ENVIADA,
+              fileOrUrl: fileOrUrl.trim(),
+            },
           },
-        },
-      });
-      sileo.success({ title: "Propuesta registrada" });
-      onSuccess?.();
+        });
+        sileo.success({ title: "Propuesta actualizada" });
+        setEditingProposal(null);
+        setSentDate(formatDateForInput(new Date().toISOString()));
+        setAmount("");
+        setStatus(PROPOSAL_STATUS.ENVIADA);
+        setFileOrUrl("");
+      } else {
+        await createProposal({
+          variables: {
+            data: {
+              sentDate: sentDate || formatDateForInput(new Date().toISOString()),
+              amount: amountNum ?? undefined,
+              status: status || PROPOSAL_STATUS.ENVIADA,
+              fileOrUrl: fileOrUrl.trim(),
+              businessLead: { connect: { id: leadId } },
+              assignedSeller: { connect: { id: userId } },
+            },
+          },
+        });
+        sileo.success({ title: "Propuesta registrada" });
+        onSuccess?.();
+      }
     } catch {
       sileo.error({
-        title: "No se pudo registrar la propuesta",
+        title: isEditing ? "No se pudo actualizar la propuesta" : "No se pudo registrar la propuesta",
         description: "Intenta de nuevo más tarde.",
       });
     }
@@ -202,6 +248,9 @@ export default function RegisterProposalModal({
                           <th className="text-left px-3 py-2 font-semibold text-[#212121] dark:text-[#ffffff] whitespace-nowrap max-w-[160px]">
                             URL / archivo
                           </th>
+                          <th className="text-right px-3 py-2 font-semibold text-[#212121] dark:text-[#ffffff] whitespace-nowrap w-[100px]">
+                            Acciones
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -217,7 +266,11 @@ export default function RegisterProposalModal({
                                 setSelectedProposal(p);
                               }
                             }}
-                            className="border-b border-[#e0e0e0] dark:border-[#3a3a3a] hover:bg-[#fafafa] dark:hover:bg-[#252525] cursor-pointer transition-colors"
+                            className={`border-b border-[#e0e0e0] dark:border-[#3a3a3a] hover:bg-[#fafafa] dark:hover:bg-[#252525] cursor-pointer transition-colors ${
+                              editingProposal?.id === p.id
+                                ? "bg-orange-50 dark:bg-orange-950/30 ring-inset ring-2 ring-orange-500/50"
+                                : ""
+                            }`}
                           >
                             <td className="px-3 py-2 text-[#616161] dark:text-[#b0b0b0] whitespace-nowrap">
                               {formatDateShort(p.sentDate)}
@@ -230,6 +283,15 @@ export default function RegisterProposalModal({
                             </td>
                             <td className="px-3 py-2 text-[#616161] dark:text-[#b0b0b0] max-w-[160px] truncate" title={p.fileOrUrl ?? undefined}>
                               {p.fileOrUrl ?? "—"}
+                            </td>
+                            <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                type="button"
+                                onClick={() => fillFormForEdit(p)}
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-[#212121] dark:text-[#ffffff] text-xs font-medium hover:bg-[#f5f5f5] dark:hover:bg-[#333] transition-colors"
+                              >
+                                Editar
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -339,7 +401,7 @@ export default function RegisterProposalModal({
 
               <div className="border-t border-[#e0e0e0] dark:border-[#3a3a3a] pt-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0] mb-3 px-6">
-                  Nueva propuesta
+                  {isEditing ? "Editar Propuesta" : "Nueva propuesta"}
                 </p>
               </div>
 
@@ -419,7 +481,7 @@ export default function RegisterProposalModal({
                     className="w-full rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-3 py-2 text-[#212121] dark:text-[#ffffff] text-sm placeholder-[#9ca3af] focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
                    <p className="text-xs text-[#616161] dark:text-[#b0b0b0] mt-2">
-                    Crea el documento (si aún no tienes uno) y pega aquí el enlace.
+                    Crea el documento (si aún no tienes uno) y pega aquí el enlace. Es importate que el link que pegues sea el que no este restringido.
                   </p>
                   <div className="flex flex-wrap gap-2 mt-2">
                     <a
@@ -433,7 +495,7 @@ export default function RegisterProposalModal({
                   </div>
                 </div>
 
-                <div className="flex flex-row justify-end gap-3 pt-2">
+                <div className="flex flex-row justify-end gap-3 pt-2 flex-wrap">
                   <button
                     type="button"
                     onClick={onClose}
@@ -442,12 +504,28 @@ export default function RegisterProposalModal({
                   >
                     Cancelar
                   </button>
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingProposal(null);
+                        setSentDate(formatDateForInput(new Date().toISOString()));
+                        setAmount("");
+                        setStatus(PROPOSAL_STATUS.ENVIADA);
+                        setFileOrUrl("");
+                      }}
+                      disabled={submitting}
+                      className="px-4 py-2.5 border-2 border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] font-semibold rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancelar edición
+                    </button>
+                  )}
                   <button
                     type="submit"
                     disabled={submitting}
                     className="px-4 py-2.5 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-[#1e1e1e] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {submitting ? "Guardando..." : "Registrar propuesta"}
+                    {submitting ? "Guardando..." : isEditing ? "Guardar cambios" : "Registrar propuesta"}
                   </button>
                 </div>
               </form>

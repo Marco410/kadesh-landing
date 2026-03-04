@@ -10,14 +10,17 @@ export const TECH_BUSINESS_LEADS_QUERY = gql`
       city
       state
       createdAt
-      estimatedValue
-      firstContactDate
-      nextFollowUpDate
-      opportunityLevel
       phone
-      pipelineStatus
       rating
       source
+      status {
+        id
+        estimatedValue
+        firstContactDate
+        nextFollowUpDate
+        opportunityLevel
+        pipelineStatus
+      }
     }
   }
 `;
@@ -25,7 +28,7 @@ export const TECH_BUSINESS_LEADS_QUERY = gql`
 export interface TechBusinessLeadsVariables {
   where: {
     salesPerson?: { id: { equals: string } };
-    pipelineStatus?: { equals: string | null };
+    status?: { pipelineStatus?: { equals: string | null } };
   };
 }
 
@@ -38,14 +41,17 @@ export interface TechBusinessLeadsResponse {
     city: string | null;
     state: string | null;
     createdAt: string;
-    estimatedValue: number | null;
-    firstContactDate: string | null;
-    nextFollowUpDate: string | null;
-    opportunityLevel: string | null;
     phone: string | null;
-    pipelineStatus: string | null;
     rating: number | null;
     source: string | null;
+    status: {
+      id: string;
+      estimatedValue: number | null;
+      firstContactDate: string | null;
+      nextFollowUpDate: string | null;
+      opportunityLevel: string | null;
+      pipelineStatus: string | null;
+    } | null;
   }>;
 }
 
@@ -59,18 +65,11 @@ export const TECH_BUSINESS_LEAD_QUERY = gql`
       city
       state
       createdAt
-      estimatedValue
       facebook
-      firstContactDate
       googleMapsUrl
       hasWebsite
       instagram
-      nextFollowUpDate
-      notes
-      opportunityLevel
       phone
-      pipelineStatus
-      productOffered
       rating
       reviewCount
       source
@@ -82,6 +81,16 @@ export const TECH_BUSINESS_LEAD_QUERY = gql`
       topReview5
       updatedAt
       xTwitter
+      status {
+        id
+        estimatedValue
+        firstContactDate
+        nextFollowUpDate
+        notes
+        opportunityLevel
+        pipelineStatus
+        productOffered
+      }
     }
   }
 `;
@@ -99,18 +108,11 @@ export interface TechBusinessLeadResponse {
     city: string | null;
     state: string | null;
     createdAt: string;
-    estimatedValue: number | null;
     facebook: string | null;
-    firstContactDate: string | null;
     googleMapsUrl: string | null;
     hasWebsite: boolean | null;
     instagram: string | null;
-    nextFollowUpDate: string | null;
-    notes: string | null;
-    opportunityLevel: string | null;
     phone: string | null;
-    pipelineStatus: string | null;
-    productOffered: string | null;
     rating: number | null;
     reviewCount: number | null;
     source: string | null;
@@ -122,6 +124,16 @@ export interface TechBusinessLeadResponse {
     topReview5: string | null;
     updatedAt: string | null;
     xTwitter: string | null;
+    status: {
+      id: string;
+      estimatedValue: number | null;
+      firstContactDate: string | null;
+      nextFollowUpDate: string | null;
+      notes: string | null;
+      opportunityLevel: string | null;
+      pipelineStatus: string | null;
+      productOffered: string | null;
+    } | null;
   } | null;
 }
 
@@ -132,13 +144,10 @@ export const UPDATE_TECH_BUSINESS_LEAD_MUTATION = gql`
   ) {
     updateTechBusinessLead(where: $where, data: $data) {
       id
-      pipelineStatus
-      notes
       facebook
       instagram
       tiktok
       xTwitter
-      productOffered
       hasWebsite
       updatedAt
     }
@@ -148,13 +157,10 @@ export const UPDATE_TECH_BUSINESS_LEAD_MUTATION = gql`
 export interface UpdateTechBusinessLeadVariables {
   where: { id: string };
   data: {
-    pipelineStatus?: string | null;
-    notes?: string | null;
     facebook?: string | null;
     instagram?: string | null;
     tiktok?: string | null;
     xTwitter?: string | null;
-    productOffered?: string | null;
     hasWebsite?: boolean | null;
   };
 }
@@ -162,15 +168,98 @@ export interface UpdateTechBusinessLeadVariables {
 export interface UpdateTechBusinessLeadMutation {
   updateTechBusinessLead: {
     id: string;
-    pipelineStatus: string | null;
-    notes: string | null;
     facebook: string | null;
     instagram: string | null;
     tiktok: string | null;
     xTwitter: string | null;
-    productOffered: string | null;
     hasWebsite: boolean | null;
     updatedAt: string | null;
+  };
+}
+
+/** Campos que viven en TechStatusBusinessLead (relación 1:1 con TechBusinessLead). */
+export const UPDATE_TECH_STATUS_BUSINESS_LEAD_MUTATION = gql`
+  mutation UpdateTechStatusBusinessLead(
+    $where: TechStatusBusinessLeadWhereUniqueInput!
+    $data: TechStatusBusinessLeadUpdateInput!
+  ) {
+    updateTechStatusBusinessLead(where: $where, data: $data) {
+      id
+      estimatedValue
+      firstContactDate
+      nextFollowUpDate
+      notes
+      opportunityLevel
+      pipelineStatus
+      productOffered
+    }
+  }
+`;
+
+export interface UpdateTechStatusBusinessLeadVariables {
+  where: { id: string };
+  data: {
+    estimatedValue?: number | null;
+    firstContactDate?: string | null;
+    nextFollowUpDate?: string | null;
+    notes?: string | null;
+    opportunityLevel?: string | null;
+    pipelineStatus?: string | null;
+    productOffered?: string | null;
+  };
+}
+
+export interface UpdateTechStatusBusinessLeadMutation {
+  updateTechStatusBusinessLead: {
+    id: string;
+    estimatedValue: number | null;
+    firstContactDate: string | null;
+    nextFollowUpDate: string | null;
+    notes: string | null;
+    opportunityLevel: string | null;
+    pipelineStatus: string | null;
+    productOffered: string | null;
+  };
+}
+
+export const CREATE_TECH_STATUS_BUSINESS_LEAD_MUTATION = gql`
+  mutation CreateTechStatusBusinessLead($data: TechStatusBusinessLeadCreateInput!) {
+    createTechStatusBusinessLead(data: $data) {
+      id
+      estimatedValue
+      firstContactDate
+      nextFollowUpDate
+      notes
+      opportunityLevel
+      pipelineStatus
+      productOffered
+    }
+  }
+`;
+
+export interface CreateTechStatusBusinessLeadVariables {
+  data: {
+    businessLead: { connect: { id: string } };
+    estimatedValue?: number | null;
+    firstContactDate?: string | null;
+    nextFollowUpDate?: string | null;
+    notes?: string | null;
+    opportunityLevel?: string | null;
+    pipelineStatus?: string | null;
+    productOffered?: string | null;
+  };
+}
+
+export interface CreateTechStatusBusinessLeadMutation {
+  createTechStatusBusinessLead: {
+    id: string;
+    estimatedValue: number | null;
+    firstContactDate: string | null;
+    nextFollowUpDate: string | null;
+    notes: string | null;
+    opportunityLevel: string | null;
+    pipelineStatus: string | null;
+    productOffered: string | null;
   };
 }
 
@@ -347,5 +436,48 @@ export interface CreateTechProposalMutation {
     businessLead: { businessName: string } | null;
     assignedSeller: { name: string } | null;
     createdAt: string;
+  };
+}
+
+export const UPDATE_TECH_PROPOSAL_MUTATION = gql`
+  mutation UpdateTechProposal(
+    $where: TechProposalWhereUniqueInput!
+    $data: TechProposalUpdateInput!
+  ) {
+    updateTechProposal(where: $where, data: $data) {
+      id
+      amount
+      createdAt
+      fileOrUrl
+      sentDate
+      status
+      updatedAt
+      businessLead {
+        businessName
+      }
+    }
+  }
+`;
+
+export interface UpdateTechProposalVariables {
+  where: { id: string };
+  data: {
+    sentDate?: string | null;
+    amount?: number | null;
+    status?: string | null;
+    fileOrUrl?: string | null;
+  };
+}
+
+export interface UpdateTechProposalMutation {
+  updateTechProposal: {
+    id: string;
+    amount: number | null;
+    createdAt: string;
+    fileOrUrl: string | null;
+    sentDate: string;
+    status: string;
+    updatedAt: string | null;
+    businessLead: { businessName: string } | null;
   };
 }

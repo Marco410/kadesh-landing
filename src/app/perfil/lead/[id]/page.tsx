@@ -7,10 +7,16 @@ import { useQuery, useMutation } from "@apollo/client";
 import {
   TECH_BUSINESS_LEAD_QUERY,
   UPDATE_TECH_BUSINESS_LEAD_MUTATION,
+  UPDATE_TECH_STATUS_BUSINESS_LEAD_MUTATION,
+  CREATE_TECH_STATUS_BUSINESS_LEAD_MUTATION,
   type TechBusinessLeadResponse,
   type TechBusinessLeadVariables,
   type UpdateTechBusinessLeadVariables,
   type UpdateTechBusinessLeadMutation,
+  type UpdateTechStatusBusinessLeadVariables,
+  type UpdateTechStatusBusinessLeadMutation,
+  type CreateTechStatusBusinessLeadVariables,
+  type CreateTechStatusBusinessLeadMutation,
 } from "kadesh/components/profile/sales/queries";
 import {
   PIPELINE_STATUS,
@@ -102,7 +108,7 @@ export default function LeadDetailPage() {
     skip: !id,
   });
 
-  const [updateLead, { loading: saving }] = useMutation<
+  const [updateLead, { loading: savingLead }] = useMutation<
     UpdateTechBusinessLeadMutation,
     UpdateTechBusinessLeadVariables
   >(UPDATE_TECH_BUSINESS_LEAD_MUTATION, {
@@ -111,7 +117,26 @@ export default function LeadDetailPage() {
     ],
   });
 
+  const [updateStatus, { loading: savingStatus }] = useMutation<
+    UpdateTechStatusBusinessLeadMutation,
+    UpdateTechStatusBusinessLeadVariables
+  >(UPDATE_TECH_STATUS_BUSINESS_LEAD_MUTATION, {
+    refetchQueries: [
+      { query: TECH_BUSINESS_LEAD_QUERY, variables: { where: { id } } },
+    ],
+  });
+
+  const [createStatus, { loading: creatingStatus }] = useMutation<
+    CreateTechStatusBusinessLeadMutation,
+    CreateTechStatusBusinessLeadVariables
+  >(CREATE_TECH_STATUS_BUSINESS_LEAD_MUTATION, {
+    refetchQueries: [
+      { query: TECH_BUSINESS_LEAD_QUERY, variables: { where: { id } } },
+    ],
+  });
+
   const lead = data?.techBusinessLead ?? null;
+  const status = lead?.status ?? null;
   const [pipelineStatus, setPipelineStatus] = useState("");
   const [notes, setNotes] = useState("");
   const [facebook, setFacebook] = useState("");
@@ -123,24 +148,24 @@ export default function LeadDetailPage() {
 
   useEffect(() => {
     if (lead) {
-      setPipelineStatus(lead.pipelineStatus ?? "");
-      setNotes(lead.notes ?? "");
+      setPipelineStatus(status?.pipelineStatus ?? "");
+      setNotes(status?.notes ?? "");
       setFacebook(lead.facebook ?? "");
       setInstagram(lead.instagram ?? "");
       setTiktok(lead.tiktok ?? "");
       setXTwitter(lead.xTwitter ?? "");
-      setProductOffered(lead.productOffered ?? "");
+      setProductOffered(status?.productOffered ?? "");
       setHasWebsite(lead.hasWebsite ?? null);
     }
   }, [
     lead?.id,
-    lead?.pipelineStatus,
-    lead?.notes,
+    status?.pipelineStatus,
+    status?.notes,
+    status?.productOffered,
     lead?.facebook,
     lead?.instagram,
     lead?.tiktok,
     lead?.xTwitter,
-    lead?.productOffered,
     lead?.hasWebsite,
   ]);
 
@@ -189,24 +214,46 @@ export default function LeadDetailPage() {
     lead.topReview5,
   ].filter(Boolean) as string[];
 
+  const saving = savingLead || savingStatus || creatingStatus;
+
   const handleSaveLead = async () => {
     if (!id) return;
-    const data: UpdateTechBusinessLeadVariables["data"] = {};
-    if (pipelineStatus !== undefined) data.pipelineStatus = pipelineStatus || null;
-    if (notes.length > 0) data.notes = notes;
-    if (facebook.length > 0) data.facebook = facebook;
-    if (instagram.length > 0) data.instagram = instagram;
-    if (tiktok.length > 0) data.tiktok = tiktok;
-    if (xTwitter.length > 0) data.xTwitter = xTwitter;
-    if (productOffered.length > 0) data.productOffered = productOffered;
-    if (hasWebsite !== undefined && hasWebsite !== null) data.hasWebsite = hasWebsite;
     try {
-      await updateLead({
-        variables: {
-          where: { id },
-          data,
-        },
-      });
+      const leadData: UpdateTechBusinessLeadVariables["data"] = {};
+      if (facebook.length > 0) leadData.facebook = facebook;
+      if (instagram.length > 0) leadData.instagram = instagram;
+      if (tiktok.length > 0) leadData.tiktok = tiktok;
+      if (xTwitter.length > 0) leadData.xTwitter = xTwitter;
+      if (hasWebsite !== undefined && hasWebsite !== null) leadData.hasWebsite = hasWebsite;
+
+      if (Object.keys(leadData).length > 0) {
+        await updateLead({
+          variables: { where: { id }, data: leadData },
+        });
+      }
+
+      const statusData: UpdateTechStatusBusinessLeadVariables["data"] = {};
+      if (pipelineStatus !== undefined) statusData.pipelineStatus = pipelineStatus || null;
+      if (notes.length > 0) statusData.notes = notes;
+      if (productOffered.length > 0) statusData.productOffered = productOffered;
+
+      if (status) {
+        if (Object.keys(statusData).length > 0) {
+          await updateStatus({
+            variables: { where: { id: status.id }, data: statusData },
+          });
+        }
+      } else {
+        await createStatus({
+          variables: {
+            data: {
+              businessLead: { connect: { id } },
+              ...statusData,
+            },
+          },
+        });
+      }
+
       sileo.success({ title: "Cambios guardados" });
     } catch {
       sileo.error({
@@ -276,8 +323,8 @@ export default function LeadDetailPage() {
                   className="w-full min-w-0 rounded border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-2 py-1.5 text-[#212121] dark:text-[#ffffff] text-sm placeholder-[#9ca3af] focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
               </div>
-              <Field label="Valor estimado" value={formatCurrency(lead.estimatedValue)} />
-              <Field label="Oportunidad" value={lead.opportunityLevel} />
+              <Field label="Valor estimado" value={formatCurrency(status?.estimatedValue)} />
+              <Field label="Oportunidad" value={status?.opportunityLevel} />
               <Field label="Fuente" value={lead.source} />
               <div className="grid grid-cols-[100px_1fr] gap-2 py-1.5 text-sm border-b border-[#e8e8e8] dark:border-[#333] items-center">
                 <label htmlFor="lead-has-website" className="font-medium text-[#616161] dark:text-[#b0b0b0] shrink-0">
@@ -401,8 +448,8 @@ export default function LeadDetailPage() {
               PIPELINE_STATUS_COLORS[pipelineStatus] ?? DEFAULT_PIPELINE_HEADER
             }`}>
             <dl className="space-y-0">
-              <Field label="Primer contacto" value={formatDate(lead.firstContactDate)} />
-              <Field label="Próx. seguimiento" value={formatDate(lead.nextFollowUpDate)} />
+              <Field label="Primer contacto" value={formatDate(status?.firstContactDate)} />
+              <Field label="Próx. seguimiento" value={formatDate(status?.nextFollowUpDate)} />
               <Field label="Actualizado" value={lead.updatedAt ? formatDate(lead.updatedAt) : "—"} />
             </dl>
           </SectionCard>

@@ -116,14 +116,14 @@ export default function SalesLeadsTable({ leads }: SalesLeadsTableProps) {
                 {getCategoryLabel(lead.category)}
               </td>
               <td className="px-4 py-3">
-                {lead.pipelineStatus ? (
+                {lead.status?.pipelineStatus ? (
                   <span
                     className={`inline-flex px-2 py-1 rounded-md text-xs font-medium whitespace-nowrap ${
-                      PIPELINE_STATUS_COLORS[lead.pipelineStatus] ??
+                      PIPELINE_STATUS_COLORS[lead.status.pipelineStatus] ??
                       DEFAULT_PIPELINE_COLOR
                     }`}
                   >
-                    {lead.pipelineStatus}
+                    {lead.status.pipelineStatus}
                   </span>
                 ) : (
                   <span className="text-[#616161] dark:text-[#b0b0b0]">—</span>
@@ -157,16 +157,14 @@ export default function SalesLeadsTable({ leads }: SalesLeadsTableProps) {
                 {lead.address ?? "—"}
               </td>
               <td className="px-4 py-3 text-[#616161] dark:text-[#b0b0b0] whitespace-nowrap">
-                {formatDate(lead.firstContactDate)}
+                {formatDate(lead.status?.firstContactDate)}
               </td>
               <td className="px-4 py-3 text-[#616161] dark:text-[#b0b0b0] whitespace-nowrap">
-                {formatDate(lead.nextFollowUpDate)}
+                {formatDate(lead.status?.nextFollowUpDate)}
               </td>
               <td className="px-4 py-3 text-[#616161] dark:text-[#b0b0b0]">
-                {lead.opportunityLevel ?? "—"}
+                {lead.status?.opportunityLevel ?? "—"}
               </td>
-             
-             
               <td className="px-4 py-3 text-center text-[#212121] dark:text-[#ffffff]">
                 {lead.rating != null ? lead.rating : "—"}
               </td>

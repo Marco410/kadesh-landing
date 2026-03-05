@@ -87,10 +87,20 @@ export default function SalesLeadsTable({ leads, loading, error }: SalesLeadsTab
             <th className="text-left px-4 py-3 font-semibold text-[#212121] dark:text-[#ffffff] whitespace-nowrap">
               Fuente
             </th>
+            <th className="text-left px-4 py-3 font-semibold text-[#212121] dark:text-[#ffffff] whitespace-nowrap">
+              Asignado a
+            </th>
           </tr>
         </thead>
         <tbody>
-          {leads.map((lead) => (
+          {leads.map((lead) => {
+            const statuses = Array.isArray(lead.status)
+              ? lead.status
+              : lead.status
+                ? [lead.status]
+                : [];
+            const leadStatus = statuses[0] ?? null;
+            return (
             <tr
               key={lead.id}
               role="button"
@@ -111,15 +121,20 @@ export default function SalesLeadsTable({ leads, loading, error }: SalesLeadsTab
                 {getCategoryLabel(lead.category)}
               </td>
               <td className="px-4 py-3">
-                {lead.status?.pipelineStatus ? (
-                  <span
-                    className={`inline-flex px-2 py-1 rounded-md text-xs font-medium whitespace-nowrap ${
-                      PIPELINE_STATUS_COLORS[lead.status.pipelineStatus] ??
-                      DEFAULT_PIPELINE_COLOR
-                    }`}
-                  >
-                    {lead.status.pipelineStatus}
+                {leadStatus?.pipelineStatus ? (
+                 <div className="flex flex-col items-center">
+                    <span
+                      className={`inline-flex px-2 py-1 rounded-md text-xs font-medium whitespace-nowrap ${
+                        PIPELINE_STATUS_COLORS[leadStatus.pipelineStatus] ??
+                        DEFAULT_PIPELINE_COLOR
+                      }`}
+                    >
+                      {leadStatus.pipelineStatus}
+                    </span>
+                    <span className="text-[9px] text-[#616161] dark:text-[#b0b0b0]">
+                      Aplicado por: {leadStatus.salesPerson?.name ?? "—"}
                   </span>
+                  </div>
                 ) : (
                   <span className="text-[#616161] dark:text-[#b0b0b0]">—</span>
                 )}
@@ -149,7 +164,7 @@ export default function SalesLeadsTable({ leads, loading, error }: SalesLeadsTab
                 {lead.country ?? "—"}
               </td>
               <td className="px-4 py-3 text-[#616161] dark:text-[#b0b0b0]">
-                {lead.status?.opportunityLevel ?? "—"}
+                {leadStatus?.opportunityLevel ?? "—"}
               </td>
               <td className="px-4 py-3 text-center text-[#212121] dark:text-[#ffffff]">
                 {lead.rating != null ? lead.rating : "—"}
@@ -157,8 +172,12 @@ export default function SalesLeadsTable({ leads, loading, error }: SalesLeadsTab
               <td className="px-4 py-3 text-[#616161] dark:text-[#b0b0b0]">
                 {lead.source ?? "—"}
               </td>
+              <td className="px-4 py-3 text-[#616161] dark:text-[#b0b0b0]">
+                {leadStatus?.salesPerson?.name ?? "—"} {leadStatus?.salesPerson?.lastName ?? "—"}
+              </td>
             </tr>
-          ))}
+          );
+          })}
         </tbody>
       </table>
     </div>

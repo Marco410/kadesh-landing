@@ -15,8 +15,6 @@ interface FiltersLeadsSectionProps {
   onPipelineChange: (value: string | null) => void;
   selectedCategory: string | null;
   onCategoryChange: (value: string | null) => void;
-  /** Si está definido y tiene elementos, solo se muestran estas categorías (value). Si está vacío o no se pasa, se muestran todas. */
-  allowedCategoryValues?: string[];
   searchQuery: string;
   onSearchChange: (value: string) => void;
 }
@@ -26,15 +24,10 @@ export default function FiltersLeadsSection({
   onPipelineChange,
   selectedCategory,
   onCategoryChange,
-  allowedCategoryValues,
   searchQuery,
   onSearchChange,
 }: FiltersLeadsSectionProps) {
-  const allowed = allowedCategoryValues ?? [];
-  const categoryOptions =
-    allowed.length > 0
-      ? GOOGLE_PLACE_CATEGORIES.filter((c) => allowed.includes(c.value))
-      : GOOGLE_PLACE_CATEGORIES;
+  const categoryOptions = GOOGLE_PLACE_CATEGORIES;
 
   return (
     <div className="space-y-4 mb-4">

@@ -5,7 +5,22 @@ export const USER_COMPANY_CATEGORIES_QUERY = gql`
     user(where: $where) {
       id
       company {
+        id
         allowedGooglePlaceCategories
+        subscriptions {
+          id
+          activeInStripe
+          activatedAt
+          planCost
+          planCurrency
+          planFrequency
+          planLeadLimit
+          planName
+          status
+          stripeCustomerId
+          stripeSubscriptionId
+          currentPeriodEnd
+        }
       }
     }
   }
@@ -19,13 +34,35 @@ export interface UserCompanyCategoriesResponse {
   user: {
     id: string;
     company: {
+      id: string;
       allowedGooglePlaceCategories: string[];
+      subscriptions: Subscription[] | null;
     } | null;
   } | null;
 }
 
+export interface Subscription {
+  id: string;
+  activeInStripe: boolean;
+  activatedAt: string;
+  planCost: number;
+  planCurrency: string;
+  planFrequency: string;
+  planLeadLimit: number;
+  planName: string;
+  status: string;
+  stripeCustomerId: string;
+  stripeSubscriptionId: string;
+  currentPeriodEnd: string;
+}
+
 export const TECH_BUSINESS_LEADS_QUERY = gql`
-  query TechBusinessLeads($where: TechBusinessLeadWhereInput!, $take: Int, $skip: Int) {
+  query TechBusinessLeads(
+    $where: TechBusinessLeadWhereInput!
+    $take: Int
+    $skip: Int
+    $statusWhere: TechStatusBusinessLeadWhereInput
+  ) {
     techBusinessLeads(where: $where, take: $take, skip: $skip) {
       id
       address
@@ -38,25 +75,59 @@ export const TECH_BUSINESS_LEADS_QUERY = gql`
       phone
       rating
       source
-      status {
+      status(where: $statusWhere) {
         id
         estimatedValue
         firstContactDate
         nextFollowUpDate
         opportunityLevel
         pipelineStatus
+        salesPerson {
+          id
+          name
+          lastName
+        }
+        saasCompany {
+          id
+          name
+        }
       }
     }
   }
 `;
 
+/** Filtro para la relación status (solo devolver el status de esta company/vendedor). */
+export interface TechStatusBusinessLeadWhereInputFilter {
+  AND?: Array<{
+    salesPerson?: { id: { equals: string } };
+    saasCompany?: { id: { equals: string } };
+  }>;
+  salesPerson?: { id: { equals: string } };
+  saasCompany?: { id: { equals: string } };
+}
+
 export interface TechBusinessLeadsVariables {
   where: {
-    salesPerson?: { id: { equals: string } };
-    status?: { pipelineStatus?: { equals: string | null } };
+    id?: { equals: string };
+    salesPerson?: { some: { id: { equals: string } } };
+    saasCompany?: { some: { id: { equals: string } } };
+    status?: {
+      pipelineStatus?: { equals: string | null };
+      some?: {
+        AND?: Array<{
+          salesPerson?: { id: { equals: string } };
+          saasCompany?: { id: { equals: string } };
+          pipelineStatus?: { equals: string | null };
+        }>;
+        salesPerson?: { id: { equals: string } };
+        saasCompany?: { id: { equals: string } };
+      };
+    };
     category?: { equals: string } | { in: string[] };
     businessName?: { contains: string; mode?: "insensitive" };
   };
+  /** Filtro aplicado a la relación status: solo se devuelven status que coincidan (company + opcionalmente salesPerson). */
+  statusWhere?: TechStatusBusinessLeadWhereInputFilter | null;
   take?: number;
   skip?: number;
 }
@@ -74,53 +145,43 @@ export interface TechBusinessLeadsResponse {
     phone: string | null;
     rating: number | null;
     source: string | null;
-    status: {
+    status: Array<{
       id: string;
       estimatedValue: number | null;
       firstContactDate: string | null;
       nextFollowUpDate: string | null;
       opportunityLevel: string | null;
       pipelineStatus: string | null;
-    } | null;
+      salesPerson: {
+        id: string;
+        name: string;
+        lastName: string;
+      } | null;
+      saasCompany: {
+        id: string;
+        name: string;
+      } | null;
+    }> | null;
   }>;
 }
 
-export const TECH_BUSINESS_LEADS_COUNT_QUERY = gql`
-  query TechBusinessLeadsCount($where: TechBusinessLeadWhereInput!) {
-    techBusinessLeadsCount(where: $where)
-  }
-`;
-
-export interface TechBusinessLeadsCountVariables {
-  where: {
-    salesPerson?: { id: { equals: string } };
-    status?: {
-      pipelineStatus?: { equals: string | null };
-      firstContactDate?: { not: null } | null;
-    };
-    category?: { equals: string } | { in: string[] };
-    businessName?: { contains: string; mode?: "insensitive" };
-  };
-}
-
-export interface TechBusinessLeadsCountResponse {
-  techBusinessLeadsCount: number;
-}
-
-export const TECH_BUSINESS_LEAD_QUERY = gql`
-  query TechBusinessLead($where: TechBusinessLeadWhereUniqueInput!) {
-    techBusinessLead(where: $where) {
+/** Query para obtener un lead por id filtrando por acceso (salesPerson + saasCompany en status). Usar take: 1. */
+export const TECH_BUSINESS_LEAD_ACCESSIBLE_QUERY = gql`
+  query TechBusinessLeadAccessible($where: TechBusinessLeadWhereInput!, $take: Int) {
+    techBusinessLeads(where: $where, take: $take) {
       id
       address
       businessName
       category
       city
       state
+      country
       createdAt
       facebook
       googleMapsUrl
       hasWebsite
       instagram
+      websiteUrl
       phone
       rating
       reviewCount
@@ -142,28 +203,39 @@ export const TECH_BUSINESS_LEAD_QUERY = gql`
         opportunityLevel
         pipelineStatus
         productOffered
+        salesPerson {
+          id
+          name
+        }
+        saasCompany {
+          id
+          name
+        }
       }
     }
   }
 `;
 
-export interface TechBusinessLeadVariables {
-  where: { id: string };
+export interface TechBusinessLeadAccessibleVariables {
+  where: TechBusinessLeadsVariables["where"];
+  take?: number;
 }
 
-export interface TechBusinessLeadResponse {
-  techBusinessLead: {
+export interface TechBusinessLeadAccessibleResponse {
+  techBusinessLeads: Array<{
     id: string;
     address: string | null;
     businessName: string;
     category: string | null;
     city: string | null;
     state: string | null;
+    country: string | null;
     createdAt: string;
     facebook: string | null;
     googleMapsUrl: string | null;
     hasWebsite: boolean | null;
     instagram: string | null;
+    websiteUrl: string | null;
     phone: string | null;
     rating: number | null;
     reviewCount: number | null;
@@ -185,7 +257,147 @@ export interface TechBusinessLeadResponse {
       opportunityLevel: string | null;
       pipelineStatus: string | null;
       productOffered: string | null;
+      salesPerson: { id: string; name: string } | null;
+      saasCompany: { id: string; name: string } | null;
     } | null;
+  }>;
+}
+
+export const TECH_BUSINESS_LEADS_COUNT_QUERY = gql`
+  query TechBusinessLeadsCount($where: TechBusinessLeadWhereInput!) {
+    techBusinessLeadsCount(where: $where)
+  }
+`;
+
+export interface TechBusinessLeadsCountVariables {
+  where: {
+    id?: { equals: string };
+    salesPerson?: { some: { id: { equals: string } } };
+    saasCompany?: { some: { id: { equals: string } } };
+    status?: {
+      pipelineStatus?: { equals: string | null };
+      firstContactDate?: { not: null } | null;
+      some?: {
+        AND?: Array<{
+          salesPerson?: { id: { equals: string } };
+          saasCompany?: { id: { equals: string } };
+          pipelineStatus?: { equals: string | null };
+        }>;
+        salesPerson?: { id: { equals: string } };
+        saasCompany?: { id: { equals: string } };
+      };
+    };
+    category?: { equals: string } | { in: string[] };
+    businessName?: { contains: string; mode?: "insensitive" };
+  };
+}
+
+export interface TechBusinessLeadsCountResponse {
+  techBusinessLeadsCount: number;
+}
+
+export const TECH_BUSINESS_LEAD_QUERY = gql`
+  query TechBusinessLead(
+    $where: TechBusinessLeadWhereUniqueInput!
+    $statusWhere: TechStatusBusinessLeadWhereInput
+  ) {
+    techBusinessLead(where: $where) {
+      id
+      address
+      businessName
+      category
+      city
+      state
+      createdAt
+      facebook
+      googleMapsUrl
+      hasWebsite
+      instagram
+      websiteUrl
+      phone
+      rating
+      reviewCount
+      source
+      tiktok
+      topReview1
+      topReview2
+      topReview3
+      topReview4
+      topReview5
+      updatedAt
+      xTwitter
+      status(where: $statusWhere) {
+        id
+        estimatedValue
+        firstContactDate
+        nextFollowUpDate
+        notes
+        opportunityLevel
+        pipelineStatus
+        productOffered
+        salesPerson {
+          id
+          name
+        }
+        saasCompany {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+export interface TechBusinessLeadVariables {
+  where: { id: string };
+  /** Filtro para la relación status: solo devolver el de esta company (y vendedor si no es admin). */
+  statusWhere?: TechStatusBusinessLeadWhereInputFilter | null;
+}
+
+export interface TechBusinessLeadResponse {
+  techBusinessLead: {
+    id: string;
+    address: string | null;
+    businessName: string;
+    category: string | null;
+    city: string | null;
+    state: string | null;
+    createdAt: string;
+    facebook: string | null;
+    googleMapsUrl: string | null;
+    hasWebsite: boolean | null;
+    instagram: string | null;
+    websiteUrl: string | null;
+    phone: string | null;
+    rating: number | null;
+    reviewCount: number | null;
+    source: string | null;
+    tiktok: string | null;
+    topReview1: string | null;
+    topReview2: string | null;
+    topReview3: string | null;
+    topReview4: string | null;
+    topReview5: string | null;
+    updatedAt: string | null;
+    xTwitter: string | null;
+    status: Array<{
+      id: string;
+      estimatedValue: number | null;
+      firstContactDate: string | null;
+      nextFollowUpDate: string | null;
+      notes: string | null;
+      opportunityLevel: string | null;
+      pipelineStatus: string | null;
+      productOffered: string | null;
+      salesPerson: {
+        id: string;
+        name: string;
+      } | null;
+      saasCompany: {
+        id: string;
+        name: string;
+      } | null;
+    }> | null;
   } | null;
 }
 
@@ -214,6 +426,7 @@ export interface UpdateTechBusinessLeadVariables {
     tiktok?: string | null;
     xTwitter?: string | null;
     hasWebsite?: boolean | null;
+    websiteUrl?: string | null;
   };
 }
 
@@ -258,6 +471,8 @@ export interface UpdateTechStatusBusinessLeadVariables {
     opportunityLevel?: string | null;
     pipelineStatus?: string | null;
     productOffered?: string | null;
+    salesPerson?: { connect: { id: string } };
+    saasCompany?: { connect: { id: string } };
   };
 }
 
@@ -299,6 +514,8 @@ export interface CreateTechStatusBusinessLeadVariables {
     opportunityLevel?: string | null;
     pipelineStatus?: string | null;
     productOffered?: string | null;
+    salesPerson?: { connect: { id: string } };
+    saasCompany?: { connect: { id: string } };
   };
 }
 

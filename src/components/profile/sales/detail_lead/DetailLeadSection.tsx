@@ -9,6 +9,7 @@ import {
   UPDATE_TECH_BUSINESS_LEAD_MUTATION,
   UPDATE_TECH_STATUS_BUSINESS_LEAD_MUTATION,
   CREATE_TECH_STATUS_BUSINESS_LEAD_MUTATION,
+  USER_COMPANY_CATEGORIES_QUERY,
   type TechBusinessLeadResponse,
   type TechBusinessLeadVariables,
   type UpdateTechBusinessLeadVariables,
@@ -17,6 +18,8 @@ import {
   type UpdateTechStatusBusinessLeadMutation,
   type CreateTechStatusBusinessLeadVariables,
   type CreateTechStatusBusinessLeadMutation,
+  type UserCompanyCategoriesResponse,
+  type UserCompanyCategoriesVariables,
 } from "kadesh/components/profile/sales/queries";
 import {
   PIPELINE_STATUS,
@@ -31,6 +34,7 @@ import { getCategoryLabel } from "kadesh/components/blog/constants";
 import { sileo } from "sileo";
 import { useUser } from "kadesh/utils/UserContext";
 import { formatDateShort } from "kadesh/utils/format-date";
+import { Role } from "kadesh/constants/constans";
 
 const PIPELINE_OPTIONS = Object.values(PIPELINE_STATUS);
 const DEFAULT_PIPELINE_HEADER =
@@ -112,11 +116,42 @@ export default function DetailLeadSection() {
   const { user } = useUser();
   const id = typeof params?.id === "string" ? params.id : "";
 
+  const { data: userCompanyData } = useQuery<
+    UserCompanyCategoriesResponse,
+    UserCompanyCategoriesVariables
+  >(USER_COMPANY_CATEGORIES_QUERY, {
+    variables: { where: { id: user?.id ?? "" } },
+    skip: !user?.id,
+  });
+
+  const companyId = userCompanyData?.user?.company?.id ?? null;
+  const isAdminCompany = user?.roles?.some((r) => r.name === Role.ADMIN_COMPANY) ?? false;
+
+  /** Mismo criterio que SalesSection: solo traer el status de esta company (y vendedor si no es admin). */
+  const statusWhere =
+    companyId != null
+      ? isAdminCompany
+        ? { saasCompany: { id: { equals: companyId } } }
+        : user?.id
+          ? {
+              AND: [
+                { saasCompany: { id: { equals: companyId } } },
+                { salesPerson: { id: { equals: user.id } } },
+              ],
+            }
+          : { saasCompany: { id: { equals: companyId } } }
+      : undefined;
+
+  const queryVariables: TechBusinessLeadVariables = {
+    where: { id },
+    statusWhere: statusWhere ?? null,
+  };
+
   const { data, loading, error } = useQuery<
     TechBusinessLeadResponse,
     TechBusinessLeadVariables
   >(TECH_BUSINESS_LEAD_QUERY, {
-    variables: { where: { id } },
+    variables: queryVariables,
     skip: !id,
   });
 
@@ -124,31 +159,31 @@ export default function DetailLeadSection() {
     UpdateTechBusinessLeadMutation,
     UpdateTechBusinessLeadVariables
   >(UPDATE_TECH_BUSINESS_LEAD_MUTATION, {
-    refetchQueries: [
-      { query: TECH_BUSINESS_LEAD_QUERY, variables: { where: { id } } },
-    ],
+    refetchQueries: [{ query: TECH_BUSINESS_LEAD_QUERY, variables: queryVariables }],
   });
 
   const [updateStatus, { loading: savingStatus }] = useMutation<
     UpdateTechStatusBusinessLeadMutation,
     UpdateTechStatusBusinessLeadVariables
   >(UPDATE_TECH_STATUS_BUSINESS_LEAD_MUTATION, {
-    refetchQueries: [
-      { query: TECH_BUSINESS_LEAD_QUERY, variables: { where: { id } } },
-    ],
+    refetchQueries: [{ query: TECH_BUSINESS_LEAD_QUERY, variables: queryVariables }],
   });
 
   const [createStatus, { loading: creatingStatus }] = useMutation<
     CreateTechStatusBusinessLeadMutation,
     CreateTechStatusBusinessLeadVariables
   >(CREATE_TECH_STATUS_BUSINESS_LEAD_MUTATION, {
-    refetchQueries: [
-      { query: TECH_BUSINESS_LEAD_QUERY, variables: { where: { id } } },
-    ],
+    refetchQueries: [{ query: TECH_BUSINESS_LEAD_QUERY, variables: queryVariables }],
   });
 
   const lead = data?.techBusinessLead ?? null;
-  const status = lead?.status ?? null;
+  const statusRaw = lead?.status;
+  const statuses = Array.isArray(statusRaw)
+    ? statusRaw
+    : statusRaw
+      ? [statusRaw]
+      : [];
+  const status = statuses[0] ?? null;
   const [pipelineStatus, setPipelineStatus] = useState("");
   const [notes, setNotes] = useState("");
   const [facebook, setFacebook] = useState("");
@@ -156,6 +191,7 @@ export default function DetailLeadSection() {
   const [tiktok, setTiktok] = useState("");
   const [xTwitter, setXTwitter] = useState("");
   const [productOffered, setProductOffered] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
   const [hasWebsite, setHasWebsite] = useState<boolean | null>(null);
   const [firstContactDate, setFirstContactDate] = useState("");
 
@@ -170,6 +206,7 @@ export default function DetailLeadSection() {
       setProductOffered(status?.productOffered ?? "");
       setHasWebsite(lead.hasWebsite ?? null);
       setFirstContactDate(status?.firstContactDate?.slice(0, 10) ?? "");
+      setWebsiteUrl(lead.websiteUrl ?? "");
     }
   }, [
     lead?.id,
@@ -238,6 +275,7 @@ export default function DetailLeadSection() {
       if (xTwitter.length > 0) leadData.xTwitter = xTwitter;
       if (hasWebsite !== undefined && hasWebsite !== null)
         leadData.hasWebsite = hasWebsite;
+      if (websiteUrl.length > 0) leadData.websiteUrl = websiteUrl;
 
       if (Object.keys(leadData).length > 0) {
         await updateLead({
@@ -251,6 +289,8 @@ export default function DetailLeadSection() {
       if (notes.length > 0) statusData.notes = notes;
       if (productOffered.length > 0) statusData.productOffered = productOffered;
       statusData.firstContactDate = firstContactDate.trim() ? firstContactDate.trim().slice(0, 10) : null;
+      if (user?.id) statusData.salesPerson = { connect: { id: user.id } };
+      if (companyId) statusData.saasCompany = { connect: { id: companyId } };
 
       if (status) {
         if (Object.keys(statusData).length > 0) {
@@ -364,6 +404,33 @@ export default function DetailLeadSection() {
                 <option value="no">No</option>
               </select>
             </div>
+            <div className="grid grid-cols-[100px_1fr] gap-2 py-1.5 text-sm border-b border-[#e8e8e8] dark:border-[#333] items-center">
+              <label
+                htmlFor="lead-product-offered"
+                className="font-medium text-[#616161] dark:text-[#b0b0b0] shrink-0"
+              >
+                Website{" "}
+                {websiteUrl && (
+                  <a
+                    href={websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-orange-500 dark:text-orange-400 hover:underline"
+                  >
+                    Ir
+                  </a>
+                )}
+              </label>
+              <input
+                id="lead-product-offered"
+                type="text"
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                placeholder="https://www.example.com"
+                className="w-full min-w-0 rounded border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-2 py-1.5 text-[#212121] dark:text-[#ffffff] text-sm placeholder-[#9ca3af] focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              />
+            </div>
+
           </dl>
         </SectionCard>
 

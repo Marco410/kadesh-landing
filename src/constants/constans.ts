@@ -14,7 +14,9 @@ export const FETCH_LIMIT_VETERINARIES = 100;
 
 
 export enum Role {
+  ADMIN = "admin",
   USER = "user",
   AUTHOR = "author",
+  ADMIN_COMPANY = "admin_company",
   VENDEDOR = "vendedor",
 }

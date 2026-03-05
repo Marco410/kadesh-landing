@@ -17,6 +17,9 @@ import {
 import SalesLeadsTable from "kadesh/components/profile/sales/SalesLeadsTable";
 import StatsSection from "./StatsSection";
 import FiltersLeadsSection from "./FiltersLeadsSection";
+import CurrentPlanSection from "./CurrentPlanSection";
+import { useUser } from "kadesh/utils/UserContext";
+import { Role } from "kadesh/constants/constans";
 
 const LEADS_PAGE_SIZE = 10;
 
@@ -44,6 +47,7 @@ export default function SalesSection({ userId }: SalesSectionProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { user } = useUser();
 
   const page = parsePageParam(searchParams.get("page"));
 
@@ -60,22 +64,35 @@ export default function SalesSection({ userId }: SalesSectionProps) {
     skip: !userId,
   });
 
-  const allowedCategoryValues =
-    userData?.user?.company?.allowedGooglePlaceCategories ?? [];
+  const companyId = userData?.user?.company?.id ?? null;
 
-  const categoryFilter =
-    selectedCategory != null && selectedCategory !== ""
-      ? { category: { equals: selectedCategory } as const }
-      : allowedCategoryValues.length > 0
-        ? { category: { in: allowedCategoryValues } as const }
-        : {};
+  const isAdminCompany = user?.roles?.some((r) => r.name === Role.ADMIN_COMPANY) ?? false;
+
+  const statusSomeConditions: Array<{
+    salesPerson?: { id: { equals: string } };
+    saasCompany?: { id: { equals: string } };
+    pipelineStatus?: { equals: string };
+  }> = [];
+  if (!isAdminCompany) {
+    statusSomeConditions.push({ salesPerson: { id: { equals: userId } } });
+  }
+  if (companyId != null) {
+    statusSomeConditions.push({ saasCompany: { id: { equals: companyId } } });
+  }
+  if (selectedPipeline != null) {
+    statusSomeConditions.push({ pipelineStatus: { equals: selectedPipeline } });
+  }
 
   const where = {
-    salesPerson: { id: { equals: userId } },
-    ...(selectedPipeline != null && {
-      status: { pipelineStatus: { equals: selectedPipeline } },
+    ...(!isAdminCompany ? { salesPerson: { some: { id: { equals: userId } } } } : {}),
+    ...(companyId != null && {
+      saasCompany: { some: { id: { equals: companyId } } },
     }),
-    ...categoryFilter,
+    ...(statusSomeConditions.length > 0 && {
+      status: {
+        some: { AND: statusSomeConditions },
+      },
+    }),
     ...(debouncedSearch.length > 0 && {
       businessName: {
         contains: normalizeSearch(debouncedSearch),
@@ -113,12 +130,26 @@ export default function SalesSection({ userId }: SalesSectionProps) {
   const totalPages = Math.max(1, Math.ceil(totalCount / LEADS_PAGE_SIZE));
   const effectivePage = totalCount > 0 ? Math.min(page, totalPages) : page;
 
+  /** Filtro para que la API solo devuelva el status que coincida con esta company (y vendedor si no es admin). */
+  const statusWhere =
+    companyId != null
+      ? isAdminCompany
+        ? { saasCompany: { id: { equals: companyId } } }
+        : {
+            AND: [
+              { saasCompany: { id: { equals: companyId } } },
+              { salesPerson: { id: { equals: userId } } },
+            ],
+          }
+      : undefined;
+
   const { data, loading, error } = useQuery<
     TechBusinessLeadsResponse,
     TechBusinessLeadsVariables
   >(TECH_BUSINESS_LEADS_QUERY, {
     variables: {
       where,
+      statusWhere: statusWhere ?? {},
       take: LEADS_PAGE_SIZE,
       skip: (effectivePage - 1) * LEADS_PAGE_SIZE,
     },
@@ -138,8 +169,11 @@ export default function SalesSection({ userId }: SalesSectionProps) {
 
   return (
     <div className="w-full space-y-6">
+      
+      <CurrentPlanSection userId={userId} />
 
-      <StatsSection userId={userId} />
+      <StatsSection userId={userId} companyId={companyId} isAdminCompany={isAdminCompany} />
+
 
       {/* Título + filtros por pipeline + tabla */}
       <div>
@@ -151,7 +185,6 @@ export default function SalesSection({ userId }: SalesSectionProps) {
           onPipelineChange={setSelectedPipeline}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
-          allowedCategoryValues={allowedCategoryValues}
           searchQuery={searchInput}
           onSearchChange={setSearchInput}
         />

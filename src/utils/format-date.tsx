@@ -58,7 +58,7 @@ export const formatDate = (dateString: string) => {
     return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
-  export function formatDateShort(value: string | null | undefined): string {
+  export function formatDateShort(value: string | null | undefined, showHours: boolean = true): string {
     if (!value) return "—";
     const iso = value.includes("T") ? value : `${value.slice(0, 10)}T12:00:00`;
     const d = new Date(iso);
@@ -66,7 +66,7 @@ export const formatDate = (dateString: string) => {
       year: "numeric",
       month: "short",
       day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+      hour: showHours ? "2-digit" : undefined,
+      minute: showHours ? "2-digit" : undefined,
     });
   }

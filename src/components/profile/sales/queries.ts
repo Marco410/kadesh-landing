@@ -4,6 +4,7 @@ export const USER_COMPANY_CATEGORIES_QUERY = gql`
   query UserCompanyCategories($where: UserWhereUniqueInput!) {
     user(where: $where) {
       id
+      salesComission
       company {
         id
         allowedGooglePlaceCategories
@@ -33,6 +34,7 @@ export interface UserCompanyCategoriesVariables {
 export interface UserCompanyCategoriesResponse {
   user: {
     id: string;
+    salesComission: number;
     company: {
       id: string;
       allowedGooglePlaceCategories: string[];
@@ -1004,5 +1006,152 @@ export interface UpdateTechFollowUpTaskMutation {
     notes: string | null;
     updatedAt: string | null;
     businessLead: { businessName: string } | null;
+  };
+}
+
+// ─── Agregar vendedor ───────────────────────────────────────────────────────
+
+export const COMPANY_VENDEDORES_QUERY = gql`
+  query CompanyVendedores($where: UserWhereInput!) {
+    users(where: $where, orderBy: [{ name: asc }]) {
+      id
+      name
+      lastName
+      email
+      phone
+      birthday
+      salesComission
+      salesPersonVerified
+    }
+  }
+`;
+
+export interface CompanyVendedoresVariables {
+  where: {
+    company?: { id?: { equals: string } };
+    roles?: { some?: { name?: { equals: string } } };
+  };
+}
+
+export interface CompanyVendedoresResponse {
+  users: Array<{
+    id: string;
+    name: string;
+    lastName: string | null;
+    email: string | null;
+    phone: string | null;
+    birthday: string | null;
+    salesComission: number | null;
+    salesPersonVerified: boolean | null;
+  }>;
+}
+
+export const UPDATE_VENDEDOR_MUTATION = gql`
+  mutation UpdateVendedor($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {
+    updateUser(where: $where, data: $data) {
+      id
+      name
+      lastName
+      email
+      phone
+      birthday
+      salesComission
+      salesPersonVerified
+    }
+  }
+`;
+
+export interface UpdateVendedorVariables {
+  where: { id: string };
+  data: {
+    name?: string;
+    lastName?: string | null;
+    email?: string | null;
+    password?: string | null;
+    phone?: string | null;
+    birthday?: string | null;
+    salesComission?: number | null;
+    salesPersonVerified?: boolean | null;
+  };
+}
+
+export interface UpdateVendedorResponse {
+  updateUser: {
+    id: string;
+    name: string;
+    lastName: string | null;
+    email: string | null;
+    phone: string | null;
+    birthday: string | null;
+    salesComission: number | null;
+    salesPersonVerified: boolean | null;
+  } | null;
+}
+
+export const ROLES_BY_NAMES_QUERY = gql`
+  query RolesByNames($where: RoleWhereInput!) {
+    roles(where: $where) {
+      id
+      name
+    }
+  }
+`;
+
+export interface RolesByNamesVariables {
+  where: { name?: { in?: string[] } };
+}
+
+export interface RolesByNamesResponse {
+  roles: Array<{ id: string; name: string }>;
+}
+
+export const CREATE_SALES_PERSON_MUTATION = gql`
+  mutation CreateSalesPerson($data: UserCreateInput!) {
+    createUser(data: $data) {
+      id
+      name
+      email
+      phone
+      birthday
+      salesComission
+      salesPersonVerified
+      company {
+        id
+        name
+      }
+      roles {
+        id
+        name
+      }
+    }
+  }
+`;
+
+export interface CreateSalesPersonVariables {
+  data: {
+    name: string;
+    lastName?: string | null;
+    email: string;
+    password?: string | null;
+    phone?: string | null;
+    birthday?: string | null;
+    salesComission?: number | null;
+    salesPersonVerified?: boolean | null;
+    roles?: { connect: Array<{ id: string }> };
+    company?: { connect: { id: string } };
+  };
+}
+
+export interface CreateSalesPersonResponse {
+  createUser: {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    birthday: string | null;
+    salesComission: number | null;
+    salesPersonVerified: boolean | null;
+    company: { id: string; name: string } | null;
+    roles: Array<{ id: string; name: string }>;
   };
 }

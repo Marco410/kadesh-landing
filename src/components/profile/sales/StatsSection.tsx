@@ -2,7 +2,7 @@
 
 import { useQuery } from "@apollo/client";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon } from "@hugeicons/core-free-icons";
+import { Add01Icon, UserAdd02Icon } from "@hugeicons/core-free-icons";
 
 import {
   TECH_BUSINESS_LEADS_COUNT_QUERY,
@@ -21,9 +21,10 @@ interface StatsSectionProps {
   userId: string;
   companyId: string | null;
   isAdminCompany: boolean;
+  salesComission: number;
 }
 
-export default function StatsSection({ userId, companyId, isAdminCompany }: StatsSectionProps) {
+export default function StatsSection({ userId, companyId, isAdminCompany, salesComission }: StatsSectionProps) {
   const router = useRouter();
 
   const where = {
@@ -112,7 +113,7 @@ export default function StatsSection({ userId, companyId, isAdminCompany }: Stat
             Mis comisiones
           </p>
           <p className="text-2xl font-bold text-[#212121] dark:text-[#ffffff] mt-1">
-            {formatCurrency(ganancias)}
+            {formatCurrency(ganancias * salesComission / 100)}
           </p>
         </div>
         <div className="rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] p-4 shadow-sm">
@@ -120,7 +121,7 @@ export default function StatsSection({ userId, companyId, isAdminCompany }: Stat
             Comisiones sin cierre
           </p>
           <p className="text-2xl font-bold text-[#212121] dark:text-[#ffffff] mt-1">
-            {formatCurrency(comisionesSinCierre)}
+            {formatCurrency(comisionesSinCierre * salesComission / 100)}
           </p>
         </div>
         <div className="rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] p-4 shadow-sm">
@@ -142,6 +143,16 @@ export default function StatsSection({ userId, companyId, isAdminCompany }: Stat
           >
             <HugeiconsIcon icon={Add01Icon} size={18} strokeWidth={2} />
             Obtener nuevos clientes
+          </button>
+        </div>
+        <div className="flex flex-col gap-1 min-w-0">
+          <button
+            type="button"
+            onClick={() => router.push(Routes.profileAddSalesperson)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-500 hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#1e1e1e] transition-colors w-full sm:w-auto"
+          >
+            <HugeiconsIcon icon={UserAdd02Icon} size={18} strokeWidth={2} />
+            Agregar vendedor
           </button>
         </div>
         <div className="flex flex-col items-end justify-center border-t border-[#e0e0e0] dark:border-[#3a3a3a] pt-4 sm:pt-0 sm:border-t-0">

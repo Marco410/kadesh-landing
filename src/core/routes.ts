@@ -38,8 +38,9 @@ export const Routes = {
   
   // Profile
   profile: '/perfil',
-  profileLead: (id: string): string => `/perfil/lead/${id}`,
-  profileSyncLeads: '/perfil/obtener-clientes',
+  profileLead: (id: string): string => `/perfil/ventas/lead/${id}`,
+  profileSyncLeads: '/perfil/ventas/obtener-clientes',
+  profileAddSalesperson: '/perfil/ventas/agregar-vendedor',
   
   // Animals
   animals: {

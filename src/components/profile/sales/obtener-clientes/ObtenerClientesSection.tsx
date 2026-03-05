@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { GOOGLE_PLACE_CATEGORIES } from "kadesh/components/profile/sales/constants";
 import { useSyncLeadsArea } from "kadesh/components/profile/sales/obtener-clientes/hooks";
+import CurrentPlanSection from "../CurrentPlanSection";
+import { useUser } from "kadesh/utils/UserContext";
 
 const LEAFLET_CSS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
 const LEAFLET_JS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
@@ -66,6 +68,7 @@ declare global {
 }
 
 export default function ObtenerClientesSection() {
+  const { user } = useUser();
   const [category, setCategory] = useState<string>(GOOGLE_PLACE_CATEGORIES[0].value);
   const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
@@ -206,6 +209,7 @@ export default function ObtenerClientesSection() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      <CurrentPlanSection userId={user?.id ?? ""} />
       <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           Obtener negocios por zona

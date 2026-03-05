@@ -172,7 +172,7 @@ export default function SalesSection({ userId }: SalesSectionProps) {
       
       <CurrentPlanSection userId={userId} />
 
-      <StatsSection userId={userId} companyId={companyId} isAdminCompany={isAdminCompany} />
+      <StatsSection userId={userId} companyId={companyId} isAdminCompany={isAdminCompany} salesComission={userData?.user?.salesComission ?? 0} />
 
 
       {/* Título + filtros por pipeline + tabla */}

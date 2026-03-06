@@ -64,6 +64,7 @@ export const TECH_BUSINESS_LEADS_QUERY = gql`
     $take: Int
     $skip: Int
     $statusWhere: TechStatusBusinessLeadWhereInput
+    $salesPersonWhere2: UserWhereInput!
   ) {
     techBusinessLeads(where: $where, take: $take, skip: $skip) {
       id
@@ -77,6 +78,11 @@ export const TECH_BUSINESS_LEADS_QUERY = gql`
       phone
       rating
       source
+      salesPerson(where: $salesPersonWhere2) {
+        id
+        name
+        lastName
+      }
       status(where: $statusWhere) {
         id
         estimatedValue
@@ -130,9 +136,14 @@ export interface TechBusinessLeadsVariables {
   };
   /** Filtro aplicado a la relación status: solo se devuelven status que coincidan (company + opcionalmente salesPerson). */
   statusWhere?: TechStatusBusinessLeadWhereInputFilter | null;
-  take?: number;
-  skip?: number;
-}
+  salesPersonWhere2?: UserWhereInput | null;
+    take?: number;
+    skip?: number;
+  }
+
+  export interface UserWhereInput {
+    company?: { id: { equals: string } };
+  }
 
 export interface TechBusinessLeadsResponse {
   techBusinessLeads: Array<{
@@ -147,6 +158,11 @@ export interface TechBusinessLeadsResponse {
     phone: string | null;
     rating: number | null;
     source: string | null;
+    salesPerson: Array<{
+      id: string;
+      name: string;
+      lastName: string;
+    }> | null;
     status: Array<{
       id: string;
       estimatedValue: number | null;
@@ -429,6 +445,7 @@ export interface UpdateTechBusinessLeadVariables {
     xTwitter?: string | null;
     hasWebsite?: boolean | null;
     websiteUrl?: string | null;
+    salesPerson?: { connect: Array<{ id: string }> };
   };
 }
 

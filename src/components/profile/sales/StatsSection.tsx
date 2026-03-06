@@ -152,7 +152,7 @@ export default function StatsSection({ userId, companyId, isAdminCompany, salesC
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-500 hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#1e1e1e] transition-colors w-full sm:w-auto"
           >
             <HugeiconsIcon icon={UserAdd02Icon} size={18} strokeWidth={2} />
-            Agregar vendedor
+            Vendedores 
           </button>
         </div>
         <div className="flex flex-col items-end justify-center border-t border-[#e0e0e0] dark:border-[#3a3a3a] pt-4 sm:pt-0 sm:border-t-0">

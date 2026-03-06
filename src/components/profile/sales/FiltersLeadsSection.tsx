@@ -10,6 +10,12 @@ import {
 
 const PIPELINE_VALUES = Object.values(PIPELINE_STATUS);
 
+export interface VendedorOption {
+  id: string;
+  name: string;
+  lastName: string | null;
+}
+
 interface FiltersLeadsSectionProps {
   selectedPipeline: string | null;
   onPipelineChange: (value: string | null) => void;
@@ -17,6 +23,16 @@ interface FiltersLeadsSectionProps {
   onCategoryChange: (value: string | null) => void;
   searchQuery: string;
   onSearchChange: (value: string) => void;
+  /** Lista de vendedores para asignar leads (solo admins). */
+  vendedores?: VendedorOption[];
+  /** ID del vendedor seleccionado para asignar leads. */
+  assignToVendedorId: string | null;
+  onAssignToVendedorChange: (vendedorId: string | null) => void;
+  /** Cantidad de leads seleccionados para asignar. */
+  selectedLeadCount: number;
+  onAssign: () => void;
+  isAssigning: boolean;
+  onCancelAssign: () => void;
 }
 
 export default function FiltersLeadsSection({
@@ -26,8 +42,17 @@ export default function FiltersLeadsSection({
   onCategoryChange,
   searchQuery,
   onSearchChange,
+  vendedores = [],
+  assignToVendedorId,
+  onAssignToVendedorChange,
+  selectedLeadCount,
+  onAssign,
+  isAssigning,
+  onCancelAssign,
 }: FiltersLeadsSectionProps) {
   const categoryOptions = GOOGLE_PLACE_CATEGORIES;
+  const selectedVendedor = vendedores.find((v) => v.id === assignToVendedorId);
+  const assignMode = assignToVendedorId != null;
 
   return (
     <div className="space-y-4 mb-4">
@@ -73,6 +98,53 @@ export default function FiltersLeadsSection({
                 ))}
                 </select>
             </div>
+            {/* Asignar leads a vendedor (solo si hay vendedores) */}
+            {vendedores.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                <label
+                  htmlFor="filter-assign-vendedor"
+                  className="text-sm font-medium text-[#616161] dark:text-[#b0b0b0] shrink-0"
+                >
+                  Asignar leads a
+                </label>
+                <select
+                  id="filter-assign-vendedor"
+                  value={assignToVendedorId ?? ""}
+                  onChange={(e) => onAssignToVendedorChange(e.target.value || null)}
+                  className="rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-3 py-1.5 text-sm text-[#212121] dark:text-[#ffffff] focus:ring-2 focus:ring-orange-500 focus:border-orange-500 min-w-[180px]"
+                  aria-label="Seleccionar vendedor para asignar leads"
+                >
+                  <option value="">Seleccionar vendedor...</option>
+                  {vendedores.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {[v.name, v.lastName].filter(Boolean).join(" ")}
+                    </option>
+                  ))}
+                </select>
+                {assignMode && (
+                  <span className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={onAssign}
+                      disabled={selectedLeadCount === 0 || isAssigning}
+                      className="inline-flex px-3 py-1.5 rounded-lg text-sm font-medium bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isAssigning
+                        ? "Asignando…"
+                        : `Asignar ${selectedLeadCount} a ${selectedVendedor?.name ?? ""}`}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onCancelAssign}
+                      disabled={isAssigning}
+                      className="inline-flex px-3 py-1.5 rounded-lg text-sm font-medium border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#616161] dark:text-[#b0b0b0] hover:bg-[#f0f0f0] dark:hover:bg-[#333] disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                  </span>
+                )}
+              </div>
+            )}
         </div>
 
       {/* Filtro por pipeline */}

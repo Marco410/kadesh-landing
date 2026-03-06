@@ -550,11 +550,17 @@ export default function AgregarVendedorSection() {
                           {v.salesComission}%
                         </span>
                       )}
-                      {v.salesPersonVerified && (
+                      {v.salesPersonVerified ? (
                         <span className="text-xs font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
                           Verificado
                         </span>
+                      ) : (
+                        <span className="text-xs font-medium text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded">
+                          No verificado
+                        </span>
                       )}
+                      
+
                       <button
                         type="button"
                         onClick={() => setEditingId(v.id)}

@@ -41,7 +41,10 @@ export const Routes = {
   profileLead: (id: string): string => `/perfil/ventas/lead/${id}`,
   profileSyncLeads: '/perfil/ventas/obtener-clientes',
   profileAddSalesperson: '/perfil/ventas/agregar-vendedor',
-  
+  profilePlans: '/perfil/ventas/planes',
+  profilePlanSubscribe: (planId: string): string => `/perfil/ventas/planes/suscripcion/${planId}`,
+  profilePlanSubscriptionSuccess: "/perfil/ventas/planes/suscripcion/success",
+
   // Animals
   animals: {
     index: '/animales',

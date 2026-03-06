@@ -3,6 +3,8 @@
 import { formatDateShort } from "kadesh/utils/format-date";
 import {  USER_COMPANY_CATEGORIES_QUERY, UserCompanyCategoriesResponse, UserCompanyCategoriesVariables } from "./queries";
 import { useQuery } from "@apollo/client";
+import { useRouter } from "next/navigation";
+import { Routes } from "kadesh/core/routes";
 
 interface CurrentPlanSectionProps {
   userId: string;
@@ -31,7 +33,7 @@ function PlanMetric({
 }
 
 export default function CurrentPlanSection({ userId }: CurrentPlanSectionProps) {
-
+  const router = useRouter();
   const { data: userData } = useQuery<
       UserCompanyCategoriesResponse,
       UserCompanyCategoriesVariables
@@ -78,6 +80,13 @@ export default function CurrentPlanSection({ userId }: CurrentPlanSectionProps) 
                 label="Fin de periodo"
                 value={formatDateShort(subscription?.currentPeriodEnd, false)}
               />
+              <button
+                type="button"
+                onClick={() => router.push(Routes.profilePlans)}
+                className="inline-flex px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-orange-500 text-white dark:bg-orange-500 hover:bg-orange-600 dark:hover:bg-orange-600"
+              >
+                Ver planes
+              </button>
           </div>
           <span
             className={`inline-flex items-center gap-1.5 w-fit px-3 py-1 rounded-full text-sm font-medium ${
@@ -91,8 +100,5 @@ export default function CurrentPlanSection({ userId }: CurrentPlanSectionProps) 
       </div>
     </div>
   );
-}
-function useAuth() {
-  throw new Error("Function not implemented.");
 }
 

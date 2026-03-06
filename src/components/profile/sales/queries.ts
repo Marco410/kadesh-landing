@@ -5,6 +5,7 @@ export const USER_COMPANY_CATEGORIES_QUERY = gql`
     user(where: $where) {
       id
       salesComission
+      stripeCustomerId
       company {
         id
         allowedGooglePlaceCategories
@@ -35,6 +36,7 @@ export interface UserCompanyCategoriesResponse {
   user: {
     id: string;
     salesComission: number;
+    stripeCustomerId: string;
     company: {
       id: string;
       allowedGooglePlaceCategories: string[];
@@ -1171,4 +1173,123 @@ export interface CreateSalesPersonResponse {
     company: { id: string; name: string } | null;
     roles: Array<{ id: string; name: string }>;
   };
+}
+
+// ─── Planes SaaS ───────────────────────────────────────────────────────────
+
+export const SAAS_PLANS_QUERY = gql`
+  query SaasPlans {
+    saasPlans {
+      id
+      name
+      active
+      cost
+      currency
+      frequency
+      leadLimit
+      stripePriceId
+      stripeProductId
+      bestSeller
+      planFeatures
+    }
+  }
+`;
+
+export interface PlanFeatureItem {
+  key: string;
+  name: string;
+  included: boolean;
+  description: string;
+}
+
+export interface SaasPlanItem {
+  id: string;
+  name: string;
+  active: boolean;
+  cost: number;
+  currency: string;
+  frequency: string;
+  leadLimit: number | null;
+  stripePriceId: string | null;
+  stripeProductId: string | null;
+  bestSeller?: boolean | null;
+  planFeatures: PlanFeatureItem[] | null;
+}
+
+export interface SaasPlansResponse {
+  saasPlans: SaasPlanItem[];
+}
+
+// ─── Pago / Suscripción empresa ─────────────────────────────────────────────
+
+export const GET_STRIPE_PAYMENT_METHODS = gql`
+  query StripePaymentMethods($email: String!) {
+    StripePaymentMethods(email: $email) {
+      message
+      success
+      data {
+        data {
+          id
+          livemode
+          type
+          card {
+            brand
+            country
+            exp_month
+            exp_year
+            last4
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_PAYMENT_METHOD = gql`
+  query PaymentMethod($where: PaymentMethodWhereUniqueInput!) {
+    paymentMethod(where: $where) {
+      id
+    }
+  }
+`;
+
+export const CREATE_PAYMENT_METHOD = gql`
+  mutation CreatePaymentMethod($data: PaymentMethodCreateInput!) {
+    createPaymentMethod(data: $data) {
+      id
+    }
+  }
+`;
+
+export const CREATE_COMPANY_SUBSCRIPTION = gql`
+  mutation CreateCompanySubscription($input: CreateCompanySubscriptionInput!) {
+    createCompanySubscription(input: $input) {
+      success
+      message
+      subscriptionId
+      paymentId
+    }
+  }
+`;
+
+export interface CreateCompanySubscriptionInput {
+  planId: string;
+  notes?: string | null;
+  nameCard: string;
+  email: string;
+  paymentMethodId: string;
+  total: string;
+  paymentType: string;
+  noDuplicatePaymentMethod?: boolean | null;
+}
+
+export interface CreateCompanySubscriptionResult {
+  success: boolean;
+  message: string;
+  subscriptionId?: string | null;
+  paymentId?: string | null;
+}
+
+export interface CreateCompanySubscriptionResponse {
+  createCompanySubscription: CreateCompanySubscriptionResult;
 }

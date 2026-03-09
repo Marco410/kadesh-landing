@@ -139,13 +139,13 @@ export interface TechBusinessLeadsVariables {
   /** Filtro aplicado a la relación status: solo se devuelven status que coincidan (company + opcionalmente salesPerson). */
   statusWhere?: TechStatusBusinessLeadWhereInputFilter | null;
   salesPersonWhere2?: UserWhereInput | null;
-    take?: number;
-    skip?: number;
-  }
+  take?: number;
+  skip?: number;
+}
 
-  export interface UserWhereInput {
-    company?: { id: { equals: string } };
-  }
+export interface UserWhereInput {
+  company?: { id: { equals: string } };
+}
 
 export interface TechBusinessLeadsResponse {
   techBusinessLeads: Array<{
@@ -187,7 +187,10 @@ export interface TechBusinessLeadsResponse {
 
 /** Query para obtener un lead por id filtrando por acceso (salesPerson + saasCompany en status). Usar take: 1. */
 export const TECH_BUSINESS_LEAD_ACCESSIBLE_QUERY = gql`
-  query TechBusinessLeadAccessible($where: TechBusinessLeadWhereInput!, $take: Int) {
+  query TechBusinessLeadAccessible(
+    $where: TechBusinessLeadWhereInput!
+    $take: Int
+  ) {
     techBusinessLeads(where: $where, take: $take) {
       id
       address
@@ -511,7 +514,9 @@ export interface UpdateTechStatusBusinessLeadMutation {
 }
 
 export const CREATE_TECH_STATUS_BUSINESS_LEAD_MUTATION = gql`
-  mutation CreateTechStatusBusinessLead($data: TechStatusBusinessLeadCreateInput!) {
+  mutation CreateTechStatusBusinessLead(
+    $data: TechStatusBusinessLeadCreateInput!
+  ) {
     createTechStatusBusinessLead(data: $data) {
       id
       estimatedValue
@@ -1066,7 +1071,10 @@ export interface CompanyVendedoresResponse {
 }
 
 export const UPDATE_VENDEDOR_MUTATION = gql`
-  mutation UpdateVendedor($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {
+  mutation UpdateVendedor(
+    $where: UserWhereUniqueInput!
+    $data: UserUpdateInput!
+  ) {
     updateUser(where: $where, data: $data) {
       id
       name
@@ -1246,24 +1254,26 @@ export const GET_STRIPE_PAYMENT_METHODS = gql`
 `;
 
 export const GET_PAYMENT_METHOD = gql`
-  query PaymentMethod($where: PaymentMethodWhereUniqueInput!) {
-    paymentMethod(where: $where) {
+  query PaymentSaasMethod($where: PaymentSaasMethodWhereUniqueInput!) {
+    paymentSaasMethod(where: $where) {
       id
     }
   }
 `;
 
 export const CREATE_PAYMENT_METHOD = gql`
-  mutation CreatePaymentMethod($data: PaymentMethodCreateInput!) {
-    createPaymentMethod(data: $data) {
+  mutation CreatePaymentMethod($data: SaasPaymentMethodCreateInput!) {
+    createSaasPaymentMethod(data: $data) {
       id
     }
   }
 `;
 
 export const CREATE_COMPANY_SUBSCRIPTION = gql`
-  mutation CreateCompanySubscription($input: CreateCompanySubscriptionInput!) {
-    createCompanySubscription(input: $input) {
+  mutation CreateCompanySubscription(
+    $input: SaasCompanySubscriptionCreateInput!
+  ) {
+    createSaasCompanySubscription(input: $input) {
       success
       message
       subscriptionId

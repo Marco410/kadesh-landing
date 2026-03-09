@@ -21,7 +21,10 @@ export interface SubscriptionPaymentFormData {
   notes?: string;
 }
 
-export function useSubscriptionPayment(userId: string | undefined, userEmail: string | undefined) {
+export function useSubscriptionPayment(
+  userId: string | undefined,
+  userEmail: string | undefined,
+) {
   const client = useApolloClient();
   const stripe = useStripe();
   const elements = useElements();
@@ -29,16 +32,17 @@ export function useSubscriptionPayment(userId: string | undefined, userEmail: st
   const [loadingPayment, setLoadingPayment] = useState(false);
 
   const [createPaymentMethod] = useMutation(CREATE_PAYMENT_METHOD);
-  const [createCompanySubscription] = useMutation<CreateCompanySubscriptionResponse>(
-    CREATE_COMPANY_SUBSCRIPTION,
-  );
+  const [createCompanySubscription] =
+    useMutation<CreateCompanySubscriptionResponse>(CREATE_COMPANY_SUBSCRIPTION);
 
   const processSubscriptionPayment = async (
     plan: SaasPlanItem,
     formData: SubscriptionPaymentFormData,
   ) => {
     if (!stripe || !elements || !userId || !userEmail) {
-      sileo.error({ title: "Sesión o datos incompletos. Inicia sesión e intenta de nuevo." });
+      sileo.error({
+        title: "Sesión o datos incompletos. Inicia sesión e intenta de nuevo.",
+      });
       return;
     }
 
@@ -63,7 +67,11 @@ export function useSubscriptionPayment(userId: string | undefined, userEmail: st
       });
 
       if (error) {
-        sileo.error({ title: "Error al procesar el pago: " + (error.message ?? "Intenta de nuevo.") });
+        sileo.error({
+          title:
+            "Error al procesar el pago: " +
+            (error.message ?? "Intenta de nuevo."),
+        });
         setLoadingPayment(false);
         return;
       }
@@ -80,7 +88,8 @@ export function useSubscriptionPayment(userId: string | undefined, userEmail: st
         fetchPolicy: "network-only",
       });
 
-      const methodsList = (getStripePaymentMethods as any)?.StripePaymentMethods?.data?.data;
+      const methodsList = (getStripePaymentMethods as any)?.StripePaymentMethods
+        ?.data?.data;
       const stripePaymentMethodDuplicate = Array.isArray(methodsList)
         ? methodsList.find(
             (method: any) =>
@@ -106,13 +115,15 @@ export function useSubscriptionPayment(userId: string | undefined, userEmail: st
               stripeProcessorId: "-",
               stripePaymentMethodId: paymentMethod.id,
               address: "",
-              postalCode: paymentMethod.billing_details?.address?.postal_code?.toString() ?? "",
+              postalCode:
+                paymentMethod.billing_details?.address?.postal_code?.toString() ??
+                "",
               ownerName: userName,
               country: paymentMethod.card.country ?? "",
             },
           },
         });
-        paymentMethodId = (res.data as any).createPaymentMethod.id;
+        paymentMethodId = (res.data as any).createSaasPaymentMethod.id;
         noDuplicatePaymentMethod = true;
       } else {
         const { data: getPaymentMethod } = await client.query({
@@ -122,7 +133,7 @@ export function useSubscriptionPayment(userId: string | undefined, userEmail: st
           },
           fetchPolicy: "network-only",
         });
-        paymentMethodId = (getPaymentMethod as any).paymentMethod.id;
+        paymentMethodId = (getPaymentMethod as any).paymentSaasMethod.id;
         noDuplicatePaymentMethod = false;
       }
 
@@ -151,11 +162,16 @@ export function useSubscriptionPayment(userId: string | undefined, userEmail: st
       } else {
         setLoadingPayment(false);
         sileo.error({
-          title: result?.message ?? "No se pudo completar la suscripción. Intenta de nuevo.",
+          title:
+            result?.message ??
+            "No se pudo completar la suscripción. Intenta de nuevo.",
         });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Error de conexión. Intenta de nuevo.";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Error de conexión. Intenta de nuevo.";
       sileo.error({ title: message });
       setLoadingPayment(false);
     }

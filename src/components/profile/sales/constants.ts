@@ -156,3 +156,98 @@ export const EVENT_LABELS = {
   proposal: "Propuesta",
   followup: "Seguimiento",
 } as const;
+
+/** Subscription status (aligned with Stripe subscription status) */
+export const SUBSCRIPTION_STATUS = {
+  ACTIVE: "active",
+  PAST_DUE: "past_due",
+  CANCELLED: "cancelled",
+  UNPAID: "unpaid",
+  TRIALING: "trialing",
+} as const;
+
+export const SUBSCRIPTION_STATUS_OPTIONS = [
+  { label: "Activa", value: SUBSCRIPTION_STATUS.ACTIVE },
+  { label: "Vencida", value: SUBSCRIPTION_STATUS.PAST_DUE },
+  { label: "Cancelada", value: SUBSCRIPTION_STATUS.CANCELLED },
+  { label: "No pagada", value: SUBSCRIPTION_STATUS.UNPAID },
+  { label: "En prueba", value: SUBSCRIPTION_STATUS.TRIALING },
+] as const;
+
+/** Badge classes for subscription status. Unknown status uses neutral. */
+export const SUBSCRIPTION_STATUS_CLASSES: Record<string, string> = {
+  [SUBSCRIPTION_STATUS.ACTIVE]:
+    "bg-green-500/15 text-green-700 dark:text-green-400 dark:bg-green-500/20",
+  [SUBSCRIPTION_STATUS.PAST_DUE]:
+    "bg-amber-500/15 text-amber-700 dark:text-amber-400 dark:bg-amber-500/20",
+  [SUBSCRIPTION_STATUS.CANCELLED]:
+    "bg-[#e0e0e0] dark:bg-[#3a3a3a] text-[#616161] dark:text-[#b0b0b0]",
+  [SUBSCRIPTION_STATUS.UNPAID]:
+    "bg-red-500/15 text-red-700 dark:text-red-400 dark:bg-red-500/20",
+  [SUBSCRIPTION_STATUS.TRIALING]:
+    "bg-blue-500/15 text-blue-700 dark:text-blue-400 dark:bg-blue-500/20",
+};
+
+/** Plan feature keys (secciones/funcionalidades del sistema). Añadir aquí al agregar nuevas. */
+export const PLAN_FEATURE_KEYS = {
+  CRM: "crm",
+  LEAD_SYNC: "lead_sync",//ready
+  SALES_PERSON_MANAGEMENT: "sales_person_management",//ready
+  EDIT_LEAD_DATA: "edit_lead_data",
+  SALES_ACTIVITIES: "sales_activities",//ready
+  ASSIGN_SALES_PERSON: "assign_sales_person",//ready
+  FOLLOW_UP_TASKS: "follow_up_tasks",//ready
+  PROPOSALS: "proposals",//ready
+  CALENDAR_CRM: "calendar_crm",
+  SALES_COMMISSION: "sales_commission",
+} as const;
+
+export type PlanFeatureKey = (typeof PLAN_FEATURE_KEYS)[keyof typeof PLAN_FEATURE_KEYS];
+
+/** Metadatos por feature (nombre y descripción para UI). Añadir entradas al agregar funcionalidades. */
+export const PLAN_FEATURES_MAP: Record<
+  PlanFeatureKey,
+  { name: string; description: string }
+> = {
+  [PLAN_FEATURE_KEYS.LEAD_SYNC]: {
+    name: "Búsqueda de leads en mapa",
+    description: "Búsqueda de leads",
+  },
+  [PLAN_FEATURE_KEYS.CRM]: {
+    name: "CRM",
+    description: "Gestión de leads y ventas",
+  },
+  [PLAN_FEATURE_KEYS.EDIT_LEAD_DATA]: {
+    name: "Editar datos del lead",
+    description: "Editar datos del lead",
+  },
+  [PLAN_FEATURE_KEYS.SALES_ACTIVITIES]: {
+    name: "Actividades de ventas",
+    description: "Registrar actividades de ventas",
+  },
+  [PLAN_FEATURE_KEYS.FOLLOW_UP_TASKS]: {
+    name: "Tareas de seguimiento",
+    description: "Crear tareas de seguimiento",
+  },
+  [PLAN_FEATURE_KEYS.PROPOSALS]: {
+    name: "Propuestas",
+    description: "Crear y gestionar propuestas",
+  },
+  [PLAN_FEATURE_KEYS.CALENDAR_CRM]: {
+    name: "Gestión de calendario",
+    description:
+      "Gestión de propuestas, actividades de ventas y tareas de seguimiento",
+  },
+  [PLAN_FEATURE_KEYS.SALES_PERSON_MANAGEMENT]: {
+    name: "Gestión de vendedores",
+    description: "Gestión de vendedores",
+  },
+  [PLAN_FEATURE_KEYS.SALES_COMMISSION]: {
+    name: "Comisión de ventas",
+    description: "Configurar comisión de ventas",
+  },
+  [PLAN_FEATURE_KEYS.ASSIGN_SALES_PERSON]: {
+    name: "Asignar vendedor",
+    description: "Asignar vendedor al lead",
+  },
+};

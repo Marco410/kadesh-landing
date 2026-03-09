@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery } from "@apollo/client";
 import { CardElement } from "@stripe/react-stripe-js";
+import { useTheme } from "next-themes";
 import {
   SAAS_PLANS_QUERY,
+  USER_COMPANY_CATEGORIES_QUERY,
   type SaasPlansResponse,
   type SaasPlanItem,
+  type PlanFeatureItem,
+  type UserCompanyCategoriesResponse,
+  type UserCompanyCategoriesVariables,
 } from "kadesh/components/profile/sales/queries";
 import { Routes } from "kadesh/core/routes";
 import { useUser } from "kadesh/utils/UserContext";
@@ -33,7 +38,7 @@ function formatPeriod(frequency: string): string {
 const inputBase =
   "w-full rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] px-4 py-2.5 text-sm text-[#212121] dark:text-[#ffffff] placeholder:text-[#9e9e9e] dark:placeholder:text-[#666] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent";
 
-const cardElementOptions = {
+const cardElementOptionsLight = {
   style: {
     base: {
       fontSize: "16px",
@@ -49,21 +54,55 @@ const cardElementOptions = {
   hidePostalCode: true,
 };
 
+const cardElementOptionsDark = {
+  style: {
+    base: {
+      fontSize: "16px",
+      color: "#ffffff",
+      "::placeholder": { color: "#9ca3af" },
+      iconColor: "#ffffff",
+    },
+    invalid: {
+      color: "#f87171",
+      iconColor: "#f87171",
+    },
+  },
+  hidePostalCode: true,
+};
+
 export default function SuscripcionSection() {
   const params = useParams();
   const id = params?.planId as string | undefined;
+  const { resolvedTheme } = useTheme();
   const { user } = useUser();
+
+  const cardElementOptions = useMemo(
+    () => (resolvedTheme === "dark" ? cardElementOptionsDark : cardElementOptionsLight),
+    [resolvedTheme]
+  );
 
   const [cardName, setCardName] = useState("");
   const [notes, setNotes] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
 
   const { data, loading, error } = useQuery<SaasPlansResponse>(SAAS_PLANS_QUERY);
-  const plan = id ? data?.saasPlans?.find((p) => p.id === id) ?? null : null;
+  const { data: userData } = useQuery<
+    UserCompanyCategoriesResponse,
+    UserCompanyCategoriesVariables
+  >(USER_COMPANY_CATEGORIES_QUERY, {
+    variables: { where: { id: user?.id ?? "" } },
+    skip: !user?.id,
+  });
+
+  const plan = id
+    ? (data?.saasPlans?.find((p) => p.id === id) ?? null)
+    : null;
+  const stripeCustomerId = userData?.user?.stripeCustomerId;
 
   const { processSubscriptionPayment, loadingPayment } = useSubscriptionPayment(
     user?.id,
     user?.email,
+    stripeCustomerId,
   );
 
   const handleConfirmSubscription = async (e: React.FormEvent) => {
@@ -190,8 +229,8 @@ export default function SuscripcionSection() {
           {plan.planFeatures != null && plan.planFeatures.length > 0 && (
             <ul className="mt-8 space-y-2">
               {plan.planFeatures
-                .filter((f) => f.included)
-                .map((f) => (
+                .filter((f: PlanFeatureItem) => f.included)
+                .map((f: PlanFeatureItem) => (
                   <li key={f.key} className="flex items-center gap-3 text-sm">
                     <HugeiconsIcon
                       icon={CheckmarkCircle02Icon}

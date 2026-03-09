@@ -24,6 +24,7 @@ export interface SubscriptionPaymentFormData {
 export function useSubscriptionPayment(
   userId: string | undefined,
   userEmail: string | undefined,
+  stripeCustomerId: string | undefined,
 ) {
   const client = useApolloClient();
   const stripe = useStripe();
@@ -82,23 +83,32 @@ export function useSubscriptionPayment(
         return;
       }
 
-      const { data: getStripePaymentMethods } = await client.query({
-        query: GET_STRIPE_PAYMENT_METHODS,
-        variables: { email: userEmail },
-        fetchPolicy: "network-only",
-      });
+      // Listar métodos de pago en Stripe solo si hay customer (evitar "No such customer").
+      // Si no hay stripeCustomerId, o el backend devuelve success: false, usamos lista vacía.
+      let methodsList: unknown[] = [];
+      if (stripeCustomerId) {
+        try {
+          const { data: getStripePaymentMethods } = await client.query({
+            query: GET_STRIPE_PAYMENT_METHODS,
+            variables: { email: userEmail },
+            fetchPolicy: "network-only",
+          });
+          const raw = (getStripePaymentMethods as any)?.StripePaymentMethods;
+          if (raw?.success === true && Array.isArray(raw?.data?.data)) {
+            methodsList = raw.data.data;
+          }
+        } catch {
+          // Error de red o excepción: seguir como si no hubiera métodos.
+        }
+      }
 
-      const methodsList = (getStripePaymentMethods as any)?.StripePaymentMethods
-        ?.data?.data;
-      const stripePaymentMethodDuplicate = Array.isArray(methodsList)
-        ? methodsList.find(
-            (method: any) =>
-              method.card?.last4 === paymentMethod.card?.last4 &&
-              method.card?.exp_month === paymentMethod.card?.exp_month &&
-              method.card?.exp_year === paymentMethod.card?.exp_year &&
-              method.card?.brand === paymentMethod.card?.brand,
-          )
-        : undefined;
+      const stripePaymentMethodDuplicate = methodsList.find(
+        (method: any) =>
+          method.card?.last4 === paymentMethod.card?.last4 &&
+          method.card?.exp_month === paymentMethod.card?.exp_month &&
+          method.card?.exp_year === paymentMethod.card?.exp_year &&
+          method.card?.brand === paymentMethod.card?.brand,
+      ) as { id: string } | undefined;
 
       let paymentMethodId: string;
       let noDuplicatePaymentMethod: boolean;
@@ -133,7 +143,7 @@ export function useSubscriptionPayment(
           },
           fetchPolicy: "network-only",
         });
-        paymentMethodId = (getPaymentMethod as any).paymentSaasMethod.id;
+        paymentMethodId = (getPaymentMethod as any).saasPaymentMethod.id;
         noDuplicatePaymentMethod = false;
       }
 
@@ -154,13 +164,12 @@ export function useSubscriptionPayment(
       });
 
       const result = response.data?.createCompanySubscription;
+      setLoadingPayment(false);
 
       if (result?.success) {
-        setLoadingPayment(false);
         sileo.success({ title: result.message ?? "Suscripción activada." });
-        router.push(Routes.profilePlanSubscriptionSuccess);
+        router.replace(Routes.profilePlanSubscriptionSuccess);
       } else {
-        setLoadingPayment(false);
         sileo.error({
           title:
             result?.message ??
@@ -168,12 +177,9 @@ export function useSubscriptionPayment(
         });
       }
     } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Error de conexión. Intenta de nuevo.";
-      sileo.error({ title: message });
       setLoadingPayment(false);
+      const message = err instanceof Error ? err.message : "Error de conexión. Intenta de nuevo.";
+      sileo.error({ title: message });
     }
   };
 

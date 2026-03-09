@@ -22,7 +22,9 @@ import {
   type TechFollowUpTasksVariables,
   type TechFollowUpTasksCountResponse,
 } from "kadesh/components/profile/sales/queries";
-import { EVENT_COLORS } from "../constants";
+import { EVENT_COLORS, PLAN_FEATURE_KEYS } from "../constants";
+import { hasPlanFeature } from "../helpers/plan-features";
+import { useSubscription } from "../SubscriptionContext";
 
 const buttonClassName =
   "inline-flex text-center text-white items-center gap-2 px-4 py-2.5 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] text-sm font-medium hover:bg-[#f5f5f5] dark:hover:bg-[#333] focus:outline-none focus:ring-2 focus:ring-orange-500 w-full";
@@ -39,6 +41,8 @@ export default function LeadCrmActions({
   const [activityModalOpen, setActivityModalOpen] = useState(false);
   const [proposalModalOpen, setProposalModalOpen] = useState(false);
   const [followUpModalOpen, setFollowUpModalOpen] = useState(false);
+  const { subscription } = useSubscription();
+
 
   const activitiesWhere: TechSalesActivitiesVariables["where"] = {
     AND: [
@@ -108,6 +112,8 @@ export default function LeadCrmActions({
     setFollowUpModalOpen(true);
   };
 
+  console.log("subscription", subscription);
+
   return (
     <div className="flex flex-col gap-4 p-4">
        <p className="text-xs font-semibold uppercase tracking-wide text-[#616161] dark:text-[#b0b0b0]">
@@ -142,6 +148,7 @@ export default function LeadCrmActions({
       <div className="">
        
         <div className="flex flex-row gap-3 ">
+          {hasPlanFeature(subscription?.planFeatures, PLAN_FEATURE_KEYS.SALES_ACTIVITIES) && (
           <button
             type="button"
             onClick={handleNewActivity}
@@ -150,6 +157,8 @@ export default function LeadCrmActions({
             <HugeiconsIcon icon={MessageEditIcon} size={16} className="text-white" />
             Registrar actividad
           </button>
+          )}
+          {hasPlanFeature(subscription?.planFeatures, PLAN_FEATURE_KEYS.PROPOSALS) && (
           <button
             type="button"
             onClick={handleNewProposal}
@@ -158,6 +167,8 @@ export default function LeadCrmActions({
             <HugeiconsIcon icon={FileAttachmentIcon} size={16} className="text-white" />
             Registrar propuesta
           </button>
+          )}
+          {hasPlanFeature(subscription?.planFeatures, PLAN_FEATURE_KEYS.FOLLOW_UP_TASKS) && (
           <button
             type="button"
             onClick={handleNewFollowUp}
@@ -166,6 +177,7 @@ export default function LeadCrmActions({
             <HugeiconsIcon icon={Calendar02Icon} size={16} className="text-white" />
             Programar seguimiento
           </button>
+          )}
         </div>
       </div>
       <RegisterActivityModal

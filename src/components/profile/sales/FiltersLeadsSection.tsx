@@ -6,7 +6,10 @@ import {
   PIPELINE_STATUS_RING,
   PIPELINE_RING_BASE,
   GOOGLE_PLACE_CATEGORIES,
+  PLAN_FEATURE_KEYS,
 } from "kadesh/components/profile/sales/constants";
+import { hasPlanFeature } from "./helpers/plan-features";
+import { useSubscription } from "./SubscriptionContext";
 
 const PIPELINE_VALUES = Object.values(PIPELINE_STATUS);
 
@@ -53,6 +56,7 @@ export default function FiltersLeadsSection({
   const categoryOptions = GOOGLE_PLACE_CATEGORIES;
   const selectedVendedor = vendedores.find((v) => v.id === assignToVendedorId);
   const assignMode = assignToVendedorId != null;
+  const { subscription } = useSubscription();
 
   return (
     <div className="space-y-4 mb-4">
@@ -99,7 +103,7 @@ export default function FiltersLeadsSection({
                 </select>
             </div>
             {/* Asignar leads a vendedor (solo si hay vendedores) */}
-            {vendedores.length > 0 && (
+            {(vendedores.length > 0 && hasPlanFeature(subscription?.planFeatures, PLAN_FEATURE_KEYS.ASSIGN_SALES_PERSON)) && (
               <div className="flex flex-wrap items-center gap-2">
                 <label
                   htmlFor="filter-assign-vendedor"

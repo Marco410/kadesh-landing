@@ -24,6 +24,7 @@ import SalesLeadsTable from "kadesh/components/profile/sales/SalesLeadsTable";
 import StatsSection from "./StatsSection";
 import FiltersLeadsSection from "./FiltersLeadsSection";
 import CurrentPlanSection from "./CurrentPlanSection";
+import { SubscriptionProvider } from "./SubscriptionContext";
 import { useUser } from "kadesh/utils/UserContext";
 import { Role } from "kadesh/constants/constans";
 import { sileo } from "sileo";
@@ -253,11 +254,11 @@ export default function SalesSection({ userId }: SalesSectionProps) {
   }, [countData, totalPages, page]);
 
   return (
-    <div className="w-full space-y-6">
-      
-      <CurrentPlanSection userId={userId} />
+    <SubscriptionProvider companyId={companyId}>
+      <div className="w-full space-y-6">
+        <CurrentPlanSection />
 
-      <StatsSection userId={userId} companyId={companyId} isAdminCompany={isAdminCompany} salesComission={userData?.user?.salesComission ?? 0} />
+        <StatsSection userId={userId} companyId={companyId} isAdminCompany={isAdminCompany} salesComission={userData?.user?.salesComission ?? 0} />
 
 
       {/* Título + filtros por pipeline + tabla */}
@@ -298,5 +299,6 @@ export default function SalesSection({ userId }: SalesSectionProps) {
         />
       </div>
     </div>
+    </SubscriptionProvider>
   );
 }

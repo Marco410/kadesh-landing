@@ -12,10 +12,12 @@ import {
   type TechProposalsResponse,
   type TechProposalsBySellerVariables,
 } from "kadesh/components/profile/sales/queries";
-import { PIPELINE_STATUS, PROPOSAL_STATUS } from "./constants";
+import { PIPELINE_STATUS, PLAN_FEATURE_KEYS, PROPOSAL_STATUS } from "./constants";
 import { formatCurrency } from "kadesh/utils/format-currency";
 import { Routes } from "kadesh/core/routes";
 import { useRouter } from "next/navigation";
+import { hasPlanFeature } from "./helpers/plan-features";
+import { useSubscription } from "./SubscriptionContext";
 
 interface StatsSectionProps {
   userId: string;
@@ -26,6 +28,7 @@ interface StatsSectionProps {
 
 export default function StatsSection({ userId, companyId, isAdminCompany, salesComission }: StatsSectionProps) {
   const router = useRouter();
+  const { subscription } = useSubscription();
 
   const where = {
     ...(!isAdminCompany ? { salesPerson: { some: { id: { equals: userId } } } } : {}),
@@ -96,6 +99,9 @@ export default function StatsSection({ userId, companyId, isAdminCompany, salesC
   const contactados = contactadosData?.techBusinessLeadsCount ?? 0;
 
 
+  console.log("subscription", subscription);
+
+  const hasPlanFeaturesRequired = hasPlanFeature(subscription?.planFeatures, PLAN_FEATURE_KEYS.LEAD_SYNC) || hasPlanFeature(subscription?.planFeatures, PLAN_FEATURE_KEYS.SALES_PERSON_MANAGEMENT);
   return (
     <div className="flex flex-col gap-4">
       {/* Stats */}
@@ -133,9 +139,10 @@ export default function StatsSection({ userId, companyId, isAdminCompany, salesC
           </p>
         </div>
       </div>
-      {isAdminCompany && (
+      {(isAdminCompany && hasPlanFeaturesRequired) && (
       <div className="flex flex-col sm:flex-row rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] p-4 shadow-sm items-stretch sm:items-center justify-between gap-4">
-        <div className="flex flex-col gap-1 min-w-0">
+         {
+         hasPlanFeature(subscription?.planFeatures, PLAN_FEATURE_KEYS.LEAD_SYNC) && <div className="flex flex-col gap-1 min-w-0">
           <button
             type="button"
             onClick={() => router.push(Routes.profileSyncLeads)}
@@ -145,7 +152,9 @@ export default function StatsSection({ userId, companyId, isAdminCompany, salesC
             Obtener nuevos clientes
           </button>
         </div>
-        <div className="flex flex-col gap-1 min-w-0">
+        }
+        {
+          hasPlanFeature(subscription?.planFeatures, PLAN_FEATURE_KEYS.SALES_PERSON_MANAGEMENT) && <div className="flex flex-col gap-1 min-w-0">
           <button
             type="button"
             onClick={() => router.push(Routes.profileAddSalesperson)}
@@ -155,6 +164,7 @@ export default function StatsSection({ userId, companyId, isAdminCompany, salesC
             Vendedores 
           </button>
         </div>
+        }
         <div className="flex flex-col items-end justify-center border-t border-[#e0e0e0] dark:border-[#3a3a3a] pt-4 sm:pt-0 sm:border-t-0">
           <p className="text-sm font-medium text-[#616161] dark:text-[#b0b0b0]">
             Total clientes

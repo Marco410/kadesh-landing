@@ -1,5 +1,70 @@
 import { gql } from "@apollo/client";
 
+/** Custom query: subscriptionStatus(companyId) - use for subscription data in sales module. */
+export const SUBSCRIPTION_STATUS_QUERY = gql`
+  query SubscriptionStatus($companyId: ID) {
+    subscriptionStatus(companyId: $companyId) {
+      success
+      message
+      daysUntilNextBilling
+      subscriptionActive
+      subscription {
+        id
+        activatedAt
+        planCost
+        planCurrency
+        planFrequency
+        planLeadLimit
+        planName
+        planFeatures
+        status
+        stripeCustomerId
+        stripeSubscriptionId
+        currentPeriodEnd
+      }
+    }
+  }
+`;
+
+export interface SubscriptionStatusVariables {
+  companyId: string | null;
+}
+
+/** Plan feature item from subscription (key, name, included, description). */
+export interface PlanFeatureItem {
+  key: string;
+  name: string;
+  included: boolean;
+  description: string;
+}
+
+export interface SubscriptionData {
+  id: string | null;
+  activatedAt: string | null;
+  planCost: number | null;
+  planCurrency: string | null;
+  planFrequency: string | null;
+  planLeadLimit: number | null;
+  planName: string | null;
+  planFeatures: PlanFeatureItem[] | null;
+  status: string | null;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+  currentPeriodEnd: string | null;
+}
+
+export interface SubscriptionStatusResult {
+  success: boolean;
+  message: string | null;
+  daysUntilNextBilling: number | null;
+  subscriptionActive: boolean | null;
+  subscription: SubscriptionData | null;
+}
+
+export interface SubscriptionStatusResponse {
+  subscriptionStatus: SubscriptionStatusResult | null;
+}
+
 export const USER_COMPANY_CATEGORIES_QUERY = gql`
   query UserCompanyCategories($where: UserWhereUniqueInput!) {
     user(where: $where) {
@@ -9,20 +74,6 @@ export const USER_COMPANY_CATEGORIES_QUERY = gql`
       company {
         id
         allowedGooglePlaceCategories
-        subscriptions {
-          id
-          activeInStripe
-          activatedAt
-          planCost
-          planCurrency
-          planFrequency
-          planLeadLimit
-          planName
-          status
-          stripeCustomerId
-          stripeSubscriptionId
-          currentPeriodEnd
-        }
       }
     }
   }
@@ -40,24 +91,8 @@ export interface UserCompanyCategoriesResponse {
     company: {
       id: string;
       allowedGooglePlaceCategories: string[];
-      subscriptions: Subscription[] | null;
     } | null;
   } | null;
-}
-
-export interface Subscription {
-  id: string;
-  activeInStripe: boolean;
-  activatedAt: string;
-  planCost: number;
-  planCurrency: string;
-  planFrequency: string;
-  planLeadLimit: number;
-  planName: string;
-  status: string;
-  stripeCustomerId: string;
-  stripeSubscriptionId: string;
-  currentPeriodEnd: string;
 }
 
 export const TECH_BUSINESS_LEADS_QUERY = gql`
@@ -1203,13 +1238,6 @@ export const SAAS_PLANS_QUERY = gql`
   }
 `;
 
-export interface PlanFeatureItem {
-  key: string;
-  name: string;
-  included: boolean;
-  description: string;
-}
-
 export interface SaasPlanItem {
   id: string;
   name: string;
@@ -1254,15 +1282,15 @@ export const GET_STRIPE_PAYMENT_METHODS = gql`
 `;
 
 export const GET_PAYMENT_METHOD = gql`
-  query PaymentSaasMethod($where: PaymentSaasMethodWhereUniqueInput!) {
-    paymentSaasMethod(where: $where) {
+  query SaasPaymentMethod($where: SaasPaymentMethodWhereUniqueInput!) {
+    saasPaymentMethod(where: $where) {
       id
     }
   }
 `;
 
 export const CREATE_PAYMENT_METHOD = gql`
-  mutation CreatePaymentMethod($data: SaasPaymentMethodCreateInput!) {
+  mutation CreateSaasPaymentMethod($data: SaasPaymentMethodCreateInput!) {
     createSaasPaymentMethod(data: $data) {
       id
     }
@@ -1296,8 +1324,8 @@ export interface CreateCompanySubscriptionInput {
 export interface CreateCompanySubscriptionResult {
   success: boolean;
   message: string;
-  subscriptionId?: string | null;
-  paymentId?: string | null;
+  subscriptionId: string | null;
+  paymentId: string | null;
 }
 
 export interface CreateCompanySubscriptionResponse {

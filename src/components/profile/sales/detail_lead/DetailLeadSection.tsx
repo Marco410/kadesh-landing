@@ -24,6 +24,7 @@ import {
 import {
   PIPELINE_STATUS,
   PIPELINE_STATUS_COLORS,
+  PLAN_FEATURE_KEYS,
 } from "kadesh/components/profile/sales/constants";
 import { Routes } from "kadesh/core/routes";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -35,6 +36,8 @@ import { sileo } from "sileo";
 import { useUser } from "kadesh/utils/UserContext";
 import { formatDateShort } from "kadesh/utils/format-date";
 import { Role } from "kadesh/constants/constans";
+import { hasPlanFeature } from "../helpers/plan-features";
+import { useSubscription } from "../SubscriptionContext";
 
 const PIPELINE_OPTIONS = Object.values(PIPELINE_STATUS);
 const DEFAULT_PIPELINE_HEADER =
@@ -114,6 +117,7 @@ export default function DetailLeadSection() {
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();
+  const { subscription } = useSubscription();
   const id = typeof params?.id === "string" ? params.id : "";
 
   const { data: userCompanyData } = useQuery<
@@ -361,49 +365,9 @@ export default function DetailLeadSection() {
             <Field label="Dirección" value={lead.address} />
             <Field label="Ciudad" value={lead.city} />
             <Field label="Estado" value={lead.state} />
-            <div className="grid grid-cols-[100px_1fr] gap-2 py-1.5 text-sm border-b border-[#e8e8e8] dark:border-[#333] items-center">
-              <label
-                htmlFor="lead-product-offered"
-                className="font-medium text-[#616161] dark:text-[#b0b0b0] shrink-0"
-              >
-                Producto ofrecido
-              </label>
-              <input
-                id="lead-product-offered"
-                type="text"
-                value={productOffered}
-                onChange={(e) => setProductOffered(e.target.value)}
-                placeholder="Producto o servicio ofrecido"
-                className="w-full min-w-0 rounded border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-2 py-1.5 text-[#212121] dark:text-[#ffffff] text-sm placeholder-[#9ca3af] focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-              />
-            </div>
-            <Field
-              label="Valor estimado"
-              value={formatCurrency(status?.estimatedValue)}
-            />
             <Field label="Oportunidad" value={status?.opportunityLevel} />
             <Field label="Fuente" value={lead.source} />
-            <div className="grid grid-cols-[100px_1fr] gap-2 py-1.5 text-sm border-b border-[#e8e8e8] dark:border-[#333] items-center">
-              <label
-                htmlFor="lead-has-website"
-                className="font-medium text-[#616161] dark:text-[#b0b0b0] shrink-0"
-              >
-                Sitio web
-              </label>
-              <select
-                id="lead-has-website"
-                value={hasWebsite === null ? "" : hasWebsite ? "yes" : "no"}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setHasWebsite(v === "" ? null : v === "yes");
-                }}
-                className="w-full min-w-0 rounded border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-2 py-1.5 text-[#212121] dark:text-[#ffffff] text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-              >
-                <option value="">—</option>
-                <option value="yes">Sí</option>
-                <option value="no">No</option>
-              </select>
-            </div>
+            <Field label="Sitio web" value={hasWebsite ? "Si" : "No"} />
             <div className="grid grid-cols-[100px_1fr] gap-2 py-1.5 text-sm border-b border-[#e8e8e8] dark:border-[#333] items-center">
               <label
                 htmlFor="lead-product-offered"
@@ -636,12 +600,14 @@ export default function DetailLeadSection() {
       </div>
       <SaveLeadButton saving={saving} handleSaveLead={handleSaveLead} />
 
-      <LeadDetailCalendar
-        leadId={id}
-        userId={user?.id ?? ""}
-        businessName={lead.businessName ?? ""}
-        sellerName={[user?.name, user?.lastName].filter(Boolean).join(" ") || "—"}
-      />
+      {hasPlanFeature(subscription?.planFeatures, PLAN_FEATURE_KEYS.CALENDAR_CRM) && (
+        <LeadDetailCalendar
+          leadId={id}
+          userId={user?.id ?? ""}
+          businessName={lead.businessName ?? ""}
+          sellerName={[user?.name, user?.lastName].filter(Boolean).join(" ") || "—"}
+        />
+      )}
     </div>
   );
 }

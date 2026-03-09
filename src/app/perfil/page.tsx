@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Tabs, Tab } from '@heroui/tabs';
 import { useUser } from 'kadesh/utils/UserContext';
@@ -24,12 +24,12 @@ function getValidTab(tabFromUrl: string | null, hasVendedorRole: boolean): strin
   return tabFromUrl;
 }
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const { user, loading } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const tabFromUrl = searchParams.get('tab');
+  const tabFromUrl = searchParams.get("tab");
   const hasVendedorRole = user?.roles?.some((r) => r.name === Role.VENDEDOR) ?? false;
   const selectedTab = getValidTab(tabFromUrl, hasVendedorRole);
 
@@ -140,5 +140,24 @@ export default function ProfilePage() {
     </div>
     <Footer />
     </div>
+  );
+}
+
+function ProfilePageFallback() {
+  return (
+    <div className="min-h-screen bg-[#ffffff] dark:bg-[#121212] flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto" />
+        <p className="mt-4 text-[#616161] dark:text-[#b0b0b0]">Cargando perfil...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<ProfilePageFallback />}>
+      <ProfilePageContent />
+    </Suspense>
   );
 }

@@ -209,7 +209,7 @@ export default function ObtenerClientesSection() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <CurrentPlanSection userId={user?.id ?? ""} />
+      <CurrentPlanSection />
       <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           Obtener negocios por zona

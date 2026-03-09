@@ -1282,15 +1282,15 @@ export const GET_STRIPE_PAYMENT_METHODS = gql`
 `;
 
 export const GET_PAYMENT_METHOD = gql`
-  query SaasPaymentMethod($where: SaasPaymentMethodWhereUniqueInput!) {
-    saasPaymentMethod(where: $where) {
+  query PaymentSaasMethod($where: PaymentSaasMethodWhereUniqueInput!) {
+    paymentSaasMethod(where: $where) {
       id
     }
   }
 `;
 
 export const CREATE_PAYMENT_METHOD = gql`
-  mutation CreateSaasPaymentMethod($data: SaasPaymentMethodCreateInput!) {
+  mutation CreatePaymentMethod($data: SaasPaymentMethodCreateInput!) {
     createSaasPaymentMethod(data: $data) {
       id
     }
@@ -1299,9 +1299,9 @@ export const CREATE_PAYMENT_METHOD = gql`
 
 export const CREATE_COMPANY_SUBSCRIPTION = gql`
   mutation CreateCompanySubscription(
-    $input: SaasCompanySubscriptionCreateInput!
+    $input: CreateCompanySubscriptionInput!
   ) {
-    createSaasCompanySubscription(input: $input) {
+    createCompanySubscription(input: $input) {
       success
       message
       subscriptionId

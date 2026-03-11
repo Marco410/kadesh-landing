@@ -45,6 +45,7 @@ export default function NewAnimalForm() {
   const [state, setState] = useState('');
   const [country, setCountry] = useState('');
   const [notes, setNotes] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
   const [lastSeen, setLastSeen] = useState(false);
   const [dateStatus, setDateStatus] = useState('');
   const [isToday, setIsToday] = useState(true);
@@ -138,7 +139,7 @@ export default function NewAnimalForm() {
     // Validate name: must be non-empty (after trim) or exactly 'Sin nombre'
     const isValidName = name === 'Sin nombre' || (name && name.trim() !== '');
     
-    if (!user?.id || !isValidName || !animalTypeId || !animalBreedId || !status || !lat || !lng) {
+    if (!user?.id || !isValidName || !animalTypeId || !animalBreedId || !status || !lat || !lng || !contactNumber?.trim()) {
       alert('Por favor completa todos los campos requeridos');
       return;
     }
@@ -151,6 +152,7 @@ export default function NewAnimalForm() {
         variables: {
           data: {
             name,
+            contactNumber: contactNumber.trim(),
             sex,
             physical_description: physicalDescription?.trim() || null,
             age: age?.trim() || null,
@@ -162,7 +164,6 @@ export default function NewAnimalForm() {
           },
         },
       });
-
       const animalId = animalData?.createAnimal?.id;
       if (!animalId) {
         throw new Error('Error al crear el animal');
@@ -464,8 +465,23 @@ export default function NewAnimalForm() {
               setCountry(newCountry);
             }}
           />
-
-         
+          
+          {/* Contact Phone */}
+          <div>
+            <label htmlFor="contactNumber" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
+              Teléfono de contacto <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="contactNumber"
+              type="tel"
+              maxLength={10}
+              value={contactNumber}
+              onChange={(e) => setContactNumber(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+              placeholder="Ej: 5512345678"
+              required
+            />
+          </div>
 
           {/* Last Seen Checkbox */}
           <div className="flex items-center gap-2">

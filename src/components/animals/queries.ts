@@ -183,6 +183,7 @@ export interface CreateAnimalLogVariables {
     animal: { connect: { id: string } };
     status: string;
     notes: string;
+    contactNumber: string;
     lat: string;
     lng: string;
     address: string;

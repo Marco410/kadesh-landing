@@ -16,12 +16,31 @@ import LocationPicker from 'kadesh/components/animals/nuevo/LocationPicker';
 import AnimalNameInput from 'kadesh/components/animals/nuevo/AnimalNameInput';
 import AnimalTypeSelector from 'kadesh/components/animals/nuevo/AnimalTypeSelector';
 import { motion } from 'framer-motion';
+import { sileo } from 'sileo';
 import { ANIMAL_LOGS_OPTIONS, ANIMAL_SEX_OPTIONS, getStatusLabel, statusIcons } from 'kadesh/components/animals/constants';
 
 interface ImagePreview {
   file: File;
   preview: string;
 }
+
+interface RequiredFieldErrors {
+  name: boolean;
+  animalTypeId: boolean;
+  animalBreedId: boolean;
+  status: boolean;
+  location: boolean;
+  contactNumber: boolean;
+}
+
+const initialRequiredFieldErrors: RequiredFieldErrors = {
+  name: false,
+  animalTypeId: false,
+  animalBreedId: false,
+  status: false,
+  location: false,
+  contactNumber: false,
+};
 
 export default function NewAnimalForm() {
   const router = useRouter();
@@ -50,6 +69,7 @@ export default function NewAnimalForm() {
   const [dateStatus, setDateStatus] = useState('');
   const [isToday, setIsToday] = useState(true);
   const [images, setImages] = useState<ImagePreview[]>([]);
+  const [requiredFieldErrors, setRequiredFieldErrors] = useState<RequiredFieldErrors>(initialRequiredFieldErrors);
 
   // Helper function to format date for datetime-local input
   const formatDateTimeLocal = (date: Date): string => {
@@ -138,9 +158,23 @@ export default function NewAnimalForm() {
     
     // Validate name: must be non-empty (after trim) or exactly 'Sin nombre'
     const isValidName = name === 'Sin nombre' || (name && name.trim() !== '');
+    const currentRequiredErrors: RequiredFieldErrors = {
+      name: !isValidName,
+      animalTypeId: !animalTypeId,
+      animalBreedId: !animalBreedId,
+      status: !status,
+      location: !lat?.trim() || !lng?.trim(),
+      contactNumber: !contactNumber?.trim(),
+    };
+    setRequiredFieldErrors(currentRequiredErrors);
+
+    const hasRequiredFieldErrors = Object.values(currentRequiredErrors).some(Boolean);
     
-    if (!user?.id || !isValidName || !animalTypeId || !animalBreedId || !status || !lat || !lng || !contactNumber?.trim()) {
-      alert('Por favor completa todos los campos requeridos');
+    if (!user?.id || hasRequiredFieldErrors) {
+      sileo.error({
+        title: 'Campos requeridos incompletos',
+        description: 'Por favor completa todos los campos obligatorios para continuar.',
+      });
       return;
     }
 
@@ -206,7 +240,10 @@ export default function NewAnimalForm() {
       router.push('/animales');
     } catch (error: any) {
       console.error('Error creating animal:', error);
-      alert(`Error: ${error.message || 'No se pudo crear el animal'}`);
+      sileo.error({
+        title: 'No se pudo crear el animal',
+        description: error?.message || 'Ocurrio un error inesperado. Intenta nuevamente.',
+      });
     } finally {
       setLoading(false);
     }
@@ -220,23 +257,33 @@ export default function NewAnimalForm() {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg p-6 md:p-8"
       >
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} noValidate className="space-y-6">
           {/* Name */}
-          <AnimalNameInput
-            value={name}
-            onChange={setName}
-            required
-          />
+          <div className={requiredFieldErrors.name ? 'rounded-xl border border-red-500 p-3' : ''}>
+            <AnimalNameInput
+              value={name}
+              onChange={setName}
+              required
+            />
+            {requiredFieldErrors.name && (
+              <p className="mt-2 text-xs text-red-500">Ingresa un nombre valido o marque la casilla "El animal no tiene nombre".</p>
+            )}
+          </div>
 
           {/* Animal Type */}
-          <AnimalTypeSelector
-            selectedTypeId={animalTypeId}
-            onTypeChange={(typeId) => {
-              setAnimalTypeId(typeId);
-              setAnimalBreedId(""); // Reset breed when type changes
-            }}
-            required
-          />
+          <div className={requiredFieldErrors.animalTypeId ? 'rounded-xl border border-red-500 p-3' : ''}>
+            <AnimalTypeSelector
+              selectedTypeId={animalTypeId}
+              onTypeChange={(typeId) => {
+                setAnimalTypeId(typeId);
+                setAnimalBreedId(""); // Reset breed when type changes
+              }}
+              required
+            />
+            {requiredFieldErrors.animalTypeId && (
+              <p className="mt-2 text-xs text-red-500">Selecciona un tipo de animal.</p>
+            )}
+          </div>
 
           {/* Animal Breed - Autocomplete */}
           <Autocomplete
@@ -260,6 +307,7 @@ export default function NewAnimalForm() {
             loading={loadingBreeds}
             searchKey="breed"
             displayKey="breed"
+            error={requiredFieldErrors.animalBreedId ? 'Selecciona una raza.' : undefined}
           />
 
           {/* Physical Description */}
@@ -376,7 +424,7 @@ export default function NewAnimalForm() {
             <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
               Estado <span className="text-red-500">*</span>
             </label>
-            <div className="flex flex-wrap gap-4">
+            <div className={`flex flex-wrap gap-4 rounded-xl ${requiredFieldErrors.status ? 'border border-red-500 p-3' : ''}`}>
               {ANIMAL_LOGS_OPTIONS.filter((option) => option.value === 'abandoned' || option.value === 'found' || option.value === 'lost' || option.value === 'rescued').map((option) => {
                
                 const icon = statusIcons[option.value] || '📋';
@@ -412,6 +460,9 @@ export default function NewAnimalForm() {
                 );
               })}
             </div>
+            {requiredFieldErrors.status && (
+              <p className="mt-2 text-xs text-red-500">Selecciona un estado para el animal.</p>
+            )}
           </div>
 
            {/* Date Status */}
@@ -447,24 +498,29 @@ export default function NewAnimalForm() {
           </div>
 
           {/* Location - Map Picker */}
-          <LocationPicker
-            lat={lat}
-            lng={lng}
-            address={address}
-            city={city}
-            state={state}
-            country={country}
-            onLocationChange={(newLat, newLng) => {
-              setLat(newLat);
-              setLng(newLng);
-            }}
-            onAddressChange={(newAddress, newCity, newState, newCountry) => {
-              setAddress(newAddress);
-              setCity(newCity);
-              setState(newState);
-              setCountry(newCountry);
-            }}
-          />
+          <div className={requiredFieldErrors.location ? 'rounded-xl border border-red-500 p-3' : ''}>
+            <LocationPicker
+              lat={lat}
+              lng={lng}
+              address={address}
+              city={city}
+              state={state}
+              country={country}
+              onLocationChange={(newLat, newLng) => {
+                setLat(newLat);
+                setLng(newLng);
+              }}
+              onAddressChange={(newAddress, newCity, newState, newCountry) => {
+                setAddress(newAddress);
+                setCity(newCity);
+                setState(newState);
+                setCountry(newCountry);
+              }}
+            />
+            {requiredFieldErrors.location && (
+              <p className="mt-2 text-xs text-red-500">Selecciona una ubicacion en el mapa.</p>
+            )}
+          </div>
           
           {/* Contact Phone */}
           <div>
@@ -477,10 +533,13 @@ export default function NewAnimalForm() {
               maxLength={10}
               value={contactNumber}
               onChange={(e) => setContactNumber(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+              className={`w-full px-4 py-2 rounded-lg border ${requiredFieldErrors.contactNumber ? 'border-red-500 dark:border-red-500' : 'border-[#e0e0e0] dark:border-[#3a3a3a]'} bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400`}
               placeholder="Ej: 5512345678"
               required
             />
+            {requiredFieldErrors.contactNumber && (
+              <p className="mt-2 text-xs text-red-500">Ingresa un telefono de contacto.</p>
+            )}
           </div>
 
           {/* Last Seen Checkbox */}

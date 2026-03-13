@@ -31,6 +31,9 @@ interface RequiredFieldErrors {
   status: boolean;
   location: boolean;
   contactNumber: boolean;
+  age: boolean;
+  color: boolean;
+  size: boolean;
 }
 
 const initialRequiredFieldErrors: RequiredFieldErrors = {
@@ -40,6 +43,9 @@ const initialRequiredFieldErrors: RequiredFieldErrors = {
   status: false,
   location: false,
   contactNumber: false,
+  age: false,
+  color: false,
+  size: false,
 };
 
 export default function NewAnimalForm() {
@@ -165,6 +171,9 @@ export default function NewAnimalForm() {
       status: !status,
       location: !lat?.trim() || !lng?.trim(),
       contactNumber: !contactNumber?.trim(),
+      age: !age?.trim(),
+      color: !color?.trim(),
+      size: !size?.trim(),
     };
     setRequiredFieldErrors(currentRequiredErrors);
 
@@ -242,7 +251,7 @@ export default function NewAnimalForm() {
       console.error('Error creating animal:', error);
       sileo.error({
         title: 'No se pudo crear el animal',
-        description: error?.message || 'Ocurrio un error inesperado. Intenta nuevamente.',
+        description: error?.message || 'Ocurrió un error inesperado. Intenta nuevamente.',
       });
     } finally {
       setLoading(false);
@@ -326,11 +335,11 @@ export default function NewAnimalForm() {
           </div>
 
           {/* Age, Color, Size - Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className={`${requiredFieldErrors.age ? 'rounded-xl border border-red-500 p-3' : ''} grid grid-cols-1 md:grid-cols-3 gap-4`}>
             {/* Age */}
             <div>
               <label htmlFor="age" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-                Edad
+                Edad <span className="text-red-500">*</span>
               </label>
               <input
                 id="age"
@@ -340,12 +349,15 @@ export default function NewAnimalForm() {
                 className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
                 placeholder="Ej: 2 años, cachorro..."
               />
+              {requiredFieldErrors.age && (
+                <p className="mt-2 text-xs text-red-500">Ingresa la edad del animal.</p>
+              )}
             </div>
 
             {/* Color */}
             <div>
-              <label htmlFor="color" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-                Color
+              <label htmlFor="color" className={`${requiredFieldErrors.color ? 'text-red-500' : ''} block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2`}>
+                Color <span className="text-red-500">*</span>
               </label>
               <input
                 id="color"
@@ -355,12 +367,15 @@ export default function NewAnimalForm() {
                 className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
                 placeholder="Ej: Marrón, blanco y negro..."
               />
+              {requiredFieldErrors.color && (
+                <p className="mt-2 text-xs text-red-500">Ingresa el color del animal.</p>
+              )}
             </div>
 
             {/* Size */}
             <div>
-              <label htmlFor="size" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-                Tamaño
+              <label htmlFor="size" className={`${requiredFieldErrors.size ? 'text-red-500' : ''} block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2`}>
+                Tamaño <span className="text-red-500">*</span>
               </label>
               <input
                 id="size"
@@ -370,6 +385,9 @@ export default function NewAnimalForm() {
                 className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
                 placeholder="Ej: Pequeño, mediano, grande..."
               />
+              {requiredFieldErrors.size && (
+                <p className="mt-2 text-xs text-red-500">Ingresa el tamaño del animal.</p>
+              )}
             </div>
           </div>
 
@@ -518,7 +536,7 @@ export default function NewAnimalForm() {
               }}
             />
             {requiredFieldErrors.location && (
-              <p className="mt-2 text-xs text-red-500">Selecciona una ubicacion en el mapa.</p>
+              <p className="mt-2 text-xs text-red-500">Selecciona una ubicación en el mapa.</p>
             )}
           </div>
           
@@ -530,15 +548,15 @@ export default function NewAnimalForm() {
             <input
               id="contactNumber"
               type="tel"
-              maxLength={10}
+              maxLength={18}
               value={contactNumber}
               onChange={(e) => setContactNumber(e.target.value)}
               className={`w-full px-4 py-2 rounded-lg border ${requiredFieldErrors.contactNumber ? 'border-red-500 dark:border-red-500' : 'border-[#e0e0e0] dark:border-[#3a3a3a]'} bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400`}
-              placeholder="Ej: 5512345678"
+              placeholder="Ej: +52 55 1234 5678"
               required
             />
             {requiredFieldErrors.contactNumber && (
-              <p className="mt-2 text-xs text-red-500">Ingresa un telefono de contacto.</p>
+              <p className="mt-2 text-xs text-red-500">Ingresa un teléfono de contacto.</p>
             )}
           </div>
 

@@ -34,6 +34,7 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
   const [country, setCountry] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -78,6 +79,7 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
     setIsToday(true);
     setLastSeen(false);
     setNotes('');
+    setContactNumber('');
     setLat('');
     setLng('');
     setAddress('');
@@ -96,6 +98,7 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
       if (chosen > Date.now()) e.dateStatus = 'La fecha no puede ser posterior a hoy';
     }
     if (!notes?.trim()) e.notes = 'Las notas son requeridas';
+    if (!contactNumber?.trim()) e.contactNumber = 'El teléfono de contacto es requerido';
     const latN = parseFloat(lat);
     const lngN = parseFloat(lng);
     if (lat === '' || lng === '' || isNaN(latN) || isNaN(lngN)) {
@@ -120,6 +123,7 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
         animalId,
         status,
         notes,
+        contactNumber,
         lat,
         lng,
         address,
@@ -228,10 +232,27 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
               />
             </div>
 
+              {/* Contact phone */}
+              <div>
+                <label htmlFor="add-log-contactNumber" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
+                  Teléfono de contacto <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="add-log-contactNumber"
+                  type="tel"
+                  value={contactNumber}
+                  onChange={(e) => setContactNumber(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="Ej. +52 55 1234 5678"
+                />
+                {errors.contactNumber && <p className="mt-1 text-xs text-red-500">{errors.contactNumber}</p>}
+              </div>
+
             {/* Location */}
             <div>
               {errors.location && <p className="mb-2 text-xs text-red-500">{errors.location}</p>}
               {errors.address && <p className="mb-1 text-xs text-red-500">{errors.address}</p>}
+              {errors.contactNumber && <p className="mb-1 text-xs text-red-500">{errors.contactNumber}</p>}
               {errors.city && <p className="mb-1 text-xs text-red-500">{errors.city}</p>}
               {errors.state && <p className="mb-1 text-xs text-red-500">{errors.state}</p>}
               {errors.country && <p className="mb-2 text-xs text-red-500">{errors.country}</p>}

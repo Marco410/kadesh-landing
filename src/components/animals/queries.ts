@@ -255,6 +255,7 @@ export const GET_ANIMAL_QUERY = gql`
         }
       }
       createdAt
+      contactNumber
       id
       logs (orderBy: $orderBy)  {
         address

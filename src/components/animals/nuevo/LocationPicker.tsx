@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { useTheme } from 'next-themes';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Location01Icon } from '@hugeicons/core-free-icons';
 import { darkMapStyles, lightMapStyles } from '../constants';
+import { sileo } from 'sileo';
 
 interface LocationPickerProps {
   lat: string;
@@ -24,6 +25,8 @@ const mapContainerStyle = {
   width: '100%',
   height: '400px',
 };
+
+const googleMapsLibraries: ('places')[] = ['places'];
 
 const defaultCenter = {
   lat: 19.4326, // Ciudad de México
@@ -44,17 +47,32 @@ export default function LocationPicker({
 }: LocationPickerProps) {
   const [mapCenter, setMapCenter] = useState(defaultCenter);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [mapLoadError, setMapLoadError] = useState<string | null>(null);
+  const [locationQuery, setLocationQuery] = useState('');
+  const [locationSuggestions, setLocationSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [localAddress, setLocalAddress] = useState(address);
   const [localCity, setLocalCity] = useState(city);
   const [localState, setLocalState] = useState(state);
   const [localCountry, setLocalCountry] = useState(country);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [mounted, setMounted] = useState(false);
+  const skipNextSuggestionFetchRef = useRef(false);
   const { resolvedTheme } = useTheme();
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  const isGoogleMapsReady = useCallback(() => {
+    return (
+      typeof window !== 'undefined' &&
+      !!window.google &&
+      !!window.google.maps &&
+      !!window.google.maps.Geocoder
+    );
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -173,6 +191,60 @@ export default function LocationPicker({
     );
   }, [onAddressChange]);
 
+  const applySelectedLocation = useCallback((location: google.maps.LatLng, queryText?: string) => {
+    const newLat = location.lat().toString();
+    const newLng = location.lng().toString();
+
+    onLocationChange(newLat, newLng);
+    setMapCenter({ lat: location.lat(), lng: location.lng() });
+
+    if (queryText) {
+      skipNextSuggestionFetchRef.current = true;
+      setLocationQuery(queryText);
+    }
+
+    setShowSuggestions(false);
+    setLocationSuggestions([]);
+
+    if (map) {
+      map.panTo({ lat: location.lat(), lng: location.lng() });
+      map.setZoom(17);
+    }
+
+    reverseGeocode(location.lat(), location.lng());
+  }, [map, onLocationChange, reverseGeocode]);
+
+  const geocodeAndApplyLocation = useCallback((
+    request: google.maps.GeocoderRequest,
+    notFoundMessage: string,
+    queryText?: string
+  ) => {
+    if (!isGoogleMapsReady()) {
+      sileo.warning({
+        title: 'El mapa no está listo',
+        description: 'Intenta de nuevo en unos segundos.',
+      });
+      return;
+    }
+
+    setIsSearchingLocation(true);
+    const geocoder = new window.google.maps.Geocoder();
+
+    geocoder.geocode(request, (results, status) => {
+      setIsSearchingLocation(false);
+
+      if (status === 'OK' && results?.[0]?.geometry?.location) {
+        applySelectedLocation(results[0].geometry.location, queryText);
+        return;
+      }
+
+      sileo.warning({
+        title: 'No se pudo encontrar la ubicación',
+        description: notFoundMessage,
+      });
+    });
+  }, [applySelectedLocation, isGoogleMapsReady]);
+
   useEffect(() => {
     const latNum = parseFloat(lat);
     const lngNum = parseFloat(lng);
@@ -223,6 +295,78 @@ export default function LocationPicker({
       }
     );
   }, [onLocationChange, reverseGeocode]);
+
+  const handleSearchLocation = useCallback(() => {
+    const trimmedQuery = locationQuery.trim();
+
+    if (!trimmedQuery) {
+      return;
+    }
+    geocodeAndApplyLocation(
+      { address: trimmedQuery },
+      'No encontramos esa ubicación. Prueba con un nombre más específico.'
+    );
+  }, [geocodeAndApplyLocation, locationQuery]);
+
+  const handleSelectSuggestion = useCallback((suggestion: google.maps.places.AutocompletePrediction) => {
+    geocodeAndApplyLocation(
+      { placeId: suggestion.place_id },
+      'No pudimos resolver esa ubicación. Intenta con otro resultado.',
+      suggestion.description
+    );
+  }, [geocodeAndApplyLocation]);
+
+  useEffect(() => {
+    if (skipNextSuggestionFetchRef.current) {
+      skipNextSuggestionFetchRef.current = false;
+      setLocationSuggestions([]);
+      setShowSuggestions(false);
+      setIsLoadingSuggestions(false);
+      return;
+    }
+
+    const trimmedQuery = locationQuery.trim();
+
+    if (trimmedQuery.length < 3) {
+      setLocationSuggestions([]);
+      setShowSuggestions(false);
+      setIsLoadingSuggestions(false);
+      return;
+    }
+
+    if (
+      typeof window === 'undefined' ||
+      !window.google ||
+      !window.google.maps ||
+      !window.google.maps.places ||
+      !window.google.maps.places.AutocompleteService
+    ) {
+      setLocationSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setIsLoadingSuggestions(true);
+
+    const timer = setTimeout(() => {
+      const autocompleteService = new window.google.maps.places.AutocompleteService();
+
+      autocompleteService.getPlacePredictions({ input: trimmedQuery }, (predictions, status) => {
+        setIsLoadingSuggestions(false);
+
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions?.length) {
+          setLocationSuggestions(predictions.slice(0, 4));
+          setShowSuggestions(true);
+          return;
+        }
+
+        setLocationSuggestions([]);
+        setShowSuggestions(false);
+      });
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [locationQuery]);
 
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
     if (e.latLng) {
@@ -339,41 +483,104 @@ export default function LocationPicker({
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Header with button */}
-      <div className="flex items-center justify-between">
-        <div>
-          <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff]">
-            Ubicación <span className="text-red-500">*</span>
-          </label>
-          <p className="text-xs text-[#616161] dark:text-[#b0b0b0] mt-1">
-            Da clic en el mapa para seleccionar una ubicación.
-          </p>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff]">
+              Ubicación <span className="text-red-500">*</span>
+            </label>
+            <p className="text-xs text-[#616161] dark:text-[#b0b0b0] mt-1">
+              Da clic en el mapa para seleccionar una ubicación.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleUseCurrentLocation}
+            disabled={isLoadingLocation}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoadingLocation ? (
+              <>
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Obteniendo...
+              </>
+            ) : (
+              <>
+                <HugeiconsIcon 
+                  icon={Location01Icon} 
+                  size={15} 
+                  className="text-white"
+                  strokeWidth={1.5}
+                />
+                Usar mi ubicación actual
+              </>
+            )}
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={handleUseCurrentLocation}
-          disabled={isLoadingLocation}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoadingLocation ? (
-            <>
-              <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Obteniendo...
-            </>
-          ) : (
-            <>
-              <HugeiconsIcon 
-                icon={Location01Icon} 
-                size={15} 
-                className="text-white"
-                strokeWidth={1.5}
+        <div>
+          <label htmlFor="location-search" className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1">
+            Buscar ubicación por nombre
+          </label>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative w-full">
+              <input
+                id="location-search"
+                type="text"
+                value={locationQuery}
+                onChange={(e) => setLocationQuery(e.target.value)}
+                onFocus={() => {
+                  if (locationSuggestions.length > 0) {
+                    setShowSuggestions(true);
+                  }
+                }}
+                onBlur={() => {
+                  setTimeout(() => setShowSuggestions(false), 150);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (locationSuggestions.length > 0) {
+                      handleSelectSuggestion(locationSuggestions[0]);
+                      return;
+                    }
+                    handleSearchLocation();
+                  }
+                }}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+                placeholder="Ej: Parque México, Condesa"
               />
-              Usar mi ubicación actual
-            </>
+
+              {showSuggestions && locationSuggestions.length > 0 && (
+                <div className="absolute z-20 mt-1 w-full rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] shadow-lg overflow-hidden">
+                  {locationSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion.place_id}
+                      type="button"
+                      onMouseDown={() => handleSelectSuggestion(suggestion)}
+                      className="w-full text-left px-3 py-2 text-sm text-[#212121] dark:text-[#ffffff] hover:bg-[#f5f5f5] dark:hover:bg-[#1f1f1f] transition-colors"
+                    >
+                      {suggestion.description}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={handleSearchLocation}
+              disabled={isSearchingLocation || !locationQuery.trim()}
+              className="px-4 py-2 text-sm font-medium bg-[#212121] hover:bg-[#333333] dark:bg-[#f5f5f5] dark:hover:bg-[#e0e0e0] text-white dark:text-[#121212] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSearchingLocation ? 'Buscando...' : 'Buscar'}
+            </button>
+          </div>
+          {isLoadingSuggestions && locationQuery.trim().length >= 3 && (
+            <p className="mt-1 text-xs text-[#616161] dark:text-[#b0b0b0]">Buscando sugerencias...</p>
           )}
-        </button>
+        </div>
       </div>
 
       {/* Map */}
@@ -411,6 +618,7 @@ export default function LocationPicker({
         ) : null}
         <LoadScript 
           googleMapsApiKey={googleMapsApiKey || ''}
+          libraries={googleMapsLibraries}
           loadingElement={<div className="w-full h-[400px]" />}
           key={isMapLoaded ? 'loaded' : 'loading'}
         >

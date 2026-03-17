@@ -109,7 +109,7 @@ export default function AnimalInfoSection({ animal }: AnimalInfoSectionProps) {
           </div>
         )}
 
-        <UserInfo user={animal.user} label="Reportado por" />
+        <UserInfo user={animal.user} contactNumber={animal.contactNumber ?? undefined} label="Reportado por" />
       </div>
     </div>
   );

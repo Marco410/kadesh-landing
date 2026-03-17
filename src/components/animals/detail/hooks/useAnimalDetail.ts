@@ -12,6 +12,7 @@ export interface AnimalDetail {
   color?: string | null;
   size?: string | null;
   createdAt: string;
+  contactNumber?: string | null;
   animal_breed: {
     breed: string;
     animal_type: {
@@ -99,6 +100,7 @@ export function useAnimalDetail(animalId: string) {
   return {
     animal,
     logs: animal?.logs,  
+    contactNumber: animal?.contactNumber,
     loading,
     error,
     refetch,

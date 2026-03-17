@@ -183,6 +183,7 @@ export interface CreateAnimalLogVariables {
     animal: { connect: { id: string } };
     status: string;
     notes: string;
+    contactNumber: string;
     lat: string;
     lng: string;
     address: string;
@@ -254,6 +255,7 @@ export const GET_ANIMAL_QUERY = gql`
         }
       }
       createdAt
+      contactNumber
       id
       logs (orderBy: $orderBy)  {
         address

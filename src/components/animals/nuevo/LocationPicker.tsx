@@ -538,7 +538,7 @@ export default function LocationPicker({
                   }
                 }}
                 onBlur={() => {
-                  setTimeout(() => setShowSuggestions(false), 150);
+                  setShowSuggestions(false);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {

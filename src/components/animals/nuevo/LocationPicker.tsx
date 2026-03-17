@@ -343,6 +343,7 @@ export default function LocationPicker({
     ) {
       setLocationSuggestions([]);
       setShowSuggestions(false);
+      setIsLoadingSuggestions(false);
       return;
     }
 

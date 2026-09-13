@@ -203,10 +203,10 @@ export default function AnimalInfoWindow({
               justifyContent: 'center',
               padding: '6px 10px',
               borderRadius: '8px',
-              backgroundColor: isDarkMode 
-                ? 'rgba(249, 115, 22, 0.2)' 
-                : 'rgba(249, 115, 22, 0.1)',
-              color: isDarkMode ? '#fb923c' : '#ea580c',
+              backgroundColor: isDarkMode
+                ? 'color-mix(in srgb, var(--color-kadesh) 28%, transparent)'
+                : 'color-mix(in srgb, var(--color-kadesh) 12%, transparent)',
+              color: 'var(--color-kadesh)',
               textDecoration: 'none',
               fontSize: '12px',
               fontWeight: '600',
@@ -216,15 +216,15 @@ export default function AnimalInfoWindow({
               gap: '4px',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode 
-                ? 'rgba(249, 115, 22, 0.3)' 
-                : 'rgba(249, 115, 22, 0.15)';
+              e.currentTarget.style.backgroundColor = isDarkMode
+                ? 'color-mix(in srgb, var(--color-kadesh) 40%, transparent)'
+                : 'color-mix(in srgb, var(--color-kadesh) 20%, transparent)';
               e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode 
-                ? 'rgba(249, 115, 22, 0.2)' 
-                : 'rgba(249, 115, 22, 0.1)';
+              e.currentTarget.style.backgroundColor = isDarkMode
+                ? 'color-mix(in srgb, var(--color-kadesh) 28%, transparent)'
+                : 'color-mix(in srgb, var(--color-kadesh) 12%, transparent)';
               e.currentTarget.style.transform = 'scale(1)';
             }}
             aria-label="Ver detalles"
@@ -232,7 +232,7 @@ export default function AnimalInfoWindow({
             <HugeiconsIcon
               icon={SentIcon}
               size={14}
-              color={isDarkMode ? '#fb923c' : '#ea580c'}
+              color="var(--color-kadesh)"
             />
             <span>Detalles</span>
           </Link>

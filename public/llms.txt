@@ -1,0 +1,20 @@
+# KADESH
+
+> Plataforma digital de bienestar animal en México: reportes de animales perdidos, directorio de veterinarias, blog y donaciones.
+
+KADESH (Kadesh Pet) conecta adoptantes, rescatistas, veterinarias y refugios. Fundada en México por el ingeniero Marco Castañeda. Lema: Conectando vidas, rescatando almas.
+
+## Páginas
+
+- [Inicio](https://www.kadesh.com.mx/): Qué es KADESH, animales, veterinarias, donaciones y FAQ
+- [Animales](https://www.kadesh.com.mx/animales): Reportes de animales perdidos y en adopción
+- [Veterinarias](https://www.kadesh.com.mx/veterinarias): Directorio de veterinarias cercanas
+- [Blog](https://www.kadesh.com.mx/blog): Historias y notas de la comunidad
+- [Conócenos](https://www.kadesh.com.mx/conocenos): Misión y equipo
+- [Contacto](https://www.kadesh.com.mx/contacto): Soporte
+- [Términos](https://www.kadesh.com.mx/terminos)
+- [Privacidad](https://www.kadesh.com.mx/privacidad)
+
+## Optional
+
+- [llms.txt](https://www.kadesh.com.mx/llms.txt)

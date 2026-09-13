@@ -1,38 +1,104 @@
-"use client";
+'use client';
 
-import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { HOME_DEFINITION } from 'kadesh/components/home/constants';
+import { gsap, useGSAP, ScrollTrigger, HOME_EASE } from 'kadesh/components/home/gsap-register';
+
+const AUDIENCES = [
+  {
+    who: 'Quien busca un animal',
+    job: 'Reporta o encuentra perros y gatos perdidos o en adopción cerca de ti.',
+  },
+  {
+    who: 'Rescatistas y refugios',
+    job: 'Publican casos, coordinan ayuda y visibilizan cada rescate ante la comunidad.',
+  },
+  {
+    who: 'Veterinarias',
+    job: 'Aparecen en el directorio local para quien necesita atención ahora.',
+  },
+] as const;
 
 export default function WhatIsKadesh() {
+  const rootRef = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        gsap.from('[data-about-lead]', {
+          y: 20,
+          filter: 'blur(8px)',
+          opacity: 0,
+          duration: 0.6,
+          ease: HOME_EASE,
+          scrollTrigger: {
+            trigger: rootRef.current,
+            start: 'top 78%',
+            once: true,
+          },
+        });
+
+        gsap.from('[data-about-item]', {
+          y: 16,
+          opacity: 0,
+          duration: 0.45,
+          stagger: 0.08,
+          ease: HOME_EASE,
+          scrollTrigger: {
+            trigger: '[data-about-list]',
+            start: 'top 85%',
+            once: true,
+          },
+        });
+      });
+
+      return () => {
+        mm.revert();
+        ScrollTrigger.getAll().forEach((t) => {
+          if (t.trigger === rootRef.current) t.kill();
+        });
+      };
+    },
+    { scope: rootRef }
+  );
+
   return (
-    <section id="que-es-kadesh" className="w-full py-20 bg-white dark:bg-[#121212]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center max-w-4xl mx-auto"
+    <section
+      ref={rootRef}
+      id="que-es-kadesh"
+      className="w-full bg-white py-24 dark:bg-[#121212]"
+    >
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <h2 className="mb-6 text-4xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-5xl">
+          ¿Qué es KADESH?
+        </h2>
+
+        <p
+          data-about-lead
+          className="text-lg leading-relaxed text-[#3a3a3a] dark:text-[#d0d0d0] sm:text-xl"
         >
-          <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white mb-6">
-            ¿Qué es KADESH?
-          </h2>
-          
-          <div className="space-y-6 text-lg sm:text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
-            <p>
-              KADESH es más que una plataforma tecnológica. Es un <strong className="text-orange-500 dark:text-orange-400">santuario digital</strong> donde la tecnología se encuentra con la compasión, donde cada conexión tiene un propósito espiritual y cada acción busca el bienestar real de nuestros compañeros animales.
-            </p>
-            
-            <p>
-              Nuestra misión trasciende lo funcional: creamos un espacio donde <strong className="text-orange-500 dark:text-orange-400">rescatistas, adoptantes, veterinarias y refugios</strong> se unen en una red de esperanza, donde cada perro perdido tiene una oportunidad y cada historia de rescate inspira a la comunidad.
-            </p>
-            
-            <p className="text-orange-600 dark:text-orange-400 font-semibold">
-              Tecnología moderna. Corazón compasivo. Misión espiritual.
-            </p>
-          </div>
-        </motion.div>
+          {HOME_DEFINITION}
+        </p>
+
+        <p className="mt-6 font-semibold text-kadesh">
+          Tecnología moderna. Corazón compasivo. Misión espiritual.
+        </p>
+
+        <dl data-about-list className="mt-14 grid gap-10 sm:grid-cols-3">
+          {AUDIENCES.map((item) => (
+            <div key={item.who} data-about-item>
+              <dt className="text-sm font-semibold text-[#121212] dark:text-white">
+                {item.who}
+              </dt>
+              <dd className="mt-2 text-sm leading-relaxed text-[#5a5a5a] dark:text-[#b0b0b0]">
+                {item.job}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </section>
   );
 }
-

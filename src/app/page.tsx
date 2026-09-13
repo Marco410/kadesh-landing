@@ -1,5 +1,3 @@
-"use client";
-
 import {
   HeroSection,
   WhatIsKadesh,
@@ -10,111 +8,23 @@ import {
   HowItWorksSection,
   RoadmapSection,
 } from 'kadesh/components/home';
+import FaqSection from 'kadesh/components/home/FaqSection';
+import HomeJsonLd from 'kadesh/components/home/HomeJsonLd';
+import { HOME_DEFINITION, SITE_URL } from 'kadesh/components/home/constants';
 import { Footer, Navigation } from 'kadesh/components/layout';
 import { NewsletterSubscription } from 'kadesh/components/newsletter';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'KADESH — Conectando vidas, rescatando almas',
+  description: HOME_DEFINITION,
+  alternates: { canonical: SITE_URL },
+};
 
 export default function HomePage() {
-  // Structured Data (JSON-LD) for SEO
-  const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'KADESH',
-    url: 'https://www.kadesh.com.mx',
-    description: 'Plataforma digital para conectar adoptantes, rescatistas, veterinarias y tiendas para el bienestar animal en México',
-    publisher: {
-      '@type': 'Organization',
-      name: 'KADESH',
-      url: 'https://www.kadesh.com.mx',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://www.kadesh.com.mx/logo.png',
-      },
-      founder: {
-        '@type': 'Person',
-        name: 'Marco Castañeda',
-        jobTitle: 'Ingeniero',
-      },
-      areaServed: {
-        '@type': 'Country',
-        name: 'México',
-      },
-      sameAs: [
-        "https://www.facebook.com/profile.php?id=61576878181992",
-        "https://www.instagram.com/kadesh.pet/"
-      ],
-    },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: 'https://www.kadesh.com.mx/blog?search={search_term_string}',
-      },
-      'query-input': 'required name=search_term_string',
-    },
-    mainEntity: {
-      '@type': 'Organization',
-      name: 'KADESH',
-      description: 'Plataforma digital para el bienestar animal en México',
-      url: 'https://www.kadesh.com.mx',
-      contactPoint: {
-        '@type': 'ContactPoint',
-        contactType: 'Soporte al cliente',
-        url: 'https://www.kadesh.com.mx/contacto',
-        areaServed: 'MX',
-        availableLanguage: 'Spanish',
-      },
-      offers: {
-        '@type': 'Offer',
-        category: 'Servicios para bienestar animal',
-        description: 'Plataforma para adopción, rescate, donaciones y conexión con veterinarias',
-      },
-    },
-  };
-
-  const organizationStructuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'KADESH',
-    url: 'https://www.kadesh.com.mx',
-    logo: 'https://www.kadesh.com.mx/logo.png',
-    description: 'Plataforma digital para conectar adoptantes, rescatistas, veterinarias y tiendas para el bienestar animal en México',
-    founder: {
-      '@type': 'Person',
-      name: 'Marco Castañeda',
-      jobTitle: 'Ingeniero',
-    },
-    areaServed: {
-      '@type': 'Country',
-      name: 'México',
-    },
-    knowsAbout: [
-      'Bienestar animal',
-      'Adopción de mascotas',
-      'Rescate de animales',
-      'Veterinarias',
-      'Donaciones para animales',
-    ],
-    contactPoint: {
-      '@type': 'ContactPoint',
-      contactType: 'Soporte al cliente',
-      url: 'https://www.kadesh.com.mx/contacto',
-      areaServed: 'MX',
-      availableLanguage: 'Spanish',
-    },
-  };
-
   return (
     <>
-      {/* Structured Data for SEO */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationStructuredData) }}
-      />
-      
+      <HomeJsonLd />
       <main className="min-h-screen">
         <Navigation />
         <HeroSection />
@@ -125,7 +35,8 @@ export default function HomePage() {
         <DonationsSection />
         <HowItWorksSection />
         <RoadmapSection />
-        <NewsletterSubscription/>
+        <FaqSection />
+        <NewsletterSubscription />
         <Footer />
       </main>
     </>

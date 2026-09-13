@@ -130,7 +130,7 @@ export default function LostAnimalsPage() {
       <Navigation />
       
       {/* Hero Section - Compact */}
-      <section className="w-full py-4 bg-gradient-to-br from-orange-500 to-orange-600 ">
+      <section className="w-full py-4 bg-gradient-to-br from-kadesh to-kadesh-600 ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -141,7 +141,7 @@ export default function LostAnimalsPage() {
             <h1 className="text-2xl sm:text-3xl font-black text-white mb-1">
               Animales Perdidos y en Adopción
             </h1>
-            <p className="text-sm text-orange-50 max-w-2xl mx-auto">
+            <p className="text-sm text-kadesh-50 max-w-2xl mx-auto">
               Ayudemos a encontrarles un hogar
             </p>
           </motion.div>
@@ -155,7 +155,7 @@ export default function LostAnimalsPage() {
           disabled={userLoading}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg px-6 py-4 rounded-full shadow-2xl flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-kadesh hover:bg-kadesh-600 text-white font-bold text-lg px-6 py-4 rounded-full shadow-2xl flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <HugeiconsIcon 
             icon={AddCircleIcon} 
@@ -189,7 +189,7 @@ export default function LostAnimalsPage() {
                 Animales ({totalAnimals})
               </h2>
               {locationLoading && (
-                <p className="text-xs text-orange-500 dark:text-orange-400 mb-2">
+                <p className="text-xs text-kadesh dark:text-kadesh-400 mb-2">
                   Obteniendo tu ubicación...
                 </p>
               )}
@@ -212,7 +212,7 @@ export default function LostAnimalsPage() {
                         onClick={() => setRadiusKm(km)}
                         className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
                           radiusKm === km
-                            ? 'bg-orange-500 text-white'
+                            ? 'bg-kadesh text-white'
                             : 'bg-[#f0f0f0] dark:bg-[#2a2a2a] text-[#212121] dark:text-[#e0e0e0] hover:bg-[#e0e0e0] dark:hover:bg-[#3a3a3a]'
                         }`}
                       >
@@ -235,11 +235,6 @@ export default function LostAnimalsPage() {
           <div className="flex-1 overflow-y-auto p-4 pb-24 md:pb-4 space-y-3">
             {(locationLoading || animalsLoading) && animals.length === 0 ? (
               <div className="space-y-3">
-                {locationLoading && (
-                  <p className="text-xs text-orange-500 dark:text-orange-400 mb-2">
-                    Obteniendo tu ubicación...
-                  </p>
-                )}
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
@@ -269,7 +264,7 @@ export default function LostAnimalsPage() {
                 </p>
                 <button
                   onClick={clearFilters}
-                  className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors"
+                  className="px-4 py-2 bg-kadesh hover:bg-kadesh-600 text-white text-sm font-semibold rounded-lg transition-colors"
                 >
                   Limpiar filtros
                 </button>
@@ -317,7 +312,7 @@ export default function LostAnimalsPage() {
                               onClick={() => goToPage(page)}
                               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                                 currentPage === page
-                                  ? 'bg-orange-500 text-white'
+                                  ? 'bg-kadesh text-white'
                                   : 'bg-white dark:bg-[#121212] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a]'
                               }`}
                             >

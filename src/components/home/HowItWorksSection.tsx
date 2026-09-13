@@ -1,86 +1,134 @@
-"use client";
+'use client';
 
-import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import {
+  SentIcon,
+  UserGroupIcon,
+  FavouriteIcon,
+  CheckmarkCircle02Icon,
+} from '@hugeicons/core-free-icons';
+import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 
 const STEPS = [
   {
-    number: "1",
-    title: "Reporta",
-    description: "Reporta un perro perdido o en situación vulnerable. Tu información puede salvar una vida.",
-    icon: "📢"
+    number: '1',
+    title: 'Reporta',
+    description:
+      'Reporta un animal perdido o en situación vulnerable. Tu información puede salvar una vida.',
+    icon: SentIcon,
   },
   {
-    number: "2",
-    title: "Conecta",
-    description: "Conecta con rescatistas, veterinarias y refugios en tu área. La red se fortalece con cada conexión.",
-    icon: "🔗"
+    number: '2',
+    title: 'Conecta',
+    description:
+      'Conecta con rescatistas, veterinarias y refugios en tu área. La red se fortalece con cada conexión.',
+    icon: UserGroupIcon,
   },
   {
-    number: "3",
-    title: "Ayuda",
-    description: "Apoya con donaciones, voluntariado o compartiendo información. Cada acción cuenta.",
-    icon: "🤝"
+    number: '3',
+    title: 'Ayuda',
+    description:
+      'Apoya con donaciones, voluntariado o compartiendo información. Cada acción cuenta.',
+    icon: FavouriteIcon,
   },
   {
-    number: "4",
-    title: "Adopta",
-    description: "Encuentra el compañero perfecto o ayuda a encontrar un hogar. Cada adopción es una historia de esperanza.",
-    icon: "❤️"
+    number: '4',
+    title: 'Adopta',
+    description:
+      'Encuentra el compañero perfecto o ayuda a encontrar un hogar. Cada adopción es una historia de esperanza.',
+    icon: CheckmarkCircle02Icon,
   },
-];
+] as const;
 
 export default function HowItWorksSection() {
+  const rootRef = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        gsap.from('[data-step]', {
+          y: 24,
+          opacity: 0,
+          duration: 0.5,
+          stagger: 0.1,
+          ease: HOME_EASE,
+          scrollTrigger: {
+            trigger: rootRef.current,
+            start: 'top 75%',
+            once: true,
+          },
+        });
+
+        gsap.from('[data-step-line]', {
+          scaleX: 0,
+          transformOrigin: 'left center',
+          duration: 0.8,
+          delay: 0.2,
+          ease: HOME_EASE,
+          scrollTrigger: {
+            trigger: rootRef.current,
+            start: 'top 75%',
+            once: true,
+          },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: rootRef }
+  );
+
   return (
-    <section id="como-funciona" className="w-full py-20 bg-white dark:bg-[#121212]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white mb-4">
+    <section
+      ref={rootRef}
+      id="como-funciona"
+      className="w-full bg-white py-24 dark:bg-[#121212]"
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto mb-16 max-w-2xl text-center">
+          <h2 className="mb-4 text-4xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-5xl">
             Cómo funciona KADESH
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400">
-            Cuatro pasos simples para hacer la diferencia
+          <p className="text-lg text-[#5a5a5a] dark:text-[#b0b0b0]">
+            Cuatro pasos para reportar, conectar, ayudar y adoptar en México.
           </p>
-        </motion.div>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <ol className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((step, index) => (
-            <motion.div
-              key={step.number}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative"
-            >
-              {/* Connector line (hidden on mobile, visible on desktop) */}
+            <li key={step.number} data-step className="relative">
               {index < STEPS.length - 1 && (
-                <div className="hidden lg:block absolute top-20 left-full w-full h-0.5 bg-gradient-to-r from-orange-500 to-transparent -z-10" 
-                     style={{ width: 'calc(100% - 4rem)', left: 'calc(100% - 2rem)' }}></div>
+                <div
+                  data-step-line
+                  className="pointer-events-none absolute top-7 left-[calc(100%-0.5rem)] z-0 hidden h-px w-[calc(100%-2rem)] origin-left bg-kadesh/30 lg:block"
+                />
               )}
-              
-              <div className="bg-gray-50 dark:bg-[#1e1e1e] rounded-2xl p-8 text-center h-full border border-gray-200 dark:border-gray-800 hover:border-orange-500 dark:hover:border-orange-500 transition-colors duration-300">
-                <div className="text-6xl mb-4">{step.icon}</div>
-                <div className="w-16 h-16 bg-orange-500 text-white rounded-full flex items-center justify-center text-2xl font-black mx-auto mb-4">
-                  {step.number}
+              <div className="relative z-10">
+                <div className="mb-5 flex items-center gap-4">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-kadesh text-xl font-black text-white">
+                    {step.number}
+                  </span>
+                  <HugeiconsIcon
+                    icon={step.icon}
+                    size={28}
+                    className="text-kadesh"
+                    strokeWidth={1.5}
+                  />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                <h3 className="mb-2 text-2xl font-bold text-[#121212] dark:text-white">
                   {step.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="leading-relaxed text-[#5a5a5a] dark:text-[#b0b0b0]">
                   {step.description}
                 </p>
               </div>
-            </motion.div>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );
 }
-

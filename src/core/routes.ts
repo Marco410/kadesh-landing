@@ -21,6 +21,7 @@ export const Routes = {
     donations: '#donaciones',
     howItWorks: '#como-funciona',
     roadmap: '#roadmap',
+    faq: '#preguntas-frecuentes',
   },
 
   blog: {

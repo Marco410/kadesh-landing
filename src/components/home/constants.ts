@@ -13,7 +13,7 @@ export const HOME_FAQS = [
   {
     question: '¿Cómo reporto un animal perdido en KADESH?',
     answer:
-      'Entra a Animales, pulsa Reportar animal y describe tipo, ubicación y una foto. El reporte queda visible para la comunidad y para rescatistas de la zona, de modo que la búsqueda o el cuidado puedan empezar de inmediato.',
+      'Entra a Animales, pulsa Reportar animal y elige si está perdido, encontrado, rescatado o en adopción. Describe tipo, ubicación y una foto. El reporte queda visible para la comunidad y para rescatistas de la zona, de modo que la búsqueda, el cuidado o la adopción puedan empezar de inmediato.',
   },
   {
     question: '¿Cómo encuentro veterinarias cercanas?',

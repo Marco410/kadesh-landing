@@ -18,4 +18,6 @@ Tono directo, español de México. No nombramos Leaflet, MapLibre, Nominatim ni 
 
 ## Acceso
 
-`/animales` es público. Reportar (`/animales/nuevo`) exige sesión; si no hay usuario, el CTA abre el modal de registro.
+`/animales` es público. `?status=` (p. ej. `in_adoption`) prefiltra el listado; el hero de portada usa eso para «Quiero adoptar».
+
+Reportar (`/animales/nuevo`) exige sesión. Si no hay usuario, el CTA del listado abre el modal de registro; los enlaces del hero van a login/registro con `redirect` y conservan `?status=` (perdido, encontrado, en adopción). El formulario acepta también abandonado y rescatado.

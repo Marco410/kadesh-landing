@@ -9,6 +9,26 @@ export const ANIMAL_LOGS_OPTIONS = [
   { label: "En adopción", value: "in_adoption" },
 ];
 
+/** Estados que se pueden elegir al dar de alta un animal. */
+export const ANIMAL_REPORT_STATUS_VALUES = [
+  'abandoned',
+  'found',
+  'lost',
+  'rescued',
+  'in_adoption',
+] as const;
+
+export type AnimalReportStatus = (typeof ANIMAL_REPORT_STATUS_VALUES)[number];
+
+export function isAnimalReportStatus(
+  value: string | null | undefined
+): value is AnimalReportStatus {
+  return (
+    !!value &&
+    (ANIMAL_REPORT_STATUS_VALUES as readonly string[]).includes(value)
+  );
+}
+
 export const ANIMAL_SEX_OPTIONS = [
   { label: "Macho", value: "male" },
   { label: "Hembra", value: "female" },

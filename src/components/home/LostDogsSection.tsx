@@ -82,7 +82,7 @@ export default function LostDogsSection() {
     <section
       ref={rootRef}
       id="animales"
-      className="w-full bg-[#f7f8fa] py-24 dark:bg-[#1a1a1a]"
+      className="w-full bg-[#f7f8fa] py-24 dark:bg-night-raised"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-14 max-w-3xl text-center">

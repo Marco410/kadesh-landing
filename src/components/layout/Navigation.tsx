@@ -25,6 +25,7 @@ const DROPDOWN_LINKS: DropdownLink[] = [
   { label: 'Donaciones', href: Routes.navigation.donations, anchor: Routes.navigation.donations },
   { label: 'Cómo funciona', href: Routes.navigation.howItWorks, anchor: Routes.navigation.howItWorks },
   { label: 'Roadmap', href: Routes.navigation.roadmap, anchor: Routes.navigation.roadmap },
+  { label: 'Preguntas frecuentes', href: Routes.navigation.faq, anchor: Routes.navigation.faq },
 ];
 
 export default function Navigation() {

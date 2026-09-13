@@ -2,11 +2,11 @@ export default function NewAnimalFormSkeleton() {
   return (
     <>
       {/* Hero Section Skeleton */}
-      <section className="w-full py-6 bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700">
+      <section className="w-full py-6 bg-gradient-to-br from-kadesh to-kadesh-600 dark:from-kadesh-600 dark:to-kadesh-700">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="h-10 bg-orange-400/30 rounded-lg w-64 mx-auto mb-2 animate-pulse"></div>
-            <div className="h-6 bg-orange-400/30 rounded-lg w-80 mx-auto animate-pulse"></div>
+            <div className="h-10 bg-kadesh-400/30 rounded-lg w-64 mx-auto mb-2 animate-pulse"></div>
+            <div className="h-6 bg-kadesh-400/30 rounded-lg w-80 mx-auto animate-pulse"></div>
           </div>
         </div>
       </section>

@@ -1,6 +1,9 @@
 import "./globals.css";
 import '@fontsource/poppins/400.css';
+import '@fontsource/poppins/600.css';
 import '@fontsource/poppins/700.css';
+import '@fontsource/poppins/800.css';
+import '@fontsource/poppins/900.css';
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/700.css';
 import ClientProviders from './ClientProviders';
@@ -27,8 +30,8 @@ export const metadata: Metadata = {
     'adopción responsable',
     'bienestar animal México',
   ],
-  authors: [{ name: 'KADESH' }],
-  creator: 'KADESH',
+  authors: [{ name: 'Marco Castañeda' }, { name: 'KADESH' }],
+  creator: 'Marco Castañeda',
   publisher: 'KADESH',
   robots: {
     index: true,
@@ -71,6 +74,7 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: '#216BFA',
 };
 
 export default function RootLayout({
@@ -81,6 +85,14 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className="font-sans bg-[#ffffff] dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] transition-colors duration-200">
+        {/*
+          THESIS: KADESH is a digital sanctuary for lost animals and local vets in Mexico; refuse a generic pet-SaaS card stack.
+          OWN-WORLD: Committed #216BFA field (--color-kadesh in globals.css), Poppins black display, photographic animals, K mark.
+          STORY: Visitor understands the platform, sees real reports/vets, reports or donates.
+          FIRST VIEWPORT: Full-bleed brand wash, stacked lema left, K mark right, two CTAs (vets / lost animals).
+          FORM: Established homepage composition, color rebrand; seed skipped — user pinned the incumbent world and #216BFA.
+          FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+        */}
         <ClientProviders>
           {children}
         </ClientProviders>

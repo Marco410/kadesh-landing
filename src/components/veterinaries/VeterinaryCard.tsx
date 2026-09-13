@@ -61,8 +61,8 @@ export default function VeterinaryCard({
 
   const baseClass = `w-full h-full text-left rounded-xl border-2 transition-all flex flex-col ${
     isSelected
-      ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-500'
-      : 'border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] hover:border-orange-300 dark:hover:border-orange-600'
+      ? 'border-kadesh bg-kadesh-50 dark:bg-kadesh-900/30 dark:border-kadesh'
+      : 'border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] hover:border-kadesh-300 dark:hover:border-kadesh-600'
   }`;
   const sizeClass = isHorizontal
     ? 'min-h-[160px] p-6 rounded-2xl shadow-lg hover:shadow-xl gap-3'
@@ -75,7 +75,7 @@ export default function VeterinaryCard({
     <>
       <div className={`flex gap-3 sm:gap-4 flex-1 min-w-0 ${isHorizontal ? 'flex-row' : ''}`}>
         <span
-          className={`flex-shrink-0 rounded-full flex items-center justify-center bg-orange-500 text-white font-bold ${
+          className={`flex-shrink-0 rounded-full flex items-center justify-center bg-kadesh-500 text-white font-bold ${
             isHorizontal ? 'w-16 h-16 text-2xl' : 'w-12 h-12 sm:w-10 sm:h-10 text-base sm:text-sm'
           }`}
           aria-hidden
@@ -90,8 +90,8 @@ export default function VeterinaryCard({
             {displayName}
           </h3>
           {distanceStr && (
-            <p className={`text-xs text-orange-600 dark:text-orange-400 font-medium flex items-center gap-1.5 shrink-0 ${rowSpacing}`}>
-              <HugeiconsIcon icon={PinLocation03Icon} size={12} className="flex-shrink-0 text-orange-500 dark:text-orange-400" strokeWidth={1.5} />
+            <p className={`text-xs text-kadesh-600 dark:text-kadesh-400 font-medium flex items-center gap-1.5 shrink-0 ${rowSpacing}`}>
+              <HugeiconsIcon icon={PinLocation03Icon} size={12} className="flex-shrink-0 text-kadesh-500 dark:text-kadesh-400" strokeWidth={1.5} />
               <span className="truncate">{distanceStr}</span>
             </p>
           )}
@@ -122,7 +122,7 @@ export default function VeterinaryCard({
               className={`text-xs text-[#616161] dark:text-[#b0b0b0] flex items-start gap-1.5 min-w-0 ${rowSpacing}`}
               title={locationLine}
             >
-              <HugeiconsIcon icon={MapPinIcon} size={12} className="flex-shrink-0 mt-0.5 text-orange-500 dark:text-orange-400" strokeWidth={1.5} />
+              <HugeiconsIcon icon={MapPinIcon} size={12} className="flex-shrink-0 mt-0.5 text-kadesh-500 dark:text-kadesh-400" strokeWidth={1.5} />
               <span className="line-clamp-2 break-words">{locationLine}</span>
             </p>
           )}
@@ -144,7 +144,7 @@ export default function VeterinaryCard({
           {serviceTags.map((name) => (
             <span
               key={name}
-              className="inline-block text-xs font-medium px-2 py-0.5 rounded-md bg-orange-500 text-white"
+              className="inline-block text-xs font-medium px-2 py-0.5 rounded-md bg-kadesh-500 text-white"
             >
               {name}
             </span>
@@ -160,8 +160,8 @@ export default function VeterinaryCard({
       onClick={(e) => e.stopPropagation()}
       className={`mt-auto w-full inline-flex items-center justify-center gap-1.5 font-semibold text-sm rounded-lg py-2.5 sm:py-2 px-3 transition-colors min-h-[44px] sm:min-h-0 ${
         isHorizontal
-          ? 'bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600'
-          : 'bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:hover:bg-orange-900/50'
+          ? 'bg-kadesh-500 text-white hover:bg-kadesh-600 dark:bg-kadesh-500 dark:hover:bg-kadesh-600'
+          : 'bg-kadesh-100 text-kadesh-700 hover:bg-kadesh-200 dark:bg-kadesh-900/30 dark:text-kadesh-300 dark:hover:bg-kadesh-900/50'
       }`}
     >
       Ver detalles

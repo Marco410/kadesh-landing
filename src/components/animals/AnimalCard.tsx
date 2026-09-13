@@ -42,7 +42,7 @@ export default function AnimalCard({
           bg-white shadow-md hover:shadow-lg
           dark:bg-[#2a2a2a] dark:shadow-md dark:shadow-black/30 dark:hover:shadow-lg dark:hover:shadow-black/40
           ${isSelected 
-            ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-900/20 dark:border-orange-500' 
+            ? 'border-kadesh bg-kadesh-50/50 dark:bg-kadesh-900/20 dark:border-kadesh' 
             : 'border-[#e5e5e5] hover:border-[#d0d0d0] dark:border-[#404040] dark:hover:border-[#505050]'
           }`}
       >
@@ -237,7 +237,7 @@ export default function AnimalCard({
         <div className="mt-auto pt-4 border-t border-[#e0e0e0] dark:border-[#3a3a3a]">
           <Link
             href={`/animales/${animal.id}`}
-            className="block w-full text-center px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors"
+            className="block w-full text-center px-4 py-2 bg-kadesh hover:bg-kadesh-600 text-white font-semibold rounded-lg transition-colors"
           >
             Ver detalles
           </Link>

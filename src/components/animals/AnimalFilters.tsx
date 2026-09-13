@@ -35,7 +35,7 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
       <div className="flex items-center justify-between mb-3">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-sm font-medium text-[#212121] dark:text-[#ffffff] hover:text-orange-500 dark:hover:text-orange-400 flex items-center gap-2"
+          className="text-sm font-medium text-[#212121] dark:text-[#ffffff] hover:text-kadesh-500 dark:hover:text-kadesh-400 flex items-center gap-2"
         >
           <svg 
             className={`w-4 h-4 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`} 
@@ -47,7 +47,7 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
           </svg>
           Filtros
           {activeFiltersCount > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-orange-500 text-white text-xs font-semibold">
+            <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-kadesh-500 text-white text-xs font-semibold">
               {activeFiltersCount}
             </span>
           )}
@@ -55,7 +55,7 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
         {hasActiveFilters && (
           <button
             onClick={onClearFilters}
-            className="text-xs text-orange-500 hover:text-orange-600 font-medium"
+            className="text-xs text-kadesh-500 hover:text-kadesh-600 font-medium"
           >
             Limpiar
           </button>
@@ -98,7 +98,7 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
                   }
                   className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                     filters.status === status.value
-                      ? 'bg-orange-500 text-white'
+                      ? 'bg-kadesh-500 text-white'
                       : 'bg-[#f5f5f5] dark:bg-[#2a2a2a] text-[#212121] dark:text-[#ffffff] hover:bg-[#e0e0e0] dark:hover:bg-[#3a3a3a]'
                   }`}
                 >
@@ -119,7 +119,7 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
               placeholder="Buscar raza..."
               value={filters.breed || ''}
               onChange={(e) => onFiltersChange({ breed: e.target.value || null })}
-              className="w-full px-3 py-1.5 text-sm rounded-md border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+              className="w-full px-3 py-1.5 text-sm rounded-md border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-kadesh-500 dark:focus:ring-kadesh-400"
             />
           </div>
 
@@ -134,7 +134,7 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
               placeholder="Buscar por calle, ciudad, estado o país..."
               value={filters.location || ''}
               onChange={(e) => onFiltersChange({ location: e.target.value || null })}
-              className="w-full px-3 py-1.5 text-sm rounded-md border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+              className="w-full px-3 py-1.5 text-sm rounded-md border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-kadesh-500 dark:focus:ring-kadesh-400"
             />
           </div>
 
@@ -145,7 +145,7 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
               type="checkbox"
               checked={filters.favoritesOnly || false}
               onChange={(e) => onFiltersChange({ favoritesOnly: e.target.checked || undefined })}
-              className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+              className="w-4 h-4 text-kadesh-500 rounded focus:ring-kadesh-500"
             />
             <label htmlFor="favorites-filter" className="text-xs font-medium text-[#212121] dark:text-[#ffffff]">
               Solo favoritos
@@ -158,27 +158,27 @@ export default function AnimalFilters({ filters, onFiltersChange, onClearFilters
       {hasActiveFilters && !isExpanded && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {filters.type && (
-            <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-xs font-medium">
+            <span className="px-2 py-0.5 bg-kadesh-100 dark:bg-kadesh-900/30 text-kadesh-700 dark:text-kadesh-300 rounded-full text-xs font-medium">
               { ANIMAL_TYPE_LABELS[filters.type] || filters.type } 
             </span>
           )}
           {filters.status && (
-            <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-xs font-medium">
+            <span className="px-2 py-0.5 bg-kadesh-100 dark:bg-kadesh-900/30 text-kadesh-700 dark:text-kadesh-300 rounded-full text-xs font-medium">
               {ANIMAL_LOGS_OPTIONS.find(s => s.value === filters.status)?.label}
             </span>
           )}
           {filters.breed && (
-            <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-xs font-medium truncate max-w-[120px]">
+            <span className="px-2 py-0.5 bg-kadesh-100 dark:bg-kadesh-900/30 text-kadesh-700 dark:text-kadesh-300 rounded-full text-xs font-medium truncate max-w-[120px]">
               {filters.breed}
             </span>
           )}
           {filters.location && (
-            <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-xs font-medium truncate max-w-[120px]">
+            <span className="px-2 py-0.5 bg-kadesh-100 dark:bg-kadesh-900/30 text-kadesh-700 dark:text-kadesh-300 rounded-full text-xs font-medium truncate max-w-[120px]">
               {filters.location}
             </span>
           )}
           {filters.favoritesOnly && (
-            <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-xs font-medium">
+            <span className="px-2 py-0.5 bg-kadesh-100 dark:bg-kadesh-900/30 text-kadesh-700 dark:text-kadesh-300 rounded-full text-xs font-medium">
               ⭐
             </span>
           )}

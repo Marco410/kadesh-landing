@@ -6,4 +6,3 @@ export { default as StoriesSection } from './StoriesSection';
 export { default as DonationsSection } from './DonationsSection';
 export { default as HowItWorksSection } from './HowItWorksSection';
 export { default as RoadmapSection } from './RoadmapSection';
-

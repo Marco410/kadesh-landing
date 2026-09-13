@@ -1,22 +1,28 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useLostAnimals } from '../animals';
-import { LostAnimal } from '../animals/types';
-import { getStatusLabel, getStatusColor, ANIMAL_TYPE_LABELS, getTypeLabel } from '../animals/constants';
+import { getStatusLabel, getStatusColor, getTypeLabel } from '../animals/constants';
 import { formatDate } from 'kadesh/utils/format-date';
 import { Routes } from 'kadesh/core/routes';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { SentIcon } from '@hugeicons/core-free-icons';
+import {
+  SentIcon,
+  Location01Icon,
+  Calendar02Icon,
+  Alert02Icon,
+} from '@hugeicons/core-free-icons';
+import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 
 export default function LostDogsSection() {
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(undefined);
+  const rootRef = useRef<HTMLElement>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(
+    undefined
+  );
   const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
 
-  // Get user location on mount
   useEffect(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
       setLocationPermissionDenied(true);
@@ -32,7 +38,6 @@ export default function LostDogsSection() {
         setLocationPermissionDenied(false);
       },
       (error) => {
-        // Check if permission was denied
         if (error.code === error.PERMISSION_DENIED) {
           setLocationPermissionDenied(true);
         }
@@ -46,226 +51,194 @@ export default function LostDogsSection() {
   }, []);
 
   const { animals, loading } = useLostAnimals(undefined, undefined, userLocation);
-  
-  // Get first 4 animals
   const displayedAnimals = animals.slice(0, 4);
 
+  useGSAP(
+    () => {
+      if (loading || displayedAnimals.length === 0) return;
+
+      const mm = gsap.matchMedia();
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        gsap.from('[data-animal-card]', {
+          y: 28,
+          opacity: 0,
+          duration: 0.5,
+          stagger: { each: 0.08, amount: 0.32 },
+          ease: HOME_EASE,
+          scrollTrigger: {
+            trigger: '[data-animal-grid]',
+            start: 'top 80%',
+            once: true,
+          },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: rootRef, dependencies: [loading, displayedAnimals.length] }
+  );
+
   return (
-    <section id="animales" className="w-full py-20 bg-gray-50 dark:bg-[#1a1a1a]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white mb-4">
+    <section
+      ref={rootRef}
+      id="animales"
+      className="w-full bg-[#f7f8fa] py-24 dark:bg-[#1a1a1a]"
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto mb-14 max-w-3xl text-center">
+          <h2 className="mb-4 text-4xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-5xl lg:text-6xl">
             Animales perdidos y en adopción
           </h2>
-          <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
-            Ayudemos a encontrarles un hogar
+          <p className="text-lg text-[#5a5a5a] dark:text-[#b0b0b0] sm:text-xl">
+            KADESH muestra reportes reales cerca de ti para que puedas ayudar a
+            reunir o reubicar a un animal.
           </p>
           {locationPermissionDenied && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-700 dark:text-amber-300"
-            >
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span className="max-w-md">
-                Las distancias mostradas pueden no ser precisas. Activa los permisos de ubicación para ver distancias reales.
+            <p className="mt-6 inline-flex items-start gap-2 rounded-xl bg-amber-50 px-4 py-2.5 text-left text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+              <HugeiconsIcon
+                icon={Alert02Icon}
+                size={18}
+                className="mt-0.5 flex-shrink-0"
+              />
+              <span>
+                Las distancias mostradas pueden no ser precisas. Activa la
+                ubicación para ver distancias reales.
               </span>
-            </motion.div>
+            </p>
           )}
-        </motion.div>
+        </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {[...Array(4)].map((_, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-[#1e1e1e] rounded-xl overflow-hidden shadow-lg animate-pulse"
+                className="overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-[#1e1e1e]"
               >
-                <div className="h-48 bg-gray-200 dark:bg-gray-800" />
-                <div className="p-6 space-y-3">
-                  <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-2/3" />
+                <div className="h-48 animate-pulse bg-gray-200 dark:bg-gray-800" />
+                <div className="space-y-3 p-6">
+                  <div className="h-6 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
+                  <div className="h-4 w-2/3 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
                 </div>
               </div>
             ))}
           </div>
         ) : displayedAnimals.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {displayedAnimals.map((animal, index) => (
-              <motion.article
+          <div
+            data-animal-grid
+            className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4"
+          >
+            {displayedAnimals.map((animal) => (
+              <article
                 key={animal.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="group bg-white dark:bg-[#1e1e1e] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl border border-gray-100 dark:border-[#2a2a2a] transition-all duration-300 flex flex-col hover:-translate-y-1"
+                data-animal-card
+                className="group flex flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,35,80,0.1)] dark:border-[#2a2a2a] dark:bg-[#1e1e1e]"
               >
-                <div className="relative h-56 w-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
+                <div className="relative h-56 w-full overflow-hidden bg-gray-200 dark:bg-gray-800">
                   {animal.image?.url ? (
                     <Image
                       src={animal.image.url}
-                      alt={animal.name}
+                      alt={animal.name || 'Animal reportado en KADESH'}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                    <div className="flex h-full w-full items-center justify-center text-gray-400">
+                      <HugeiconsIcon icon={SentIcon} size={40} />
                     </div>
                   )}
-                  <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
-                    <span
-                      className="px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-lg backdrop-blur-sm border border-white/20"
-                      style={{ backgroundColor: getStatusColor(animal.status) }}
-                    >
-                      {getStatusLabel(animal.status)}
-                    </span>
-                    <button
-                      className="p-2 rounded-full bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur-md hover:bg-white dark:hover:bg-[#1e1e1e] transition-all text-gray-400 hover:text-red-500 shadow-lg border border-white/20 dark:border-[#3a3a3a]"
-                      aria-label="Agregar a favoritos"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                      </svg>
-                    </button>
-                  </div>
-                  {/* Gradient overlay for better text readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
+                  <span
+                    className="absolute top-3 right-3 z-10 rounded-full px-3 py-1.5 text-xs font-bold text-white shadow-md"
+                    style={{ backgroundColor: getStatusColor(animal.status) }}
+                  >
+                    {getStatusLabel(animal.status)}
+                  </span>
                 </div>
-                
-                <div className="p-6 flex-1 flex flex-col">
-                  <h3 className="text-xl font-bold text-[#212121] dark:text-[#ffffff] mb-4 line-clamp-1">
+
+                <div className="flex flex-1 flex-col p-6">
+                  <h3 className="mb-4 line-clamp-1 text-xl font-bold text-[#212121] dark:text-white">
                     {animal.name || 'Sin nombre'}
                   </h3>
-                  
-                  <div className="space-y-2.5 text-sm text-[#616161] dark:text-[#b0b0b0] mb-5 flex-1">
-                    <p className="flex items-center gap-2.5">
-                      <span className="text-base flex-shrink-0">🐾</span>
-                      <span className="truncate">
-                        {getTypeLabel(animal.type)}
-                        {animal.breed && ` • ${animal.breed}`}
-                      </span>
+
+                  <div className="mb-5 flex-1 space-y-2.5 text-sm text-[#616161] dark:text-[#b0b0b0]">
+                    <p className="truncate">
+                      {getTypeLabel(animal.type)}
+                      {animal.breed && ` • ${animal.breed}`}
                     </p>
-                    <p className="flex items-start gap-2.5">
-                      <span className="flex-shrink-0 mt-0.5">📍</span>
+                    <p className="flex items-start gap-2">
+                      <HugeiconsIcon
+                        icon={Location01Icon}
+                        size={16}
+                        className="mt-0.5 flex-shrink-0"
+                      />
                       <span className="truncate leading-relaxed">{animal.location}</span>
                     </p>
-                    <p className="flex items-center gap-2.5">
-                      <span className="flex-shrink-0">🕐</span>
+                    <p className="flex items-center gap-2">
+                      <HugeiconsIcon
+                        icon={Calendar02Icon}
+                        size={16}
+                        className="flex-shrink-0"
+                      />
                       <span>{formatDate(animal.createdAt)}</span>
                     </p>
                     {animal.distance && (
-                      <p className="flex items-center gap-2.5">
-                        <span className="flex-shrink-0">🚗</span>
-                        <span className="font-medium text-orange-500 dark:text-orange-400">
-                          {animal.distance < 1 
-                            ? `${Math.round(animal.distance * 1000)} m` 
-                            : `${animal.distance.toFixed(1)} km`}
-                        </span>
+                      <p className="font-medium text-kadesh">
+                        {animal.distance < 1
+                          ? `${Math.round(animal.distance * 1000)} m`
+                          : `${animal.distance.toFixed(1)} km`}
                       </p>
                     )}
                   </div>
 
                   <Link
                     href={Routes.animals.detail(animal.id)}
-                    className="mt-auto group/btn flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] active:scale-100"
+                    className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-kadesh px-5 py-3 font-semibold text-white transition-colors hover:bg-kadesh-600"
                   >
-                    <HugeiconsIcon icon={SentIcon} size={18} className="transition-transform group-hover/btn:translate-x-0.5" />
-                    <span>Ver Detalles</span>
+                    <HugeiconsIcon icon={SentIcon} size={18} />
+                    <span>Ver detalles</span>
                   </Link>
                 </div>
-              </motion.article>
+              </article>
             ))}
           </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center py-16"
-          >
-            <div className="max-w-md mx-auto">
-              <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 dark:bg-[#2a2a2a] rounded-full flex items-center justify-center">
-                <svg className="w-12 h-12 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-[#212121] dark:text-[#ffffff] mb-2">
-                No hay animales disponibles
-              </h3>
-              <p className="text-[#616161] dark:text-[#b0b0b0] mb-6">
-                Aún no hay animales reportados en este momento. Sé el primero en reportar uno.
-              </p>
-              <Link
-                href={Routes.animals.new}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <HugeiconsIcon icon={SentIcon} size={20} />
-                Reportar Animal
-              </Link>
-            </div>
-          </motion.div>
+          <div className="py-16 text-center">
+            <h3 className="mb-2 text-xl font-bold text-[#212121] dark:text-white">
+              No hay animales disponibles
+            </h3>
+            <p className="mb-6 text-[#616161] dark:text-[#b0b0b0]">
+              Aún no hay animales reportados en este momento. Sé el primero en
+              reportar uno.
+            </p>
+            <Link
+              href={Routes.animals.new}
+              className="inline-flex items-center gap-2 rounded-xl bg-kadesh px-6 py-3 font-semibold text-white hover:bg-kadesh-600"
+            >
+              <HugeiconsIcon icon={SentIcon} size={20} />
+              Reportar animal
+            </Link>
+          </div>
         )}
 
         {displayedAnimals.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href={Routes.animals.new}
-              className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold text-lg px-8 py-4 rounded-full shadow-2xl hover:shadow-orange-500/50 transition-all duration-300 hover:scale-105 active:scale-100"
+              className="inline-flex items-center gap-3 rounded-full bg-kadesh px-8 py-4 text-lg font-bold text-white shadow-[0_12px_32px_color-mix(in_srgb,var(--color-kadesh)_35%,transparent)] transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:bg-kadesh-600"
             >
-              <HugeiconsIcon 
-                icon={SentIcon} 
-                size={24} 
-                className="text-white transition-transform group-hover:translate-x-1"
-                strokeWidth={1.5}
-              />
-              <span>Reportar Animal</span>
-              <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
+              <HugeiconsIcon icon={SentIcon} size={22} className="text-white" />
+              <span>Reportar animal</span>
             </Link>
             <Link
               href={Routes.animals.index}
-              className="group inline-flex items-center gap-2 px-8 py-4 bg-white dark:bg-[#1e1e1e] hover:bg-orange-500 dark:hover:bg-orange-500 text-orange-500 dark:text-orange-400 hover:text-white border-2 border-orange-500 dark:border-orange-500 font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-kadesh px-8 py-4 text-lg font-bold text-kadesh transition-colors hover:bg-kadesh hover:text-white dark:text-kadesh-300"
             >
               <span>Ver todos los animales</span>
-              <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
             </Link>
-          </motion.div>
+          </div>
         )}
       </div>
-
-      {/* <ConfirmModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onConfirm={() => setShowModal(false)}
-        title="¡Próximamente! 🐾"
-        message="Estamos trabajando muy duro para traerte esta sección muy pronto. Mientras tanto, puedes explorar otras partes de KADESH o contactarnos si necesitas ayuda."
-        confirmText="Entendido"
-        cancelText=""
-        confirmButtonColor="orange"
-      /> */}
     </section>
   );
 }
-

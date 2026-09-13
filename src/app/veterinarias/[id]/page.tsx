@@ -161,7 +161,7 @@ export default function VeterinaryDetailPage() {
           <div className="max-w-4xl mx-auto">
             <Link
               href={Routes.veterinaries.index}
-              className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 font-medium hover:underline mb-6"
+              className="inline-flex items-center gap-2 text-kadesh-600 dark:text-kadesh-400 font-medium hover:underline mb-6"
             >
               <HugeiconsIcon icon={ArrowLeft01Icon} size={18} /> Volver al directorio
             </Link>
@@ -200,7 +200,7 @@ export default function VeterinaryDetailPage() {
           <div className="max-w-4xl mx-auto">
             <Link
               href={Routes.veterinaries.index}
-              className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 font-medium hover:underline mb-6"
+              className="inline-flex items-center gap-2 text-kadesh-600 dark:text-kadesh-400 font-medium hover:underline mb-6"
             >
               <HugeiconsIcon icon={ArrowLeft01Icon} size={18} /> Volver al directorio
             </Link>
@@ -239,7 +239,7 @@ export default function VeterinaryDetailPage() {
           <nav className="flex items-center gap-2 text-sm">
             <Link
               href={Routes.veterinaries.index}
-              className="inline-flex items-center gap-1.5 text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 text-gray-500 dark:text-gray-400 hover:text-kadesh-600 dark:hover:text-kadesh-400 font-medium transition-colors"
             >
               <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2} />
               Directorio
@@ -252,10 +252,10 @@ export default function VeterinaryDetailPage() {
 
           {/* Hero header */}
           <div
-            className={`${cardClass} p-6 sm:p-8 bg-gradient-to-br from-white to-orange-50/30 dark:from-[#1a1a1a] dark:to-orange-950/10`}
+            className={`${cardClass} p-6 sm:p-8 bg-gradient-to-br from-white to-kadesh-50/30 dark:from-[#1a1a1a] dark:to-kadesh-900/10`}
           >
             <div className="flex flex-wrap gap-5 sm:gap-6 items-start">
-              <span className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white font-bold text-2xl sm:text-3xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+              <span className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-kadesh-500 to-kadesh-600 text-white font-bold text-2xl sm:text-3xl flex items-center justify-center shadow-lg shadow-kadesh-500/20">
                 {initial}
               </span>
               <div className="flex-1 min-w-0">
@@ -322,8 +322,8 @@ export default function VeterinaryDetailPage() {
                 <div className="space-y-4">
                   {locationLine && (
                     <div className="flex gap-3">
-                      <span className="flex-shrink-0 w-9 h-9 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                        <HugeiconsIcon icon={MapPinIcon} size={18} className="text-orange-600 dark:text-orange-400" strokeWidth={1.5} />
+                      <span className="flex-shrink-0 w-9 h-9 rounded-lg bg-kadesh-100 dark:bg-kadesh-900/30 flex items-center justify-center">
+                        <HugeiconsIcon icon={MapPinIcon} size={18} className="text-kadesh-600 dark:text-kadesh-400" strokeWidth={1.5} />
                       </span>
                       <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed pt-0.5" title={locationLine}>
                         {locationLine}
@@ -336,9 +336,9 @@ export default function VeterinaryDetailPage() {
                   {place.phone && (
                     <a
                       href={`tel:${place.phone.replace(/\s/g, '')}`}
-                      className="flex gap-3 items-center text-orange-600 dark:text-orange-400 font-semibold hover:underline"
+                      className="flex gap-3 items-center text-kadesh-600 dark:text-kadesh-400 font-semibold hover:underline"
                     >
-                      <span className="flex-shrink-0 w-9 h-9 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                      <span className="flex-shrink-0 w-9 h-9 rounded-lg bg-kadesh-100 dark:bg-kadesh-900/30 flex items-center justify-center">
                         <HugeiconsIcon icon={Call02Icon} size={18} strokeWidth={1.5} />
                       </span>
                       {place.phone}
@@ -349,9 +349,9 @@ export default function VeterinaryDetailPage() {
                       href={place.website.startsWith('http') ? place.website : `https://${place.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex gap-3 items-center text-orange-600 dark:text-orange-400 font-semibold hover:underline"
+                      className="flex gap-3 items-center text-kadesh-600 dark:text-kadesh-400 font-semibold hover:underline"
                     >
-                      <span className="flex-shrink-0 w-9 h-9 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                      <span className="flex-shrink-0 w-9 h-9 rounded-lg bg-kadesh-100 dark:bg-kadesh-900/30 flex items-center justify-center">
                         <HugeiconsIcon icon={LinkSquare02Icon} size={18} strokeWidth={1.5} />
                       </span>
                       Visitar sitio web
@@ -385,8 +385,8 @@ export default function VeterinaryDetailPage() {
                               Cerrado
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-2 text-sm font-semibold tabular-nums text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 px-3 py-1.5 rounded-lg border border-orange-100 dark:border-orange-900/50">
-                              <HugeiconsIcon icon={Clock01Icon} size={16} className="flex-shrink-0 text-orange-500 dark:text-orange-400" strokeWidth={1.5} />
+                            <span className="inline-flex items-center gap-2 text-sm font-semibold tabular-nums text-kadesh-600 dark:text-kadesh-400 bg-kadesh-50 dark:bg-kadesh-900/30 px-3 py-1.5 rounded-lg border border-kadesh-100 dark:border-kadesh-900/50">
+                              <HugeiconsIcon icon={Clock01Icon} size={16} className="flex-shrink-0 text-kadesh-500 dark:text-kadesh-400" strokeWidth={1.5} />
                               {formatTimeDisplay(s.timeIni)} – {formatTimeDisplay(s.timeEnd)} hrs
                             </span>
                           )}
@@ -428,9 +428,9 @@ export default function VeterinaryDetailPage() {
                     return (
                       <div
                         key={s.id}
-                        className="flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 hover:bg-orange-50 dark:hover:bg-orange-950/20 hover:border-orange-200 dark:hover:border-orange-900/50 transition-colors"
+                        className="flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 hover:bg-kadesh-50 dark:hover:bg-kadesh-900/20 hover:border-kadesh-200 dark:hover:border-kadesh-900/50 transition-colors"
                       >
-                        <span className="flex-shrink-0 w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-3 text-orange-600 dark:text-orange-400">
+                        <span className="flex-shrink-0 w-12 h-12 rounded-xl bg-kadesh-100 dark:bg-kadesh-900/30 flex items-center justify-center mb-3 text-kadesh-600 dark:text-kadesh-400">
                           <HugeiconsIcon icon={IconComponent} size={24} strokeWidth={1.5} />
                         </span>
                         <span className="text-sm font-semibold text-gray-900 dark:text-white leading-tight mb-1">
@@ -471,7 +471,7 @@ export default function VeterinaryDetailPage() {
                           href={s.link.startsWith('http') ? s.link : `https://${s.link}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium text-sm hover:bg-orange-100 dark:hover:bg-orange-900/30 hover:text-orange-700 dark:hover:text-orange-300 transition-colors"
+                          className="inline-flex items-center px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium text-sm hover:bg-kadesh-100 dark:hover:bg-kadesh-900/30 hover:text-kadesh-700 dark:hover:text-kadesh-300 transition-colors"
                         >
                           {s.social_media || 'Enlace'}
                         </a>

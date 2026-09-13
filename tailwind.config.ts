@@ -10,17 +10,32 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Canonical brand lives in src/app/globals.css (--color-kadesh).
+        // These entries stay in sync so JS tooling does not resurrect the old orange.
+        kadesh: {
+          DEFAULT: '#216BFA',
+          50: '#EEF4FF',
+          100: '#D6E5FF',
+          200: '#ADC9FF',
+          300: '#7AA8FF',
+          400: '#4788FF',
+          500: '#216BFA',
+          600: '#1A56D6',
+          700: '#1441A8',
+          800: '#0E2D7A',
+          900: '#081A4C',
+        },
         orange: {
-          50: '#FFF3EB',
-          100: '#FFE0CC',
-          200: '#FFD1B3',
-          300: '#FFB47E',
-          400: '#FFA366',//'#228be6',
-          500: '#f7945e',
-          600: '#E07C3A',
-          700: '#C96B2C',
-          800: '#A8561F',
-          900: '#7A3A0F',
+          50: '#EEF4FF',
+          100: '#D6E5FF',
+          200: '#ADC9FF',
+          300: '#7AA8FF',
+          400: '#4788FF',
+          500: '#216BFA',
+          600: '#1A56D6',
+          700: '#1441A8',
+          800: '#0E2D7A',
+          900: '#081A4C',
         },
         green: {
           50: '#E6F4EA',

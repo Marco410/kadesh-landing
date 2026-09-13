@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  transpilePackages: ['@maplibre/maplibre-gl-leaflet'],
   images: {
     remotePatterns: [
       {

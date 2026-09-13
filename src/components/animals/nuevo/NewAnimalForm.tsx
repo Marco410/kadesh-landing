@@ -23,6 +23,7 @@ import {
   getStatusLabel,
   isAnimalReportStatus,
   statusIcons,
+  type AnimalReportStatus,
 } from 'kadesh/components/animals/constants';
 
 interface ImagePreview {
@@ -68,7 +69,7 @@ export default function NewAnimalForm({
   const [animalTypeId, setAnimalTypeId] = useState<string>('');
   const [animalBreedId, setAnimalBreedId] = useState<string>('');
   const [sex, setSex] = useState('unknown');
-  const [status, setStatus] = useState(
+  const [status, setStatus] = useState<AnimalReportStatus>(
     isAnimalReportStatus(initialStatus) ? initialStatus : 'lost'
   );
   const [physicalDescription, setPhysicalDescription] = useState('');
@@ -455,9 +456,10 @@ export default function NewAnimalForm({
               Estado <span className="text-red-500">*</span>
             </label>
             <div className={`flex flex-wrap gap-4 rounded-xl ${requiredFieldErrors.status ? 'border border-red-500 p-3' : ''}`}>
-              {ANIMAL_LOGS_OPTIONS.filter((option) =>
-                isAnimalReportStatus(option.value)
-              ).map((option) => {
+              {ANIMAL_LOGS_OPTIONS.filter((option): option is {
+                label: string;
+                value: AnimalReportStatus;
+              } => isAnimalReportStatus(option.value)).map((option) => {
                
                 const icon = statusIcons[option.value] || '📋';
 

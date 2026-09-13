@@ -1,123 +1,106 @@
 'use client';
 
-import { useRef } from 'react';
 import Link from 'next/link';
-import Logo from '../shared/Logo';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { HospitalLocationIcon, GlobalSearchIcon } from '@hugeicons/core-free-icons';
+import { ArrowRightIcon, HospitalLocationIcon } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
-import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
+import { getStatusColor } from 'kadesh/components/animals/constants';
+import HeroMap from 'kadesh/components/home/HeroMap';
+
+const ANIMAL_JOBS = [
+  {
+    href: `${Routes.animals.new}?status=lost`,
+    label: 'Perdí una mascota',
+    status: 'lost',
+  },
+  {
+    href: `${Routes.animals.new}?status=found`,
+    label: 'Encontré una mascota',
+    status: 'found',
+  },
+  {
+    href: `${Routes.animals.new}?status=in_adoption`,
+    label: 'Quiero dar en adopción',
+    status: 'in_adoption',
+  },
+  {
+    href: `${Routes.animals.index}?status=in_adoption`,
+    label: 'Quiero adoptar',
+    status: 'in_adoption',
+  },
+] as const;
 
 export default function HeroSection() {
-  const rootRef = useRef<HTMLElement>(null);
-
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-
-      mm.add('(prefers-reduced-motion: no-preference)', () => {
-        gsap.from('[data-hero-title]', {
-          clipPath: 'inset(0 100% 0 0)',
-          duration: 0.85,
-          ease: HOME_EASE,
-        });
-        gsap.from('[data-hero-copy]', {
-          y: 18,
-          opacity: 0,
-          duration: 0.5,
-          delay: 0.18,
-          ease: HOME_EASE,
-        });
-        gsap.from('[data-hero-actions]', {
-          y: 16,
-          opacity: 0,
-          duration: 0.45,
-          delay: 0.32,
-          ease: HOME_EASE,
-        });
-        gsap.from('[data-hero-mark]', {
-          scale: 0.92,
-          opacity: 0,
-          duration: 0.7,
-          delay: 0.22,
-          ease: HOME_EASE,
-        });
-      });
-
-      return () => mm.revert();
-    },
-    { scope: rootRef }
-  );
-
   return (
     <section
-      ref={rootRef}
       id="inicio"
-      className="kadesh-hero-wash relative flex min-h-[85vh] w-full items-center justify-center overflow-hidden"
+      className="kadesh-hero relative flex min-h-[92vh] w-full items-center overflow-hidden"
     >
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center justify-between gap-16 lg:flex-row">
-          <div className="flex-1 text-center lg:text-left">
-            <h1
-              data-hero-title
-              className="mb-6 text-5xl font-black leading-[0.95] tracking-[-0.03em] text-white sm:text-6xl lg:text-7xl"
-            >
-              Conectando vidas.
-              <br />
-              <span className="text-white/80">Rescatando almas.</span>
-            </h1>
+      <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-14 px-4 py-28 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,30rem)] lg:gap-20 xl:gap-28 lg:px-8 lg:py-32">
+        <div className="max-w-2xl text-center lg:text-left">
+          <h1 className="kadesh-hero-in mb-6 text-5xl font-black leading-[0.95] tracking-[-0.03em] text-white sm:text-6xl lg:text-7xl">
+            Conectando vidas.
+            <br />
+            Rescatando almas.
+          </h1>
 
-            <p
-              data-hero-copy
-              className="mx-auto mb-10 max-w-xl text-lg leading-relaxed text-white/90 sm:text-xl lg:mx-0"
-            >
-              KADESH es el santuario digital para encontrar animales perdidos, apoyar
-              rescatistas y conectar con veterinarias y refugios.
-            </p>
+          <p className="kadesh-hero-in kadesh-hero-in-delay-1 mx-auto mb-10 max-w-xl text-lg leading-relaxed text-white/90 sm:text-xl lg:mx-0">
+            Encuentra veterinarias cerca de ti. Da de alta una mascota que
+            perdiste, encontraste, quieres dar en adopción o adoptar.
+          </p>
 
-            <div
-              data-hero-actions
-              className="mb-8 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start"
-            >
-              <Link
-                href={Routes.veterinaries.index}
-                className="group inline-flex min-w-[220px] items-center justify-center gap-3 rounded-2xl bg-white px-7 py-4 text-base font-semibold text-kadesh shadow-[0_8px_24px_rgba(15,35,80,0.18)] transition-[transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(15,35,80,0.22)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-lg"
-              >
-                <HugeiconsIcon
-                  className="h-6 w-6 flex-shrink-0"
-                  icon={HospitalLocationIcon}
-                />
-                <span>Ver veterinarias cercanas</span>
-              </Link>
-
-              <Link
-                href={Routes.animals.index}
-                className="group inline-flex min-w-[220px] items-center justify-center gap-3 rounded-2xl border border-white/35 bg-white/10 px-7 py-4 text-base font-semibold text-white backdrop-blur-sm transition-[transform,background-color] duration-150 ease-out hover:-translate-y-0.5 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-lg"
-              >
-                <HugeiconsIcon
-                  icon={GlobalSearchIcon}
-                  className="h-6 w-6 flex-shrink-0 text-white"
-                />
-                <span>Animales perdidos cerca de ti</span>
-              </Link>
-            </div>
-
+          <div className="kadesh-hero-in kadesh-hero-in-delay-2 mx-auto mb-8 flex w-full max-w-lg flex-col gap-5 lg:mx-0">
             <Link
-              href="/comunidad"
-              className="text-sm font-medium text-white/80 underline decoration-white/40 underline-offset-4 transition-colors hover:text-white hover:decoration-white"
+              href={Routes.veterinaries.index}
+              className="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-white px-6 py-4 text-base font-semibold text-kadesh shadow-[0_8px_24px_rgba(15,35,80,0.18)] transition-[transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(15,35,80,0.22)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-lg"
             >
-              Únete a la comunidad KADESH →
+              <HugeiconsIcon
+                className="h-6 w-6 flex-shrink-0"
+                icon={HospitalLocationIcon}
+              />
+              <span>Ver veterinarias cercanas</span>
+              <HugeiconsIcon
+                className="h-5 w-5 flex-shrink-0"
+                icon={ArrowRightIcon}
+              />
             </Link>
+
+            <nav aria-label="Dar de alta o buscar un animal">
+              <p className="mb-3 text-left text-sm font-semibold text-white">
+                Da de alta o busca un animal
+              </p>
+              <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {ANIMAL_JOBS.map((job) => (
+                  <li key={job.label}>
+                    <Link
+                      href={job.href}
+                      className="flex min-h-12 items-center gap-3 rounded-xl border border-white/40 bg-white/5 px-4 py-3 text-left text-sm font-semibold text-white transition-[transform,background-color] duration-150 ease-out hover:-translate-y-0.5 hover:bg-white/12 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    >
+                      <span
+                        className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                        style={{ backgroundColor: getStatusColor(job.status) }}
+                        aria-hidden
+                      />
+                      <span>{job.label}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
 
-          <div data-hero-mark className="flex flex-1 justify-center lg:justify-end">
-            <div className="relative flex h-64 w-64 items-center justify-center sm:h-80 sm:w-80 lg:h-96 lg:w-96">
-              <div className="kadesh-logo-glow pointer-events-none absolute inset-6 rounded-full bg-white blur-3xl" />
-              <Logo size={150} />
-            </div>
-          </div>
+          <Link
+            href="/comunidad"
+            className="kadesh-hero-in kadesh-hero-in-delay-3 text-sm font-medium text-white/80 underline decoration-white/40 underline-offset-4 transition-colors hover:text-white hover:decoration-white"
+          >
+            Únete a la comunidad KADESH →
+          </Link>
         </div>
+
+        <HeroMap />
       </div>
+
+      <div className="kadesh-hero-fade" />
     </section>
   );
 }

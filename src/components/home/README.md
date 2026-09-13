@@ -2,6 +2,15 @@
 
 La portada de KADESH es una página de **persuasión**: el visitante debe entender qué es la plataforma, ver animales y veterinarias reales, y actuar (reportar, buscar, donar).
 
+## Primer vistazo
+
+El hero presenta **dos trabajos**, no un par de botones equivalentes:
+
+1. **Veterinarias cerca** — un CTA blanco a `/veterinarias`.
+2. **Dar de alta o buscar un animal** — cuatro acciones: perdí, encontré, dar en adopción (van a `/animales/nuevo?status=…`) y adoptar (va a `/animales?status=in_adoption`). Los puntos de color coinciden con los pines del mapa.
+
+El lema se queda. El párrafo nombra esas dos funciones. Si no hay sesión, el alta redirige a registro conservando el `status`.
+
 ## Promesa
 
 «Conectando vidas, rescatando almas.» KADESH es el santuario digital para reportes de animales, directorio veterinario, historias y donaciones en México.
@@ -19,7 +28,7 @@ El azul de marca vive **solo** en `src/app/globals.css` como `--color-kadesh`. L
 
 ## Motion
 
-Personalidad **Premium**. Un momento autorial en el hero (wipe del titular + marca). El resto explica llegada al scroll, con `prefers-reduced-motion`. GSAP + ScrollTrigger; el contenido permanece visible si JS falla.
+Personalidad **Premium**. Momento autorial: el recuadro-mapa se revela y los pines (huellas por estado + veterinarias) caen en secuencia. El pin «Perdido» pulsa. Las calles se desplazan lento. `prefers-reduced-motion` deja el mapa ya poblado.
 
 ## Secciones y anclas
 

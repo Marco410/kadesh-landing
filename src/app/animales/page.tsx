@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Navigation, Footer } from 'kadesh/components/layout';
 import { AnimalCard, AnimalFilters, AnimalsMap, useLostAnimals, LostAnimal } from 'kadesh/components/animals';
+import { ANIMAL_LOGS_OPTIONS } from 'kadesh/components/animals/constants';
 import { useUser } from 'kadesh/utils/UserContext';
 import { ConfirmModal } from 'kadesh/components/shared';
 import { motion } from 'framer-motion';
@@ -13,8 +14,14 @@ import { AddCircleIcon } from '@hugeicons/core-free-icons';
 import { useTheme } from 'next-themes';
 import { DEFAULT_RADIUS, RADIUS_OPTIONS_ANIMALS } from 'kadesh/constants/constans';
 
-export default function LostAnimalsPage() {
+function LostAnimalsPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const statusFromQuery = searchParams.get('status');
+  const initialStatus =
+    statusFromQuery && ANIMAL_LOGS_OPTIONS.some((option) => option.value === statusFromQuery)
+      ? statusFromQuery
+      : undefined;
   const { user, loading: userLoading } = useUser();
   const [selectedAnimal, setSelectedAnimal] = useState<LostAnimal | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -92,7 +99,12 @@ export default function LostAnimalsPage() {
     hasNextPage,
     hasPreviousPage,
     loading: animalsLoading,
-  } = useLostAnimals(undefined, undefined, userLocation, radiusKm);
+  } = useLostAnimals(
+    initialStatus ? { status: initialStatus } : undefined,
+    undefined,
+    userLocation,
+    radiusKm
+  );
 
   const handleAnimalClick = (animal: LostAnimal | null) => {
     setSelectedAnimal(animal);
@@ -354,5 +366,19 @@ export default function LostAnimalsPage() {
 
       <Footer />
     </main>
+  );
+}
+
+export default function LostAnimalsPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a] pt-[72px]">
+          <Navigation />
+        </main>
+      }
+    >
+      <LostAnimalsPageContent />
+    </Suspense>
   );
 }

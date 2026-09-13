@@ -6,7 +6,7 @@ export default function DonationsSection() {
   return (
     <section
       id="donaciones"
-      className="w-full bg-kadesh py-24 dark:bg-[#1a1a1a]"
+      className="w-full bg-kadesh py-24 dark:bg-kadesh-800"
     >
       <div className="mx-auto max-w-3xl px-4 text-center text-white sm:px-6 lg:px-8">
         <h2 className="mb-6 text-4xl font-black tracking-[-0.03em] sm:text-5xl">

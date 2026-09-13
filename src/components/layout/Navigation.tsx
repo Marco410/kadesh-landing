@@ -141,7 +141,7 @@ export default function Navigation() {
       <nav 
         className={`fixed top-0 left-0 right-0 w-full px-6 sm:px-10 py-4 flex items-center justify-between z-50 transition-all duration-300 ${
           scrolled 
-            ? 'bg-orange-500/80 dark:bg-[#121212]/70 backdrop-blur-md shadow-lg' 
+            ? 'bg-kadesh/80 dark:bg-night/80 backdrop-blur-md shadow-lg' 
             : 'bg-transparent'
         }`}
       >
@@ -356,7 +356,7 @@ export default function Navigation() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-90 bg-orange-500 dark:bg-[#1a1a1a] z-50 lg:hidden overflow-y-auto shadow-2xl"
+              className="fixed top-0 right-0 h-full w-90 bg-kadesh dark:bg-night-raised z-50 lg:hidden overflow-y-auto shadow-2xl"
             >
               <div className="p-8">
                 <div className="flex justify-between items-center mb-12">

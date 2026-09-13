@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Navigation, Footer } from 'kadesh/components/layout';
 import { useUser } from 'kadesh/utils/UserContext';
 import { motion } from 'framer-motion';
@@ -9,16 +9,23 @@ import { Routes } from 'kadesh/core/routes';
 import NewAnimalForm from 'kadesh/components/animals/nuevo/NewAnimalForm';
 import NewAnimalFormSkeleton from 'kadesh/components/animals/nuevo/NewAnimalFormSkeleton';
 
-export default function NewAnimalPage() {
+function NewAnimalPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
+  const requestedStatus = searchParams.get('status');
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated; keep status so the form opens on the chosen job.
   useEffect(() => {
     if (!userLoading && !user) {
-      router.push(Routes.auth.login);
+      const next = requestedStatus
+        ? `${Routes.animals.new}?status=${encodeURIComponent(requestedStatus)}`
+        : Routes.animals.new;
+      router.push(
+        `${Routes.auth.login}?redirect=${encodeURIComponent(next)}&tab=register`
+      );
     }
-  }, [user, userLoading, router]);
+  }, [user, userLoading, router, requestedStatus]);
 
   if (userLoading || !user) {
     return (
@@ -63,9 +70,25 @@ export default function NewAnimalPage() {
       </section>
 
       {/* Form Section */}
-      <NewAnimalForm />
+      <NewAnimalForm initialStatus={requestedStatus} />
 
       <Footer />
     </main>
+  );
+}
+
+export default function NewAnimalPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
+          <Navigation />
+          <NewAnimalFormSkeleton />
+          <Footer />
+        </main>
+      }
+    >
+      <NewAnimalPageContent />
+    </Suspense>
   );
 }

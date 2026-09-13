@@ -85,7 +85,7 @@ export default function HowItWorksSection() {
     <section
       ref={rootRef}
       id="como-funciona"
-      className="w-full bg-white py-24 dark:bg-[#121212]"
+      className="w-full bg-white py-24 dark:bg-night"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-16 max-w-2xl text-center">

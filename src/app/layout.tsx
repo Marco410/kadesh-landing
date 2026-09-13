@@ -84,12 +84,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className="font-sans bg-[#ffffff] dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] transition-colors duration-200">
+      <body className="font-sans bg-white dark:bg-night text-[#212121] dark:text-[#eef1f6] transition-colors duration-200">
         {/*
           THESIS: KADESH is a digital sanctuary for lost animals and local vets in Mexico; refuse a generic pet-SaaS card stack.
           OWN-WORLD: Committed #216BFA field (--color-kadesh in globals.css), Poppins black display, photographic animals, K mark.
           STORY: Visitor understands the platform, sees real reports/vets, reports or donates.
-          FIRST VIEWPORT: Full-bleed brand wash, stacked lema left, K mark right, two CTAs (vets / lost animals).
+          FIRST VIEWPORT: Brand field, lema + two jobs left (nearby vets, then lost/found/adopt actions), animated map card with paw-status pins and vet pins on the right.
           FORM: Established homepage composition, color rebrand; seed skipped — user pinned the incumbent world and #216BFA.
           FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
         */}

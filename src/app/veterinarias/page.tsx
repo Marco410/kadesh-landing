@@ -1,12 +1,18 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Navigation, Footer } from 'kadesh/components/layout';
-import { VeterinaryCard, VeterinariesMap, useNearbyPetPlaces } from 'kadesh/components/veterinaries';
-import type { PetPlace } from 'kadesh/components/veterinaries';
-import { motion } from 'framer-motion';
-import { DEFAULT_RADIUS_VETERINARIES, RADIUS_OPTIONS_VETERINARIES } from 'kadesh/constants/constans';
-
+import { useState, useEffect } from "react";
+import { Navigation, Footer } from "kadesh/components/layout";
+import {
+  VeterinaryCard,
+  VeterinariesMap,
+  useNearbyPetPlaces,
+} from "kadesh/components/veterinaries";
+import type { PetPlace } from "kadesh/components/veterinaries";
+import { motion } from "framer-motion";
+import {
+  DEFAULT_RADIUS_VETERINARIES,
+  RADIUS_OPTIONS_VETERINARIES,
+} from "kadesh/constants/constans";
 
 export default function VeterinariesPage() {
   const [userLocation, setUserLocation] = useState<
@@ -18,8 +24,8 @@ export default function VeterinariesPage() {
   const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS_VETERINARIES);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !navigator.geolocation) {
-      setLocationError('La geolocalización no está disponible');
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setLocationError("La geolocalización no está disponible");
       setUserLocation({ lat: null, lng: null });
       setLocationLoading(false);
       return;
@@ -37,13 +43,13 @@ export default function VeterinariesPage() {
       (error) => {
         const message =
           error.code === error.PERMISSION_DENIED
-            ? 'Permiso de ubicación denegado. Activa la ubicación para ver veterinarias cercanas. 🗺️'
-            : 'No se pudo obtener tu ubicación';
+            ? "Permiso de ubicación denegado. Activa la ubicación para ver veterinarias cercanas."
+            : "No se pudo obtener tu ubicación";
         setLocationError(message);
         setUserLocation({ lat: null, lng: null });
         setLocationLoading(false);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
   }, []);
 
@@ -66,7 +72,7 @@ export default function VeterinariesPage() {
     setSelectedPlace(place);
     if (place) {
       const el = document.getElementById(`veterinary-${place.id}`);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   };
 
@@ -74,7 +80,7 @@ export default function VeterinariesPage() {
     <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a] pt-[72px]">
       <Navigation />
 
-      <section className="w-full py-4 bg-gradient-to-br from-orange-500 to-orange-600">
+      <section className="w-full py-4 bg-gradient-to-br from-kadesh to-kadesh-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -85,7 +91,7 @@ export default function VeterinariesPage() {
             <h1 className="text-2xl sm:text-3xl font-black text-white mb-1">
               Veterinarias cercanas
             </h1>
-            <p className="text-sm text-orange-50 max-w-2xl mx-auto">
+            <p className="text-sm text-kadesh-50 max-w-2xl mx-auto">
               Encuentra veterinarias cerca de ti
             </p>
           </motion.div>
@@ -109,12 +115,14 @@ export default function VeterinariesPage() {
               Veterinarias ({totalPlaces})
             </h2>
             {locationLoading && (
-              <p className="text-xs text-orange-500 dark:text-orange-400 mb-2">
+              <p className="text-xs text-kadesh dark:text-kadesh-400 mb-2">
                 Obteniendo tu ubicación...
               </p>
             )}
             {locationError && (
-              <p className="text-xs text-red-500 dark:text-red-400 mb-2">{locationError}</p>
+              <p className="text-xs text-red-500 dark:text-red-400 mb-2">
+                {locationError}
+              </p>
             )}
             {hasLocation && !locationError && (
               <>
@@ -122,7 +130,9 @@ export default function VeterinariesPage() {
                   Radio de {radiusKm} km desde tu ubicación
                 </p>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">Radio:</span>
+                  <span className="text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
+                    Radio:
+                  </span>
                   {RADIUS_OPTIONS_VETERINARIES.map((km) => (
                     <button
                       key={km}
@@ -130,8 +140,8 @@ export default function VeterinariesPage() {
                       onClick={() => setRadiusKm(km)}
                       className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
                         radiusKm === km
-                          ? 'bg-orange-500 text-white'
-                          : 'bg-[#f0f0f0] dark:bg-[#2a2a2a] text-[#212121] dark:text-[#e0e0e0] hover:bg-[#e0e0e0] dark:hover:bg-[#3a3a3a]'
+                          ? "bg-kadesh text-white"
+                          : "bg-[#f0f0f0] dark:bg-[#2a2a2a] text-[#212121] dark:text-[#e0e0e0] hover:bg-[#e0e0e0] dark:hover:bg-[#3a3a3a]"
                       }`}
                     >
                       {km} km
@@ -145,11 +155,6 @@ export default function VeterinariesPage() {
           <div className="flex-1 overflow-y-auto p-4">
             {(locationLoading || placesLoading) && places.length === 0 ? (
               <div className="space-y-3">
-                {locationLoading && (
-                  <p className="text-xs text-orange-500 dark:text-orange-400 mb-2">
-                    Obteniendo tu ubicación...
-                  </p>
-                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[1, 2, 3, 4].map((i) => (
                     <div
@@ -169,8 +174,8 @@ export default function VeterinariesPage() {
               <div className="text-center py-12 px-2">
                 <p className="text-[#616161] dark:text-[#b0b0b0] mb-3">
                   {locationError
-                    ? 'Activa la ubicación en tu navegador para ver veterinarias cerca de ti.'
-                    : 'No hay veterinarias cercanas.'}
+                    ? "Activa la ubicación en tu navegador para ver veterinarias cerca de ti."
+                    : "No hay veterinarias cercanas."}
                 </p>
               </div>
             ) : (
@@ -203,36 +208,44 @@ export default function VeterinariesPage() {
                       Anterior
                     </button>
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                        if (
-                          page === 1 ||
-                          page === totalPages ||
-                          (page >= currentPage - 1 && page <= currentPage + 1)
-                        ) {
-                          return (
-                            <button
-                              key={page}
-                              type="button"
-                              onClick={() => goToPage(page)}
-                              className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-                                currentPage === page
-                                  ? 'bg-orange-500 text-white'
-                                  : 'bg-white dark:bg-[#121212] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a]'
-                              }`}
-                            >
-                              {page}
-                            </button>
-                          );
-                        }
-                        if (page === currentPage - 2 || page === currentPage + 2) {
-                          return (
-                            <span key={page} className="px-1 text-[#616161] dark:text-[#b0b0b0] text-sm">
-                              ...
-                            </span>
-                          );
-                        }
-                        return null;
-                      })}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => {
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <button
+                                key={page}
+                                type="button"
+                                onClick={() => goToPage(page)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                                  currentPage === page
+                                    ? "bg-kadesh text-white"
+                                    : "bg-white dark:bg-[#121212] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a]"
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            );
+                          }
+                          if (
+                            page === currentPage - 2 ||
+                            page === currentPage + 2
+                          ) {
+                            return (
+                              <span
+                                key={page}
+                                className="px-1 text-[#616161] dark:text-[#b0b0b0] text-sm"
+                              >
+                                ...
+                              </span>
+                            );
+                          }
+                          return null;
+                        },
+                      )}
                     </div>
                     <button
                       type="button"

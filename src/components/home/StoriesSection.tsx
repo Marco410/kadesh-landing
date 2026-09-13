@@ -1,76 +1,36 @@
-"use client";
+'use client';
 
-import Image from 'next/image';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { BlogSection } from '../blog';
 import { Routes } from 'kadesh/core/routes';
 
-const MOCK_STORIES = [
-  {
-    id: 1,
-    title: "Max encontró su hogar después de 3 meses",
-    excerpt: "La historia de cómo una familia adoptó a Max y le dio una segunda oportunidad llena de amor y esperanza.",
-    image: "/images/ss/husky.png",
-    date: "15 de Enero, 2024",
-    category: "Adopción"
-  },
-  {
-    id: 2,
-    title: "Red de rescatistas salva 50 animales en una semana",
-    excerpt: "Gracias a la coordinación a través de KADESH, un grupo de rescatistas logró encontrar hogares para 50 animales en situación vulnerable.",
-    image: "/images/ss/parrot.png",
-    date: "8 de Enero, 2024",
-    category: "Rescate"
-  },
-  {
-    id: 3,
-    title: "Veterinaria aliada ofrece atención gratuita",
-    excerpt: "Una de nuestras veterinarias aliadas donó más de 100 consultas gratuitas para perros en situación de calle durante las fiestas.",
-    image: "/images/ss/cat.png",
-    date: "2 de Enero, 2024",
-    category: "Comunidad"
-  },
-];
-
 export default function StoriesSection() {
   return (
-    <section id="historias" className="w-full py-20 bg-gray-50 dark:bg-[#1a1a1a]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white mb-4">
+    <section id="historias" className="w-full bg-[#f7f8fa] py-24 dark:bg-[#1a1a1a]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto mb-12 max-w-3xl text-center">
+          <h2 className="mb-4 text-4xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-5xl">
             Historias que inspiran
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400">
-            Cada rescate, cada adopción, cada conexión cuenta una historia
+          <p className="text-lg text-[#5a5a5a] dark:text-[#b0b0b0]">
+            El blog de KADESH publica rescates, adopciones y notas de la comunidad.
+            Cada pieza es contenido real del sitio, no testimonios inventados.
           </p>
-        </motion.div>
-
-        <div className="gap-8 mb-10">
-          <BlogSection  postsPerPage={4} showPagination={false} />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="text-center"
-        >
+        <div className="mb-10">
+          <BlogSection postsPerPage={4} showPagination={false} />
+        </div>
+
+        <div className="text-center">
           <Link
             href={Routes.blog.index}
-            className="inline-block px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+            className="inline-flex rounded-xl bg-kadesh px-8 py-4 text-lg font-bold text-white transition-colors hover:bg-kadesh-600"
           >
             Leer más historias →
           </Link>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
 }
-

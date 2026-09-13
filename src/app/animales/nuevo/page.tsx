@@ -35,7 +35,7 @@ export default function NewAnimalPage() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="w-full py-6 bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700">
+      <section className="w-full py-6 bg-gradient-to-br from-kadesh to-kadesh-600 dark:from-kadesh-600 dark:to-kadesh-700">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -46,14 +46,14 @@ export default function NewAnimalPage() {
             <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">
               Reportar Animal
             </h1>
-            <p className="text-lg text-orange-50">
+            <p className="text-lg text-kadesh-50">
               Ayúdanos a encontrarles un hogar
             </p>
             <div className="mt-2 flex justify-center">
               <button
                 type="button"
                 onClick={() => window.history.back()}
-                className="inline-flex items-center px-2.5 py-1.5 text-sm bg-orange-100 text-orange-800 font-semibold rounded shadow hover:bg-orange-200 transition-colors"
+                className="inline-flex items-center px-2.5 py-1.5 text-sm bg-kadesh-100 text-kadesh-800 font-semibold rounded shadow hover:bg-kadesh-200 transition-colors"
               >
                 ← Volver atrás
               </button>

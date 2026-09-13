@@ -1,12 +1,22 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Location01Icon } from '@hugeicons/core-free-icons';
-import { darkMapStyles, lightMapStyles } from '../constants';
 import { sileo } from 'sileo';
+import {
+  applyFreeMapThemeClass,
+  attachFreeMapBaseLayer,
+  createBrandPinIcon,
+  DEFAULT_MAP_CENTER,
+  getLeaflet,
+  isDarkMapTheme,
+  loadLeafletStack,
+  resetLeafletContainer,
+  type LeafletMap,
+  type LeafletMarker,
+} from 'kadesh/components/shared/free-map';
 
 interface LocationPickerProps {
   lat: string;
@@ -16,247 +26,137 @@ interface LocationPickerProps {
   state?: string;
   country?: string;
   onLocationChange: (lat: string, lng: string) => void;
-  onAddressChange?: (address: string, city: string, state: string, country: string) => void;
+  onAddressChange?: (
+    address: string,
+    city: string,
+    state: string,
+    country: string
+  ) => void;
   className?: string;
   isVisible?: boolean;
 }
 
-const mapContainerStyle = {
-  width: '100%',
-  height: '400px',
-};
+interface NominatimAddress {
+  road?: string;
+  house_number?: string;
+  city?: string;
+  town?: string;
+  village?: string;
+  municipality?: string;
+  state?: string;
+  country?: string;
+}
 
-const googleMapsLibraries: ('places')[] = ['places'];
+interface NominatimResult {
+  lat: string;
+  lon: string;
+  display_name: string;
+  address: NominatimAddress;
+}
 
-const defaultCenter = {
-  lat: 19.4326, // Ciudad de México
-  lng: -99.1332,
-};
+interface SearchHit {
+  id: string;
+  label: string;
+  lat: number;
+  lng: number;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+}
 
-export default function LocationPicker({ 
-  lat, 
-  lng, 
-  address = '', 
-  city = '', 
-  state = '', 
-  country = '', 
-  onLocationChange, 
+const PIN_ZOOM = 15;
+const DEFAULT_ZOOM = 12;
+
+function parseNominatimAddress(data: NominatimResult) {
+  const a = data.address ?? {};
+  const streetAddress =
+    [a.road, a.house_number].filter(Boolean).join(' ') || data.display_name;
+  const city = a.city || a.town || a.village || a.municipality || '';
+  return {
+    address: streetAddress,
+    city,
+    state: a.state || '',
+    country: a.country || '',
+  };
+}
+
+async function reverseGeocodeNominatim(latitude: number, longitude: number) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
+      { headers: { 'Accept-Language': 'es' } }
+    );
+    if (!res.ok) return null;
+    const data: NominatimResult = await res.json();
+    return parseNominatimAddress(data);
+  } catch {
+    return null;
+  }
+}
+
+async function searchNominatim(query: string): Promise<SearchHit[]> {
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=mx`,
+    { headers: { 'Accept-Language': 'es' } }
+  );
+  if (!res.ok) return [];
+  const data: NominatimResult[] = await res.json();
+  return data.map((item, index) => {
+    const parsed = parseNominatimAddress(item);
+    return {
+      id: `${item.lat}-${item.lon}-${index}`,
+      label: item.display_name,
+      lat: parseFloat(item.lat),
+      lng: parseFloat(item.lon),
+      ...parsed,
+    };
+  });
+}
+
+export default function LocationPicker({
+  lat,
+  lng,
+  address = '',
+  city = '',
+  state = '',
+  country = '',
+  onLocationChange,
   onAddressChange,
   className = '',
-  isVisible = true
+  isVisible = true,
 }: LocationPickerProps) {
-  const [mapCenter, setMapCenter] = useState(defaultCenter);
+  const { resolvedTheme } = useTheme();
+  const [ready, setReady] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [mapLoadError, setMapLoadError] = useState<string | null>(null);
   const [locationQuery, setLocationQuery] = useState('');
-  const [locationSuggestions, setLocationSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<SearchHit[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [localAddress, setLocalAddress] = useState(address);
   const [localCity, setLocalCity] = useState(city);
   const [localState, setLocalState] = useState(state);
   const [localCountry, setLocalCountry] = useState(country);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const skipNextSuggestionFetchRef = useRef(false);
-  const { resolvedTheme } = useTheme();
-  const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-  const isGoogleMapsReady = useCallback(() => {
-    return (
-      typeof window !== 'undefined' &&
-      !!window.google &&
-      !!window.google.maps &&
-      !!window.google.maps.Geocoder
-    );
-  }, []);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const markerRef = useRef<LeafletMarker | null>(null);
+  const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onLocationChangeRef = useRef(onLocationChange);
+  const onAddressChangeRef = useRef(onAddressChange);
+
+  onLocationChangeRef.current = onLocationChange;
+  onAddressChangeRef.current = onAddressChange;
+
+  const hasValidCoordinates = Boolean(lat && lng && !Number.isNaN(parseFloat(lat)) && !Number.isNaN(parseFloat(lng)));
+  const isDarkMode = mounted && isDarkMapTheme(resolvedTheme);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const isDarkMode = mounted && resolvedTheme === 'dark';
-
-  useEffect(() => {
-    if (map && mounted) {
-      const newStyles = isDarkMode ? darkMapStyles : lightMapStyles;
-      map.setOptions({
-        styles: newStyles,
-      });
-    }
-  }, [isDarkMode, map, mounted]);
-
-  useEffect(() => {
-    if (!googleMapsApiKey || !isVisible) {
-      setIsMapLoaded(false);
-      return;
-    }
-
-    const checkGoogleMapsLoaded = () => {
-      if (typeof window !== 'undefined' && window.google && window.google.maps) {
-        setIsMapLoaded(true);
-        setMapLoadError(null);
-        return true;
-      }
-      return false;
-    };
-
-    setIsMapLoaded(false);
-    setMapLoadError(null);
-
-    const initTimer = setTimeout(() => {
-      if (checkGoogleMapsLoaded()) {
-        return;
-      }
-
-      const interval = setInterval(() => {
-        if (checkGoogleMapsLoaded()) {
-          clearInterval(interval);
-        }
-      }, 100);
-
-      const timeout = setTimeout(() => {
-        clearInterval(interval);
-        if (!checkGoogleMapsLoaded()) {
-          setMapLoadError('El mapa está tardando en cargar. Por favor, verifica tu conexión a internet.');
-        }
-      }, 10000);
-
-      return () => {
-        clearInterval(interval);
-        clearTimeout(timeout);
-      };
-    }, 100);
-
-    return () => {
-      clearTimeout(initTimer);
-    };
-  }, [googleMapsApiKey, isVisible]);
-
-  const reverseGeocode = useCallback((latitude: number, longitude: number) => {
-    if (typeof window === 'undefined' || !window.google || !window.google.maps || !window.google.maps.Geocoder) {
-      return;
-    }
-
-    setIsGeocoding(true);
-    const geocoder = new window.google.maps.Geocoder();
-    
-    geocoder.geocode(
-      { location: { lat: latitude, lng: longitude } },
-      (results, status) => {
-        setIsGeocoding(false);
-        
-        if (status === 'OK' && results && results[0]) {
-          const result = results[0];
-          let streetAddress = '';
-          let cityName = '';
-          let stateName = '';
-          let countryName = '';
-
-          result.address_components.forEach((component) => {
-            const types = component.types;
-            
-            if (types.includes('street_number')) {
-              streetAddress = component.long_name + (streetAddress ? ' ' + streetAddress : '');
-            } else if (types.includes('route')) {
-              streetAddress = streetAddress ? streetAddress + ' ' + component.long_name : component.long_name;
-            } else if (types.includes('locality') || types.includes('sublocality')) {
-              if (!cityName) {
-                cityName = component.long_name;
-              }
-            } else if (types.includes('administrative_area_level_1')) {
-              stateName = component.long_name;
-            } else if (types.includes('country')) {
-              countryName = component.long_name;
-            }
-          });
-
-          if (!streetAddress && result.formatted_address) {
-            streetAddress = result.formatted_address;
-          }
-
-          setLocalAddress(streetAddress);
-          setLocalCity(cityName);
-          setLocalState(stateName);
-          setLocalCountry(countryName);
-
-          if (onAddressChange) {
-            onAddressChange(streetAddress, cityName, stateName, countryName);
-          }
-        }
-      }
-    );
-  }, [onAddressChange]);
-
-  const applySelectedLocation = useCallback((location: google.maps.LatLng, queryText?: string) => {
-    const newLat = location.lat().toString();
-    const newLng = location.lng().toString();
-
-    onLocationChange(newLat, newLng);
-    setMapCenter({ lat: location.lat(), lng: location.lng() });
-
-    if (queryText) {
-      skipNextSuggestionFetchRef.current = true;
-      setLocationQuery(queryText);
-    }
-
-    setShowSuggestions(false);
-    setLocationSuggestions([]);
-
-    if (map) {
-      map.panTo({ lat: location.lat(), lng: location.lng() });
-      map.setZoom(17);
-    }
-
-    reverseGeocode(location.lat(), location.lng());
-  }, [map, onLocationChange, reverseGeocode]);
-
-  const geocodeAndApplyLocation = useCallback((
-    request: google.maps.GeocoderRequest,
-    notFoundMessage: string,
-    queryText?: string
-  ) => {
-    if (!isGoogleMapsReady()) {
-      sileo.warning({
-        title: 'El mapa no está listo',
-        description: 'Intenta de nuevo en unos segundos.',
-      });
-      return;
-    }
-
-    setIsSearchingLocation(true);
-    const geocoder = new window.google.maps.Geocoder();
-
-    geocoder.geocode(request, (results, status) => {
-      setIsSearchingLocation(false);
-
-      if (status === 'OK' && results?.[0]?.geometry?.location) {
-        applySelectedLocation(results[0].geometry.location, queryText);
-        return;
-      }
-
-      sileo.warning({
-        title: 'No se pudo encontrar la ubicación',
-        description: notFoundMessage,
-      });
-    });
-  }, [applySelectedLocation, isGoogleMapsReady]);
-
-  useEffect(() => {
-    const latNum = parseFloat(lat);
-    const lngNum = parseFloat(lng);
-    
-    if (!isNaN(latNum) && !isNaN(lngNum)) {
-      setMapCenter({ lat: latNum, lng: lngNum });
-      const timer = setTimeout(() => {
-        reverseGeocode(latNum, lngNum);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [lat, lng, reverseGeocode]);
 
   useEffect(() => {
     setLocalAddress(address);
@@ -265,225 +165,202 @@ export default function LocationPicker({
     setLocalCountry(country);
   }, [address, city, state, country]);
 
-  const handleUseCurrentLocation = useCallback(() => {
-    if (!navigator.geolocation) {
-      alert('La geolocalización no está disponible en tu navegador');
+  useEffect(() => {
+    if (!isVisible) return;
+    let cancelled = false;
+    loadLeafletStack()
+      .then(() => {
+        if (!cancelled) setReady(true);
+      })
+      .catch((err) => console.error('Leaflet load error', err));
+    return () => {
+      cancelled = true;
+    };
+  }, [isVisible]);
+
+  const applyAddress = useCallback(
+    (next: { address: string; city: string; state: string; country: string }) => {
+      setLocalAddress(next.address);
+      setLocalCity(next.city);
+      setLocalState(next.state);
+      setLocalCountry(next.country);
+      onAddressChangeRef.current?.(next.address, next.city, next.state, next.country);
+    },
+    []
+  );
+
+  const doReverseGeocode = useCallback(
+    async (latitude: number, longitude: number) => {
+      setIsGeocoding(true);
+      const result = await reverseGeocodeNominatim(latitude, longitude);
+      setIsGeocoding(false);
+      if (result) applyAddress(result);
+    },
+    [applyAddress]
+  );
+
+  const updateMarker = useCallback((latitude: number, longitude: number) => {
+    const L = getLeaflet();
+    const map = mapRef.current;
+    if (!L || !map) return;
+    if (markerRef.current) {
+      markerRef.current.setLatLng([latitude, longitude]);
       return;
     }
+    markerRef.current = L.marker([latitude, longitude], {
+      icon: createBrandPinIcon(L),
+      draggable: true,
+    }).addTo(map);
+    markerRef.current.on('dragend', () => {
+      const next = markerRef.current?.getLatLng();
+      if (!next) return;
+      onLocationChangeRef.current(next.lat.toString(), next.lng.toString());
+      void doReverseGeocode(next.lat, next.lng);
+    });
+  }, [doReverseGeocode]);
 
-    setIsLoadingLocation(true);
-    
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const newLat = position.coords.latitude.toString();
-        const newLng = position.coords.longitude.toString();
-        
-        onLocationChange(newLat, newLng);
-        setMapCenter({ lat: position.coords.latitude, lng: position.coords.longitude });
-        reverseGeocode(position.coords.latitude, position.coords.longitude);
-        setIsLoadingLocation(false);
-      },
-      (error) => {
-        console.error('Error getting location:', error);
-        alert('No se pudo obtener tu ubicación. Por favor, selecciona una ubicación en el mapa.');
-        setIsLoadingLocation(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      }
-    );
-  }, [onLocationChange, reverseGeocode]);
-
-  const handleSearchLocation = useCallback(() => {
-    const trimmedQuery = locationQuery.trim();
-
-    if (!trimmedQuery) {
-      return;
-    }
-    geocodeAndApplyLocation(
-      { address: trimmedQuery },
-      'No encontramos esa ubicación. Prueba con un nombre más específico.'
-    );
-  }, [geocodeAndApplyLocation, locationQuery]);
-
-  const handleSelectSuggestion = useCallback((suggestion: google.maps.places.AutocompletePrediction) => {
-    geocodeAndApplyLocation(
-      { placeId: suggestion.place_id },
-      'No pudimos resolver esa ubicación. Intenta con otro resultado.',
-      suggestion.description
-    );
-  }, [geocodeAndApplyLocation]);
+  const handleMapClick = useCallback((...args: unknown[]) => {
+    const e = args[0] as { latlng: { lat: number; lng: number } };
+    const { lat: clickLat, lng: clickLng } = e.latlng;
+    onLocationChangeRef.current(clickLat.toString(), clickLng.toString());
+    updateMarker(clickLat, clickLng);
+    if (geocodeTimerRef.current) clearTimeout(geocodeTimerRef.current);
+    geocodeTimerRef.current = setTimeout(() => {
+      void doReverseGeocode(clickLat, clickLng);
+    }, 300);
+  }, [doReverseGeocode, updateMarker]);
 
   useEffect(() => {
-    if (skipNextSuggestionFetchRef.current) {
-      skipNextSuggestionFetchRef.current = false;
-      setLocationSuggestions([]);
-      setShowSuggestions(false);
-      setIsLoadingSuggestions(false);
-      return;
+    const L = getLeaflet();
+    const container = mapContainerRef.current;
+    if (!ready || !container || mapRef.current || !L) return;
+
+    resetLeafletContainer(container);
+
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+    const hasCoords = !Number.isNaN(latNum) && !Number.isNaN(lngNum);
+    const center: [number, number] = hasCoords
+      ? [latNum, lngNum]
+      : [DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng];
+    const zoom = hasCoords ? PIN_ZOOM : DEFAULT_ZOOM;
+
+    const map = L.map(container, { zoomControl: true }).setView(center, zoom);
+    mapRef.current = map;
+    attachFreeMapBaseLayer(map);
+    applyFreeMapThemeClass(container, resolvedTheme);
+    map.on('click', handleMapClick);
+
+    if (hasCoords) {
+      updateMarker(latNum, lngNum);
     }
 
-    const trimmedQuery = locationQuery.trim();
+    requestAnimationFrame(() => map.invalidateSize());
 
-    if (trimmedQuery.length < 3) {
-      setLocationSuggestions([]);
-      setShowSuggestions(false);
-      setIsLoadingSuggestions(false);
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      markerRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
+  useEffect(() => {
+    if (!mounted || !ready) return;
+    applyFreeMapThemeClass(mapContainerRef.current, resolvedTheme);
+  }, [mounted, ready, resolvedTheme]);
+
+  useEffect(() => {
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+    if (!Number.isNaN(latNum) && !Number.isNaN(lngNum) && mapRef.current) {
+      updateMarker(latNum, lngNum);
+      mapRef.current.setView([latNum, lngNum], mapRef.current.getZoom());
+    }
+  }, [lat, lng, updateMarker]);
+
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    const query = locationQuery.trim();
+    if (query.length < 3) {
+      setSuggestions([]);
       return;
     }
-
-    if (
-      typeof window === 'undefined' ||
-      !window.google ||
-      !window.google.maps ||
-      !window.google.maps.places ||
-      !window.google.maps.places.AutocompleteService
-    ) {
-      setLocationSuggestions([]);
-      setShowSuggestions(false);
-      setIsLoadingSuggestions(false);
-      return;
-    }
-
-    setIsLoadingSuggestions(true);
-
-    const timer = setTimeout(() => {
-      const autocompleteService = new window.google.maps.places.AutocompleteService();
-
-      autocompleteService.getPlacePredictions({ input: trimmedQuery }, (predictions, status) => {
-        setIsLoadingSuggestions(false);
-
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions?.length) {
-          setLocationSuggestions(predictions.slice(0, 4));
-          setShowSuggestions(true);
-          return;
-        }
-
-        setLocationSuggestions([]);
-        setShowSuggestions(false);
-      });
-    }, 250);
-
-    return () => clearTimeout(timer);
+    searchTimerRef.current = setTimeout(() => {
+      void searchNominatim(query)
+        .then((hits) => {
+          setSuggestions(hits);
+          setShowSuggestions(hits.length > 0);
+        })
+        .catch(() => setSuggestions([]));
+    }, 350);
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
   }, [locationQuery]);
 
-  const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
-      const newLat = e.latLng.lat().toString();
-      const newLng = e.latLng.lng().toString();
-      onLocationChange(newLat, newLng);
-      reverseGeocode(e.latLng.lat(), e.latLng.lng());
-    }
-  }, [onLocationChange, reverseGeocode]);
+  const applyHit = useCallback(
+    (hit: SearchHit) => {
+      onLocationChangeRef.current(hit.lat.toString(), hit.lng.toString());
+      applyAddress(hit);
+      updateMarker(hit.lat, hit.lng);
+      mapRef.current?.setView([hit.lat, hit.lng], PIN_ZOOM);
+      setLocationQuery(hit.label);
+      setShowSuggestions(false);
+    },
+    [applyAddress, updateMarker]
+  );
 
-  const handleLatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newLat = e.target.value;
-    onLocationChange(newLat, lng);
-    
-    const latNum = parseFloat(newLat);
-    if (!isNaN(latNum) && !isNaN(parseFloat(lng))) {
-      setMapCenter({ lat: latNum, lng: parseFloat(lng) });
+  const handleSearchLocation = useCallback(async () => {
+    const query = locationQuery.trim();
+    if (!query) return;
+    setIsSearchingLocation(true);
+    try {
+      const hits = await searchNominatim(query);
+      setSuggestions(hits);
+      if (hits[0]) {
+        applyHit(hits[0]);
+      } else {
+        sileo.error({ title: 'No se encontró esa ubicación' });
+      }
+    } catch {
+      sileo.error({ title: 'No se pudo buscar la ubicación' });
+    } finally {
+      setIsSearchingLocation(false);
     }
-  };
+  }, [applyHit, locationQuery]);
 
-  const handleLngChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newLng = e.target.value;
-    onLocationChange(lat, newLng);
-    
-    const lngNum = parseFloat(newLng);
-    if (!isNaN(parseFloat(lat)) && !isNaN(lngNum)) {
-      setMapCenter({ lat: parseFloat(lat), lng: lngNum });
+  const handleUseCurrentLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      sileo.error({ title: 'Tu navegador no soporta geolocalización' });
+      return;
     }
-  };
-
-  if (!googleMapsApiKey) {
-    return (
-      <div className={`bg-gray-100 dark:bg-gray-800 rounded-xl p-6 ${className}`}>
-        <p className="text-gray-600 dark:text-gray-400 text-center">
-          Google Maps API key no configurada. Por favor configura NEXT_PUBLIC_GOOGLE_MAPS_API_KEY en tus variables de entorno.
-        </p>
-      </div>
+    setIsLoadingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const newLat = position.coords.latitude;
+        const newLng = position.coords.longitude;
+        onLocationChangeRef.current(newLat.toString(), newLng.toString());
+        updateMarker(newLat, newLng);
+        mapRef.current?.setView([newLat, newLng], PIN_ZOOM);
+        void doReverseGeocode(newLat, newLng);
+        setIsLoadingLocation(false);
+      },
+      () => {
+        setIsLoadingLocation(false);
+        sileo.error({
+          title: 'No se pudo obtener tu ubicación. Verifica los permisos del navegador.',
+        });
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
     );
-  }
+  }, [doReverseGeocode, updateMarker]);
 
-  const hasValidCoordinates = !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng));
-
-  const onMapLoad = useCallback((mapInstance: google.maps.Map) => {
-    setMap(mapInstance);
-    setIsMapLoaded(true);
-    setMapLoadError(null);
-  }, []);
-
-  const onMapUnmount = useCallback(() => {
-    setMap(null);
-  }, []);
-
-  const mapOptions = useMemo(() => {
-    const baseStyles = isDarkMode ? darkMapStyles : lightMapStyles;
-    
-    const additionalStyles = [
-      {
-        featureType: 'poi',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }],
-      },
-      {
-        featureType: 'poi.business',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }],
-      },
-      {
-        featureType: 'poi.attraction',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }],
-      },
-      {
-        featureType: 'poi.place_of_worship',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }],
-      },
-      {
-        featureType: 'poi.school',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }],
-      },
-      {
-        featureType: 'poi.sports_complex',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }],
-      },
-      {
-        featureType: 'transit',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }],
-      },
-      {
-        featureType: 'transit.station',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }],
-      },
-      {
-        featureType: 'transit.line',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }],
-      },
-    ];
-
-    return {
-      styles: [...baseStyles, ...additionalStyles],
-      disableDefaultUI: true,
-      zoomControl: true,
-      streetViewControl: false,
-      mapTypeControl: false,
-      fullscreenControl: true,
-    };
-  }, [isDarkMode]);
+  const inputClassName =
+    'w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-kadesh dark:focus:ring-kadesh-400';
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Header with button */}
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -497,32 +374,24 @@ export default function LocationPicker({
           <button
             type="button"
             onClick={handleUseCurrentLocation}
-            disabled={isLoadingLocation}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoadingLocation || !ready}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-kadesh hover:bg-kadesh-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoadingLocation ? (
-              <>
-                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Obteniendo...
-              </>
-            ) : (
-              <>
-                <HugeiconsIcon 
-                  icon={Location01Icon} 
-                  size={15} 
-                  className="text-white"
-                  strokeWidth={1.5}
-                />
-                Usar mi ubicación actual
-              </>
-            )}
+            <HugeiconsIcon
+              icon={Location01Icon}
+              size={15}
+              className={isLoadingLocation ? 'animate-pulse text-white' : 'text-white'}
+              strokeWidth={1.5}
+            />
+            {isLoadingLocation ? 'Obteniendo...' : 'Usar mi ubicación actual'}
           </button>
         </div>
+
         <div>
-          <label htmlFor="location-search" className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1">
+          <label
+            htmlFor="location-search"
+            className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1"
+          >
             Buscar ubicación por nombre
           </label>
           <div className="flex flex-col sm:flex-row gap-2">
@@ -533,37 +402,32 @@ export default function LocationPicker({
                 value={locationQuery}
                 onChange={(e) => setLocationQuery(e.target.value)}
                 onFocus={() => {
-                  if (locationSuggestions.length > 0) {
-                    setShowSuggestions(true);
-                  }
+                  if (suggestions.length > 0) setShowSuggestions(true);
                 }}
-                onBlur={() => {
-                  setShowSuggestions(false);
-                }}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
-                    if (locationSuggestions.length > 0) {
-                      handleSelectSuggestion(locationSuggestions[0]);
+                    if (suggestions[0]) {
+                      applyHit(suggestions[0]);
                       return;
                     }
-                    handleSearchLocation();
+                    void handleSearchLocation();
                   }
                 }}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+                className={inputClassName}
                 placeholder="Ej: Parque México, Condesa"
               />
-
-              {showSuggestions && locationSuggestions.length > 0 && (
-                <div className="absolute z-20 mt-1 w-full rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] shadow-lg overflow-hidden">
-                  {locationSuggestions.map((suggestion) => (
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-white shadow-lg dark:border-[#3a3a3a] dark:bg-[#121212]">
+                  {suggestions.map((hit) => (
                     <button
-                      key={suggestion.place_id}
+                      key={hit.id}
                       type="button"
-                      onMouseDown={() => handleSelectSuggestion(suggestion)}
-                      className="w-full text-left px-3 py-2 text-sm text-[#212121] dark:text-[#ffffff] hover:bg-[#f5f5f5] dark:hover:bg-[#1f1f1f] transition-colors"
+                      onMouseDown={() => applyHit(hit)}
+                      className="w-full px-3 py-2 text-left text-sm text-[#212121] transition-colors hover:bg-[#f5f5f5] dark:text-white dark:hover:bg-[#1f1f1f]"
                     >
-                      {suggestion.description}
+                      {hit.label}
                     </button>
                   ))}
                 </div>
@@ -571,204 +435,121 @@ export default function LocationPicker({
             </div>
             <button
               type="button"
-              onClick={handleSearchLocation}
+              onClick={() => void handleSearchLocation()}
               disabled={isSearchingLocation || !locationQuery.trim()}
-              className="px-4 py-2 text-sm font-medium bg-[#212121] hover:bg-[#333333] dark:bg-[#f5f5f5] dark:hover:bg-[#e0e0e0] text-white dark:text-[#121212] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-lg bg-[#212121] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#333333] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#f5f5f5] dark:text-[#121212] dark:hover:bg-[#e0e0e0]"
             >
               {isSearchingLocation ? 'Buscando...' : 'Buscar'}
             </button>
           </div>
-          {isLoadingSuggestions && locationQuery.trim().length >= 3 && (
-            <p className="mt-1 text-xs text-[#616161] dark:text-[#b0b0b0]">Buscando sugerencias...</p>
-          )}
         </div>
       </div>
 
-      {/* Map */}
-      <div className="rounded-xl overflow-hidden shadow-md border border-[#e0e0e0] dark:border-[#3a3a3a] relative">
-        {mapLoadError ? (
-          <div className="w-full h-[400px] bg-[#f5f5f5] dark:bg-[#1e1e1e] flex flex-col items-center justify-center p-6">
-            <p className="text-red-500 dark:text-red-400 text-sm font-medium mb-2">
-              Error al cargar el mapa
-            </p>
-            <p className="text-[#616161] dark:text-[#b0b0b0] text-xs text-center mb-4">
-              {mapLoadError}
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setMapLoadError(null);
-                setIsMapLoaded(false);
-                // Force re-check
-                if (typeof window !== 'undefined' && window.google && window.google.maps) {
-                  setIsMapLoaded(true);
-                }
-              }}
-              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              Reintentar
-            </button>
-          </div>
-        ) : !isMapLoaded ? (
-          <div className="w-full h-[400px] bg-[#f5f5f5] dark:bg-[#1e1e1e] flex items-center justify-center absolute inset-0 z-10">
+      <div className="relative overflow-hidden rounded-xl border border-[#e0e0e0] shadow-md dark:border-[#3a3a3a]">
+        <div
+          ref={mapContainerRef}
+          className={`h-[400px] w-full ${
+            isDarkMode ? 'kadesh-free-map--night' : 'kadesh-free-map--standard'
+          }`}
+          style={{ minHeight: 300 }}
+        />
+        {!ready && (
+          <div className="absolute inset-0 z-[1] flex items-center justify-center bg-[#f5f5f5] dark:bg-[#1e1e1e]">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-3"></div>
-              <p className="text-[#616161] dark:text-[#b0b0b0] text-sm">Cargando mapa...</p>
+              <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-b-2 border-kadesh" />
+              <p className="text-sm text-[#616161] dark:text-[#b0b0b0]">Cargando mapa...</p>
             </div>
           </div>
-        ) : null}
-        <LoadScript 
-          googleMapsApiKey={googleMapsApiKey || ''}
-          libraries={googleMapsLibraries}
-          loadingElement={<div className="w-full h-[400px]" />}
-          key={isMapLoaded ? 'loaded' : 'loading'}
-        >
-          <GoogleMap
-            key={`location-picker-map-${isDarkMode ? 'dark' : 'light'}`}
-            mapContainerStyle={mapContainerStyle}
-            center={mapCenter}
-            zoom={hasValidCoordinates ? 15 : 10}
-            onClick={handleMapClick}
-            onLoad={onMapLoad}
-            onUnmount={onMapUnmount}
-            options={mapOptions}
-          >
-            {hasValidCoordinates && (
-              <Marker
-                position={{
-                  lat: parseFloat(lat),
-                  lng: parseFloat(lng),
-                }}
-                draggable={true}
-                onDragEnd={(e) => {
-                  if (e.latLng) {
-                    const newLat = e.latLng.lat().toString();
-                    const newLng = e.latLng.lng().toString();
-                    onLocationChange(newLat, newLng);
-                    reverseGeocode(e.latLng.lat(), e.latLng.lng());
-                  }
-                }}
-              />
-            )}
-          </GoogleMap>
-        </LoadScript>
+        )}
       </div>
 
-      {/* Coordinates inputs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
-          <label htmlFor="lat" className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1">
-            Latitud <span className="text-red-500">*</span>
+          <label htmlFor="lat" className="mb-1 block text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
+            Latitud {hasValidCoordinates ? null : <span className="text-red-500">*</span>}
           </label>
-          <input
-            id="lat"
-            type="text"
-            value={lat}
-            onChange={handleLatChange}
-            required
-            disabled
-            className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
-            placeholder="Ej: 19.4326"
-          />
+          <input id="lat" type="text" value={lat} disabled className={inputClassName} placeholder="Ej: 19.4326" />
         </div>
         <div>
-          <label htmlFor="lng" className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1">
-            Longitud <span className="text-red-500">*</span>
+          <label htmlFor="lng" className="mb-1 block text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
+            Longitud
           </label>
-          <input
-            id="lng"
-            type="text"
-            value={lng}
-            onChange={handleLngChange}
-            required
-            disabled
-            className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
-            placeholder="Ej: -99.1332"
-          />
+          <input id="lng" type="text" value={lng} disabled className={inputClassName} placeholder="Ej: -99.1332" />
         </div>
       </div>
 
-      {/* Address fields */}
       <div className="space-y-4">
         <div>
-          <label htmlFor="address" className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1">
-            Dirección {isGeocoding && <span className="text-orange-500 text-xs">(Obteniendo...)</span>}
+          <label htmlFor="lp-address" className="mb-1 block text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
+            Dirección{' '}
+            {isGeocoding && <span className="text-xs text-kadesh">(Obteniendo...)</span>}
           </label>
           <input
-            id="address"
+            id="lp-address"
             type="text"
             value={localAddress}
             onChange={(e) => {
               setLocalAddress(e.target.value);
-              if (onAddressChange) {
-                onAddressChange(e.target.value, localCity, localState, localCountry);
-              }
+              onAddressChange?.(e.target.value, localCity, localState, localCountry);
             }}
-            className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+            className={inputClassName}
             placeholder="Dirección"
           />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div>
-            <label htmlFor="city" className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1">
+            <label htmlFor="lp-city" className="mb-1 block text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
               Ciudad
             </label>
             <input
-              id="city"
+              id="lp-city"
               type="text"
               value={localCity}
               onChange={(e) => {
                 setLocalCity(e.target.value);
-                if (onAddressChange) {
-                  onAddressChange(localAddress, e.target.value, localState, localCountry);
-                }
+                onAddressChange?.(localAddress, e.target.value, localState, localCountry);
               }}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+              className={inputClassName}
               placeholder="Ciudad"
             />
           </div>
           <div>
-            <label htmlFor="state" className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1">
+            <label htmlFor="lp-state" className="mb-1 block text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
               Estado/Provincia
             </label>
             <input
-              id="state"
+              id="lp-state"
               type="text"
               value={localState}
               onChange={(e) => {
                 setLocalState(e.target.value);
-                if (onAddressChange) {
-                  onAddressChange(localAddress, localCity, e.target.value, localCountry);
-                }
+                onAddressChange?.(localAddress, localCity, e.target.value, localCountry);
               }}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+              className={inputClassName}
               placeholder="Estado/Provincia"
             />
           </div>
           <div>
-            <label htmlFor="country" className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1">
+            <label htmlFor="lp-country" className="mb-1 block text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
               País
             </label>
             <input
-              id="country"
+              id="lp-country"
               type="text"
               value={localCountry}
               onChange={(e) => {
                 setLocalCountry(e.target.value);
-                if (onAddressChange) {
-                  onAddressChange(localAddress, localCity, localState, e.target.value);
-                }
+                onAddressChange?.(localAddress, localCity, localState, e.target.value);
               }}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+              className={inputClassName}
               placeholder="País"
             />
           </div>
         </div>
       </div>
 
-      {/* Instructions */}
       <p className="text-xs text-[#616161] dark:text-[#b0b0b0]">
-        💡 Haz click en el mapa o arrastra el marcador para seleccionar la ubicación
+        Haz click en el mapa para seleccionar la ubicación
       </p>
     </div>
   );

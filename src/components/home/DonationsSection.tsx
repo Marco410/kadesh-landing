@@ -1,60 +1,46 @@
-"use client";
+'use client';
 
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 export default function DonationsSection() {
   return (
-    <section id="donaciones" className="w-full py-20 bg-gradient-to-br from-orange-500 to-orange-600 dark:from-[#1a1a1a] dark:to-[#121212]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center text-white"
-        >
-          <h2 className="text-4xl sm:text-5xl font-black mb-6">
-            Donaciones y comunidad
-          </h2>
-          
-          <p className="text-xl sm:text-2xl text-white/90 mb-4 max-w-3xl mx-auto leading-relaxed">
-            Cada contribución nos acerca más a nuestro objetivo: crear un santuario digital donde cada perro tenga una oportunidad y cada rescatista tenga el apoyo que necesita.
-          </p>
-          
-          <p className="text-lg text-white/80 mb-10 max-w-2xl mx-auto">
-            Tu apoyo hace posible que KADESH siga creciendo y ayudando a más animales cada día.
-          </p>
+    <section
+      id="donaciones"
+      className="w-full bg-kadesh py-24 dark:bg-[#1a1a1a]"
+    >
+      <div className="mx-auto max-w-3xl px-4 text-center text-white sm:px-6 lg:px-8">
+        <h2 className="mb-6 text-4xl font-black tracking-[-0.03em] sm:text-5xl">
+          ¿Cómo apoyo a KADESH con una donación?
+        </h2>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link
-                href="https://donate.stripe.com/6oU7sL6467dtdrY9FZgUM00"
-                target="_blank"
-                className="inline-block px-8 py-4 bg-white text-orange-500 font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-orange-50"
-              >
-                Apoyar el proyecto
-              </Link>
-            </motion.div>
-            
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link
-                href="/fundadores"
-                className="inline-block px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold text-lg rounded-xl border-2 border-white/30 hover:bg-white/20 transition-all duration-300"
-              >
-                Convertirme en fundador
-              </Link>
-            </motion.div>
-          </div>
-        </motion.div>
+        <p className="mb-4 text-lg leading-relaxed text-white/90 sm:text-xl">
+          Cada contribución sostiene el santuario digital: reportes, directorio
+          veterinario y la red de rescatistas. El apoyo es opcional y no es
+          requisito para usar la plataforma.
+        </p>
+
+        <p className="mb-10 text-base text-white/80">
+          Puedes donar ahora o unirte como fundador si quieres acompañar el
+          crecimiento de KADESH a largo plazo.
+        </p>
+
+        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <Link
+            href="https://donate.stripe.com/6oU7sL6467dtdrY9FZgUM00"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-lg font-bold text-kadesh shadow-[0_10px_28px_rgba(15,35,80,0.2)] transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5"
+          >
+            Apoyar el proyecto
+          </Link>
+          <Link
+            href="/fundadores"
+            className="inline-flex items-center justify-center rounded-xl border-2 border-white/40 px-8 py-4 text-lg font-bold text-white transition-colors hover:bg-white/10"
+          >
+            Convertirme en fundador
+          </Link>
+        </div>
       </div>
     </section>
   );
 }
-

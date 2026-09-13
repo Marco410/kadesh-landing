@@ -10,7 +10,9 @@ colors:
   ink-body: "#3a3a3a"
   ink-muted: "#5a5a5a"
   inverse: "#ffffff"
-  dark-surface: "#121212"
+  night: "#161b24"
+  night-raised: "#1c2433"
+  dark-ink: "#eef1f6"
 typography:
   display:
     fontFamily: "Poppins, Inter, sans-serif"
@@ -55,13 +57,13 @@ components:
 
 ## Overview
 
-KADESH usa un campo de marca **comprometido**: el azul `#216BFA` ocupa regiones enteras (hero, donaciones, CTAs), no acentos sueltos. La composición de la home se mantiene — lema grande a la izquierda, marca K a la derecha — con craft más quieto y tipografía más tensa.
+KADESH usa un campo de marca **comprometido**: el azul `#216BFA` ocupa el hero en claro. En oscuro el campo es `night` con wash de marca. A la izquierda, dos trabajos: veterinarias cerca (CTA blanco) y dar de alta o buscar un animal (perdí, encontré, dar en adopción, adoptar). A la derecha, un **recuadro-mapa**: huellas con los colores de estado del directorio (`getStatusColor`) y pines de veterinaria en azul de marca. No es collage de pet shop ni la K recortando una foto.
 
 La fuente de color es `src/app/globals.css` (`--color-kadesh`). `orange-*` es un alias legado de esa escala.
 
 ## Colors
 
-Cambia **solo** `--color-kadesh`. La escala 50–900, `kadesh-*`, `orange-*`, scrollbar, selection y caret se derivan con `color-mix`. Superficies: blanco y `#f7f8fa`. Oscuro: `#121212`. No reintroducir naranja de marca.
+Cambia **solo** `--color-kadesh`. Superficies claras: blanco y `#f7f8fa`. Oscuro: `--color-night` / `--color-night-raised` (tinta azulada, no OLED). No reintroducir naranja de marca.
 
 ## Typography
 
@@ -73,7 +75,7 @@ Home: hero full-bleed → definición → animales → veterinarias → historia
 
 ## Elevation & Depth
 
-Sombras con offset y blur suave, tintadas al azul (`rgba(15,35,80,…)`). Sin halo de 0px. El hero usa un wash radial blanco sobre `--color-kadesh`, no orbes genéricos.
+Sombras con offset y blur suave, tintadas al azul (`rgba(15,35,80,…)`). Sin halo de 0px. El recuadro del mapa es una superficie elevada blanca / `night-raised`. Donaciones en oscuro usa `kadesh-800`, no carbón.
 
 ## Shapes
 

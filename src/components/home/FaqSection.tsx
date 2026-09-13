@@ -4,7 +4,7 @@ export default function FaqSection() {
   return (
     <section
       id="preguntas-frecuentes"
-      className="w-full bg-white py-24 dark:bg-[#121212]"
+      className="w-full bg-white py-24 dark:bg-night"
     >
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <h2 className="mb-12 text-4xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-5xl">

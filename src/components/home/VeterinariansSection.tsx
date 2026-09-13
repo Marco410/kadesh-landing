@@ -31,7 +31,7 @@ export default function VeterinariansSection() {
   const nearbyVets = allPlaces;
 
   return (
-    <section id="veterinarias" className="w-full bg-white py-24 dark:bg-[#121212]">
+    <section id="veterinarias" className="w-full bg-white py-24 dark:bg-night">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-12 max-w-3xl text-center">
           <h2 className="mb-4 text-4xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-5xl">

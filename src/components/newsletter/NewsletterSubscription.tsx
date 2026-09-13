@@ -87,7 +87,7 @@ export default function NewsletterSubscription({
   return (
     <section 
       aria-labelledby="newsletter-heading"
-      className={`bg-[#f5f5f5] dark:bg-[#1e1e1e] py-16 px-4 sm:px-6 lg:px-8 ${className}`}
+      className={`bg-[#f5f5f5] dark:bg-night-raised py-16 px-4 sm:px-6 lg:px-8 ${className}`}
     >
       <div className="max-w-2xl mx-auto text-center">
         {showTitle && (

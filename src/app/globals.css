@@ -63,6 +63,9 @@
 
   /* Font Family */
   --font-family-sans: 'Poppins', 'Inter', sans-serif;
+
+  --color-night: #161b24;
+  --color-night-raised: #1c2433;
 }
 
 @layer base {
@@ -83,8 +86,8 @@
 
   html.dark,
   html.dark body {
-    background: #121212;
-    color: #ffffff;
+    background: var(--color-night);
+    color: #eef1f6;
   }
 
   #root, #__next {
@@ -128,7 +131,7 @@
 }
 
 html.dark ::-webkit-scrollbar {
-  background: #121212;
+  background: var(--color-night);
 }
 html.dark ::-webkit-scrollbar-thumb {
   background: var(--color-kadesh-400);
@@ -144,28 +147,122 @@ html {
 }
 
 html.dark {
-  scrollbar-color: var(--color-kadesh-400) #121212;
+  scrollbar-color: var(--color-kadesh-400) var(--color-night);
 }
 
-.kadesh-hero-wash {
+/*
+ * Hero: campo de marca + recuadro-mapa.
+ * Huellas = estados de animales. Pines gota = veterinarias.
+ */
+.kadesh-hero {
   background:
-    radial-gradient(ellipse 70% 50% at 82% 18%, color-mix(in srgb, white 18%, transparent), transparent 58%),
+    radial-gradient(
+      ellipse 70% 60% at 78% 42%,
+      color-mix(in srgb, white 22%, transparent),
+      transparent 58%
+    ),
     var(--color-kadesh);
 }
 
-@keyframes kadesh-logo-breathe {
-  0%, 100% { transform: scale(1); opacity: 0.22; }
-  50% { transform: scale(1.12); opacity: 0.38; }
+html.dark .kadesh-hero {
+  background:
+    radial-gradient(
+      ellipse 80% 70% at 78% 40%,
+      color-mix(in srgb, var(--color-kadesh) 42%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 50% 45% at 12% 85%,
+      color-mix(in srgb, var(--color-kadesh) 18%, transparent),
+      transparent 50%
+    ),
+    var(--color-night);
 }
 
-.kadesh-logo-glow {
-  animation: kadesh-logo-breathe 8s ease-in-out infinite;
+.kadesh-hero-map-streets {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  animation: kadesh-map-drift 18s ease-in-out infinite;
+}
+
+@keyframes kadesh-map-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-4%, -3%);
+  }
+}
+
+.kadesh-hero-pin-pulse {
+  opacity: 0.35;
+  animation: kadesh-pin-pulse 2.2s ease-out infinite;
+}
+
+@keyframes kadesh-pin-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0.45;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes kadesh-hero-in {
+  from {
+    opacity: 0.45;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.kadesh-hero-in {
+  animation: kadesh-hero-in 0.78s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.kadesh-hero-in-delay-1 {
+  animation-delay: 0.12s;
+}
+
+.kadesh-hero-in-delay-2 {
+  animation-delay: 0.22s;
+}
+
+.kadesh-hero-in-delay-3 {
+  animation-delay: 0.32s;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kadesh-logo-glow {
-    animation: none;
+  .kadesh-hero-in,
+  .kadesh-hero-map-streets,
+  .kadesh-hero-pin-pulse {
+    animation: none !important;
   }
+}
+
+.kadesh-hero-fade {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 7.5rem;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, #ffffff);
+}
+
+html.dark .kadesh-hero-fade {
+  background: linear-gradient(to bottom, transparent, var(--color-night));
 }
 
 /* Leaflet + MapLibre (OpenFreeMap Liberty). Dark = CSS filter, no second style. */

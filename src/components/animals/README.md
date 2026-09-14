@@ -36,9 +36,7 @@ La URL canónica es el slug. Los enlaces viejos `/animales/{id}` siguen abriendo
 
 Misma familia que la ficha de veterinaria: `pt-[72px]`, `night` / `night-raised`, sin franja azul y sin footer del sitio.
 
-El trabajo es reconocer y actuar. Encabezado: volver al listado, nombre, chip de estatus (color del pin, no de marca), **Cómo llegar** y **Llamar**. La foto es el héroe de reconocimiento, sin halo de 5px; si no hay imagen, el glifo de tipo. Al lado: tipo, raza, señas y quién reportó.
-
-Abajo, historial y mapa del registro elegido. No se muestran coordenadas ni notas placeholder (`Sin información adicional`). Cómo llegar en el mapa sigue el pin seleccionado; el del encabezado va al último registro. Quien reportó puede agregar o borrar actualizaciones. Comentarios usan el azul de marca.
+El trabajo es reconocer y actuar **sin recorrer la página**. En escritorio la ficha es un workspace de viewport: foto a la izquierda (llena la altura), datos compactos arriba a la derecha, historial y mapa abajo a la derecha. Encabezado: volver, nombre, chip de estatus, **Cómo llegar** y **Llamar**. La foto es el héroe de reconocimiento, sin halo de 5px; las miniaturas van encima de la foto. No se muestran coordenadas ni notas placeholder (`Sin información adicional`). Cómo llegar en el mapa sigue el pin seleccionado; el del encabezado va al último registro. Comentarios quedan debajo; no empujan el mapa fuera de pantalla.
 
 ## Mapa
 

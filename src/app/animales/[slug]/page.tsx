@@ -38,6 +38,9 @@ function DetailShell({ children }: { children: ReactNode }) {
   );
 }
 
+const actionClass =
+  "inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 text-sm font-semibold transition-colors lg:min-h-9";
+
 export default function AnimalDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -54,11 +57,11 @@ export default function AnimalDetailPage() {
   if (loading) {
     return (
       <DetailShell>
-        <div className="mx-auto w-full max-w-7xl space-y-4 px-4 py-6">
-          <div className="h-10 w-48 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10" />
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="h-80 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10" />
-            <div className="h-80 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10" />
+        <div className="mx-auto flex w-full max-w-[92rem] flex-col gap-3 px-3 py-3 lg:h-[calc(100dvh-72px)] lg:px-4">
+          <div className="h-9 w-56 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10" />
+          <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-2">
+            <div className="min-h-52 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10 lg:min-h-0" />
+            <div className="min-h-52 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10 lg:min-h-0" />
           </div>
         </div>
       </DetailShell>
@@ -68,7 +71,7 @@ export default function AnimalDetailPage() {
   if (error || !animal) {
     return (
       <DetailShell>
-        <div className="mx-auto w-full max-w-7xl px-4 py-8">
+        <div className="mx-auto w-full max-w-[92rem] px-4 py-8">
           <Link
             href={Routes.animals.index}
             className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-kadesh hover:underline"
@@ -108,80 +111,88 @@ export default function AnimalDetailPage() {
 
   return (
     <DetailShell>
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 pb-8 sm:px-6">
-        <header className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <Link
-            href={Routes.animals.index}
-            className="inline-flex items-center gap-1 text-sm font-medium text-kadesh hover:underline"
-          >
-            <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2} />
-            Animales
-          </Link>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="truncate text-xl font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6] sm:text-2xl">
+      <div className="mx-auto flex w-full max-w-[92rem] flex-col px-3 lg:px-4">
+        <div className="flex min-h-0 flex-col gap-3 py-3 lg:h-[calc(100dvh-72px)] lg:overflow-hidden">
+          <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2">
+            <Link
+              href={Routes.animals.index}
+              className="inline-flex items-center gap-1 text-sm font-medium text-kadesh hover:underline"
+            >
+              <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2} />
+              Animales
+            </Link>
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <h1 className="truncate text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6] sm:text-xl">
                 {animal.name || "Sin nombre"}
               </h1>
               <span
-                className="rounded-full px-2.5 py-0.5 text-xs font-bold text-white"
+                className="shrink-0 rounded-full px-2 py-0.5 text-xs font-bold text-white"
                 style={{ backgroundColor: statusColor }}
               >
                 {statusLabel}
               </span>
             </div>
-          </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            {howToGetHref && (
-              <a
-                href={howToGetHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-kadesh px-5 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white"
-              >
-                <HugeiconsIcon
-                  icon={Location01Icon}
-                  size={18}
-                  strokeWidth={1.5}
-                />
-                Cómo llegar
-              </a>
-            )}
-            {phoneHref && (
-              <a
-                href={phoneHref}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
-              >
-                <HugeiconsIcon icon={Call02Icon} size={18} strokeWidth={1.5} />
-                Llamar
-              </a>
-            )}
-          </div>
-        </header>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              {howToGetHref && (
+                <a
+                  href={howToGetHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${actionClass} border-2 border-kadesh text-kadesh hover:bg-kadesh hover:text-white`}
+                >
+                  <HugeiconsIcon
+                    icon={Location01Icon}
+                    size={16}
+                    strokeWidth={1.5}
+                  />
+                  Cómo llegar
+                </a>
+              )}
+              {phoneHref && (
+                <a
+                  href={phoneHref}
+                  className={`${actionClass} bg-kadesh text-white hover:bg-kadesh-600`}
+                >
+                  <HugeiconsIcon
+                    icon={Call02Icon}
+                    size={16}
+                    strokeWidth={1.5}
+                  />
+                  Llamar
+                </a>
+              )}
+            </div>
+          </header>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-white/10 dark:bg-night-raised">
-            <AnimalImageGrid
-              images={animal.multimedia}
-              animalName={animal.name}
-              typeName={typeName}
-              statusColor={statusColor}
-            />
-          </div>
-          <div className="flex h-full flex-col rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6">
-            <AnimalInfoSection animal={animal} />
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(17rem,1fr)_minmax(0,1.2fr)] lg:grid-rows-[auto_minmax(0,1fr)]">
+            <div className="min-h-0 overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-white/10 dark:bg-night-raised lg:row-span-2">
+              <AnimalImageGrid
+                images={animal.multimedia}
+                animalName={animal.name}
+                typeName={typeName}
+                statusColor={statusColor}
+                fill
+              />
+            </div>
+            <div className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+              <AnimalInfoSection animal={animal} />
+            </div>
+            <div className="min-h-0">
+              <LogTimeline
+                logs={logs ?? []}
+                animal={animal}
+                animalName={animal.name}
+                onLogCreated={async () => {
+                  await refetch();
+                }}
+              />
+            </div>
           </div>
         </div>
 
-        <LogTimeline
-          logs={logs ?? []}
-          animal={animal}
-          animalName={animal.name}
-          onLogCreated={async () => {
-            await refetch();
-          }}
-        />
-
-        <AnimalCommentsSection animal={animal} />
+        <div className="pb-6">
+          <AnimalCommentsSection animal={animal} />
+        </div>
       </div>
     </DetailShell>
   );

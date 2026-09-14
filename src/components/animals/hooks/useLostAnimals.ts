@@ -18,6 +18,7 @@ function normalizeText(text: string): string {
 
 interface NearbyAnimal {
   id: string;
+  slug?: string | null;
   name: string;
   distance: number | null;
   sex: string;
@@ -76,6 +77,7 @@ function transformAnimal(animal: NearbyAnimal): LostAnimal {
 
   return {
     id: animal.id,
+    slug: animal.slug,
     name: animal.name,
     type: mappedType,
     breed: animal.animal_breed?.breed || '',

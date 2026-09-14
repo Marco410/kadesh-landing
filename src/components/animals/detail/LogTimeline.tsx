@@ -1,16 +1,20 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { formatDate } from 'kadesh/utils/format-date';
-import { getStatusLabel, getStatusColor } from '../constants';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { Add01Icon, Delete02Icon, Location01Icon } from '@hugeicons/core-free-icons';
-import LogMap from './LogMap';
-import AddLogModal from './AddLogModal';
-import ConfirmModal from 'kadesh/components/shared/ConfirmModal';
-import { useUser } from 'kadesh/utils/UserContext';
-import { AnimalDetail } from './hooks/useAnimalDetail';
-import { useDeleteLog } from './hooks/useDeleteLog';
+import { useState, useEffect } from "react";
+import { formatDate } from "kadesh/utils/format-date";
+import { getStatusLabel, getStatusColor } from "../constants";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Add01Icon,
+  Delete02Icon,
+  Location01Icon,
+} from "@hugeicons/core-free-icons";
+import LogMap from "./LogMap";
+import AddLogModal from "./AddLogModal";
+import ConfirmModal from "kadesh/components/shared/ConfirmModal";
+import { useUser } from "kadesh/utils/UserContext";
+import { AnimalDetail } from "./hooks/useAnimalDetail";
+import { useDeleteLog } from "./hooks/useDeleteLog";
 
 interface Log {
   id: string;
@@ -44,17 +48,23 @@ function hasCoords(log: Log) {
 }
 
 function isPlaceholderNote(notes?: string | null) {
-  const text = notes?.trim() ?? '';
+  const text = notes?.trim() ?? "";
   if (!text) return true;
   const normalized = text
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '');
-  return normalized === 'sin informacion adicional' || normalized === 'sin notas' || normalized === 'sin nota';
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+  return (
+    normalized === "sin informacion adicional" ||
+    normalized === "sin notas" ||
+    normalized === "sin nota"
+  );
 }
 
 function placeLabel(log: Log) {
-  return [log.address, log.city, log.state, log.country].filter(Boolean).join(', ');
+  return [log.address, log.city, log.state, log.country]
+    .filter(Boolean)
+    .join(", ");
 }
 
 function directionsUrl(lat: string | number, lng: string | number) {
@@ -62,13 +72,19 @@ function directionsUrl(lat: string | number, lng: string | number) {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=driving`;
 }
 
-export default function LogTimeline({ logs, animal, animalName, onLogCreated }: LogTimelineProps) {
+export default function LogTimeline({
+  logs,
+  animal,
+  animalName,
+  onLogCreated,
+}: LogTimelineProps) {
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
   const [addLogModalOpen, setAddLogModalOpen] = useState(false);
   const [deleteLogId, setDeleteLogId] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [pendingLogId, setPendingLogId] = useState<string | null>(null);
-  const [pendingSelectAfterDelete, setPendingSelectAfterDelete] = useState(false);
+  const [pendingSelectAfterDelete, setPendingSelectAfterDelete] =
+    useState(false);
   const { user } = useUser();
 
   const { deleteLog, isDeleting } = useDeleteLog({
@@ -119,7 +135,8 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
   }, [logs, pendingSelectAfterDelete]);
 
   const selectedLog = logs.find((log) => log.id === selectedLogId);
-  const selectedLogWithCoords = selectedLog && hasCoords(selectedLog) ? selectedLog : null;
+  const selectedLogWithCoords =
+    selectedLog && hasCoords(selectedLog) ? selectedLog : null;
   const isOwner = user?.id === animal?.user?.id;
 
   const handleDeleteClick = (logId: string, e: React.MouseEvent) => {
@@ -135,49 +152,52 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <section className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
+      <div className="grid h-full min-h-0 grid-cols-1 gap-3 lg:grid-cols-2">
+        <section className="flex min-h-0 flex-col rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+          <div className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-2">
+            <h2 className="text-base font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
               Historial
             </h2>
             {animal && onLogCreated && isOwner && (
               <button
                 type="button"
                 onClick={() => setAddLogModalOpen(true)}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 lg:min-h-9"
               >
-                <HugeiconsIcon icon={Add01Icon} size={18} strokeWidth={1.5} />
+                <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
                 Agregar registro
               </button>
             )}
           </div>
 
           {logs.length === 0 ? (
-            <p className="py-10 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
-              Aún no hay actualizaciones. Quien reportó puede agregar la primera.
+            <p className="py-6 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+              Aún no hay actualizaciones. Quien reportó puede agregar la
+              primera.
             </p>
           ) : (
-            <ol className="relative ml-3 border-s border-[#ececec] dark:border-white/10">
+            <ol className="relative min-h-0 flex-1 overflow-y-auto ml-3 border-s border-[#ececec] dark:border-white/10">
               {logs.map((log, index) => {
                 const isSelected = selectedLogId === log.id;
                 const isLatest = index === 0;
                 const statusColor = getStatusColor(log.status);
                 const statusLabel = getStatusLabel(log.status);
-                const note = isPlaceholderNote(log.notes) ? null : log.notes?.trim();
+                const note = isPlaceholderNote(log.notes)
+                  ? null
+                  : log.notes?.trim();
                 const place = placeLabel(log);
 
                 return (
-                  <li key={log.id} className="mb-4 ml-5 last:mb-0">
+                  <li key={log.id} className="mb-2 ml-5 last:mb-0">
                     <span
                       className="absolute -left-[7px] mt-1.5 h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-night-raised"
                       style={{ backgroundColor: statusColor }}
                     />
                     <div
-                      className={`rounded-xl p-3 transition-colors ${
+                      className={`rounded-xl p-2.5 transition-colors ${
                         isSelected
-                          ? 'bg-kadesh-50 dark:bg-kadesh/15'
-                          : 'hover:bg-[#f7f8fa] dark:hover:bg-night'
+                          ? "bg-kadesh-50 dark:bg-kadesh/15"
+                          : "hover:bg-[#f7f8fa] dark:hover:bg-night"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -194,14 +214,18 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
                               {statusLabel}
                             </span>
                             {isLatest && (
-                              <span className="text-xs font-semibold text-kadesh">Más reciente</span>
+                              <span className="text-xs font-semibold text-kadesh">
+                                Más reciente
+                              </span>
                             )}
                             <time className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
                               {formatDate(log.date_status || log.createdAt)}
                             </time>
                           </div>
                           {place ? (
-                            <p className="mt-1.5 text-sm text-[#121212] dark:text-[#eef1f6]">{place}</p>
+                            <p className="mt-1.5 text-sm text-[#121212] dark:text-[#eef1f6]">
+                              {place}
+                            </p>
                           ) : null}
                           {note ? (
                             <p className="mt-1 text-sm leading-relaxed text-[#3a3a3a] dark:text-[#c5ccd8]">
@@ -210,7 +234,11 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
                           ) : null}
                           {isLatest && log.last_seen ? (
                             <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-kadesh">
-                              <HugeiconsIcon icon={Location01Icon} size={14} strokeWidth={1.5} />
+                              <HugeiconsIcon
+                                icon={Location01Icon}
+                                size={14}
+                                strokeWidth={1.5}
+                              />
                               Última vez visto aquí
                             </p>
                           ) : null}
@@ -222,7 +250,11 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
                             className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#5a5a5a] hover:bg-red-50 hover:text-red-600 dark:text-[#9aa3b2] dark:hover:bg-red-950/40 dark:hover:text-red-400"
                             aria-label="Eliminar registro"
                           >
-                            <HugeiconsIcon icon={Delete02Icon} size={16} strokeWidth={1.5} />
+                            <HugeiconsIcon
+                              icon={Delete02Icon}
+                              size={16}
+                              strokeWidth={1.5}
+                            />
                           </button>
                         )}
                       </div>
@@ -234,47 +266,55 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
           )}
         </section>
 
-        <section className="flex min-h-0 flex-col rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6">
+        <section className="flex min-h-0 flex-col rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
           {selectedLogWithCoords ? (
             <>
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
+              <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <h2 className="text-base font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
                     Ubicación
                   </h2>
-                  <p className="mt-0.5 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
-                    {getStatusLabel(selectedLogWithCoords.status)} ·{' '}
-                    {formatDate(selectedLogWithCoords.date_status || selectedLogWithCoords.createdAt)}
+                  <p className="truncate text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+                    {getStatusLabel(selectedLogWithCoords.status)} ·{" "}
+                    {formatDate(
+                      selectedLogWithCoords.date_status ||
+                        selectedLogWithCoords.createdAt,
+                    )}
                   </p>
                 </div>
                 <a
                   href={directionsUrl(
                     selectedLogWithCoords.lat as number,
-                    selectedLogWithCoords.lng as number
+                    selectedLogWithCoords.lng as number,
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-kadesh px-4 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white lg:min-h-9"
                 >
-                  <HugeiconsIcon icon={Location01Icon} size={16} strokeWidth={1.5} />
+                  <HugeiconsIcon
+                    icon={Location01Icon}
+                    size={16}
+                    strokeWidth={1.5}
+                  />
                   Cómo llegar
                 </a>
               </div>
-              <div className="h-[280px] min-h-[280px] overflow-hidden rounded-xl sm:h-[360px]">
+              <div className="min-h-[13.5rem] flex-1 overflow-hidden rounded-xl lg:min-h-0">
                 <LogMap
                   lat={Number(selectedLogWithCoords.lat)}
                   lng={Number(selectedLogWithCoords.lng)}
                   status={selectedLogWithCoords.status}
+                  className="min-h-0"
                 />
               </div>
               {placeLabel(selectedLogWithCoords) ? (
-                <p className="mt-3 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+                <p className="mt-2 shrink-0 truncate text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
                   {placeLabel(selectedLogWithCoords)}
                 </p>
               ) : null}
             </>
           ) : (
-            <div className="flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center">
+            <div className="flex flex-1 flex-col items-center justify-center gap-2 py-8 text-center">
               <HugeiconsIcon
                 icon={Location01Icon}
                 size={32}

@@ -53,7 +53,7 @@ export default function AnimalCommentsSection({ animal }: AnimalCommentsSectionP
   return (
     <section
       id="comments-section"
-      className="scroll-mt-20 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6"
+      className="scroll-mt-20 rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised"
     >
       <h2 className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
         Comentarios {commentsCount > 0 ? `(${commentsCount})` : ''}

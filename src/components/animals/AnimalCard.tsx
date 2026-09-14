@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { LostAnimal } from './types';
 import { formatDate } from 'kadesh/utils/format-date';
-import { Routes } from 'kadesh/core/routes';
+import { animalDetailHref } from 'kadesh/components/animals/animalSlug';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowRight01Icon,
@@ -41,7 +41,7 @@ export default function AnimalCard({
   variant = 'vertical',
 }: AnimalCardProps) {
   const distanceStr = formatDistance(animal.distance);
-  const detailHref = Routes.animals.detail(animal.id);
+  const detailHref = animalDetailHref(animal);
 
   if (variant === 'horizontal') {
     return (

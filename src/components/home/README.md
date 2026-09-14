@@ -28,8 +28,12 @@ El azul de marca vive **solo** en `src/app/globals.css` como `--color-kadesh`. L
 
 ## Motion
 
-Personalidad **Premium**. Momento autorial: el recuadro-mapa se revela y los pines (huellas por estado + veterinarias) caen en secuencia. El pin «Perdido» pulsa. Las calles se desplazan lento. `prefers-reduced-motion` deja el mapa ya poblado.
+Personalidad **Premium**. Momento autorial: el recuadro-mapa se revela y los pines (huellas por estado + veterinarias) caen en secuencia. El pin «Perdido» pulsa. Las calles se desplazan lento. Los chips del hero (veterinarias + Perdí / Encontré / adopción) usan el mismo GSAP que el directorio: stagger al aparecer y pulso `scale` al tocar. `prefers-reduced-motion` deja el mapa ya poblado y apaga el pulso.
 
 ## Secciones y anclas
 
 Inicio, qué es, animales, veterinarias, historias, donaciones, cómo funciona, roadmap, preguntas frecuentes (`#preguntas-frecuentes`). El dropdown de Inicio debe coincidir con estas anclas.
+
+## Veterinarias en portada
+
+No reutiliza `VeterinaryCard` del directorio (esa ficha es una fila para el mapa). En home, cada clínica es una tarjeta con recuadro-mapa (el mismo pin de marca del hero), abierto/cerrado, distancia y llamada. Va a `/veterinarias/[id]`, no al índice. No se exporta del barrel: solo la usa esta sección.

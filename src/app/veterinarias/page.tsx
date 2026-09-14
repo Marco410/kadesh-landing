@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Navigation, Footer } from "kadesh/components/layout";
 import {
   VeterinaryCard,
@@ -8,11 +8,12 @@ import {
   useNearbyPetPlaces,
 } from "kadesh/components/veterinaries";
 import type { PetPlace } from "kadesh/components/veterinaries";
-import { motion } from "framer-motion";
 import {
   DEFAULT_RADIUS_VETERINARIES,
   RADIUS_OPTIONS_VETERINARIES,
 } from "kadesh/constants/constans";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { HospitalLocationIcon, Location01Icon } from "@hugeicons/core-free-icons";
 
 export default function VeterinariesPage() {
   const [userLocation, setUserLocation] = useState<
@@ -66,41 +67,38 @@ export default function VeterinariesPage() {
     hasNextPage,
     hasPreviousPage,
     hasLocation,
-  } = useNearbyPetPlaces(userLocation, 10, radiusKm);
+  } = useNearbyPetPlaces(userLocation, undefined, radiusKm);
+
+  const nextRadius = RADIUS_OPTIONS_VETERINARIES.find((km) => km > radiusKm);
+
+  useEffect(() => {
+    if (selectedPlace && !allPlaces.some((place) => place.id === selectedPlace.id)) {
+      setSelectedPlace(null);
+    }
+  }, [allPlaces, selectedPlace]);
 
   const handlePlaceClick = (place: PetPlace | null) => {
     setSelectedPlace(place);
     if (place) {
       const el = document.getElementById(`veterinary-${place.id}`);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }
   };
 
+  const handleRadiusChange = (km: number) => {
+    setRadiusKm(km);
+    goToPage(1);
+    setSelectedPlace(null);
+  };
+
   return (
-    <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a] pt-[72px]">
+    <main className="min-h-screen bg-white pt-[72px] dark:bg-night">
       <Navigation />
 
-      <section className="w-full py-4 bg-gradient-to-br from-kadesh to-kadesh-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <h1 className="text-2xl sm:text-3xl font-black text-white mb-1">
-              Veterinarias cercanas
-            </h1>
-            <p className="text-sm text-kadesh-50 max-w-2xl mx-auto">
-              Encuentra veterinarias cerca de ti
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-140px)] lg:overflow-hidden">
-        {/* Map: first on mobile (order-1), second on desktop (lg:order-2) */}
-        <div className="w-full lg:w-1/2 relative min-w-0 h-[320px] lg:h-full flex-shrink-0 order-1 lg:order-2">
+      <div className="flex flex-col md:h-[calc(100vh-72px)] md:flex-row md:overflow-hidden">
+        <div className="relative h-[42vh] min-h-[280px] w-full min-w-0 flex-shrink-0 md:order-2 md:h-full md:min-h-0 md:flex-1">
           <VeterinariesMap
             places={allPlaces}
             selectedPlace={selectedPlace}
@@ -108,102 +106,125 @@ export default function VeterinariesPage() {
             height="100%"
           />
         </div>
-        {/* List: second on mobile (order-2), first on desktop (lg:order-1) */}
-        <div className="w-full lg:w-1/2 flex flex-col bg-white dark:bg-[#1e1e1e] border-t lg:border-r border-[#e0e0e0] dark:border-[#3a3a3a] order-2 lg:order-1 lg:h-full">
-          <div className="flex-shrink-0 p-4 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">
-            <h2 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] mb-2">
-              Veterinarias ({totalPlaces})
-            </h2>
+
+        <aside className="flex w-full flex-col border-t border-[#ececec] bg-white md:order-1 md:h-full md:w-[400px] md:flex-shrink-0 md:border-t-0 md:border-r xl:w-[440px] dark:border-white/10 dark:bg-night-raised">
+          <header className="flex-shrink-0 border-b border-[#ececec] px-5 py-5 dark:border-white/10">
+            <h1 className="text-2xl font-black tracking-[-0.03em] text-[#121212] dark:text-white">
+              Veterinarias
+            </h1>
+            <p className="mt-1 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+              {hasLocation
+                ? `${totalPlaces} cerca de ti`
+                : "Encuentra clínicas según tu ubicación"}
+            </p>
+
             {locationLoading && (
-              <p className="text-xs text-kadesh dark:text-kadesh-400 mb-2">
-                Obteniendo tu ubicación...
+              <p className="mt-3 text-sm font-medium text-kadesh">
+                Obteniendo tu ubicación…
               </p>
             )}
             {locationError && (
-              <p className="text-xs text-red-500 dark:text-red-400 mb-2">
-                {locationError}
+              <p className="mt-3 flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
+                <HugeiconsIcon
+                  icon={Location01Icon}
+                  size={16}
+                  className="mt-0.5 flex-shrink-0"
+                  strokeWidth={1.5}
+                />
+                <span>{locationError}</span>
               </p>
             )}
+
             {hasLocation && !locationError && (
-              <>
-                <p className="text-xs text-green-600 dark:text-green-400 mb-2">
-                  Radio de {radiusKm} km desde tu ubicación
-                </p>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
-                    Radio:
-                  </span>
-                  {RADIUS_OPTIONS_VETERINARIES.map((km) => (
-                    <button
-                      key={km}
-                      type="button"
-                      onClick={() => setRadiusKm(km)}
-                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                        radiusKm === km
-                          ? "bg-kadesh text-white"
-                          : "bg-[#f0f0f0] dark:bg-[#2a2a2a] text-[#212121] dark:text-[#e0e0e0] hover:bg-[#e0e0e0] dark:hover:bg-[#3a3a3a]"
-                      }`}
-                    >
-                      {km} km
-                    </button>
-                  ))}
-                </div>
-              </>
+              <div
+                role="group"
+                aria-label="Radio de búsqueda"
+                className="mt-4 flex flex-wrap gap-1.5"
+              >
+                {RADIUS_OPTIONS_VETERINARIES.map((km) => (
+                  <button
+                    key={km}
+                    type="button"
+                    onClick={() => handleRadiusChange(km)}
+                    className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
+                      radiusKm === km
+                        ? "bg-kadesh text-white"
+                        : "bg-[#f3f5f8] text-[#3a3a3a] hover:bg-kadesh-50 dark:bg-night dark:text-[#d0d0d0] dark:hover:bg-kadesh/20"
+                    }`}
+                  >
+                    {km} km
+                  </button>
+                ))}
+              </div>
             )}
-          </div>
+          </header>
 
           <div className="flex-1 overflow-y-auto p-4">
             {(locationLoading || placesLoading) && places.length === 0 ? (
               <div className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a] overflow-hidden bg-[#f5f5f5] dark:bg-[#2a2a2a] animate-pulse"
-                    >
-                      <div className="aspect-[4/3] bg-[#e0e0e0] dark:bg-[#3a3a3a]" />
-                      <div className="p-3 space-y-2">
-                        <div className="h-4 w-3/4 rounded bg-[#e0e0e0] dark:bg-[#3a3a3a]" />
-                        <div className="h-3 w-1/2 rounded bg-[#e0e0e0] dark:bg-[#3a3a3a]" />
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="animate-pulse rounded-2xl border border-[#ececec] p-4 dark:border-white/10"
+                  >
+                    <div className="flex gap-3">
+                      <div className="h-11 w-9 rounded-md bg-[#e8edf3] dark:bg-[#2a3548]" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 w-3/4 rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
+                        <div className="h-3 w-1/2 rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
                       </div>
                     </div>
-                  ))}
-                </div>
+                    <div className="mt-3 h-11 rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]" />
+                  </div>
+                ))}
               </div>
             ) : places.length === 0 ? (
-              <div className="text-center py-12 px-2">
-                <p className="text-[#616161] dark:text-[#b0b0b0] mb-3">
+              <div className="flex flex-col items-center px-4 py-12 text-center">
+                <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
+                  <HugeiconsIcon icon={HospitalLocationIcon} size={28} strokeWidth={1.5} />
+                </span>
+                <p className="text-base font-semibold text-[#121212] dark:text-white">
                   {locationError
-                    ? "Activa la ubicación en tu navegador para ver veterinarias cerca de ti."
-                    : "No hay veterinarias cercanas."}
+                    ? "Sin ubicación no podemos ordenar por distancia"
+                    : `No hay clínicas en ${radiusKm} km`}
                 </p>
+                <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#5a5a5a] dark:text-[#b0b0b0]">
+                  {locationError
+                    ? "Activa la ubicación en el navegador para ver veterinarias cerca de ti."
+                    : nextRadius
+                      ? "Amplía el radio: en esta zona las clínicas suelen aparecer a partir de un rango mayor."
+                      : "No encontramos veterinarias en el radio máximo. Vuelve más tarde o registra la tuya."}
+                </p>
+                {hasLocation && nextRadius && (
+                  <button
+                    type="button"
+                    onClick={() => handleRadiusChange(nextRadius)}
+                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
+                  >
+                    Buscar en {nextRadius} km
+                  </button>
+                )}
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+                <div className="space-y-3">
                   {places.map((place) => (
-                    <div
+                    <VeterinaryCard
                       key={place.id}
-                      id={`veterinary-${place.id}`}
+                      place={place}
+                      isSelected={selectedPlace?.id === place.id}
                       onClick={() => handlePlaceClick(place)}
-                      className="h-full min-h-0 cursor-pointer"
-                    >
-                      <VeterinaryCard
-                        place={place}
-                        isSelected={selectedPlace?.id === place.id}
-                        onClick={() => handlePlaceClick(place)}
-                      />
-                    </div>
+                    />
                   ))}
                 </div>
 
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-[#e0e0e0] dark:border-[#3a3a3a]">
+                  <div className="mt-6 flex items-center justify-center gap-2 border-t border-[#ececec] pt-4 dark:border-white/10">
                     <button
                       type="button"
                       onClick={previousPage}
                       disabled={!hasPreviousPage}
-                      className="px-3 py-1.5 rounded-lg bg-white dark:bg-[#121212] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a]"
+                      className="rounded-lg border border-[#ececec] bg-white px-3 py-1.5 text-sm font-medium text-[#121212] disabled:cursor-not-allowed disabled:opacity-50 hover:bg-[#f7f8fa] dark:border-white/10 dark:bg-night dark:text-white dark:hover:bg-night-raised"
                     >
                       Anterior
                     </button>
@@ -220,10 +241,10 @@ export default function VeterinariesPage() {
                                 key={page}
                                 type="button"
                                 onClick={() => goToPage(page)}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                                className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
                                   currentPage === page
                                     ? "bg-kadesh text-white"
-                                    : "bg-white dark:bg-[#121212] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a]"
+                                    : "border border-[#ececec] bg-white text-[#121212] hover:bg-[#f7f8fa] dark:border-white/10 dark:bg-night dark:text-white"
                                 }`}
                               >
                                 {page}
@@ -237,9 +258,9 @@ export default function VeterinariesPage() {
                             return (
                               <span
                                 key={page}
-                                className="px-1 text-[#616161] dark:text-[#b0b0b0] text-sm"
+                                className="px-1 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]"
                               >
-                                ...
+                                …
                               </span>
                             );
                           }
@@ -251,7 +272,7 @@ export default function VeterinariesPage() {
                       type="button"
                       onClick={nextPage}
                       disabled={!hasNextPage}
-                      className="px-3 py-1.5 rounded-lg bg-white dark:bg-[#121212] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a]"
+                      className="rounded-lg border border-[#ececec] bg-white px-3 py-1.5 text-sm font-medium text-[#121212] disabled:cursor-not-allowed disabled:opacity-50 hover:bg-[#f7f8fa] dark:border-white/10 dark:bg-night dark:text-white dark:hover:bg-night-raised"
                     >
                       Siguiente
                     </button>
@@ -260,7 +281,7 @@ export default function VeterinariesPage() {
               </>
             )}
           </div>
-        </div>
+        </aside>
       </div>
 
       <Footer />

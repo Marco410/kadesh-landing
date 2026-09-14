@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { formatDate, formatDateWithDay, formatTime } from 'kadesh/utils/format-date';
+import { formatDate } from 'kadesh/utils/format-date';
 import { getStatusLabel, getStatusColor } from '../constants';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Calendar02Icon, ArrowDown01Icon, ArrowUp01Icon, ArrowRightIcon, Add01Icon, Delete02Icon } from '@hugeicons/core-free-icons';
+import { Add01Icon, Delete02Icon, Location01Icon } from '@hugeicons/core-free-icons';
 import LogMap from './LogMap';
-import MapModal from './MapModal';
 import AddLogModal from './AddLogModal';
 import ConfirmModal from 'kadesh/components/shared/ConfirmModal';
 import { useUser } from 'kadesh/utils/UserContext';
@@ -35,10 +34,36 @@ interface LogTimelineProps {
   onLogCreated?: (logId?: string) => void | Promise<void>;
 }
 
+function hasCoords(log: Log) {
+  return (
+    log.lat != null &&
+    log.lng != null &&
+    !Number.isNaN(Number(log.lat)) &&
+    !Number.isNaN(Number(log.lng))
+  );
+}
+
+function isPlaceholderNote(notes?: string | null) {
+  const text = notes?.trim() ?? '';
+  if (!text) return true;
+  const normalized = text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '');
+  return normalized === 'sin informacion adicional' || normalized === 'sin notas' || normalized === 'sin nota';
+}
+
+function placeLabel(log: Log) {
+  return [log.address, log.city, log.state, log.country].filter(Boolean).join(', ');
+}
+
+function directionsUrl(lat: string | number, lng: string | number) {
+  const destination = `${lat},${lng}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+}
+
 export default function LogTimeline({ logs, animal, animalName, onLogCreated }: LogTimelineProps) {
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
-  const [mapModalOpen, setMapModalOpen] = useState(false);
-  const [mapModalLog, setMapModalLog] = useState<Log | null>(null);
   const [addLogModalOpen, setAddLogModalOpen] = useState(false);
   const [deleteLogId, setDeleteLogId] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -48,12 +73,12 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
 
   const { deleteLog, isDeleting } = useDeleteLog({
     onSuccess: () => {
-      const deletedLogIndex = logs.findIndex(log => log.id === deleteLogId);
+      const deletedLogIndex = logs.findIndex((log) => log.id === deleteLogId);
       const wasMostRecent = deletedLogIndex === 0;
-      
+
       setShowDeleteModal(false);
       setDeleteLogId(null);
-      
+
       if (onLogCreated) {
         onLogCreated();
       }
@@ -68,22 +93,16 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
     },
   });
 
-  // Auto-select first log on mount
   useEffect(() => {
     if (logs.length > 0 && selectedLogId === null && !pendingLogId) {
-      // Select the first log (most recent) if it has valid coordinates
-      const firstLog = logs[0];
-      if (firstLog.lat != null && firstLog.lng != null && 
-          !isNaN(Number(firstLog.lat)) && !isNaN(Number(firstLog.lng))) {
-        setSelectedLogId(firstLog.id);
-      }
+      const firstWithCoords = logs.find(hasCoords) ?? logs[0];
+      setSelectedLogId(firstWithCoords.id);
     }
   }, [logs, selectedLogId, pendingLogId]);
 
-  // Select pending log when it appears in the logs array
   useEffect(() => {
     if (pendingLogId && logs.length > 0) {
-      const logExists = logs.find(log => log.id === pendingLogId);
+      const logExists = logs.find((log) => log.id === pendingLogId);
       if (logExists) {
         setSelectedLogId(pendingLogId);
         setPendingLogId(null);
@@ -91,47 +110,17 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
     }
   }, [logs, pendingLogId]);
 
-  // Select next log after deleting the most recent one
   useEffect(() => {
     if (pendingSelectAfterDelete && logs.length > 0) {
-      // Select the first log (now the most recent after deletion) if it has valid coordinates
-      const firstLog = logs[0];
-      if (firstLog.lat != null && firstLog.lng != null && 
-          !isNaN(Number(firstLog.lat)) && !isNaN(Number(firstLog.lng))) {
-        setSelectedLogId(firstLog.id);
-      } else {
-        // If the first log doesn't have coordinates, try to find the first one that does
-        const logWithCoords = logs.find(log => 
-          log.lat != null && log.lng != null && 
-          !isNaN(Number(log.lat)) && !isNaN(Number(log.lng))
-        );
-        if (logWithCoords) {
-          setSelectedLogId(logWithCoords.id);
-        } else {
-          // If no log has coordinates, just select the first one
-          setSelectedLogId(firstLog.id);
-        }
-      }
+      const firstWithCoords = logs.find(hasCoords) ?? logs[0];
+      setSelectedLogId(firstWithCoords.id);
       setPendingSelectAfterDelete(false);
     }
   }, [logs, pendingSelectAfterDelete]);
 
   const selectedLog = logs.find((log) => log.id === selectedLogId);
-  const latestLog = logs[0]; // Most recent log (already sorted)
-
-  const handleLogClick = (logId: string) => {
-    setSelectedLogId(selectedLogId === logId ? null : logId);
-  };
-
-  const handleOpenMapModal = (log: Log) => {
-    setMapModalLog(log);
-    setMapModalOpen(true);
-  };
-
-  const handleCloseMapModal = () => {
-    setMapModalOpen(false);
-    setMapModalLog(null);
-  };
+  const selectedLogWithCoords = selectedLog && hasCoords(selectedLog) ? selectedLog : null;
+  const isOwner = user?.id === animal?.user?.id;
 
   const handleDeleteClick = (logId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -144,289 +133,166 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
     deleteLog(deleteLogId);
   };
 
-  const isOwner = user?.id === animal?.user?.id;
-
-  const selectedLogWithCoords = selectedLog && 
-    selectedLog.lat != null && 
-    selectedLog.lng != null && 
-    !isNaN(Number(selectedLog.lat)) && 
-    !isNaN(Number(selectedLog.lng)) 
-    ? selectedLog 
-    : null;
-
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Map Section - Only show when a log with coordinates is selected */}
-        {selectedLogWithCoords ? (
-          <div className="sticky top-8 h-fit order-1 lg:order-2">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-1 h-8 rounded-full"
-                  style={{ backgroundColor: getStatusColor(selectedLogWithCoords.status) }}
-                />
-                <div>
-                  <h2 className="text-xl font-bold text-[#212121] dark:text-[#ffffff]">Ubicación del Registro</h2>
-                  <p className="text-xs text-[#616161] dark:text-[#b0b0b0] mt-1">
-                    {getStatusLabel(selectedLogWithCoords.status)} • {formatDate(selectedLogWithCoords.createdAt)}
-                  </p>
-                </div>
-              </div>
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${Number(selectedLogWithCoords.lat)},${Number(selectedLogWithCoords.lng)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors shrink-0"
-              >
-                <HugeiconsIcon icon={ArrowRightIcon} size={18} strokeWidth={2} />
-                Cómo llegar
-              </a>
-            </div>
-            <div 
-              className="rounded-lg overflow-hidden border-2 shadow-lg transition-all"
-              style={{ 
-                borderColor: getStatusColor(selectedLogWithCoords.status),
-                boxShadow: `0 4px 12px ${getStatusColor(selectedLogWithCoords.status)}40`
-              }}
-            >
-              <LogMap
-                lat={Number(selectedLogWithCoords.lat)}
-                lng={Number(selectedLogWithCoords.lng)}
-                status={selectedLogWithCoords.status}
-                height="500px"
-              />
-            </div>
-            {selectedLogWithCoords.address && (
-              <div className="mt-4 p-3 bg-[#f5f5f5] dark:bg-[#2a2a2a] rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a]">
-                <p className="text-sm text-[#616161] dark:text-[#b0b0b0]">
-                  <strong className="text-[#212121] dark:text-[#ffffff]">Dirección:</strong> {selectedLogWithCoords.address}
-                  {selectedLogWithCoords.city && `, ${selectedLogWithCoords.city}`}
-                  {selectedLogWithCoords.state && `, ${selectedLogWithCoords.state}`}
-                  {selectedLogWithCoords.country && `, ${selectedLogWithCoords.country}`}
-                </p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="hidden lg:flex items-center justify-center bg-[#f5f5f5] dark:bg-[#1e1e1e] rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] min-h-[500px] order-1 lg:order-2">
-            <div className="text-center">
-              <svg className="w-16 h-16 text-[#616161] dark:text-[#b0b0b0] mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <p className="text-[#616161] dark:text-[#b0b0b0] font-medium">Selecciona un registro</p>
-              <p className="text-[#616161] dark:text-[#b0b0b0] text-sm mt-2">para ver su ubicación en el mapa</p>
-            </div>
-          </div>
-        )}
-
-        {/* Timeline Section */}
-        <div className="order-2 lg:order-1">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-            <h2 className="text-xl font-bold text-[#212121] dark:text-[#ffffff]">Historial de Registros</h2>
-            {animal && onLogCreated && user?.id === animal.user?.id && (
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <section className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
+              Historial
+            </h2>
+            {animal && onLogCreated && isOwner && (
               <button
                 type="button"
                 onClick={() => setAddLogModalOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition-colors"
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
               >
-                <HugeiconsIcon icon={Add01Icon} size={18} className="text-white" strokeWidth={2} />
+                <HugeiconsIcon icon={Add01Icon} size={18} strokeWidth={1.5} />
                 Agregar registro
               </button>
             )}
           </div>
-          <ol className="relative border-s-2 border-[#e0e0e0] dark:border-[#3a3a3a] ml-4">
-            {logs.length === 0 ? (
-              <li className="ml-6 mb-8">
-                <div className="text-center py-12">
-                  <svg className="w-16 h-16 text-[#616161] dark:text-[#b0b0b0] mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="text-[#616161] dark:text-[#b0b0b0] font-medium">No hay registros disponibles</p>
-                  <p className="text-[#616161] dark:text-[#b0b0b0] text-sm mt-2">Aún no se han registrado actualizaciones para este animal</p>
-                </div>
-              </li>
-            ) : (
-            logs.map((log, index) => {
-              const isSelected = selectedLogId === log.id;
-              const isLatest = index === 0;
-              const statusColor = getStatusColor(log.status);
-              const statusLabel = getStatusLabel(log.status);
 
-              const hasCoords = log.lat != null && log.lng != null && 
-                !isNaN(Number(log.lat)) && !isNaN(Number(log.lng));
-              const isSelectedWithMap = isSelected && hasCoords;
+          {logs.length === 0 ? (
+            <p className="py-10 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+              Aún no hay actualizaciones. Quien reportó puede agregar la primera.
+            </p>
+          ) : (
+            <ol className="relative ml-3 border-s border-[#ececec] dark:border-white/10">
+              {logs.map((log, index) => {
+                const isSelected = selectedLogId === log.id;
+                const isLatest = index === 0;
+                const statusColor = getStatusColor(log.status);
+                const statusLabel = getStatusLabel(log.status);
+                const note = isPlaceholderNote(log.notes) ? null : log.notes?.trim();
+                const place = placeLabel(log);
 
-              return (
-                <li
-                  key={log.id}
-                  className={`mb-8 ml-6 transition-all group relative ${
-                    isSelected 
-                      ? 'opacity-100' 
-                      : 'opacity-90 hover:opacity-100 hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a] rounded-lg p-2 -ml-2'
-                  }`}
-                >
-                  <span
-                    className={`absolute flex items-center justify-center w-6 h-6 rounded-full -left-[36px] top-0 ring-2 ring-white dark:ring-[#3a3a3a] shadow-md transition-transform group-hover:scale-110 z-10 ${
-                      isSelectedWithMap ? 'ring-4 ring-orange-500/50 scale-110' : ''
-                    }`}
-                    style={{ backgroundColor: statusColor }}
-                  >
-                    <HugeiconsIcon
-                      icon={Calendar02Icon}
-                      size={14}
-                      className="text-white"
-                      strokeWidth={2}
+                return (
+                  <li key={log.id} className="mb-4 ml-5 last:mb-0">
+                    <span
+                      className="absolute -left-[7px] mt-1.5 h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-night-raised"
+                      style={{ backgroundColor: statusColor }}
                     />
-                  </span>
-                  <div className="flex items-start justify-between gap-3 sm:gap-4">
-                    <div 
-                      className="flex-1 min-w-0 cursor-pointer"
-                      onClick={() => handleLogClick(log.id)}
-                    >
-                      <div className="flex flex-wrap items-center gap-x-1 gap-y-1 mb-2">
-                        <time
-                          className="flex items-center gap-1 bg-[#f5f5f5] dark:bg-[#2a2a2a] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] text-xs font-semibold px-2 py-1 rounded-md shrink-0"
-                          title={new Date(log.date_status || '').toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })}
-                        >
-                          {formatDate(log.date_status || '')}
-                        </time>
-                        <span className="hidden sm:inline text-[#757575] dark:text-[#bdbdbd]">·</span>
-                        <time
-                          className="flex flex-wrap items-center gap-x-0.5 gap-y-0 text-[#757575] dark:text-[#bdbdbd] text-xs py-1 rounded-md bg-transparent min-w-0"
-                          title="Fecha y hora completa"
-                        >
-                          <span>{formatDateWithDay(log.date_status || '')}</span>
-                          <span className="mx-0.5 sm:mx-1">|</span>
-                          <span className="shrink-0">{formatTime(log.date_status || '')}</span>
-                        </time>
-                      </div>
-                      <h3 className="flex flex-wrap items-center gap-x-2 gap-y-1.5 mb-2 text-base font-semibold text-[#212121] dark:text-[#ffffff]">
-                        <span className="basis-full sm:basis-auto">{statusLabel}</span>
-                        {isLatest && (
-                          <span
-                            className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium text-white shadow-sm shrink-0 w-fit"
-                            style={{ backgroundColor: statusColor }}
-                          >
-                            Más reciente
-                          </span>
-                        )}
-                        {isSelectedWithMap && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500 text-white shadow-sm shrink-0 w-fit">
-                            <HugeiconsIcon
-                              icon={ArrowRightIcon}
-                              size={12}
-                              className="text-white shrink-0"
-                              strokeWidth={2}
-                            />
-                            En el mapa
-                          </span>
-                        )}
-                      </h3>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {isOwner && (
-                        <button
-                          onClick={(e) => handleDeleteClick(log.id, e)}
-                          className="group/delete flex-shrink-0 p-2 rounded-lg bg-[#f5f5f5] dark:bg-[#2a2a2a] border border-[#e0e0e0] dark:border-[#3a3a3a] hover:bg-red-500 hover:border-red-500 dark:hover:bg-red-500 transition-all hover:scale-110"
-                          aria-label="Eliminar registro"
-                          title="Eliminar registro"
-                        >
-                          <HugeiconsIcon
-                            icon={Delete02Icon}
-                            size={18}
-                            className="text-[#212121] dark:text-[#ffffff] group-hover/delete:text-white transition-colors"
-                            strokeWidth={2}
-                          />
-                        </button>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleLogClick(log.id);
-                        }}
-                        className="group/btn flex-shrink-0 p-2 rounded-lg bg-[#f5f5f5] dark:bg-[#2a2a2a] border border-[#e0e0e0] dark:border-[#3a3a3a] hover:bg-orange-500 hover:border-orange-500 dark:hover:bg-orange-500 transition-all hover:scale-110"
-                        aria-label={isSelected ? 'Cerrar detalles' : 'Ver detalles'}
-                      >
-                        <HugeiconsIcon
-                          icon={isSelected ? ArrowUp01Icon : ArrowDown01Icon}
-                          size={20}
-                          className="text-[#212121] dark:text-[#ffffff] group-hover/btn:text-white transition-colors"
-                          strokeWidth={2}
-                        />
-                      </button>
-                    </div>
-                  </div>
-                  {isSelected ? (
-                    <div 
-                      className={`mt-3 bg-[#f5f5f5] dark:bg-[#2a2a2a] rounded-lg p-4 space-y-3 border border-[#e0e0e0] dark:border-[#3a3a3a] ${
-                        isSelectedWithMap ? 'border-l-4' : ''
+                    <div
+                      className={`rounded-xl p-3 transition-colors ${
+                        isSelected
+                          ? 'bg-kadesh-50 dark:bg-kadesh/15'
+                          : 'hover:bg-[#f7f8fa] dark:hover:bg-night'
                       }`}
-                      style={isSelectedWithMap ? { borderLeftColor: statusColor } : {}}
                     >
-                     
-                      <p className="text-[#616161] dark:text-[#b0b0b0] text-sm leading-relaxed">{log.notes || 'Sin notas'}</p>
-                      {(log.lat != null && log.lng != null && !isNaN(Number(log.lat)) && !isNaN(Number(log.lng))) && (
-                        <div className="pt-3 border-t border-[#e0e0e0] dark:border-[#3a3a3a]">
-                          <div className="text-sm text-[#616161] dark:text-[#b0b0b0] space-y-1">
-                            {log.address && (
-                              <p>
-                                <strong className="text-[#212121] dark:text-[#ffffff]">Dirección:</strong> {log.address}
-                              </p>
+                      <div className="flex items-start justify-between gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedLogId(log.id)}
+                          className="min-w-0 flex-1 text-left"
+                        >
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span
+                              className="rounded-full px-2 py-0.5 text-xs font-bold text-white"
+                              style={{ backgroundColor: statusColor }}
+                            >
+                              {statusLabel}
+                            </span>
+                            {isLatest && (
+                              <span className="text-xs font-semibold text-kadesh">Más reciente</span>
                             )}
-                            {log.city && (
-                              <p>
-                                <strong className="text-[#212121] dark:text-[#ffffff]">Ciudad:</strong> {log.city}
-                                {log.state && `, ${log.state}`}
-                                {log.country && `, ${log.country}`}
-                              </p>
-                            )}
-                            <p className="text-xs opacity-70">
-                              Coordenadas: {Number(log.lat).toFixed(6)}, {Number(log.lng).toFixed(6)}
-                            </p>
+                            <time className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+                              {formatDate(log.date_status || log.createdAt)}
+                            </time>
                           </div>
-                        </div>
-                      )}
-                       {isLatest && log.last_seen && (
-                        <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-                          <svg className="w-5 h-5 text-orange-500 dark:text-orange-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          <p className="text-sm text-orange-700 dark:text-orange-300 font-medium">
-                            Última vez visto aquí
-                          </p>
-                        </div>
-                      )}
+                          {place ? (
+                            <p className="mt-1.5 text-sm text-[#121212] dark:text-[#eef1f6]">{place}</p>
+                          ) : null}
+                          {note ? (
+                            <p className="mt-1 text-sm leading-relaxed text-[#3a3a3a] dark:text-[#c5ccd8]">
+                              {note}
+                            </p>
+                          ) : null}
+                          {isLatest && log.last_seen ? (
+                            <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-kadesh">
+                              <HugeiconsIcon icon={Location01Icon} size={14} strokeWidth={1.5} />
+                              Última vez visto aquí
+                            </p>
+                          ) : null}
+                        </button>
+                        {isOwner && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteClick(log.id, e)}
+                            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#5a5a5a] hover:bg-red-50 hover:text-red-600 dark:text-[#9aa3b2] dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                            aria-label="Eliminar registro"
+                          >
+                            <HugeiconsIcon icon={Delete02Icon} size={16} strokeWidth={1.5} />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  ) : (
-                    <p className="text-[#616161] dark:text-[#b0b0b0] text-sm line-clamp-2">
-                      {log.notes || 'Sin notas'}
-                    </p>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </section>
+
+        <section className="flex min-h-0 flex-col rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6">
+          {selectedLogWithCoords ? (
+            <>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
+                    Ubicación
+                  </h2>
+                  <p className="mt-0.5 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+                    {getStatusLabel(selectedLogWithCoords.status)} ·{' '}
+                    {formatDate(selectedLogWithCoords.date_status || selectedLogWithCoords.createdAt)}
+                  </p>
+                </div>
+                <a
+                  href={directionsUrl(
+                    selectedLogWithCoords.lat as number,
+                    selectedLogWithCoords.lng as number
                   )}
-                </li>
-              );
-            })
-            )}
-          </ol>
-        </div>
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-kadesh px-4 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white"
+                >
+                  <HugeiconsIcon icon={Location01Icon} size={16} strokeWidth={1.5} />
+                  Cómo llegar
+                </a>
+              </div>
+              <div className="h-[280px] min-h-[280px] overflow-hidden rounded-xl sm:h-[360px]">
+                <LogMap
+                  lat={Number(selectedLogWithCoords.lat)}
+                  lng={Number(selectedLogWithCoords.lng)}
+                  status={selectedLogWithCoords.status}
+                />
+              </div>
+              {placeLabel(selectedLogWithCoords) ? (
+                <p className="mt-3 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+                  {placeLabel(selectedLogWithCoords)}
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center">
+              <HugeiconsIcon
+                icon={Location01Icon}
+                size={32}
+                className="text-[#9aa3b2]"
+                strokeWidth={1.5}
+              />
+              <p className="text-sm font-medium text-[#121212] dark:text-[#eef1f6]">
+                Elige un registro
+              </p>
+              <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+                Toca uno del historial para verlo en el mapa.
+              </p>
+            </div>
+          )}
+        </section>
       </div>
 
-      {/* Map Modal */}
-      {mapModalLog && mapModalLog.lat != null && mapModalLog.lng != null && 
-       !isNaN(Number(mapModalLog.lat)) && !isNaN(Number(mapModalLog.lng)) && (
-        <MapModal
-          isOpen={mapModalOpen}
-          onClose={handleCloseMapModal}
-          lat={Number(mapModalLog.lat)}
-          lng={Number(mapModalLog.lng)}
-          status={mapModalLog.status}
-        />
-      )}
-
-      {/* Add Log Modal */}
-      {animal && animalName && onLogCreated && user?.id === animal.user?.id && (
+      {animal && animalName && onLogCreated && isOwner && (
         <AddLogModal
           isOpen={addLogModalOpen}
           onClose={() => {
@@ -444,7 +310,6 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
         />
       )}
 
-      {/* Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => {
@@ -462,6 +327,3 @@ export default function LogTimeline({ logs, animal, animalName, onLogCreated }: 
     </>
   );
 }
-
-
-

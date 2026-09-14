@@ -1,59 +1,126 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@apollo/client';
-import { 
-  GET_ANIMAL_TYPES_QUERY, 
+import { HugeiconsIcon } from '@hugeicons/react';
+import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
+import {
   GET_ANIMAL_BREEDS_QUERY,
   CREATE_ANIMAL_MUTATION,
   CREATE_ANIMAL_LOG_MUTATION,
-  CREATE_ANIMAL_MULTIMEDIA_MUTATION
+  CREATE_ANIMAL_MULTIMEDIA_MUTATION,
 } from 'kadesh/components/animals/queries';
 import { useUser } from 'kadesh/utils/UserContext';
 import { Autocomplete, AutocompleteOption } from 'kadesh/components/shared';
 import LocationPicker from 'kadesh/components/animals/nuevo/LocationPicker';
 import AnimalNameInput from 'kadesh/components/animals/nuevo/AnimalNameInput';
 import AnimalTypeSelector from 'kadesh/components/animals/nuevo/AnimalTypeSelector';
-import { motion } from 'framer-motion';
+import PhotoPicker from 'kadesh/components/animals/nuevo/PhotoPicker';
+import ReportStepper from 'kadesh/components/animals/nuevo/ReportStepper';
+import NewAnimalFormSkeleton from 'kadesh/components/animals/nuevo/NewAnimalFormSkeleton';
+import StatusChips from 'kadesh/components/animals/StatusChips';
 import { sileo } from 'sileo';
+import { Routes } from 'kadesh/core/routes';
+import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
+import { useChipPulse } from 'kadesh/components/animals/useChipMotion';
 import {
-  ANIMAL_LOGS_OPTIONS,
+  ANIMAL_AGE_OPTIONS,
   ANIMAL_SEX_OPTIONS,
+  ANIMAL_SIZE_OPTIONS,
+  REPORT_COPY,
+  UNNAMED_BY_DEFAULT_STATUSES,
+  findFallbackBreedId,
   getStatusLabel,
   isAnimalReportStatus,
-  statusIcons,
   type AnimalReportStatus,
 } from 'kadesh/components/animals/constants';
+import {
+  clearAnimalReportDraft,
+  dataUrlToFile,
+  fileToDataUrl,
+  loadAnimalReportDraft,
+  saveAnimalReportDraft,
+} from 'kadesh/components/animals/nuevo/reportDraft';
+
+const STEPS = ['Foto y tipo', 'Cómo reconocerlo', 'Dónde'] as const;
+const MAX_IMAGES = 3;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+const fieldClass =
+  'w-full rounded-xl border border-[#d8dee8] bg-white px-4 py-3 text-sm text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh dark:border-white/18 dark:bg-night dark:text-[#eef1f6] dark:placeholder:text-[#9aa3b2]';
 
 interface ImagePreview {
   file: File;
   preview: string;
 }
 
-interface RequiredFieldErrors {
-  name: boolean;
-  animalTypeId: boolean;
-  animalBreedId: boolean;
-  status: boolean;
-  location: boolean;
-  contactNumber: boolean;
-  age: boolean;
-  color: boolean;
-  size: boolean;
+interface FieldErrors {
+  name?: string;
+  animalTypeId?: string;
+  animalBreedId?: string;
+  status?: string;
+  location?: string;
+  contactNumber?: string;
+  age?: string;
+  color?: string;
+  size?: string;
+  physicalDescription?: string;
 }
 
-const initialRequiredFieldErrors: RequiredFieldErrors = {
-  name: false,
-  animalTypeId: false,
-  animalBreedId: false,
-  status: false,
-  location: false,
-  contactNumber: false,
-  age: false,
-  color: false,
-  size: false,
-};
+function formatDateTimeLocal(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+function ChoiceChip({
+  label,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const { ref, pulse } = useChipPulse();
+
+  return (
+    <button
+      ref={ref}
+      type="button"
+      aria-pressed={selected}
+      onClick={() => {
+        pulse();
+        onSelect();
+      }}
+      className={`inline-flex min-h-10 origin-center items-center rounded-full border px-4 text-sm font-semibold transition-[background-color,border-color,color] duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
+        selected
+          ? 'border-kadesh bg-kadesh text-white'
+          : 'border-[#d8dee8] bg-transparent text-[#3a3a3a] hover:border-kadesh/50 hover:bg-kadesh-50 dark:border-white/18 dark:text-[#e8edf4] dark:hover:bg-kadesh/15'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function isValidName(name: string) {
+  return name === 'Sin nombre' || name.trim() !== '';
+}
+
+function publishErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object' && 'graphQLErrors' in error) {
+    const first = (error as { graphQLErrors?: { message?: string }[] })
+      .graphQLErrors?.[0]?.message;
+    if (first) return first.split('\n')[0];
+  }
+  if (error instanceof Error && error.message) return error.message;
+  return 'Ocurrió un error inesperado.';
+}
 
 export default function NewAnimalForm({
   initialStatus,
@@ -62,16 +129,26 @@ export default function NewAnimalForm({
 }) {
   const router = useRouter();
   const { user } = useUser();
+  const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  
-  // Form state
-  const [name, setName] = useState('');
-  const [animalTypeId, setAnimalTypeId] = useState<string>('');
-  const [animalBreedId, setAnimalBreedId] = useState<string>('');
-  const [sex, setSex] = useState('unknown');
-  const [status, setStatus] = useState<AnimalReportStatus>(
-    isAnimalReportStatus(initialStatus) ? initialStatus : 'lost'
+  const [hydrated, setHydrated] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const prevStepRef = useRef(0);
+  const skipStepMotion = useRef(true);
+  const skipDraftSave = useRef(true);
+
+  const resolvedStatus: AnimalReportStatus = isAnimalReportStatus(initialStatus)
+    ? initialStatus
+    : 'lost';
+
+  const [name, setName] = useState(
+    UNNAMED_BY_DEFAULT_STATUSES.includes(resolvedStatus) ? 'Sin nombre' : ''
   );
+  const [animalTypeId, setAnimalTypeId] = useState('');
+  const [animalBreedId, setAnimalBreedId] = useState('');
+  const [sex, setSex] = useState('unknown');
+  const [status, setStatus] = useState<AnimalReportStatus>(resolvedStatus);
   const [physicalDescription, setPhysicalDescription] = useState('');
   const [age, setAge] = useState('');
   const [color, setColor] = useState('');
@@ -83,137 +160,355 @@ export default function NewAnimalForm({
   const [state, setState] = useState('');
   const [country, setCountry] = useState('');
   const [notes, setNotes] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
-  const [lastSeen, setLastSeen] = useState(false);
-  const [dateStatus, setDateStatus] = useState('');
+  const [contactNumber, setContactNumber] = useState(user?.phone ?? '');
+  const [dateStatus, setDateStatus] = useState(formatDateTimeLocal(new Date()));
   const [isToday, setIsToday] = useState(true);
   const [images, setImages] = useState<ImagePreview[]>([]);
-  const [requiredFieldErrors, setRequiredFieldErrors] = useState<RequiredFieldErrors>(initialRequiredFieldErrors);
+  const [errors, setErrors] = useState<FieldErrors>({});
 
-  // Helper function to format date for datetime-local input
-  const formatDateTimeLocal = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
+  const copy = REPORT_COPY[status];
+  const unnamedByDefault = UNNAMED_BY_DEFAULT_STATUSES.includes(status);
+  const lastSeen = status !== 'in_adoption';
 
-  // Initialize dateStatus with current date/time
-  useEffect(() => {
-    if (isToday) {
-      setDateStatus(formatDateTimeLocal(new Date()));
-    }
-  }, [isToday]);
+  useGSAP(
+    () => {
+      const el = panelRef.current;
+      if (!el || !hydrated) return;
 
-  // Update dateStatus every minute when isToday is true
-  useEffect(() => {
-    if (!isToday) return;
+      if (skipStepMotion.current) {
+        skipStepMotion.current = false;
+        prevStepRef.current = step;
+        gsap.set(el, { autoAlpha: 1, x: 0 });
+        return;
+      }
 
-    const interval = setInterval(() => {
-      setDateStatus(formatDateTimeLocal(new Date()));
-    }, 60000); // Update every minute
+      const goingForward = step >= prevStepRef.current;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        gsap.set(el, { autoAlpha: 1, x: 0 });
+      } else {
+        gsap.fromTo(
+          el,
+          { autoAlpha: 0, x: goingForward ? 22 : -22 },
+          { autoAlpha: 1, x: 0, duration: 0.28, ease: HOME_EASE, overwrite: 'auto' }
+        );
+      }
 
-    return () => clearInterval(interval);
-  }, [isToday]);
-
-
-  const { data: animalBreedsData, loading: loadingBreeds } = useQuery(GET_ANIMAL_BREEDS_QUERY, {
-    variables: { 
-      where: { 
-        animal_type: { 
-          id: { equals: animalTypeId } 
-        } 
-      },
-      orderBy: [{ breed: "asc" }]
+      prevStepRef.current = step;
     },
-    skip: !animalTypeId,
-  });
+    { dependencies: [step, hydrated], scope: panelRef, revertOnUpdate: false }
+  );
 
-  // Transform breeds data for Autocomplete
-  const breedOptions: AutocompleteOption[] = (animalBreedsData?.animalBreeds || []).map((breed: any) => ({
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+
+    void loadAnimalReportDraft(user.id).then((draft) => {
+      if (cancelled) return;
+      if (draft) {
+        setStep(Math.min(Math.max(draft.step, 0), STEPS.length - 1));
+        setShowNotes(draft.showNotes || Boolean(draft.notes));
+        setName(draft.name);
+        setAnimalTypeId(draft.animalTypeId);
+        setAnimalBreedId(draft.animalBreedId);
+        setSex(draft.sex || 'unknown');
+        if (isAnimalReportStatus(draft.status)) setStatus(draft.status);
+        setPhysicalDescription(draft.physicalDescription);
+        setAge(draft.age);
+        setColor(draft.color);
+        setSize(draft.size);
+        setLat(draft.lat);
+        setLng(draft.lng);
+        setAddress(draft.address);
+        setCity(draft.city);
+        setState(draft.state);
+        setCountry(draft.country);
+        setNotes(draft.notes);
+        if (draft.contactNumber) setContactNumber(draft.contactNumber);
+        setDateStatus(draft.dateStatus || formatDateTimeLocal(new Date()));
+        setIsToday(draft.isToday);
+        const restored = draft.images
+          .slice(0, MAX_IMAGES)
+          .map((image) => {
+            const file = dataUrlToFile(image.dataUrl, image.name, image.type);
+            return { file, preview: URL.createObjectURL(file) };
+          });
+        setImages(restored);
+        prevStepRef.current = Math.min(Math.max(draft.step, 0), STEPS.length - 1);
+      } else if (user.phone && !contactNumber) {
+        setContactNumber(user.phone);
+      }
+      setHydrated(true);
+      skipDraftSave.current = false;
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // Restore once per user session on this screen.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!hydrated || skipDraftSave.current || !user?.id) return;
+
+    const handle = window.setTimeout(() => {
+      void (async () => {
+        const storedImages = await Promise.all(
+          images.map(async (image) => ({
+            name: image.file.name,
+            type: image.file.type,
+            dataUrl: await fileToDataUrl(image.file),
+          }))
+        );
+        await saveAnimalReportDraft(user.id, {
+          v: 1,
+          step,
+          showNotes,
+          name,
+          animalTypeId,
+          animalBreedId,
+          sex,
+          status,
+          physicalDescription,
+          age,
+          color,
+          size,
+          lat,
+          lng,
+          address,
+          city,
+          state,
+          country,
+          notes,
+          contactNumber,
+          dateStatus,
+          isToday,
+          images: storedImages,
+        });
+      })();
+    }, 400);
+
+    return () => window.clearTimeout(handle);
+  }, [
+    hydrated,
+    user?.id,
+    step,
+    showNotes,
+    name,
+    animalTypeId,
+    animalBreedId,
+    sex,
+    status,
+    physicalDescription,
+    age,
+    color,
+    size,
+    lat,
+    lng,
+    address,
+    city,
+    state,
+    country,
+    notes,
+    contactNumber,
+    dateStatus,
+    isToday,
+    images,
+  ]);
+
+  useEffect(() => {
+    if (!hydrated || !isToday) return;
+    setDateStatus(formatDateTimeLocal(new Date()));
+    const interval = window.setInterval(() => {
+      setDateStatus(formatDateTimeLocal(new Date()));
+    }, 60000);
+    return () => window.clearInterval(interval);
+  }, [hydrated, isToday]);
+
+  const { data: animalBreedsData, loading: loadingBreeds } = useQuery(
+    GET_ANIMAL_BREEDS_QUERY,
+    {
+      variables: {
+        where: { animal_type: { id: { equals: animalTypeId } } },
+        orderBy: [{ breed: 'asc' }],
+      },
+      skip: !animalTypeId,
+    }
+  );
+
+  const breedOptions: AutocompleteOption[] = (
+    animalBreedsData?.animalBreeds || []
+  ).map((breed: { id: string; breed: string }) => ({
     id: breed.id,
     label: breed.breed,
-    ...breed,
+    breed: breed.breed,
   }));
 
-  // Mutations
   const [createAnimal] = useMutation(CREATE_ANIMAL_MUTATION);
   const [createAnimalLog] = useMutation(CREATE_ANIMAL_LOG_MUTATION);
   const [createAnimalMultimedias] = useMutation(CREATE_ANIMAL_MULTIMEDIA_MUTATION);
 
-  // Handle image upload
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+  const addImages = (files: File[]) => {
+    const incoming = Array.from(files);
+    if (!incoming.length) return;
 
-    const newImages: ImagePreview[] = [];
-    const maxImages = 3;
-    const remainingSlots = maxImages - images.length;
-
-    for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
-      const file = files[i];
-      if (file.type.startsWith('image/')) {
-        newImages.push({
-          file,
-          preview: URL.createObjectURL(file),
-        });
-      }
+    const remaining = MAX_IMAGES - images.length;
+    if (remaining <= 0) {
+      sileo.error({
+        title: 'Ya hay 3 fotos',
+        description: 'Quita una para agregar otra.',
+      });
+      return;
     }
 
-    setImages([...images, ...newImages]);
+    const accepted: File[] = [];
+    let skippedType = 0;
+    let skippedSize = 0;
+    let skippedCap = 0;
+
+    for (const file of incoming) {
+      const isImage =
+        file.type.startsWith('image/') ||
+        /\.(jpe?g|png|webp|gif|heic|heif|avif)$/i.test(file.name);
+      if (!isImage) {
+        skippedType += 1;
+        continue;
+      }
+      if (file.size > MAX_IMAGE_BYTES) {
+        skippedSize += 1;
+        continue;
+      }
+      if (accepted.length >= remaining) {
+        skippedCap += 1;
+        continue;
+      }
+      accepted.push(file);
+    }
+
+    if (skippedSize) {
+      sileo.error({
+        title: 'Foto demasiado pesada',
+        description: 'Cada imagen debe pesar 5 MB o menos.',
+      });
+    } else if (skippedType && accepted.length === 0) {
+      sileo.error({
+        title: 'Solo imágenes',
+        description: 'Usa PNG o JPG.',
+      });
+    } else if (skippedCap) {
+      sileo.error({
+        title: `Solo caben ${remaining}`,
+        description: `Se agregaron las primeras ${accepted.length}.`,
+      });
+    }
+
+    if (!accepted.length) return;
+
+    const previews = accepted.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+
+    setImages((current) => {
+      const room = MAX_IMAGES - current.length;
+      const take = previews.slice(0, room);
+      previews.slice(room).forEach((item) => URL.revokeObjectURL(item.preview));
+      return take.length ? [...current, ...take] : current;
+    });
   };
 
   const removeImage = (index: number) => {
-    const newImages = images.filter((_, i) => i !== index);
-    newImages.forEach(img => URL.revokeObjectURL(img.preview));
-    setImages(newImages);
+    setImages((current) => {
+      const victim = current[index];
+      if (victim) URL.revokeObjectURL(victim.preview);
+      return current.filter((_, i) => i !== index);
+    });
   };
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate name: must be non-empty (after trim) or exactly 'Sin nombre'
-    const isValidName = name === 'Sin nombre' || (name && name.trim() !== '');
-    const currentRequiredErrors: RequiredFieldErrors = {
-      name: !isValidName,
-      animalTypeId: !animalTypeId,
-      animalBreedId: !animalBreedId,
-      status: !status,
-      location: !lat?.trim() || !lng?.trim(),
-      contactNumber: !contactNumber?.trim(),
-      age: !age?.trim(),
-      color: !color?.trim(),
-      size: !size?.trim(),
-    };
-    setRequiredFieldErrors(currentRequiredErrors);
+  const reorderImages = (from: number, to: number) => {
+    if (from === to) return;
+    setImages((current) => {
+      if (from < 0 || to < 0 || from >= current.length || to >= current.length) {
+        return current;
+      }
+      const next = [...current];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  };
 
-    const hasRequiredFieldErrors = Object.values(currentRequiredErrors).some(Boolean);
-    
-    if (!user?.id || hasRequiredFieldErrors) {
-      sileo.error({
-        title: 'Campos requeridos incompletos',
-        description: 'Por favor completa todos los campos obligatorios para continuar.',
-      });
+  const validateStep = (target: number): boolean => {
+    const nextErrors: FieldErrors = {};
+
+    if (target >= 0) {
+      if (!isValidName(name)) {
+        nextErrors.name = 'Escribe un nombre o marca que no tiene.';
+      }
+      if (!animalTypeId) {
+        nextErrors.animalTypeId = 'Elige perro, gato u otro tipo.';
+      }
+    }
+
+    if (target >= 1) {
+      if (!animalBreedId) nextErrors.animalBreedId = 'Elige una raza o pulsa No sé.';
+      if (!age.trim()) nextErrors.age = 'Elige una edad aproximada.';
+      if (!color.trim()) nextErrors.color = 'El color ayuda a reconocerlo.';
+      if (!size.trim()) nextErrors.size = 'Elige un tamaño.';
+      if (!physicalDescription.trim()) {
+        nextErrors.physicalDescription = 'Describe algo que lo distinga.';
+      }
+    }
+
+    if (target >= 2) {
+      if (!status) nextErrors.status = 'Elige qué estás reportando.';
+      if (!lat.trim() || !lng.trim()) {
+        nextErrors.location = 'Fija el pin en el mapa o pulsa Estoy aquí.';
+      }
+      if (!contactNumber.trim()) {
+        nextErrors.contactNumber = 'Un teléfono para que te contacten.';
+      }
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const goNext = () => {
+    if (!validateStep(step)) return;
+    setStep((current) => Math.min(current + 1, STEPS.length - 1));
+  };
+
+  const goBack = () => {
+    if (step === 0) {
+      router.push(Routes.animals.index);
+      return;
+    }
+    setErrors({});
+    setStep((current) => current - 1);
+  };
+
+  const handleSubmit = async () => {
+    if (!validateStep(2) || !user?.id) {
+      if (!user?.id) {
+        sileo.error({ title: 'Inicia sesión para publicar' });
+      }
       return;
     }
 
     setLoading(true);
 
     try {
-      // Step 1: Create Animal
       const { data: animalData } = await createAnimal({
         variables: {
           data: {
-            name,
+            name: name.trim() || 'Sin nombre',
             contactNumber: contactNumber.trim(),
             sex,
-            physical_description: physicalDescription?.trim() || null,
-            age: age?.trim() || null,
-            color: color?.trim() || null,
-            size: size?.trim() || null,
+            physical_description: physicalDescription.trim(),
+            age: age.trim() || null,
+            color: color.trim() || null,
+            size: size.trim() || null,
             animal_type: { connect: { id: animalTypeId } },
             animal_breed: { connect: { id: animalBreedId } },
             user: { connect: { id: user.id } },
@@ -225,456 +520,431 @@ export default function NewAnimalForm({
         throw new Error('Error al crear el animal');
       }
 
-      // Step 2: Create AnimalLog
       await createAnimalLog({
         variables: {
           data: {
             animal: { connect: { id: animalId } },
             status,
-            notes: notes || 'Sin información adicional',
+            notes: notes.trim() || 'Sin información adicional',
             lat,
             lng,
-            address: address?.trim() || null,
-            city: city?.trim() || null,
-            state: state?.trim() || null,
-            country: country?.trim() || null,
+            address: address.trim() || null,
+            city: city.trim() || null,
+            state: state.trim() || null,
+            country: country.trim() || null,
             last_seen: lastSeen,
             date_status: dateStatus ? new Date(dateStatus).toISOString() : null,
           },
         },
       });
 
-      // Step 3: Upload images (if any)
       if (images.length > 0) {
-        const multimediaData = images.map((img) => ({
-          animal: { connect: { id: animalId } },
-          image: { upload: img.file },
-        }));
-
         await createAnimalMultimedias({
           variables: {
-            data: multimediaData,
+            data: images.map((img, index) => ({
+              animal: { connect: { id: animalId } },
+              image: { upload: img.file },
+              order: index + 1,
+            })),
           },
         });
       }
 
-      // Success - redirect to animals page
-      router.push('/animales');
-    } catch (error: any) {
-      console.error('Error creating animal:', error);
+      await clearAnimalReportDraft(user.id);
+      router.push(Routes.animals.detail(animalId));
+    } catch (error: unknown) {
       sileo.error({
-        title: 'No se pudo crear el animal',
-        description: error?.message || 'Ocurrió un error inesperado. Intenta nuevamente.',
+        title: 'No se pudo publicar',
+        description: publishErrorMessage(error),
       });
     } finally {
       setLoading(false);
     }
   };
 
+  const whenLabel =
+    status === 'lost'
+      ? '¿Cuándo se perdió?'
+      : status === 'found'
+        ? '¿Cuándo lo encontraste?'
+        : `Fecha de ${getStatusLabel(status).toLowerCase()}`;
+
+  if (!hydrated) {
+    return <NewAnimalFormSkeleton />;
+  }
+
   return (
-    <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg p-6 md:p-8"
-      >
-        <form onSubmit={handleSubmit} noValidate className="space-y-6">
-          {/* Name */}
-          <div className={requiredFieldErrors.name ? 'rounded-xl border border-red-500 p-3' : ''}>
-            <AnimalNameInput
-              value={name}
-              onChange={setName}
-              required
-            />
-            {requiredFieldErrors.name && (
-              <p className="mt-2 text-xs text-red-500">Ingresa un nombre valido o marque la casilla "El animal no tiene nombre".</p>
-            )}
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (step < STEPS.length - 1) {
+          goNext();
+          return;
+        }
+        void handleSubmit();
+      }}
+      noValidate
+      className="flex min-h-0 flex-1 flex-col"
+    >
+      <header className="shrink-0 border-b border-[#e6e9ef] bg-white px-4 py-3 dark:border-white/10 dark:bg-night-raised sm:px-6">
+        <div className="mx-auto flex max-w-2xl items-center gap-3">
+          <button
+            type="button"
+            onClick={goBack}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#121212] hover:bg-[#f3f5f8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:text-[#eef1f6] dark:hover:bg-night"
+            aria-label={step === 0 ? 'Volver al directorio' : 'Paso anterior'}
+          >
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={20} strokeWidth={1.5} />
+          </button>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-lg font-black tracking-tight text-[#121212] dark:text-[#eef1f6] sm:text-xl">
+              {copy.title}
+            </h1>
           </div>
-
-          {/* Animal Type */}
-          <div className={requiredFieldErrors.animalTypeId ? 'rounded-xl border border-red-500 p-3' : ''}>
-            <AnimalTypeSelector
-              selectedTypeId={animalTypeId}
-              onTypeChange={(typeId) => {
-                setAnimalTypeId(typeId);
-                setAnimalBreedId(""); // Reset breed when type changes
-              }}
-              required
-            />
-            {requiredFieldErrors.animalTypeId && (
-              <p className="mt-2 text-xs text-red-500">Selecciona un tipo de animal.</p>
-            )}
-          </div>
-
-          {/* Animal Breed - Autocomplete */}
-          <Autocomplete
-            id="animalBreed"
-            label="Raza"
-            value={animalBreedId}
-            options={breedOptions}
-            onChange={() => {
-              // Search is handled internally by Autocomplete
+        </div>
+        <div className="mx-auto mt-4 max-w-2xl">
+          <ReportStepper
+            step={step}
+            labels={STEPS}
+            onSelect={(index) => {
+              if (index <= step) {
+                setErrors({});
+                setStep(index);
+                return;
+              }
+              if (validateStep(index - 1)) setStep(index);
             }}
-            onSelect={(option) => setAnimalBreedId(option.id)}
-            placeholder={
-              !animalTypeId 
-                ? 'Primero selecciona un tipo de animal' 
-                : loadingBreeds 
-                ? 'Cargando razas...' 
-                : 'Busca o selecciona una raza'
-            }
-            required
-            disabled={!animalTypeId}
-            loading={loadingBreeds}
-            searchKey="breed"
-            displayKey="breed"
-            error={requiredFieldErrors.animalBreedId ? 'Selecciona una raza.' : undefined}
           />
+        </div>
+      </header>
 
-          {/* Physical Description */}
-          <div>
-            <label htmlFor="physicalDescription" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-              Descripción Física
-            </label>
-            <textarea
-              id="physicalDescription"
-              value={physicalDescription}
-              onChange={(e) => setPhysicalDescription(e.target.value)}
-              rows={3}
-              className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 resize-none"
-              placeholder="Ej: Pelaje corto, orejas caídas, cola larga..."
-            />
-          </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div ref={panelRef} className="mx-auto w-full max-w-2xl px-4 py-5 sm:px-6 sm:py-6">
+          {step === 0 && (
+            <div className="space-y-6">
+              <div>
+                <p className="mb-2 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+                  Fotos
+                </p>
+                <p className="mb-3 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+                  Una foto nítida es lo que más ayuda a reconocerlo. Arrastra para elegir la portada. Hasta {MAX_IMAGES}.
+                </p>
+                <PhotoPicker
+                  images={images}
+                  max={MAX_IMAGES}
+                  onAdd={addImages}
+                  onRemove={removeImage}
+                  onReorder={reorderImages}
+                />
+              </div>
 
-          {/* Age, Color, Size - Grid */}
-          <div className={`${requiredFieldErrors.age ? 'rounded-xl border border-red-500 p-3' : ''} grid grid-cols-1 md:grid-cols-3 gap-4`}>
-            {/* Age */}
-            <div>
-              <label htmlFor="age" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-                Edad <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="age"
-                type="text"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
-                placeholder="Ej: 2 años, cachorro..."
+              <AnimalTypeSelector
+                selectedTypeId={animalTypeId}
+                onTypeChange={(typeId) => {
+                  setAnimalTypeId(typeId);
+                  setAnimalBreedId('');
+                }}
+                error={errors.animalTypeId}
               />
-              {requiredFieldErrors.age && (
-                <p className="mt-2 text-xs text-red-500">Ingresa la edad del animal.</p>
-              )}
-            </div>
 
-            {/* Color */}
-            <div>
-              <label htmlFor="color" className={`${requiredFieldErrors.color ? 'text-red-500' : ''} block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2`}>
-                Color <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="color"
-                type="text"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
-                placeholder="Ej: Marrón, blanco y negro..."
+              <AnimalNameInput
+                value={name}
+                onChange={setName}
+                required
+                unnamedByDefault={unnamedByDefault}
+                error={errors.name}
               />
-              {requiredFieldErrors.color && (
-                <p className="mt-2 text-xs text-red-500">Ingresa el color del animal.</p>
-              )}
             </div>
+          )}
 
-            {/* Size */}
-            <div>
-              <label htmlFor="size" className={`${requiredFieldErrors.size ? 'text-red-500' : ''} block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2`}>
-                Tamaño <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="size"
-                type="text"
-                value={size}
-                onChange={(e) => setSize(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
-                placeholder="Ej: Pequeño, mediano, grande..."
-              />
-              {requiredFieldErrors.size && (
-                <p className="mt-2 text-xs text-red-500">Ingresa el tamaño del animal.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Sex */}
-          <div>
-            <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-              Sexo
-            </label>
-            <div className="flex flex-wrap gap-4">
-              {ANIMAL_SEX_OPTIONS.map((option) => {
-                const sexIcons: Record<string, string> = {
-                  male: '♂️',
-                  female: '♀️',
-                  unknown: '❓',
-                };
-                const icon = sexIcons[option.value] || '❓';
-
-                return (
-                  <label
-                    key={option.value}
-                    className={`
-                      flex flex-col items-center justify-center px-5 py-3 rounded-xl
-                      cursor-pointer transition border-2
-                      ${sex === option.value 
-                          ? "border-orange-500 bg-orange-50 dark:bg-orange-900/40"
-                          : "border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212]"
-                      }
-                      w-28 hover:shadow-md
-                    `}
-                  >
-                    <span className="text-2xl mb-2">{icon}</span>
-                    <span className="text-sm font-semibold text-[#212121] dark:text-[#ffffff]">
-                      {option.label}
-                    </span>
-                    <input
-                      type="radio"
-                      name="sex"
-                      value={option.value}
-                      checked={sex === option.value}
-                      onChange={() => setSex(option.value)}
-                      className="sr-only"
-                      aria-label={option.label}
+          {step === 1 && (
+            <div className="space-y-6">
+              <div>
+                <p className="mb-2 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+                  Tamaño <span className="text-red-600">*</span>
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {ANIMAL_SIZE_OPTIONS.map((option) => (
+                    <ChoiceChip
+                      key={option.value}
+                      label={option.label}
+                      selected={size === option.value}
+                      onSelect={() => setSize(option.value)}
                     />
-                  </label>
-                );
-              })}
-            </div>
-          </div>
+                  ))}
+                </div>
+                {errors.size ? <p className="mt-2 text-xs text-red-600">{errors.size}</p> : null}
+              </div>
 
-          {/* Status */}
-          <div>
-            <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-              Estado <span className="text-red-500">*</span>
-            </label>
-            <div className={`flex flex-wrap gap-4 rounded-xl ${requiredFieldErrors.status ? 'border border-red-500 p-3' : ''}`}>
-              {ANIMAL_LOGS_OPTIONS.filter((option): option is {
-                label: string;
-                value: AnimalReportStatus;
-              } => isAnimalReportStatus(option.value)).map((option) => {
-               
-                const icon = statusIcons[option.value] || '📋';
-
-                return (
-                  <label
-                    key={option.value}
-                    className={`
-                      flex flex-col items-center justify-center px-5 py-3 rounded-xl
-                      cursor-pointer transition border-2
-                      ${status === option.value 
-                          ? "border-orange-500 bg-orange-50 dark:bg-orange-900/40"
-                          : "border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212]"
-                      }
-                      w-28 hover:shadow-md
-                    `}
-                  >
-                    <span className="text-3xl mb-2">{icon}</span>
-                    <span className="text-sm font-semibold text-[#212121] dark:text-[#ffffff]">
-                      {option.label}
-                    </span>
-                    <input
-                      type="radio"
-                      name="status"
-                      value={option.value}
-                      checked={status === option.value}
-                      onChange={() => setStatus(option.value)}
-                      required
-                      className="sr-only"
-                      aria-label={option.label}
+              <div>
+                <p className="mb-2 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+                  Edad <span className="text-red-600">*</span>
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {ANIMAL_AGE_OPTIONS.map((option) => (
+                    <ChoiceChip
+                      key={option.value}
+                      label={option.label}
+                      selected={age === option.value}
+                      onSelect={() => setAge(option.value)}
                     />
-                  </label>
-                );
-              })}
-            </div>
-            {requiredFieldErrors.status && (
-              <p className="mt-2 text-xs text-red-500">Selecciona un estado para el animal.</p>
-            )}
-          </div>
+                  ))}
+                </div>
+                {errors.age ? <p className="mt-2 text-xs text-red-600">{errors.age}</p> : null}
+              </div>
 
-           {/* Date Status */}
-           <div>
-            <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-              Fecha de <strong>{getStatusLabel(status)}</strong>
-            </label>
-            <div className="flex items-center gap-3 mb-3">
-              <input
-                id="isToday"
-                type="checkbox"
-                checked={isToday}
-                onChange={(e) => setIsToday(e.target.checked)}
-                className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
-              />
-              <label htmlFor="isToday" className="text-sm font-medium text-[#212121] dark:text-[#ffffff] cursor-pointer">
-                Fue hoy
-              </label>
-            </div>
-            <input
-              id="dateStatus"
-              type="datetime-local"
-              value={dateStatus}
-              onChange={(e) => setDateStatus(e.target.value)}
-              disabled={isToday}
-              className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-[#f5f5f5] dark:disabled:bg-[#2a2a2a]"
-            />
-            <p className="mt-1 text-xs text-[#616161] dark:text-[#b0b0b0]">
-              {isToday 
-                ? 'Fecha y hora actual (se actualiza automáticamente)'
-                : 'Fecha y hora en que ocurrió este estado (opcional)'}
-            </p>
-          </div>
-
-          {/* Location - Map Picker */}
-          <div className={requiredFieldErrors.location ? 'rounded-xl border border-red-500 p-3' : ''}>
-            <LocationPicker
-              lat={lat}
-              lng={lng}
-              address={address}
-              city={city}
-              state={state}
-              country={country}
-              onLocationChange={(newLat, newLng) => {
-                setLat(newLat);
-                setLng(newLng);
-              }}
-              onAddressChange={(newAddress, newCity, newState, newCountry) => {
-                setAddress(newAddress);
-                setCity(newCity);
-                setState(newState);
-                setCountry(newCountry);
-              }}
-            />
-            {requiredFieldErrors.location && (
-              <p className="mt-2 text-xs text-red-500">Selecciona una ubicación en el mapa.</p>
-            )}
-          </div>
-          
-          {/* Contact Phone */}
-          <div>
-            <label htmlFor="contactNumber" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-              Teléfono de contacto <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="contactNumber"
-              type="tel"
-              maxLength={18}
-              value={contactNumber}
-              onChange={(e) => setContactNumber(e.target.value)}
-              className={`w-full px-4 py-2 rounded-lg border ${requiredFieldErrors.contactNumber ? 'border-red-500 dark:border-red-500' : 'border-[#e0e0e0] dark:border-[#3a3a3a]'} bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400`}
-              placeholder="Ej: +52 55 1234 5678"
-              required
-            />
-            {requiredFieldErrors.contactNumber && (
-              <p className="mt-2 text-xs text-red-500">Ingresa un teléfono de contacto.</p>
-            )}
-          </div>
-
-          {/* Last Seen Checkbox */}
-          <div className="flex items-center gap-2">
-            <input
-              id="lastSeen"
-              type="checkbox"
-              checked={lastSeen}
-              onChange={(e) => setLastSeen(e.target.checked)}
-              className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
-            />
-            <label htmlFor="lastSeen" className="text-sm font-medium text-[#212121] dark:text-[#ffffff]">
-              Esta fue la última vez que se vio a {name || 'el animal'} en esta ubicación
-            </label>
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-              Notas
-            </label>
-            <textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-              className="w-full px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 resize-none"
-              placeholder={`Información adicional sobre ${name || 'el animal'}...`}
-            />
-          </div>
-
-          {/* Images Upload */}
-          <div>
-            <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-              Imágenes (máximo 3)
-            </label>
-            <div className="space-y-4">
-              {images.length < 3 && (
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#e0e0e0] dark:border-[#3a3a3a] rounded-lg cursor-pointer hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a] transition-colors">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <svg className="w-10 h-10 mb-3 text-[#616161] dark:text-[#b0b0b0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    <p className="mb-2 text-sm text-[#616161] dark:text-[#b0b0b0]">
-                      <span className="font-semibold">Click para subir</span> o arrastra y suelta
-                    </p>
-                    <p className="text-xs text-[#616161] dark:text-[#b0b0b0]">PNG, JPG o GIF (MAX. 5MB)</p>
-                  </div>
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageChange}
-                  />
+              <div>
+                <label
+                  htmlFor="color"
+                  className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
+                >
+                  Color <span className="text-red-600">*</span>
                 </label>
-              )}
-              
-              {/* Image Previews */}
-              <div className="grid grid-cols-3 gap-4">
-                {images.map((image, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={image.preview}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg"
+                <input
+                  id="color"
+                  type="text"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className={fieldClass}
+                  placeholder="Ej. café con mancha blanca en el pecho"
+                />
+                {errors.color ? <p className="mt-2 text-xs text-red-600">{errors.color}</p> : null}
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+                  Sexo
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {ANIMAL_SEX_OPTIONS.map((option) => (
+                    <ChoiceChip
+                      key={option.value}
+                      label={option.label}
+                      selected={sex === option.value}
+                      onSelect={() => setSex(option.value)}
                     />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-end justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <Autocomplete
+                      id="animalBreed"
+                      label="Raza"
+                      value={animalBreedId}
+                      options={breedOptions}
+                      onChange={() => undefined}
+                      onSelect={(option) => setAnimalBreedId(option.id)}
+                      placeholder={
+                        !animalTypeId
+                          ? 'Primero elige un tipo'
+                          : loadingBreeds
+                            ? 'Cargando razas…'
+                            : 'Busca o selecciona'
+                      }
+                      required
+                      disabled={!animalTypeId}
+                      loading={loadingBreeds}
+                      searchKey="breed"
+                      displayKey="breed"
+                      error={errors.animalBreedId}
+                    />
                   </div>
-                ))}
+                  <button
+                    type="button"
+                    disabled={!animalTypeId || loadingBreeds}
+                    onClick={() => {
+                      const fallback = findFallbackBreedId(breedOptions);
+                      if (fallback) {
+                        setAnimalBreedId(fallback);
+                        return;
+                      }
+                      sileo.error({
+                        title: 'Busca mestizo',
+                        description: 'No hay una raza “no sé” en este tipo. Elige la más cercana.',
+                      });
+                    }}
+                    className="mb-0.5 shrink-0 rounded-full px-3 py-2 text-sm font-semibold text-kadesh hover:bg-kadesh-50 disabled:opacity-40 dark:hover:bg-kadesh/20"
+                  >
+                    No sé
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="physicalDescription"
+                  className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
+                >
+                  Señas particulares <span className="text-red-600">*</span>
+                </label>
+                <textarea
+                  id="physicalDescription"
+                  value={physicalDescription}
+                  onChange={(e) => setPhysicalDescription(e.target.value)}
+                  rows={3}
+                  className={`${fieldClass} resize-none`}
+                  placeholder="Collar, oreja doblada, cojera…"
+                />
+                {errors.physicalDescription ? (
+                  <p className="mt-2 text-xs text-red-600">{errors.physicalDescription}</p>
+                ) : null}
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Submit Button */}
-          <div className="flex gap-4 pt-4">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="flex-1 px-6 py-3 bg-gray-200 dark:bg-[#2a2a2a] hover:bg-gray-300 dark:hover:bg-[#3a3a3a] text-[#212121] dark:text-[#ffffff] font-semibold rounded-lg transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Guardando...' : `Guardar a ${name || 'el animal'}`}
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </section>
+          {step === 2 && (
+            <div className="space-y-6">
+              <div>
+                <p
+                  id="report-status-label"
+                  className="mb-2 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
+                >
+                  Qué reportas <span className="text-red-600">*</span>
+                </p>
+                <StatusChips
+                  value={status}
+                  labelledBy="report-status-label"
+                  allowDeselect={false}
+                  showAll
+                  onChange={(next) => {
+                    if (isAnimalReportStatus(next)) setStatus(next);
+                  }}
+                />
+                {errors.status ? <p className="mt-2 text-xs text-red-600">{errors.status}</p> : null}
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+                  {whenLabel}
+                </p>
+                <div className="mb-3 flex flex-wrap gap-1.5">
+                  <ChoiceChip
+                    label="Hoy"
+                    selected={isToday}
+                    onSelect={() => setIsToday(true)}
+                  />
+                  <ChoiceChip
+                    label="Otra fecha"
+                    selected={!isToday}
+                    onSelect={() => setIsToday(false)}
+                  />
+                </div>
+                {!isToday && (
+                  <input
+                    id="dateStatus"
+                    type="datetime-local"
+                    value={dateStatus}
+                    onChange={(e) => setDateStatus(e.target.value)}
+                    className={fieldClass}
+                  />
+                )}
+              </div>
+
+              <div className={errors.location ? 'rounded-xl ring-1 ring-red-500 ring-offset-2 dark:ring-offset-night' : ''}>
+                <LocationPicker
+                  compact
+                  isVisible={step === 2}
+                  lat={lat}
+                  lng={lng}
+                  address={address}
+                  city={city}
+                  state={state}
+                  country={country}
+                  onLocationChange={(newLat, newLng) => {
+                    setLat(newLat);
+                    setLng(newLng);
+                  }}
+                  onAddressChange={(newAddress, newCity, newState, newCountry) => {
+                    setAddress(newAddress);
+                    setCity(newCity);
+                    setState(newState);
+                    setCountry(newCountry);
+                  }}
+                />
+                {errors.location ? (
+                  <p className="mt-2 text-xs text-red-600">{errors.location}</p>
+                ) : null}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="contactNumber"
+                  className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
+                >
+                  Teléfono <span className="text-red-600">*</span>
+                </label>
+                <input
+                  id="contactNumber"
+                  type="tel"
+                  inputMode="tel"
+                  maxLength={18}
+                  value={contactNumber}
+                  onChange={(e) => setContactNumber(e.target.value)}
+                  className={fieldClass}
+                  placeholder="55 1234 5678"
+                  autoComplete="tel"
+                />
+                {errors.contactNumber ? (
+                  <p className="mt-2 text-xs text-red-600">{errors.contactNumber}</p>
+                ) : null}
+              </div>
+
+              {showNotes ? (
+                <div>
+                  <label
+                    htmlFor="notes"
+                    className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
+                  >
+                    Nota
+                  </label>
+                  <textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={3}
+                    className={`${fieldClass} resize-none`}
+                    placeholder="Algo extra que convenga saber"
+                  />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowNotes(true)}
+                  className="text-sm font-semibold text-kadesh hover:text-kadesh-600"
+                >
+                  Agregar una nota
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="shrink-0 border-t border-[#e6e9ef] bg-white px-4 py-3 dark:border-white/10 dark:bg-night-raised sm:px-6">
+        <div className="mx-auto flex max-w-2xl gap-3">
+          <button
+            type="button"
+            onClick={goBack}
+            className="rounded-xl px-4 py-3 text-sm font-semibold text-[#3a3a3a] hover:bg-[#f3f5f8] dark:text-[#d0d0d0] dark:hover:bg-night"
+          >
+            {step === 0 ? 'Cancelar' : 'Atrás'}
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 rounded-xl bg-kadesh px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {loading
+              ? 'Publicando…'
+              : step < STEPS.length - 1
+                ? 'Continuar'
+                : copy.submit}
+          </button>
+        </div>
+      </div>
+    </form>
   );
 }

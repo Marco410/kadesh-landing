@@ -114,7 +114,7 @@ export default function VeterinariesMap({
       const phoneLabel = place.phone ? escapeHtml(place.phone) : '';
 
       const html = `
-        <div class="p-3 min-w-[200px] max-w-[280px] ${dark ? 'bg-[#1e1e1e] text-white' : 'bg-white text-[#212121]'}">
+        <div class="p-3 min-w-[200px] max-w-[280px] ${dark ? 'bg-[#1c2433] text-[#eef1f6]' : 'bg-white text-[#121212]'}">
           <h3 class="font-bold text-base leading-tight mb-2">${name}</h3>
           ${
             distance
@@ -271,8 +271,8 @@ export default function VeterinariesMap({
         aria-label="Mapa de veterinarias"
       />
       {!ready && (
-        <div className="absolute inset-0 z-[1] flex items-center justify-center bg-[#eef3f8]/90 dark:bg-[#1e2a3a]/90 backdrop-blur-sm">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Cargando mapa…</p>
+        <div className="absolute inset-0 z-[1] flex items-center justify-center bg-[#eef3f8]/90 backdrop-blur-sm dark:bg-night/90">
+          <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">Cargando mapa…</p>
         </div>
       )}
     </div>

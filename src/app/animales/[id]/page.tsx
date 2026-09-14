@@ -1,110 +1,181 @@
 "use client";
 
-import { useParams, useRouter } from 'next/navigation';
-import { Navigation, Footer } from 'kadesh/components/layout';
+import type { ReactNode } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  ArrowLeft01Icon,
+  Call02Icon,
+  Location01Icon,
+} from "@hugeicons/core-free-icons";
+import { Navigation } from "kadesh/components/layout";
+import { Routes } from "kadesh/core/routes";
 import {
   useAnimalDetail,
   AnimalImageGrid,
   AnimalInfoSection,
   LogTimeline,
   AnimalCommentsSection,
-} from 'kadesh/components/animals/detail';
-import { ErrorState } from 'kadesh/components/shared';
+} from "kadesh/components/animals/detail";
+import {
+  getStatusColor,
+  getStatusLabel,
+} from "kadesh/components/animals/constants";
 
-export default function AnimalDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const animalId = params?.id as string;
+function directionsUrl(lat: string | number, lng: string | number) {
+  const destination = `${lat},${lng}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+}
 
-  const { animal, logs, loading, error, refetch } = useAnimalDetail(animalId || '');
-
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
-        <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="animate-pulse space-y-8">
-            <div className="h-[600px] bg-[#f5f5f5] dark:bg-[#1e1e1e] rounded-lg" />
-            <div className="h-32 bg-[#f5f5f5] dark:bg-[#1e1e1e] rounded-lg" />
-            <div className="h-96 bg-[#f5f5f5] dark:bg-[#1e1e1e] rounded-lg" />
-          </div>
-        </div>
-        <Footer />
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
-        <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <ErrorState
-            title="Error al cargar el animal"
-            message={error.message || 'No se pudo cargar la información del animal'}
-            onRetry={() => window.location.reload()}
-          />
-        </div>
-        <Footer />
-      </main>
-    );
-  }
-
-  if (!animal) {
-    return (
-      <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
-        <Navigation />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-[#212121] dark:text-[#ffffff] mb-4">Animal no encontrado</h1>
-            <p className="text-[#616161] dark:text-[#b0b0b0] mb-6">
-              El animal que buscas no existe o ha sido eliminado.
-            </p>
-            <button
-              onClick={() => router.push('/animales')}
-              className="px-4 py-2 bg-kadesh hover:bg-kadesh-600 text-white font-semibold rounded-lg transition-colors"
-            >
-              Volver a animales
-            </button>
-          </div>
-        </div>
-        <Footer />
-      </main>
-    );
-  }
-
+function DetailShell({ children }: { children: ReactNode }) {
   return (
-    <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a]">
+    <main className="min-h-dvh bg-[#f7f8fa] pt-[72px] dark:bg-night">
       <Navigation />
-      <div className="h-25 "></div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 ">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-sm border border-[#e0e0e0] dark:border-[#3a3a3a] overflow-hidden">
-            <AnimalImageGrid images={animal.multimedia} animalName={animal.name} logs={logs} />
-          </div>
-
-          <div className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-sm border border-[#e0e0e0] dark:border-[#3a3a3a] p-6">
-            <AnimalInfoSection animal={animal} />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-sm border border-[#e0e0e0] dark:border-[#3a3a3a] p-6">
-          <LogTimeline
-            logs={logs ?? []}
-            animal={animal}
-            animalName={animal?.name}
-            onLogCreated={async () => { await refetch(); }}
-          />
-        </div>
-
-        <div className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-sm border border-[#e0e0e0] dark:border-[#3a3a3a] p-6">
-          <AnimalCommentsSection animal={animal} />
-        </div>
-      </div>
-      <Footer />
+      {children}
     </main>
   );
 }
 
+export default function AnimalDetailPage() {
+  const params = useParams();
+  const animalId = params?.id as string;
+  const { animal, logs, loading, error, refetch } = useAnimalDetail(
+    animalId || "",
+  );
 
+  if (loading) {
+    return (
+      <DetailShell>
+        <div className="mx-auto w-full max-w-7xl space-y-4 px-4 py-6">
+          <div className="h-10 w-48 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10" />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="h-80 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10" />
+            <div className="h-80 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10" />
+          </div>
+        </div>
+      </DetailShell>
+    );
+  }
 
+  if (error || !animal) {
+    return (
+      <DetailShell>
+        <div className="mx-auto w-full max-w-7xl px-4 py-8">
+          <Link
+            href={Routes.animals.index}
+            className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-kadesh hover:underline"
+          >
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={1.5} />
+            Animales
+          </Link>
+          <h1 className="text-2xl font-black tracking-tight text-[#121212] dark:text-[#eef1f6]">
+            {error ? "No se pudo cargar" : "No encontramos este animal"}
+          </h1>
+          <p className="mt-2 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+            {error
+              ? "Revisa tu conexión e inténtalo de nuevo."
+              : "Puede que el reporte se haya eliminado."}
+          </p>
+        </div>
+      </DetailShell>
+    );
+  }
+
+  const lastLog = logs?.[0];
+  const status = lastLog?.status || "register";
+  const statusColor = getStatusColor(status);
+  const statusLabel = getStatusLabel(status);
+  const typeName = animal.animal_breed?.animal_type?.name || "";
+  const hasCoords =
+    lastLog?.lat != null &&
+    lastLog?.lng != null &&
+    !Number.isNaN(Number(lastLog.lat)) &&
+    !Number.isNaN(Number(lastLog.lng));
+  const phoneHref = animal.contactNumber
+    ? `tel:${animal.contactNumber.replace(/[^\d+]/g, "")}`
+    : null;
+  const howToGetHref = hasCoords
+    ? directionsUrl(lastLog.lat as number, lastLog.lng as number)
+    : null;
+
+  return (
+    <DetailShell>
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 pb-8 sm:px-6">
+        <header className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Link
+            href={Routes.animals.index}
+            className="inline-flex items-center gap-1 text-sm font-medium text-kadesh hover:underline"
+          >
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2} />
+            Animales
+          </Link>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="truncate text-xl font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6] sm:text-2xl">
+                {animal.name || "Sin nombre"}
+              </h1>
+              <span
+                className="rounded-full px-2.5 py-0.5 text-xs font-bold text-white"
+                style={{ backgroundColor: statusColor }}
+              >
+                {statusLabel}
+              </span>
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {howToGetHref && (
+              <a
+                href={howToGetHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-kadesh px-5 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white"
+              >
+                <HugeiconsIcon
+                  icon={Location01Icon}
+                  size={18}
+                  strokeWidth={1.5}
+                />
+                Cómo llegar
+              </a>
+            )}
+            {phoneHref && (
+              <a
+                href={phoneHref}
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
+              >
+                <HugeiconsIcon icon={Call02Icon} size={18} strokeWidth={1.5} />
+                Llamar
+              </a>
+            )}
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-white/10 dark:bg-night-raised">
+            <AnimalImageGrid
+              images={animal.multimedia}
+              animalName={animal.name}
+              typeName={typeName}
+              statusColor={statusColor}
+            />
+          </div>
+          <div className="flex h-full flex-col rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6">
+            <AnimalInfoSection animal={animal} />
+          </div>
+        </div>
+
+        <LogTimeline
+          logs={logs ?? []}
+          animal={animal}
+          animalName={animal.name}
+          onLogCreated={async () => {
+            await refetch();
+          }}
+        />
+
+        <AnimalCommentsSection animal={animal} />
+      </div>
+    </DetailShell>
+  );
+}

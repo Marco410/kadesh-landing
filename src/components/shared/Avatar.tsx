@@ -11,7 +11,7 @@ export default function Avatar({ author, size = 48, verify = false }: AvatarProp
   return (
     <div className="relative">
       <div 
-        className="relative rounded-full bg-orange-500 flex items-center justify-center text-white font-bold overflow-hidden"
+        className="relative overflow-hidden rounded-full bg-kadesh font-bold text-white flex items-center justify-center"
         style={{ width: size, height: size }}
       >
         {author?.profileImage?.url ? (

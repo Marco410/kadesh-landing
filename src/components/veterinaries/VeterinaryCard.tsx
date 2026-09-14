@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -6,23 +6,15 @@ import {
   ArrowRight01Icon,
   Call02Icon,
   MapPinIcon,
-  PinLocation03Icon,
   StarIcon,
 } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
 import type { PetPlace } from './types';
 
-type CardVariant = 'vertical' | 'horizontal';
-
 interface VeterinaryCardProps {
   place: PetPlace;
   isSelected?: boolean;
   onClick?: () => void;
-  isDarkMode?: boolean;
-  /** Layout: vertical (default) for list, horizontal for home section */
-  variant?: CardVariant;
-  /** When set, card renders as a link (e.g. to /veterinarias) instead of a button */
-  href?: string;
 }
 
 function formatDistance(distance: number | null | undefined): string | null {
@@ -33,170 +25,156 @@ function formatDistance(distance: number | null | undefined): string | null {
 }
 
 function averageRating(reviews: { rating: number | null }[]): number | null {
-  const withRating = reviews.filter((r) => r.rating != null && !Number.isNaN(r.rating)) as { rating: number }[];
+  const withRating = reviews.filter(
+    (review): review is { rating: number } =>
+      review.rating != null && !Number.isNaN(review.rating)
+  );
   if (withRating.length === 0) return null;
-  const sum = withRating.reduce((s, r) => s + r.rating, 0);
-  return Math.round((sum / withRating.length) * 10) / 10; // 1 decimal
+  const sum = withRating.reduce((total, review) => total + review.rating, 0);
+  return Math.round((sum / withRating.length) * 10) / 10;
+}
+
+function VetPin({ selected }: { selected?: boolean }) {
+  return (
+    <span
+      className={`flex h-11 w-9 flex-shrink-0 items-end justify-center ${
+        selected ? 'scale-110' : ''
+      }`}
+      aria-hidden
+    >
+      <svg viewBox="0 0 36 44" className="h-11 w-9">
+        <path
+          fill="var(--color-kadesh)"
+          stroke="#ffffff"
+          strokeWidth="2"
+          d="M18 2C10.82 2 5 7.82 5 15c0 9.75 13 25.5 13 25.5S31 24.75 31 15C31 7.82 25.18 2 18 2z"
+        />
+        <path fill="#ffffff" d="M13 10h10v2h-4v8h-2v-8h-4z" />
+      </svg>
+    </span>
+  );
 }
 
 export default function VeterinaryCard({
   place,
   isSelected,
   onClick,
-  variant = 'vertical',
-  href,
 }: VeterinaryCardProps) {
   const displayName = place.name?.trim() || 'Veterinaria';
-  const initial = (displayName[0] ?? 'V').toUpperCase();
   const distanceStr = formatDistance(place.distance ?? undefined);
-  const locationLine = [place.municipality, place.state, place.country].filter(Boolean).join(', ') || place.address || place.street;
+  const locationLine =
+    [place.municipality, place.state, place.country].filter(Boolean).join(', ') ||
+    place.address ||
+    place.street;
   const rating =
     place.averageRating != null && !Number.isNaN(place.averageRating)
       ? place.averageRating
       : averageRating(place.pet_place_reviews ?? []);
-  const reviewsCount = place.reviewsCount ?? (place.pet_place_reviews?.length ?? 0);
-  const isHorizontal = variant === 'horizontal';
-  const serviceTags = (place.services ?? []).filter((s) => s.name).slice(0, 2).map((s) => s.name!);
-  const showServices = !isHorizontal && serviceTags.length > 0;
-
-  const baseClass = `w-full h-full text-left rounded-xl border-2 transition-all flex flex-col ${
-    isSelected
-      ? 'border-kadesh bg-kadesh-50 dark:bg-kadesh-900/30 dark:border-kadesh'
-      : 'border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1e1e1e] hover:border-kadesh-300 dark:hover:border-kadesh-600'
-  }`;
-  const sizeClass = isHorizontal
-    ? 'min-h-[160px] p-6 rounded-2xl shadow-lg hover:shadow-xl gap-3'
-    : 'min-h-[160px] sm:min-h-[140px] p-4 gap-3';
-
-  const rowSpacing = 'mb-1.5';
+  const reviewsCount = place.reviewsCount ?? place.pet_place_reviews?.length ?? 0;
   const detailHref = Routes.veterinaries.detail(place.id);
+  const phoneHref = place.phone ? `tel:${place.phone.replace(/\s/g, '')}` : null;
 
-  const mainContent = (
-    <>
-      <div className={`flex gap-3 sm:gap-4 flex-1 min-w-0 ${isHorizontal ? 'flex-row' : ''}`}>
-        <span
-          className={`flex-shrink-0 rounded-full flex items-center justify-center bg-kadesh-500 text-white font-bold ${
-            isHorizontal ? 'w-16 h-16 text-2xl' : 'w-12 h-12 sm:w-10 sm:h-10 text-base sm:text-sm'
-          }`}
-          aria-hidden
-        >
-          {initial}
-        </span>
-        <span className="flex-1 min-w-0 flex flex-col gap-1.5 sm:gap-1 overflow-hidden">
-          <h3
-            className={`font-bold text-[#212121] dark:text-white line-clamp-2 sm:truncate ${isHorizontal ? 'text-xl' : 'text-sm sm:text-base'}`}
-            title={displayName}
-          >
-            {displayName}
-          </h3>
+  return (
+    <article
+      id={`veterinary-${place.id}`}
+      className={`flex flex-col rounded-2xl border p-4 transition-[border-color,box-shadow,background-color,transform] duration-150 ${
+        isSelected
+          ? 'border-kadesh bg-kadesh-50 shadow-[0_10px_28px_rgba(15,35,80,0.12)] dark:border-kadesh dark:bg-kadesh/15'
+          : 'border-[#ececec] bg-white hover:-translate-y-0.5 hover:border-kadesh-300 hover:shadow-[0_10px_24px_rgba(15,35,80,0.08)] dark:border-white/10 dark:bg-night dark:hover:border-kadesh/40'
+      }`}
+    >
+      <div
+        role="button"
+        tabIndex={0}
+        aria-pressed={isSelected}
+        aria-label={`Mostrar ${displayName} en el mapa`}
+        onClick={onClick}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onClick?.();
+          }
+        }}
+        className="flex w-full gap-3 text-left"
+      >
+        <VetPin selected={isSelected} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="line-clamp-2 text-base font-bold leading-tight text-[#121212] dark:text-white">
+              {displayName}
+            </h3>
+            {place.isOpen != null && (
+              <span
+                className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
+                  place.isOpen
+                    ? 'bg-green-600 text-white'
+                    : 'bg-[#3a3a3a] text-white'
+                }`}
+              >
+                {place.isOpen ? 'Abierto' : 'Cerrado'}
+              </span>
+            )}
+          </div>
+
           {distanceStr && (
-            <p className={`text-xs text-kadesh-600 dark:text-kadesh-400 font-medium flex items-center gap-1.5 shrink-0 ${rowSpacing}`}>
-              <HugeiconsIcon icon={PinLocation03Icon} size={12} className="flex-shrink-0 text-kadesh-500 dark:text-kadesh-400" strokeWidth={1.5} />
-              <span className="truncate">{distanceStr}</span>
-            </p>
+            <p className="mt-1 text-sm font-semibold text-kadesh">{distanceStr}</p>
           )}
+
           {(rating != null || reviewsCount > 0) && (
-            <p className={`text-xs text-[#212121] dark:text-white flex items-center gap-1.5 shrink-0 ${rowSpacing}`}>
-              <HugeiconsIcon icon={StarIcon} size={12} className="flex-shrink-0 text-amber-500" strokeWidth={1.5} />
-              {rating != null && <span>{rating.toFixed(1)}</span>}
+            <p className="mt-1 flex items-center gap-1.5 text-sm text-[#121212] dark:text-white">
+              <HugeiconsIcon
+                icon={StarIcon}
+                size={14}
+                className="flex-shrink-0 text-amber-500"
+                strokeWidth={1.5}
+              />
+              {rating != null && (
+                <span className="font-semibold">{rating.toFixed(1)}</span>
+              )}
               {reviewsCount > 0 && (
-                <span className="text-[#616161] dark:text-[#b0b0b0]">
-                  {rating != null ? ` · ${reviewsCount} reseña${reviewsCount !== 1 ? 's' : ''}` : `${reviewsCount} reseña${reviewsCount !== 1 ? 's' : ''}`}
+                <span className="text-[#5a5a5a] dark:text-[#b0b0b0]">
+                  {rating != null
+                    ? `· ${reviewsCount} reseña${reviewsCount !== 1 ? 's' : ''}`
+                    : `${reviewsCount} reseña${reviewsCount !== 1 ? 's' : ''}`}
                 </span>
               )}
             </p>
           )}
-          {place.phone && (
-            <a
-              href={`tel:${place.phone.replace(/\s/g, '')}`}
-              onClick={(e) => e.stopPropagation()}
-              className={`text-xs text-blue-600 dark:text-blue-400 truncate hover:underline flex items-center gap-1.5 min-w-0 ${rowSpacing}`}
-              title={place.phone}
-            >
-              <HugeiconsIcon icon={Call02Icon} size={12} className="flex-shrink-0 text-blue-500 dark:text-blue-400" strokeWidth={1.5} />
-              <span className="truncate">{place.phone}</span>
-            </a>
-          )}
+
           {locationLine && (
-            <p
-              className={`text-xs text-[#616161] dark:text-[#b0b0b0] flex items-start gap-1.5 min-w-0 ${rowSpacing}`}
-              title={locationLine}
-            >
-              <HugeiconsIcon icon={MapPinIcon} size={12} className="flex-shrink-0 mt-0.5 text-kadesh-500 dark:text-kadesh-400" strokeWidth={1.5} />
-              <span className="line-clamp-2 break-words">{locationLine}</span>
+            <p className="mt-1.5 flex items-start gap-1.5 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+              <HugeiconsIcon
+                icon={MapPinIcon}
+                size={14}
+                className="mt-0.5 flex-shrink-0 text-kadesh"
+                strokeWidth={1.5}
+              />
+              <span className="line-clamp-2 leading-relaxed">{locationLine}</span>
             </p>
           )}
-          {place.isOpen != null && (
-            <span
-              className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full w-fit shrink-0 ${
-                place.isOpen
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-                  : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-              }`}
-            >
-              {place.isOpen ? 'Abierto' : 'Cerrado'}
-            </span>
-          )}
-        </span>
-      </div>
-      {showServices && (
-        <div className="flex flex-wrap gap-1.5 mt-1">
-          {serviceTags.map((name) => (
-            <span
-              key={name}
-              className="inline-block text-xs font-medium px-2 py-0.5 rounded-md bg-kadesh-500 text-white"
-            >
-              {name}
-            </span>
-          ))}
         </div>
-      )}
-    </>
-  );
-
-  const detailsButton = (
-    <Link
-      href={detailHref}
-      onClick={(e) => e.stopPropagation()}
-      className={`mt-auto w-full inline-flex items-center justify-center gap-1.5 font-semibold text-sm rounded-lg py-2.5 sm:py-2 px-3 transition-colors min-h-[44px] sm:min-h-0 ${
-        isHorizontal
-          ? 'bg-kadesh-500 text-white hover:bg-kadesh-600 dark:bg-kadesh-500 dark:hover:bg-kadesh-600'
-          : 'bg-kadesh-100 text-kadesh-700 hover:bg-kadesh-200 dark:bg-kadesh-900/30 dark:text-kadesh-300 dark:hover:bg-kadesh-900/50'
-      }`}
-    >
-      Ver detalles
-      <HugeiconsIcon icon={ArrowRight01Icon} size={14} className="flex-shrink-0" strokeWidth={2} />
-    </Link>
-  );
-
-  const className = `${baseClass} ${sizeClass}`.trim();
-
-  if (href) {
-    return (
-      <div className={className}>
-        <Link href={href} className="block flex-1 min-h-0 min-w-0" aria-label={`Ver ${displayName} en el directorio`}>
-          {mainContent}
-        </Link>
-        {detailsButton}
       </div>
-    );
-  }
 
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onClick?.();
-        }
-      }}
-      className={className}
-    >
-      {mainContent}
-      {detailsButton}
-    </div>
+      <div className={`mt-3 grid gap-2 ${phoneHref ? 'grid-cols-[auto_1fr]' : 'grid-cols-1'}`}>
+        {phoneHref && (
+          <a
+            href={phoneHref}
+            onClick={(event) => event.stopPropagation()}
+            aria-label={`Llamar a ${displayName}`}
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-kadesh px-3 text-kadesh transition-colors hover:bg-kadesh hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
+          >
+            <HugeiconsIcon icon={Call02Icon} size={18} strokeWidth={1.5} />
+          </a>
+        )}
+        <Link
+          href={detailHref}
+          onClick={(event) => event.stopPropagation()}
+          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
+        >
+          Ver ficha
+          <HugeiconsIcon icon={ArrowRight01Icon} size={14} strokeWidth={2} />
+        </Link>
+      </div>
+    </article>
   );
 }

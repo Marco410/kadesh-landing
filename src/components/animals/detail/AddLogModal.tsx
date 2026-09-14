@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { ANIMAL_LOGS_OPTIONS, statusIcons } from '../constants';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Cancel01Icon } from '@hugeicons/core-free-icons';
+import { ANIMAL_LOGS_OPTIONS, getStatusColor } from '../constants';
 import LocationPicker from '../nuevo/LocationPicker';
 import StatusDatePicker from 'kadesh/components/shared/StatusDatePicker';
 import { useCreateLog } from './hooks/useCreateLog';
@@ -102,7 +104,7 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
     const latN = parseFloat(lat);
     const lngN = parseFloat(lng);
     if (lat === '' || lng === '' || isNaN(latN) || isNaN(lngN)) {
-      e.location = 'Selecciona una ubicación en el mapa o usa "Usar mi ubicación actual"';
+      e.location = 'Fija el pin en el mapa o usa «Estoy aquí».';
     }
     if (!address?.trim()) e.address = 'La dirección es requerida';
     if (!city?.trim()) e.city = 'La ciudad es requerida';
@@ -147,82 +149,83 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50" onClick={handleClose}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={handleClose}>
       <div
-        className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col border border-[#e0e0e0] dark:border-[#3a3a3a]"
+        className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border border-[#ececec] bg-white shadow-[0_16px_40px_rgba(15,35,80,0.18)] dark:border-white/10 dark:bg-night-raised"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">
-          <h2 className="text-xl font-bold text-[#212121] dark:text-[#ffffff]">Agregar registro</h2>
+        <div className="flex items-center justify-between border-b border-[#ececec] p-4 dark:border-white/10">
+          <h2 className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
+            Registro de {animalName}
+          </h2>
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 rounded-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a] text-[#616161] dark:text-[#b0b0b0]"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-[#5a5a5a] hover:bg-[#f7f8fa] dark:text-[#9aa3b2] dark:hover:bg-night"
             aria-label="Cerrar"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <HugeiconsIcon icon={Cancel01Icon} size={20} strokeWidth={1.5} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-          <div className="p-4 space-y-4 overflow-y-auto flex-1">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="flex-1 space-y-4 overflow-y-auto p-4">
             {errors.submit && (
-              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm">
+              <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
                 {errors.submit}
               </div>
             )}
 
-            {/* Status */}
             <div>
-              <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-                Estado <span className="text-red-500">*</span>
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {ANIMAL_LOGS_OPTIONS.map((opt) => (
-                  <label
-                    key={opt.value}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 cursor-pointer transition ${
-                      status === opt.value
-                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/30'
-                        : 'border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212]'
-                    }`}
-                  >
-                    <span>{statusIcons[opt.value] || '📋'}</span>
-                    <span className="text-sm font-medium text-[#212121] dark:text-[#ffffff]">{opt.label}</span>
-                    <input
-                      type="radio"
-                      name="status"
-                      value={opt.value}
-                      checked={status === opt.value}
-                      onChange={() => setStatus(opt.value)}
-                      className="sr-only"
-                    />
-                  </label>
-                ))}
+              <p className="mb-2 text-sm font-medium text-[#121212] dark:text-[#eef1f6]">
+                Estado <span className="text-red-600">*</span>
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {ANIMAL_LOGS_OPTIONS.map((opt) => {
+                  const selected = status === opt.value;
+                  const color = getStatusColor(opt.value);
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => setStatus(opt.value)}
+                      className={`inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-sm font-semibold ${
+                        selected
+                          ? 'text-white'
+                          : 'bg-[#f3f5f8] text-[#3a3a3a] hover:bg-kadesh-50 dark:bg-night dark:text-[#d0d0d0] dark:hover:bg-kadesh/20'
+                      }`}
+                      style={selected ? { backgroundColor: color } : undefined}
+                    >
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: selected ? '#ffffff' : color }}
+                        aria-hidden
+                      />
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
-              {errors.status && <p className="mt-1 text-xs text-red-500">{errors.status}</p>}
+              {errors.status && <p className="mt-1 text-xs text-red-600">{errors.status}</p>}
             </div>
 
-            {/* Date Status */}
             <div>
-              <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-                Fecha del estado <span className="text-red-500">*</span>
+              <label className="mb-2 block text-sm font-medium text-[#121212] dark:text-[#eef1f6]">
+                Fecha <span className="text-red-600">*</span>
               </label>
-              <div className="flex items-center gap-3 mb-2">
+              <div className="mb-2 flex items-center gap-3">
                 <input
                   id="isToday"
                   type="checkbox"
                   checked={isToday}
                   onChange={(e) => setIsToday(e.target.checked)}
-                  className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                  className="h-4 w-4 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
                 />
-                <label htmlFor="isToday" className="text-sm font-medium text-[#212121] dark:text-[#ffffff] cursor-pointer">
+                <label htmlFor="isToday" className="cursor-pointer text-sm font-medium text-[#121212] dark:text-[#eef1f6]">
                   Fue hoy
                 </label>
               </div>
-              
               <StatusDatePicker
                 value={dateStatus}
                 onChange={setDateStatus}
@@ -232,30 +235,30 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
               />
             </div>
 
-              {/* Contact phone */}
-              <div>
-                <label htmlFor="add-log-contactNumber" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-                  Teléfono de contacto <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="add-log-contactNumber"
-                  type="tel"
-                  value={contactNumber}
-                  onChange={(e) => setContactNumber(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  placeholder="Ej. +52 55 1234 5678"
-                />
-                {errors.contactNumber && <p className="mt-1 text-xs text-red-500">{errors.contactNumber}</p>}
-              </div>
-
-            {/* Location */}
             <div>
-              {errors.location && <p className="mb-2 text-xs text-red-500">{errors.location}</p>}
-              {errors.address && <p className="mb-1 text-xs text-red-500">{errors.address}</p>}
-              {errors.contactNumber && <p className="mb-1 text-xs text-red-500">{errors.contactNumber}</p>}
-              {errors.city && <p className="mb-1 text-xs text-red-500">{errors.city}</p>}
-              {errors.state && <p className="mb-1 text-xs text-red-500">{errors.state}</p>}
-              {errors.country && <p className="mb-2 text-xs text-red-500">{errors.country}</p>}
+              <label
+                htmlFor="add-log-contactNumber"
+                className="mb-2 block text-sm font-medium text-[#121212] dark:text-[#eef1f6]"
+              >
+                Teléfono <span className="text-red-600">*</span>
+              </label>
+              <input
+                id="add-log-contactNumber"
+                type="tel"
+                value={contactNumber}
+                onChange={(e) => setContactNumber(e.target.value)}
+                className="w-full rounded-xl border border-[#d8dee8] bg-[#f7f8fa] px-3 py-2 text-[#121212] placeholder:text-[#5a5a5a] focus:border-kadesh focus:outline-none focus:ring-2 focus:ring-kadesh/30 dark:border-white/12 dark:bg-night dark:text-[#eef1f6]"
+                placeholder="55 1234 5678"
+              />
+              {errors.contactNumber && <p className="mt-1 text-xs text-red-600">{errors.contactNumber}</p>}
+            </div>
+
+            <div>
+              {errors.location && <p className="mb-2 text-xs text-red-600">{errors.location}</p>}
+              {errors.address && <p className="mb-1 text-xs text-red-600">{errors.address}</p>}
+              {errors.city && <p className="mb-1 text-xs text-red-600">{errors.city}</p>}
+              {errors.state && <p className="mb-1 text-xs text-red-600">{errors.state}</p>}
+              {errors.country && <p className="mb-2 text-xs text-red-600">{errors.country}</p>}
               <LocationPicker
                 lat={lat}
                 lng={lng}
@@ -264,56 +267,55 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
                 state={state}
                 country={country}
                 isVisible={isOpen}
+                compact
                 onLocationChange={handleLocationChange}
                 onAddressChange={handleAddressChange}
               />
             </div>
 
-            {/* Last seen */}
             <div className="flex items-center gap-2">
               <input
                 id="lastSeen"
                 type="checkbox"
                 checked={lastSeen}
                 onChange={(e) => setLastSeen(e.target.checked)}
-                className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                className="h-4 w-4 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
               />
-              <label htmlFor="lastSeen" className="text-sm font-medium text-[#212121] dark:text-[#ffffff]">
+              <label htmlFor="lastSeen" className="text-sm font-medium text-[#121212] dark:text-[#eef1f6]">
                 Última vez visto en esta ubicación
               </label>
             </div>
 
-            {/* Notes */}
             <div>
-              <label htmlFor="add-log-notes" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-                Notas <span className="text-red-500">*</span>
+              <label htmlFor="add-log-notes" className="mb-2 block text-sm font-medium text-[#121212] dark:text-[#eef1f6]">
+                Nota <span className="text-red-600">*</span>
               </label>
               <textarea
                 id="add-log-notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
-                placeholder="Información adicional sobre este registro..."
+                className="w-full resize-none rounded-xl border border-[#d8dee8] bg-[#f7f8fa] px-3 py-2 text-[#121212] placeholder:text-[#5a5a5a] focus:border-kadesh focus:outline-none focus:ring-2 focus:ring-kadesh/30 dark:border-white/12 dark:bg-night dark:text-[#eef1f6]"
+                placeholder="Qué pasó o cómo reconocerlo en este punto"
               />
-              {errors.notes && <p className="mt-1 text-xs text-red-500">{errors.notes}</p>}
+              {errors.notes && <p className="mt-1 text-xs text-red-600">{errors.notes}</p>}
             </div>
           </div>
 
-          <div className="flex gap-3 p-4 border-t border-[#e0e0e0] dark:border-[#3a3a3a]">
+          <div className="flex gap-3 border-t border-[#ececec] p-4 dark:border-white/10">
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-[#f5f5f5] dark:bg-[#2a2a2a] hover:bg-[#e5e5e5] dark:hover:bg-[#3a3a3a] text-[#212121] dark:text-[#ffffff] font-medium transition-colors"
+              className="min-h-11 flex-1 rounded-xl bg-[#f3f5f8] px-4 text-sm font-semibold text-[#121212] hover:bg-[#e6e9ef] dark:bg-night dark:text-[#eef1f6] dark:hover:bg-white/10"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="min-h-11 flex-1 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isSubmitting ? 'Guardando...' : 'Guardar registro'}
+              {isSubmitting ? 'Guardando…' : 'Guardar'}
             </button>
           </div>
         </form>

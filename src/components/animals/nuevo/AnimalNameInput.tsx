@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface AnimalNameInputProps {
   value: string;
   onChange: (name: string) => void;
   required?: boolean;
+  unnamedByDefault?: boolean;
+  error?: string;
 }
 
 const PET_NAMES = [
@@ -18,109 +20,92 @@ const PET_NAMES = [
   'Bentley', 'Pepper', 'Jax', 'Ginger', 'Ace', 'Princess', 'Bandit', 'Lucky',
   'Shadow', 'Apollo', 'Blue', 'Cash', 'Maggie',
   'Chance', 'Diesel', 'Sasha', 'Gunner', 'Roxy', 'King', 'Nina',
-  'Maximus', 'Zoey', 'Ranger', 'Layla', 'Samson',
-  'Thor', 'Titan',
-  'Simba', 'Oliver', 'Felix', 'Whiskers',
-  'Garfield', 'Tom', 'Jerry', 'Spike',
-  'Fluffy', 'Snowball', 'Mittens',
-  'Tiger', 'Smokey', 'Patches', 'Oreo',
-  'Gizmo', 'Pumpkin', 'Cinnamon',
-  'Mocha', 'Caramel', 'Honey',
-  'Sunny', 'Buttercup', 'Dandelion', 'Marigold',
-  'Rio', 'Samba', 'Tango', 'Cha-Cha',
-  'Paco', 'Pepe', 'Chico', 'Loco',
-  'Amigo', 'Bonito', 'Chiquito', 'Fiesta',
+  'Simba', 'Oliver', 'Felix', 'Paco', 'Pepe', 'Chico', 'Amigo',
 ];
 
-export default function AnimalNameInput({ value, onChange, required = false }: AnimalNameInputProps) {
-  const [hasNoName, setHasNoName] = useState(value === 'Sin nombre' || value === '');
+const inputClassName =
+  'w-full rounded-xl border border-[#d8dee8] bg-white px-4 py-3 text-sm text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/18 dark:bg-night dark:text-[#eef1f6] dark:placeholder:text-[#9aa3b2]';
+
+export default function AnimalNameInput({
+  value,
+  onChange,
+  required = false,
+  unnamedByDefault = false,
+  error,
+}: AnimalNameInputProps) {
+  const [hasNoName, setHasNoName] = useState(
+    unnamedByDefault || value === 'Sin nombre'
+  );
   const hasInitializedRef = useRef(false);
 
   useEffect(() => {
-    // Sincronizar el estado del checkbox con el valor
-    if (value === 'Sin nombre') {
-      setHasNoName(true);
-      hasInitializedRef.current = true;
-    } else if (value && value.trim() !== '' && value !== 'Sin nombre') {
-      setHasNoName(false);
-      hasInitializedRef.current = true;
-    } else if (value === '' && !hasInitializedRef.current) {
-      // Solo establecer 'Sin nombre' una vez al inicio si el valor está vacío
-      // Esto maneja el caso cuando el componente se monta con value=''
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+    if (unnamedByDefault && !value) {
       onChange('Sin nombre');
-      hasInitializedRef.current = true;
+      setHasNoName(true);
     }
-  }, [value, onChange]);
+  }, [onChange, unnamedByDefault, value]);
 
   const generateRandomName = () => {
-    const randomIndex = Math.floor(Math.random() * PET_NAMES.length);
-    const randomName = PET_NAMES[randomIndex];
+    const randomName = PET_NAMES[Math.floor(Math.random() * PET_NAMES.length)];
     onChange(randomName);
     setHasNoName(false);
   };
 
   const handleNoNameChange = (checked: boolean) => {
     setHasNoName(checked);
-    if (checked) {
-      onChange('Sin nombre');
-    } else {
-      // Si se desmarca, limpiar el nombre para que el usuario pueda escribir uno nuevo
-      onChange('');
-    }
-  };
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newName = e.target.value;
-    onChange(newName);
-    if (newName.trim() !== '' && newName.trim() !== 'Sin nombre') {
-      setHasNoName(false);
-    } else if (newName.trim() === 'Sin nombre') {
-      setHasNoName(true);
-    }
+    onChange(checked ? 'Sin nombre' : '');
   };
 
   return (
     <div>
-      <label htmlFor="name" className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-        Nombre del Animal {required && <span className="text-red-500">*</span>}
+      <label
+        htmlFor="name"
+        className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
+      >
+        Nombre {required && <span className="text-red-600">*</span>}
       </label>
-      
+
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
+        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-[#3a3a3a] dark:text-[#d0d0d0]">
           <input
             id="noName"
             type="checkbox"
             checked={hasNoName}
             onChange={(e) => handleNoNameChange(e.target.checked)}
-            className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+            className="h-4 w-4 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
           />
-          <label htmlFor="noName" className="text-sm font-medium text-[#212121] dark:text-[#ffffff] cursor-pointer">
-            El animal no tiene nombre
-          </label>
-        </div>
+          No tiene nombre
+        </label>
 
-        {/* Input de nombre y botón generador */}
         <div className="flex gap-2">
           <input
             id="name"
             type="text"
-            value={value}
-            onChange={handleNameChange}
+            value={hasNoName ? 'Sin nombre' : value}
+            onChange={(e) => {
+              onChange(e.target.value);
+              if (e.target.value.trim() && e.target.value !== 'Sin nombre') {
+                setHasNoName(false);
+              }
+            }}
             required={required && !hasNoName}
             disabled={hasNoName}
-            className="flex-1 px-4 py-2 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 disabled:opacity-50 disabled:cursor-not-allowed"
-            placeholder={hasNoName ? "Sin nombre (se establecerá automáticamente)" : "Ej: Max, Luna, Rocky..."}
+            className={inputClassName}
+            placeholder="Ej. Luna, Rocky…"
+            autoComplete="off"
           />
           <button
             type="button"
             onClick={generateRandomName}
             disabled={hasNoName}
-            className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
-            title="Generar nombre aleatorio"
+            className="shrink-0 rounded-xl bg-kadesh px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
           >
-            🎲 Generar
+            Sugerir
           </button>
         </div>
+        {error ? <p className="text-xs text-red-600">{error}</p> : null}
       </div>
     </div>
   );

@@ -18,10 +18,10 @@ interface LogMapProps {
   lat: number;
   lng: number;
   status: string;
-  height?: string;
+  className?: string;
 }
 
-export default function LogMap({ lat, lng, status, height = '300px' }: LogMapProps) {
+export default function LogMap({ lat, lng, status, className }: LogMapProps) {
   const { resolvedTheme } = useTheme();
   const [ready, setReady] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -65,7 +65,10 @@ export default function LogMap({ lat, lng, status, height = '300px' }: LogMapPro
 
     resetLeafletContainer(container);
 
-    const map = L.map(container, { zoomControl: true }).setView([validLat, validLng], 15);
+    const map = L.map(container, {
+      zoomControl: true,
+      attributionControl: false,
+    }).setView([validLat, validLng], 15);
     mapRef.current = map;
     attachFreeMapBaseLayer(map);
     applyFreeMapThemeClass(container, resolvedTheme);
@@ -91,10 +94,9 @@ export default function LogMap({ lat, lng, status, height = '300px' }: LogMapPro
   if (validLat === null || validLng === null) {
     return (
       <div
-        className="flex w-full items-center justify-center rounded-lg bg-[#f5f5f5] dark:bg-[#1e1e1e]"
-        style={{ height }}
+        className={`flex h-full min-h-[280px] w-full items-center justify-center bg-[#f3f5f8] dark:bg-night ${className ?? ''}`}
       >
-        <p className="text-sm text-[#616161] dark:text-[#b0b0b0]">Coordenadas inválidas</p>
+        <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">Ubicación no disponible</p>
       </div>
     );
   }
@@ -102,17 +104,18 @@ export default function LogMap({ lat, lng, status, height = '300px' }: LogMapPro
   const isDarkMode = mounted && isDarkMapTheme(resolvedTheme);
 
   return (
-    <div className="relative w-full overflow-hidden rounded-lg shadow-lg" style={{ height }}>
+    <div
+      className={`relative z-0 isolate h-full min-h-[280px] w-full overflow-hidden ${className ?? ''} [&_.leaflet-control-attribution]:hidden [&_.maplibregl-ctrl-attrib]:hidden`}
+    >
       <div
         ref={containerRef}
         className={`h-full w-full ${
           isDarkMode ? 'kadesh-free-map--night' : 'kadesh-free-map--standard'
         }`}
-        style={{ minHeight: height }}
       />
       {!ready && (
-        <div className="absolute inset-0 z-[1] flex items-center justify-center bg-[#eef3f8]/90 dark:bg-[#1e2a3a]/90">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Cargando mapa…</p>
+        <div className="absolute inset-0 z-[1] flex items-center justify-center bg-[#f7f8fa]/90 dark:bg-night-raised/90">
+          <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">Cargando mapa…</p>
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_NEARBY_ANIMALS_QUERY, GET_ANIMAL_TYPES_QUERY } from '../queries';
 import { LostAnimal, AnimalFilters, AnimalType } from '../types';
@@ -98,6 +98,10 @@ export function useLostAnimals(
   const ANIMALS_PER_PAGE = animalsPerPage || DEFAULT_ANIMALS_PER_PAGE;
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<AnimalFilters>(initialFilters || {});
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [radiusKm]);
 
   // Get animal types to map Spanish names to English database values
   const { data: animalTypesData } = useQuery(GET_ANIMAL_TYPES_QUERY, {

@@ -89,6 +89,7 @@ Radios 12–16px en controles y tarjetas; CTAs primarios de listado pueden ser `
 - FAQ: H3 pregunta + párrafo inmediato (nada oculto en acordeón).
 - Home, veterinarias: tarjeta con recuadro-mapa (pin de marca), no avatar de letra.
 - Directorio `/veterinarias`: herramienta lista + mapa, sin franja de héroe; ficha de fila con el mismo pin.
+- Directorio `/animales`: misma herramienta (H1 en el panel, chips de radio). Filtros: Perdido / Encontrado / En adopción (color del pin) + tipo; el vacío nombra la búsqueda.
 - Ficha `/veterinarias/[id]`: una pantalla en escritorio (mapa + contacto + horarios + reseñas); reseñas con scroll interno.
 
 ## Do's and Don'ts

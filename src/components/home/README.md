@@ -28,7 +28,7 @@ El azul de marca vive **solo** en `src/app/globals.css` como `--color-kadesh`. L
 
 ## Motion
 
-Personalidad **Premium**. Momento autorial: el recuadro-mapa se revela y los pines (huellas por estado + veterinarias) caen en secuencia. El pin «Perdido» pulsa. Las calles se desplazan lento. `prefers-reduced-motion` deja el mapa ya poblado.
+Personalidad **Premium**. Momento autorial: el recuadro-mapa se revela y los pines (huellas por estado + veterinarias) caen en secuencia. El pin «Perdido» pulsa. Las calles se desplazan lento. Los chips del hero (veterinarias + Perdí / Encontré / adopción) usan el mismo GSAP que el directorio: stagger al aparecer y pulso `scale` al tocar. `prefers-reduced-motion` deja el mapa ya poblado y apaga el pulso.
 
 ## Secciones y anclas
 

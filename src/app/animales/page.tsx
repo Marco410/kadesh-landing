@@ -1,17 +1,25 @@
 "use client";
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Navigation, Footer } from 'kadesh/components/layout';
-import { AnimalCard, AnimalFilters, AnimalsMap, useLostAnimals, LostAnimal } from 'kadesh/components/animals';
-import { ANIMAL_LOGS_OPTIONS } from 'kadesh/components/animals/constants';
+import {
+  AnimalCard,
+  AnimalFilters,
+  AnimalsMap,
+  useLostAnimals,
+  LostAnimal,
+} from 'kadesh/components/animals';
+import { ANIMAL_LOGS_OPTIONS, emptyDirectoryHeadline } from 'kadesh/components/animals/constants';
 import { useUser } from 'kadesh/utils/UserContext';
 import { ConfirmModal } from 'kadesh/components/shared';
-import { motion } from 'framer-motion';
 import { Routes } from 'kadesh/core/routes';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { AddCircleIcon } from '@hugeicons/core-free-icons';
-import { useTheme } from 'next-themes';
+import {
+  Add01Icon,
+  Location01Icon,
+  Search01Icon,
+} from '@hugeicons/core-free-icons';
 import { DEFAULT_RADIUS, RADIUS_OPTIONS_ANIMALS } from 'kadesh/constants/constans';
 
 function LostAnimalsPageContent() {
@@ -31,18 +39,10 @@ function LostAnimalsPageContent() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
   const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS);
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  const isDarkMode = mounted && resolvedTheme === 'dark';
-
-  // Get user location on mount
   useEffect(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
-      setLocationError('La geolocalización no está disponible en tu navegador');
+      setLocationError('La geolocalización no está disponible');
       setUserLocation({ lat: null, lng: null });
       setLocationLoading(false);
       return;
@@ -60,30 +60,22 @@ function LostAnimalsPageContent() {
         setLocationLoading(false);
       },
       (error) => {
-        let errorMessage = 'No se pudo obtener tu ubicación';
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = 'Permiso de ubicación denegado. Por favor, permite el acceso a tu ubicación para ver animales cercanos.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Información de ubicación no disponible';
-            break;
-          case error.TIMEOUT:
-            errorMessage = 'Tiempo de espera agotado al obtener la ubicación';
-            break;
-        }
-        setLocationError(errorMessage);
+        const message =
+          error.code === error.PERMISSION_DENIED
+            ? 'Permiso de ubicación denegado. Activa la ubicación para ver animales cercanos.'
+            : 'No se pudo obtener tu ubicación';
+        setLocationError(message);
         setUserLocation({ lat: null, lng: null });
         setLocationLoading(false);
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 0, // Don't use cached location
+        maximumAge: 0,
       }
     );
   }, []);
-  
+
   const {
     animals,
     allAnimals,
@@ -106,10 +98,20 @@ function LostAnimalsPageContent() {
     radiusKm
   );
 
+  const hasLocation =
+    userLocation != null && userLocation.lat != null && userLocation.lng != null;
+  const nextRadius = RADIUS_OPTIONS_ANIMALS.find((km) => km > radiusKm);
+  const hasActiveFilters = Boolean(filters.type || filters.status);
+
+  useEffect(() => {
+    if (selectedAnimal && !allAnimals.some((animal) => animal.id === selectedAnimal.id)) {
+      setSelectedAnimal(null);
+    }
+  }, [allAnimals, selectedAnimal]);
+
   const handleAnimalClick = (animal: LostAnimal | null) => {
     setSelectedAnimal(animal);
     if (animal) {
-      // Scroll to animal card
       const element = document.getElementById(`animal-${animal.id}`);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -117,19 +119,19 @@ function LostAnimalsPageContent() {
     }
   };
 
-  const handleReportAnimalClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    
-    if (userLoading) {
-      return; // Wait for user to load
-    }
-    
+  const handleRadiusChange = (km: number) => {
+    setRadiusKm(km);
+    goToPage(1);
+    setSelectedAnimal(null);
+  };
+
+  const handleReportAnimalClick = () => {
+    if (userLoading) return;
     if (!user) {
-      // Show modal to confirm redirect to login
       setShowLoginModal(true);
-    } else {
-      router.push( Routes.animals.new);
+      return;
     }
+    router.push(Routes.animals.new);
   };
 
   const handleConfirmLogin = () => {
@@ -138,179 +140,211 @@ function LostAnimalsPageContent() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a] pt-[72px]">
+    <main className="min-h-screen bg-white pt-[72px] dark:bg-night">
       <Navigation />
-      
-      {/* Hero Section - Compact */}
-      <section className="w-full py-4 bg-gradient-to-br from-kadesh to-kadesh-600 ">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <h1 className="text-2xl sm:text-3xl font-black text-white mb-1">
-              Animales Perdidos y en Adopción
-            </h1>
-            <p className="text-sm text-kadesh-50 max-w-2xl mx-auto">
-              Ayudemos a encontrarles un hogar
-            </p>
-          </motion.div>
-        </div>
-      </section>
 
-      {/* CTA Button - Fixed Bottom Center (safe area en móvil) */}
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 pb-[env(safe-area-inset-bottom)] md:pb-0">
-        <motion.button
-          onClick={handleReportAnimalClick}
-          disabled={userLoading}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="bg-kadesh hover:bg-kadesh-600 text-white font-bold text-lg px-6 py-4 rounded-full shadow-2xl flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <HugeiconsIcon 
-            icon={AddCircleIcon} 
-            size={25} 
-            className="text-white"
-            strokeWidth={1.5}
-          />
-          Reportar Animal
-        </motion.button>
-      </div>
-
-      {/* Main Content - Map and Cards Layout */}
-      {/* Mobile: Map first, then cards below. Desktop: Cards left, map right */}
-      <div className="flex flex-col md:flex-row md:h-[calc(100vh-140px)] md:overflow-hidden">
-        {/* Map Section - First on mobile, right on desktop */}
-        <div className="w-full md:flex-1 relative min-w-0 h-[350px] md:h-full md:order-2 flex-shrink-0">
+      <div className="flex flex-col md:h-[calc(100vh-72px)] md:flex-row md:overflow-hidden">
+        <div className="relative h-[42vh] min-h-[280px] w-full min-w-0 flex-shrink-0 md:order-2 md:h-full md:min-h-0 md:flex-1">
           <AnimalsMap
             animals={allAnimals}
             selectedAnimal={selectedAnimal}
             onAnimalClick={handleAnimalClick}
             height="100%"
           />
+          <button
+            type="button"
+            onClick={handleReportAnimalClick}
+            disabled={userLoading}
+            className="absolute right-3 top-3 z-10 inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(15,35,80,0.18)] transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:hidden"
+          >
+            <HugeiconsIcon icon={Add01Icon} size={18} strokeWidth={1.5} />
+            Reportar
+          </button>
         </div>
 
-        {/* Left Sidebar - Filters and Cards - Below on mobile, left on desktop */}
-        <div className="w-full md:w-80 lg:w-[380px] xl:w-[420px] flex flex-col bg-white dark:bg-[#1e1e1e] md:border-r border-t md:border-t-0 border-[#e0e0e0] dark:border-[#3a3a3a] flex-shrink-0 md:order-1 md:h-full">
-          {/* Filters Section */}
-          <div className="flex-shrink-0 p-4 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">
-            <div className="mb-4">
-              <h2 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] mb-2">
-                Animales ({totalAnimals})
-              </h2>
-              {locationLoading && (
-                <p className="text-xs text-kadesh dark:text-kadesh-400 mb-2">
-                  Obteniendo tu ubicación...
+        <aside className="flex w-full flex-col border-t border-[#ececec] bg-white md:order-1 md:h-full md:w-[400px] md:flex-shrink-0 md:border-t-0 md:border-r xl:w-[440px] dark:border-white/10 dark:bg-night-raised">
+          <header className="flex-shrink-0 border-b border-[#ececec] px-5 py-5 dark:border-white/10">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h1 className="text-2xl font-black tracking-[-0.03em] text-[#121212] dark:text-white">
+                  Animales
+                </h1>
+                <p className="mt-1 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+                  {hasLocation
+                    ? `${totalAnimals} cerca de ti`
+                    : 'Perdidos, encontrados y en adopción'}
                 </p>
-              )}
-              {locationError && (
-                <p className="text-xs text-red-500 dark:text-red-400 mb-2">
-                  {locationError}
-                </p>
-              )}
-              {userLocation && userLocation.lat != null && userLocation.lng != null && !locationError && (
-                <>
-                  <p className="text-xs text-green-600 dark:text-green-400 mb-2">
-                    Radio de {radiusKm} km desde tu ubicación
-                  </p>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">Radio:</span>
-                    {RADIUS_OPTIONS_ANIMALS.map((km) => (
-                      <button
-                        key={km}
-                        type="button"
-                        onClick={() => setRadiusKm(km)}
-                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                          radiusKm === km
-                            ? 'bg-kadesh text-white'
-                            : 'bg-[#f0f0f0] dark:bg-[#2a2a2a] text-[#212121] dark:text-[#e0e0e0] hover:bg-[#e0e0e0] dark:hover:bg-[#3a3a3a]'
-                        }`}
-                      >
-                        {km} km
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
+              </div>
+              <button
+                type="button"
+                onClick={handleReportAnimalClick}
+                disabled={userLoading}
+                className="hidden min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh md:inline-flex"
+              >
+                <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
+                Reportar
+              </button>
             </div>
-            
-            <AnimalFilters
-              filters={filters}
-              onFiltersChange={updateFilters}
-              onClearFilters={clearFilters}
-            />
-          </div>
 
-          {/* Cards List - Scrollable (pb-24 para no tapar con el botón flotante) */}
-          <div className="flex-1 overflow-y-auto p-4 pb-24 md:pb-4 space-y-3">
+            {locationLoading && (
+              <p className="mt-3 text-sm font-medium text-kadesh">
+                Obteniendo tu ubicación…
+              </p>
+            )}
+            {locationError && (
+              <p className="mt-3 flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
+                <HugeiconsIcon
+                  icon={Location01Icon}
+                  size={16}
+                  className="mt-0.5 flex-shrink-0"
+                  strokeWidth={1.5}
+                />
+                <span>{locationError}</span>
+              </p>
+            )}
+
+            {hasLocation && !locationError && (
+              <div
+                role="group"
+                aria-label="Radio de búsqueda"
+                className="mt-4 flex flex-wrap gap-1.5"
+              >
+                {RADIUS_OPTIONS_ANIMALS.map((km) => (
+                  <button
+                    key={km}
+                    type="button"
+                    onClick={() => handleRadiusChange(km)}
+                    className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
+                      radiusKm === km
+                        ? 'bg-kadesh text-white'
+                        : 'bg-[#f3f5f8] text-[#3a3a3a] hover:bg-kadesh-50 dark:bg-night dark:text-[#d0d0d0] dark:hover:bg-kadesh/20'
+                    }`}
+                  >
+                    {km} km
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-4">
+              <AnimalFilters
+                filters={filters}
+                onFiltersChange={updateFilters}
+                onClearFilters={clearFilters}
+              />
+            </div>
+          </header>
+
+          <div className="flex-1 overflow-y-auto p-4">
             {(locationLoading || animalsLoading) && animals.length === 0 ? (
               <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
+                {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    className="flex gap-3 p-3 rounded-xl bg-[#f0f0f0] dark:bg-[#2a2a2a] border border-[#e0e0e0] dark:border-[#3a3a3a] animate-pulse"
+                    className="animate-pulse rounded-2xl border border-[#ececec] p-4 dark:border-white/10"
                   >
-                    <div className="w-24 h-24 rounded-lg bg-[#e0e0e0] dark:bg-[#3a3a3a] flex-shrink-0" />
-                    <div className="flex-1 min-w-0 space-y-2">
-                      <div className="h-4 w-3/4 rounded bg-[#e0e0e0] dark:bg-[#3a3a3a]" />
-                      <div className="h-3 w-1/2 rounded bg-[#e0e0e0] dark:bg-[#3a3a3a]" />
-                      <div className="h-3 w-full rounded bg-[#e0e0e0] dark:bg-[#3a3a3a]" />
+                    <div className="flex gap-3">
+                      <div className="h-20 w-20 rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 w-3/4 rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
+                        <div className="h-3 w-1/2 rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
+                        <div className="h-3 w-2/3 rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
+                      </div>
                     </div>
+                    <div className="mt-3 h-11 rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]" />
                   </div>
                 ))}
               </div>
             ) : animals.length === 0 ? (
-              <div className="text-center py-12 px-2">
-                <svg className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 className="text-lg font-bold text-[#212121] dark:text-[#ffffff] mb-2">
-                  No se encontraron animales
-                </h3>
-                <p className="text-sm text-[#616161] dark:text-[#b0b0b0] mb-4 max-w-xs mx-auto">
+              <div className="flex flex-col items-center px-4 py-12 text-center">
+                <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
+                  <HugeiconsIcon icon={Search01Icon} size={28} strokeWidth={1.5} />
+                </span>
+                <p className="text-base font-semibold text-[#121212] dark:text-white">
                   {locationError
-                    ? 'Activa la ubicación en tu navegador para ver animales cerca de ti, o usa los filtros para buscar por tipo, estatus o ubicación.'
-                    : 'Prueba cambiando o limpiando los filtros para ver más resultados.'}
+                    ? 'Sin ubicación no podemos ordenar por distancia'
+                    : emptyDirectoryHeadline(filters, radiusKm)}
                 </p>
-                <button
-                  onClick={clearFilters}
-                  className="px-4 py-2 bg-kadesh hover:bg-kadesh-600 text-white text-sm font-semibold rounded-lg transition-colors"
-                >
-                  Limpiar filtros
-                </button>
+                <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#5a5a5a] dark:text-[#b0b0b0]">
+                  {locationError
+                    ? 'Activa la ubicación en el navegador para ver animales cerca de ti.'
+                    : hasActiveFilters && nextRadius
+                      ? 'Amplía el radio o quita un filtro para ver más reportes.'
+                      : hasActiveFilters
+                        ? 'Quita un filtro para ver más reportes.'
+                        : nextRadius
+                          ? 'Amplía el radio: en esta zona los reportes suelen aparecer más lejos.'
+                          : 'No encontramos reportes en el radio máximo. Publica el tuyo para que otros lo vean.'}
+                </p>
+                {hasActiveFilters && nextRadius ? (
+                  <div className="mt-5 flex flex-col items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRadiusChange(nextRadius)}
+                      className="inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
+                    >
+                      Buscar en {nextRadius} km
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearFilters}
+                      className="text-sm font-semibold text-kadesh hover:text-kadesh-600"
+                    >
+                      Quitar filtros
+                    </button>
+                  </div>
+                ) : hasActiveFilters ? (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
+                  >
+                    Quitar filtros
+                  </button>
+                ) : hasLocation && nextRadius ? (
+                  <button
+                    type="button"
+                    onClick={() => handleRadiusChange(nextRadius)}
+                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
+                  >
+                    Buscar en {nextRadius} km
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleReportAnimalClick}
+                    disabled={userLoading}
+                    className="mt-5 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:opacity-50"
+                  >
+                    <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
+                    Reportar un animal
+                  </button>
+                )}
               </div>
             ) : (
               <>
-                {animals.map((animal, index) => (
-                  <div
-                    key={animal.id}
-                    id={`animal-${animal.id}`}
-                    onClick={() => handleAnimalClick(animal)}
-                    className="cursor-pointer"
-                  >
+                <div className="space-y-3">
+                  {animals.map((animal) => (
                     <AnimalCard
-                      isDarkMode={isDarkMode}
+                      key={animal.id}
                       animal={animal}
-                      index={index}
                       variant="horizontal"
                       isSelected={selectedAnimal?.id === animal.id}
+                      onClick={() => handleAnimalClick(animal)}
                     />
-                  </div>
-                ))}
+                  ))}
+                </div>
 
-                {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-[#e0e0e0] dark:border-[#3a3a3a]">
+                  <div className="mt-6 flex items-center justify-center gap-2 border-t border-[#ececec] pt-4 dark:border-white/10">
                     <button
+                      type="button"
                       onClick={previousPage}
                       disabled={!hasPreviousPage}
-                      className="px-3 py-1.5 rounded-lg bg-white dark:bg-[#121212] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a] transition-colors"
+                      className="rounded-lg border border-[#ececec] bg-white px-3 py-1.5 text-sm font-medium text-[#121212] disabled:cursor-not-allowed disabled:opacity-50 hover:bg-[#f7f8fa] dark:border-white/10 dark:bg-night dark:text-white dark:hover:bg-night-raised"
                     >
                       Anterior
                     </button>
-                    
                     <div className="flex items-center gap-1">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                         if (
@@ -321,27 +355,36 @@ function LostAnimalsPageContent() {
                           return (
                             <button
                               key={page}
+                              type="button"
                               onClick={() => goToPage(page)}
-                              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                              className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
                                 currentPage === page
                                   ? 'bg-kadesh text-white'
-                                  : 'bg-white dark:bg-[#121212] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a]'
+                                  : 'border border-[#ececec] bg-white text-[#121212] hover:bg-[#f7f8fa] dark:border-white/10 dark:bg-night dark:text-white'
                               }`}
                             >
                               {page}
                             </button>
                           );
-                        } else if (page === currentPage - 2 || page === currentPage + 2) {
-                          return <span key={page} className="px-1 text-[#616161] dark:text-[#b0b0b0] text-sm">...</span>;
+                        }
+                        if (page === currentPage - 2 || page === currentPage + 2) {
+                          return (
+                            <span
+                              key={page}
+                              className="px-1 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]"
+                            >
+                              …
+                            </span>
+                          );
                         }
                         return null;
                       })}
                     </div>
-
                     <button
+                      type="button"
                       onClick={nextPage}
                       disabled={!hasNextPage}
-                      className="px-3 py-1.5 rounded-lg bg-white dark:bg-[#121212] border border-[#e0e0e0] dark:border-[#3a3a3a] text-[#212121] dark:text-[#ffffff] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a] transition-colors"
+                      className="rounded-lg border border-[#ececec] bg-white px-3 py-1.5 text-sm font-medium text-[#121212] disabled:cursor-not-allowed disabled:opacity-50 hover:bg-[#f7f8fa] dark:border-white/10 dark:bg-night dark:text-white dark:hover:bg-night-raised"
                     >
                       Siguiente
                     </button>
@@ -350,16 +393,15 @@ function LostAnimalsPageContent() {
               </>
             )}
           </div>
-        </div>
+        </aside>
       </div>
 
-      {/* Login Required Modal */}
       <ConfirmModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
         onConfirm={handleConfirmLogin}
         title="Inicio de sesión requerido"
-        message="Debes iniciar sesión o registrarte para reportar un animal. ¿Deseas ser redirigido a la página de registro?"
+        message="Debes iniciar sesión o registrarte para reportar un animal. ¿Deseas ir a la página de registro?"
         confirmText="Ir a registro"
         cancelText="Cancelar"
       />
@@ -373,7 +415,7 @@ export default function LostAnimalsPage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a] pt-[72px]">
+        <main className="min-h-screen bg-white pt-[72px] dark:bg-night">
           <Navigation />
         </main>
       }

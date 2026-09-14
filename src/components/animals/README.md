@@ -1,10 +1,20 @@
 # Animales
 
-Listado, detalle y reporte de animales perdidos o en adopción. El visitante ve fichas cerca de su ubicación y puede reportar uno nuevo si está autenticado.
+Listado, detalle y reporte de animales perdidos o en adopción. `/animales` es una **herramienta** (lista + mapa), no una landing: el mapa ocupa el resto de la pantalla y la lista es un panel.
 
 ## Promesa
 
 Ayudar a encontrar o adoptar. El mapa y las tarjetas muestran el mismo conjunto; al tocar un pin se selecciona la ficha, y al tocar una ficha se centra el mapa.
+
+## UI
+
+- Sin franja azul de héroe. El H1 vive en el panel (`Animales`).
+- Radio en chips (`10–50 km`).
+- Filtros siempre visibles, sin cajón: **Todos / Perdido / Encontrado / En adopción** (punto del color del pin). Tipo: **Perro y Gato** al frente, con trazo; Ave, Pez, Reptil y Mamífero van en **Más**. Contorno vs relleno de marca para el seleccionado.
+- Motion (GSAP, `useGSAP` + timeline): pulso `scale` al tocar un chip; Más/Menos entra/sale en stagger (`autoAlpha` + `y`). `prefers-reduced-motion` lo apaga.
+- Si no hay resultados, el vacío nombra la búsqueda (`No hay reptiles rescatados en 10 km`) y ofrece ampliar radio o quitar filtros.
+- Ficha de lista: foto, estatus de color semántico, distancia, Ver ficha. Oscuro: `night` / `night-raised`.
+- **Reportar** está en el encabezado del panel (y sobre el mapa en móvil). Si no hay sesión, abre el modal de registro.
 
 ## Mapa
 

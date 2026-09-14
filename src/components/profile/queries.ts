@@ -1,8 +1,10 @@
 import { gql } from "@apollo/client";
 
-// User Profile Queries
 export const GET_USER_FAVORITE_POSTS_QUERY = gql`
-  query GetUserFavoritePosts($where: PostFavoriteWhereInput!, $orderBy: [PostFavoriteOrderByInput!]) {
+  query GetUserFavoritePosts(
+    $where: PostFavoriteWhereInput!
+    $orderBy: [PostFavoriteOrderByInput!]
+  ) {
     postFavorites(where: $where, orderBy: $orderBy) {
       id
       createdAt
@@ -94,12 +96,15 @@ export interface GetUserFavoritePostsVariables {
     };
   };
   orderBy?: Array<{
-    createdAt?: 'asc' | 'desc';
+    createdAt?: "asc" | "desc";
   }>;
 }
 
 export const GET_USER_LIKED_POSTS_QUERY = gql`
-  query GetUserLikedPosts($where: PostLikeWhereInput!, $orderBy: [PostLikeOrderByInput!]) {
+  query GetUserLikedPosts(
+    $where: PostLikeWhereInput!
+    $orderBy: [PostLikeOrderByInput!]
+  ) {
     postLikes(where: $where, orderBy: $orderBy) {
       id
       createdAt
@@ -191,12 +196,15 @@ export interface GetUserLikedPostsVariables {
     };
   };
   orderBy?: Array<{
-    createdAt?: 'asc' | 'desc';
+    createdAt?: "asc" | "desc";
   }>;
 }
 
 export const GET_USER_COMMENTS_QUERY = gql`
-  query GetUserComments($where: PostCommentWhereInput!, $orderBy: [PostCommentOrderByInput!]) {
+  query GetUserComments(
+    $where: PostCommentWhereInput!
+    $orderBy: [PostCommentOrderByInput!]
+  ) {
     postComments(where: $where, orderBy: $orderBy) {
       id
       comment
@@ -240,9 +248,10 @@ export interface GetUserCommentsVariables {
     };
   };
   orderBy?: Array<{
-    createdAt?: 'asc' | 'desc';
+    createdAt?: "asc" | "desc";
   }>;
 }
+
 export const DELETE_POST_COMMENT_MUTATION = gql`
   mutation DeletePostComment($where: PostCommentWhereUniqueInput!) {
     deletePostComment(where: $where) {
@@ -263,3 +272,54 @@ export interface DeletePostCommentResponse {
   };
 }
 
+export const GET_MY_ANIMALS_QUERY = gql`
+  query GetMyAnimals(
+    $where: AnimalWhereInput!
+    $orderBy: [AnimalOrderByInput!]!
+  ) {
+    animals(where: $where, orderBy: $orderBy) {
+      id
+      slug
+      name
+      createdAt
+      animal_breed {
+        breed
+        animal_type {
+          name
+        }
+      }
+      logs(orderBy: [{ date_status: desc }]) {
+        status
+      }
+      multimedia(orderBy: [{ order: asc }]) {
+        image {
+          url
+        }
+      }
+    }
+  }
+`;
+
+export interface MyAnimal {
+  id: string;
+  slug?: string | null;
+  name: string;
+  createdAt: string;
+  animal_breed?: {
+    breed: string;
+    animal_type?: { name: string } | null;
+  } | null;
+  logs: Array<{ status: string }>;
+  multimedia: Array<{ image?: { url: string } | null }>;
+}
+
+export interface GetMyAnimalsResponse {
+  animals: MyAnimal[];
+}
+
+export interface GetMyAnimalsVariables {
+  where: {
+    user: { id: { equals: string } };
+  };
+  orderBy: Array<{ createdAt?: "asc" | "desc" }>;
+}

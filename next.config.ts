@@ -1,7 +1,21 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@maplibre/maplibre-gl-leaflet'],
+  transpilePackages: ["@maplibre/maplibre-gl-leaflet"],
+  async redirects() {
+    return [
+      {
+        source: "/perfil/ventas",
+        destination: "/perfil",
+        permanent: false,
+      },
+      {
+        source: "/perfil/ventas/:path*",
+        destination: "/perfil",
+        permanent: false,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

@@ -32,8 +32,51 @@ export function isAnimalReportStatus(
 export const ANIMAL_SEX_OPTIONS = [
   { label: "Macho", value: "male" },
   { label: "Hembra", value: "female" },
-  { label: "Desconocido", value: "unknown" },
+  { label: "No lo sé", value: "unknown" },
 ];
+
+export const ANIMAL_SIZE_OPTIONS = [
+  { label: 'Pequeño', value: 'Pequeño' },
+  { label: 'Mediano', value: 'Mediano' },
+  { label: 'Grande', value: 'Grande' },
+] as const;
+
+export const ANIMAL_AGE_OPTIONS = [
+  { label: 'Cachorro', value: 'Cachorro' },
+  { label: 'Joven', value: 'Joven' },
+  { label: 'Adulto', value: 'Adulto' },
+  { label: 'Mayor', value: 'Mayor' },
+] as const;
+
+/** Alta sin nombre conocido: encontrado, abandonado o rescatado. */
+export const UNNAMED_BY_DEFAULT_STATUSES: readonly AnimalReportStatus[] = [
+  'found',
+  'abandoned',
+  'rescued',
+];
+
+export const REPORT_COPY: Record<
+  AnimalReportStatus,
+  { title: string; submit: string }
+> = {
+  lost: { title: 'Reportar perdido', submit: 'Publicar reporte' },
+  found: { title: 'Reportar encontrado', submit: 'Publicar reporte' },
+  in_adoption: { title: 'Dar en adopción', submit: 'Publicar' },
+  abandoned: { title: 'Reportar abandonado', submit: 'Publicar reporte' },
+  rescued: { title: 'Reportar rescatado', submit: 'Publicar reporte' },
+};
+
+const MIXED_BREED_RE =
+  /mestizo|mixto|desconoc|criollo|sin raza|otro|mixed|unknown|cross/i;
+
+export function findFallbackBreedId(
+  options: { id: string; breed?: string; label?: string }[]
+): string | null {
+  const mixed = options.find((option) =>
+    MIXED_BREED_RE.test(option.breed || option.label || '')
+  );
+  return mixed?.id ?? null;
+}
 
 // Mapeo de valores de AnimalType a labels en español
 export const ANIMAL_TYPE_LABELS: Record<string, string> = {

@@ -29,7 +29,8 @@ export const GET_ANIMALS_QUERY = gql`
         status
         createdAt
       }
-      multimedia {
+      multimedia(orderBy: [{ order: asc }]) {
+        order
         image {
           url
         }
@@ -106,6 +107,7 @@ export const GET_NEARBY_ANIMALS_QUERY = gql`
         multimedia {
           id
           url
+          order
         }
       }
     }
@@ -271,7 +273,8 @@ export const GET_ANIMAL_QUERY = gql`
         status
         date_status
       }
-      multimedia {
+      multimedia(orderBy: [{ order: asc }]) {
+        order
         image {
           url
         }

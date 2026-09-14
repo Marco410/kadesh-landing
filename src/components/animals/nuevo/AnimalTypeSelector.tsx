@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useQuery } from '@apollo/client';
-import { ANIMAL_TYPE_ICONS, ANIMAL_TYPE_LABELS } from 'kadesh/components/animals/constants';
+import { ANIMAL_TYPE_LABELS } from 'kadesh/components/animals/constants';
 import { GET_ANIMAL_TYPES_QUERY } from '../queries';
 import { TypeGlyph, isPrimaryDirectoryType } from '../TypeGlyph';
 import { useChipPulse, useRevealChips } from '../useChipMotion';
@@ -21,6 +21,7 @@ interface AnimalTypeSelectorProps {
   required?: boolean;
   variant?: 'default' | 'compact';
   selectedValue?: string;
+  error?: string;
 }
 
 function TypeChip({
@@ -75,6 +76,7 @@ export default function AnimalTypeSelector({
   required = true,
   variant = 'default',
   selectedValue,
+  error,
 }: AnimalTypeSelectorProps) {
   const { data: animalTypesData, loading: loadingTypes } = useQuery(GET_ANIMAL_TYPES_QUERY, {
     variables: { orderBy: [{ order: 'asc' }] },
@@ -111,108 +113,60 @@ export default function AnimalTypeSelector({
     if (selectedIsSecondary) setShowMoreTypes(true);
   }, [selectedIsSecondary]);
 
-  if (isCompact) {
-    const primary = types.filter((type) => isPrimaryDirectoryType(type.name || ''));
-    const secondary = types.filter((type) => !isPrimaryDirectoryType(type.name || ''));
-    const shownPrimary = primary.length ? primary : types;
-    const extra = primary.length ? secondary : [];
+  const primary = types.filter((type) => isPrimaryDirectoryType(type.name || ''));
+  const secondary = types.filter((type) => !isPrimaryDirectoryType(type.name || ''));
+  const shownPrimary = primary.length ? primary : types;
+  const extra = primary.length ? secondary : [];
 
-    const renderChip = (type: AnimalType, more?: boolean) => {
-      const typeValue = type.name?.toLowerCase() || '';
-      const typeLabel = ANIMAL_TYPE_LABELS[typeValue] || type.name;
-      return (
-        <TypeChip
-          key={type.id}
-          label={typeLabel}
-          typeName={typeValue}
-          iconUrl={type.icon?.url || ''}
-          selected={isSelected(type)}
-          disabled={loadingTypes}
-          more={more}
-          onClick={() => handleChange(type)}
-        />
-      );
-    };
-
+  const renderChip = (type: AnimalType, more?: boolean) => {
+    const typeValue = type.name?.toLowerCase() || '';
+    const typeLabel = ANIMAL_TYPE_LABELS[typeValue] || type.name;
     return (
-      <div ref={typeRowRef} className="flex flex-wrap gap-1.5">
-        {shownPrimary.map((type) => renderChip(type))}
-        {extra.map((type) => renderChip(type, true))}
-        {extra.length > 0 && (
-          <button
-            ref={moreToggleRef}
-            type="button"
-            aria-expanded={showMoreTypes}
-            onClick={() => {
-              pulseMoreToggle();
-              setShowMoreTypes((open) => !open);
-            }}
-            className="inline-flex min-h-9 origin-center items-center rounded-full px-3 text-sm font-semibold text-kadesh hover:bg-kadesh-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:hover:bg-kadesh/20"
-          >
-            {showMoreTypes ? 'Menos' : 'Más'}
-          </button>
-        )}
-      </div>
+      <TypeChip
+        key={type.id}
+        label={typeLabel}
+        typeName={typeValue}
+        iconUrl={type.icon?.url || ''}
+        selected={isSelected(type)}
+        disabled={loadingTypes}
+        more={more}
+        onClick={() => handleChange(type)}
+      />
     );
+  };
+
+  const chipRow = (
+    <div ref={typeRowRef} className="flex flex-wrap gap-1.5">
+      {shownPrimary.map((type) => renderChip(type))}
+      {extra.map((type) => renderChip(type, true))}
+      {extra.length > 0 && (
+        <button
+          ref={moreToggleRef}
+          type="button"
+          aria-expanded={showMoreTypes}
+          onClick={() => {
+            pulseMoreToggle();
+            setShowMoreTypes((open) => !open);
+          }}
+          className="inline-flex min-h-9 origin-center items-center rounded-full px-3 text-sm font-semibold text-kadesh hover:bg-kadesh-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:hover:bg-kadesh/20"
+        >
+          {showMoreTypes ? 'Menos' : 'Más'}
+        </button>
+      )}
+    </div>
+  );
+
+  if (isCompact) {
+    return chipRow;
   }
 
   return (
     <div>
-      <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff] mb-2">
-        Tipo de Animal {required && <span className="text-red-500">*</span>}
+      <label className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+        Tipo {required && <span className="text-red-600">*</span>}
       </label>
-      <div className="flex flex-wrap gap-4">
-        {animalTypesData?.animalTypes?.map((type:AnimalType) => {
-          // Obtener el label en español basado en el value (name) que viene del backend
-          const typeValue = type.name?.toLowerCase() || '';
-          const typeLabel = ANIMAL_TYPE_LABELS[typeValue] || type.name;
-          const emojiIcon = ANIMAL_TYPE_ICONS[typeValue] || "🐾";
-          const iconUrl = type.icon?.url || "";
-
-          return (
-            <label
-              key={type.id}
-              className={`
-                flex flex-col items-center justify-center px-5 py-3 rounded-xl
-                cursor-pointer transition border-2
-                ${selectedTypeId === type.id 
-                    ? "border-orange-500 bg-orange-50 dark:bg-orange-900/40"
-                    : "border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212]"
-                }
-                w-28 hover:shadow-md
-              `}
-            >
-              {/* Icon (image or emoji) */}
-              {iconUrl ? (
-                <img 
-                  src={iconUrl} 
-                  alt={typeLabel}
-                  className="w-10 h-10 mb-2 object-contain"
-                />
-              ) : (
-                <span className="text-3xl mb-2">{emojiIcon}</span>
-              )}
-              <span className="text-sm font-semibold text-[#212121] dark:text-[#ffffff]">
-                {typeLabel}
-              </span>
-              <input
-                type="radio"
-                name="animalType"
-                value={type.id}
-                checked={selectedTypeId === type.id}
-                onChange={() => onTypeChange(type.id)}
-                required={required}
-                disabled={loadingTypes}
-                className="sr-only"
-                aria-label={typeLabel}
-              />
-            </label>
-          );
-        })}
-      </div>
-      {!selectedTypeId && required && (
-        <p className="text-red-500 text-xs mt-2">Selecciona un tipo</p>
-      )}
+      {chipRow}
+      {error ? <p className="mt-2 text-xs text-red-600">{error}</p> : null}
     </div>
   );
 }

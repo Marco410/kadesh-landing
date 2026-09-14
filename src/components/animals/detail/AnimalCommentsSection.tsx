@@ -10,6 +10,7 @@ import { useUser } from 'kadesh/utils/UserContext';
 import { Routes } from 'kadesh/core/routes';
 import { formatDateWithDay } from 'kadesh/utils/format-date';
 import { AnimalDetail } from './hooks/useAnimalDetail';
+import Link from 'next/link';
 
 interface AnimalCommentsSectionProps {
   animal: AnimalDetail;
@@ -50,84 +51,80 @@ export default function AnimalCommentsSection({ animal }: AnimalCommentsSectionP
   };
 
   return (
-    <section id="comments-section" className="scroll-mt-20">
-      <h2 className="text-2xl font-bold text-[#212121] dark:text-[#ffffff] mb-8">
-        Comentarios ({commentsCount}) 
+    <section
+      id="comments-section"
+      className="scroll-mt-20 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6"
+    >
+      <h2 className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
+        Comentarios {commentsCount > 0 ? `(${commentsCount})` : ''}
       </h2>
-      
-      <div className="space-y-6">
-        { user ? (
-        <form onSubmit={handleSubmit} className="mb-8">
-          <div className="bg-[#f5f5f5] dark:bg-[#1e1e1e] rounded-xl p-6 border border-[#e0e0e0] dark:border-[#3a3a3a] transition-all hover:shadow-md">
+
+      <div className="mt-4 space-y-4">
+        {user ? (
+          <form onSubmit={handleSubmit}>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Escribe tu comentario..."
-              className="w-full min-h-[120px] p-4 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent resize-none transition-all"
-              rows={4}
+              placeholder="Escribe tu comentario…"
+              className="w-full min-h-[96px] resize-none rounded-xl border border-[#d8dee8] bg-[#f7f8fa] p-3 text-[#121212] placeholder:text-[#5a5a5a] focus:border-kadesh focus:outline-none focus:ring-2 focus:ring-kadesh/30 dark:border-white/12 dark:bg-night dark:text-[#eef1f6] dark:placeholder:text-[#9aa3b2]"
+              rows={3}
               disabled={isSubmitting || isCreatingComment}
             />
-            <div className="flex justify-end mt-4">
+            <div className="mt-3 flex justify-end">
               <button
                 type="submit"
                 disabled={!comment.trim() || isSubmitting || isCreatingComment}
-                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:scale-105 active:scale-100"
+                className="inline-flex min-h-11 items-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isSubmitting || isCreatingComment ? 'Publicando...' : 'Publicar comentario'}
+                {isSubmitting || isCreatingComment ? 'Publicando…' : 'Publicar'}
               </button>
             </div>
-          </div>
-        </form>
+          </form>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 bg-[#f5f5f5] dark:bg-[#1e1e1e] rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a]">
-            <p className="text-center text-[#616161] dark:text-[#b0b0b0] mb-4">
-              ¿Quieres unirte a la conversación?{' '}
-              <span className="font-semibold text-orange-500 dark:text-orange-400">
-                Inicia sesión para dejar tu comentario.
-              </span>
+          <div className="flex flex-col items-start gap-3 rounded-xl bg-[#f7f8fa] px-4 py-5 dark:bg-night">
+            <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+              Inicia sesión para dejar un comentario.
             </p>
-            <a
+            <Link
               href={Routes.auth.login}
-              className="inline-block px-6 py-2.5 bg-orange-500 hover:bg-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:scale-105 active:scale-100"
+              className="inline-flex min-h-11 items-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
             >
               Iniciar sesión
-            </a>
+            </Link>
           </div>
         )}
-        <div className="space-y-4">
-          {comments.length === 0 ? (
-            <div className="text-center py-12 bg-[#f5f5f5] dark:bg-[#1e1e1e] rounded-xl border border-[#e0e0e0] dark:border-[#3a3a3a]">
-              <p className="text-[#616161] dark:text-[#b0b0b0]">
-                No hay comentarios aún. ¡Sé el primero en comentar!
-              </p>
-            </div>
-          ) : (
-            comments.map((commentItem) => (
-              <div
-                key={commentItem.id}
-                className="bg-[#f5f5f5] dark:bg-[#1e1e1e] rounded-xl p-6 border border-[#e0e0e0] dark:border-[#3a3a3a] transition-all hover:shadow-md hover:border-orange-200 dark:hover:border-orange-800/50"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <Avatar
-                      author={commentItem.user ? {
-                        id: commentItem.user.id,
-                        name: commentItem.user.name,
-                        lastName: commentItem.user.lastName || '',
-                        username: commentItem.user.username,
-                        verified: commentItem.user.verified || false,
-                        profileImage: commentItem.user.profileImage,
-                        createdAt: commentItem.user.createdAt,
-                      } : null}
-                      size={48}
-                      verify={commentItem.user?.verified || false}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <p className="font-semibold text-[#212121] dark:text-[#ffffff] text-base">
+
+        {comments.length === 0 ? (
+          <p className="py-6 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+            Nadie ha comentado todavía.
+          </p>
+        ) : (
+          <ul className="divide-y divide-[#ececec] dark:divide-white/10">
+            {comments.map((commentItem) => (
+              <li key={commentItem.id} className="py-4 first:pt-0">
+                <div className="flex items-start gap-3">
+                  <Avatar
+                    author={
+                      commentItem.user
+                        ? {
+                            id: commentItem.user.id,
+                            name: commentItem.user.name,
+                            lastName: commentItem.user.lastName || '',
+                            username: commentItem.user.username,
+                            verified: commentItem.user.verified || false,
+                            profileImage: commentItem.user.profileImage,
+                            createdAt: commentItem.user.createdAt,
+                          }
+                        : null
+                    }
+                    size={40}
+                    verify={commentItem.user?.verified || false}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <p className="font-semibold text-[#121212] dark:text-[#eef1f6]">
                         {commentItem.user
-                          ? `${commentItem.user.name} ${commentItem.user.lastName || ''} ${commentItem.user.secondLastName || ''}`.trim()
+                          ? `${commentItem.user.name} ${commentItem.user.lastName || ''}`.trim()
                           : 'Usuario anónimo'}
                       </p>
                       {commentItem.user?.verified && (
@@ -136,46 +133,40 @@ export default function AnimalCommentsSection({ animal }: AnimalCommentsSectionP
                           alt="Verificado"
                           width={14}
                           height={14}
-                          className="object-contain flex-shrink-0"
+                          className="object-contain"
                         />
                       )}
                       {commentItem.user?.id === animal?.user?.id && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700/50">
-                          Reportó este animal
-                        </span>
-                      )}
-                      {commentItem.user && (
-                        <span className="text-xs text-[#616161] dark:text-[#b0b0b0] flex items-center gap-1">
-                          @{commentItem.user.username}
+                        <span className="rounded-full bg-kadesh-50 px-2 py-0.5 text-xs font-semibold text-kadesh dark:bg-kadesh/20">
+                          Quien reportó
                         </span>
                       )}
                     </div>
-                    <p className="text-[#212121] dark:text-[#ffffff] whitespace-pre-wrap leading-relaxed mb-3">
+                    <p className="mt-1 whitespace-pre-wrap leading-relaxed text-[#121212] dark:text-[#eef1f6]">
                       {commentItem.comment}
                     </p>
-                    <div className="flex items-center gap-3 justify-between pt-2 border-t border-[#e0e0e0] dark:border-[#3a3a3a]">
-                      <p className="text-xs text-[#616161] dark:text-[#b0b0b0]">
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
                         {formatDateWithDay(commentItem.createdAt)}
                       </p>
-                      {
-                        commentItem.user?.id === user?.id && (
-                          <button
-                            onClick={() => openDeleteModal(commentItem.id)}
-                            disabled={isDeletingComment}
-                            className="p-1.5 rounded-lg text-[#616161] dark:text-[#b0b0b0] hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Eliminar comentario"
-                          >
-                            <HugeiconsIcon icon={Delete02Icon} size={18} />
-                          </button>
-                        )
-                      }
+                      {commentItem.user?.id === user?.id && (
+                        <button
+                          type="button"
+                          onClick={() => openDeleteModal(commentItem.id)}
+                          disabled={isDeletingComment}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#5a5a5a] hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-[#9aa3b2] dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                          aria-label="Eliminar comentario"
+                        >
+                          <HugeiconsIcon icon={Delete02Icon} size={16} strokeWidth={1.5} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <ConfirmModal

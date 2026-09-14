@@ -34,6 +34,7 @@ interface LocationPickerProps {
   ) => void;
   className?: string;
   isVisible?: boolean;
+  compact?: boolean;
 }
 
 interface NominatimAddress {
@@ -125,12 +126,12 @@ export default function LocationPicker({
   onAddressChange,
   className = '',
   isVisible = true,
+  compact = false,
 }: LocationPickerProps) {
   const { resolvedTheme } = useTheme();
   const [ready, setReady] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [locationQuery, setLocationQuery] = useState('');
   const [suggestions, setSuggestions] = useState<SearchHit[]>([]);
@@ -271,6 +272,17 @@ export default function LocationPicker({
   }, [mounted, ready, resolvedTheme]);
 
   useEffect(() => {
+    if (!isVisible || !mapRef.current) return;
+    const map = mapRef.current;
+    const frame = requestAnimationFrame(() => map.invalidateSize());
+    const later = window.setTimeout(() => map.invalidateSize(), 180);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(later);
+    };
+  }, [isVisible]);
+
+  useEffect(() => {
     const latNum = parseFloat(lat);
     const lngNum = parseFloat(lng);
     if (!Number.isNaN(latNum) && !Number.isNaN(lngNum) && mapRef.current) {
@@ -314,7 +326,6 @@ export default function LocationPicker({
   const handleSearchLocation = useCallback(async () => {
     const query = locationQuery.trim();
     if (!query) return;
-    setIsSearchingLocation(true);
     try {
       const hits = await searchNominatim(query);
       setSuggestions(hits);
@@ -325,8 +336,6 @@ export default function LocationPicker({
       }
     } catch {
       sileo.error({ title: 'No se pudo buscar la ubicación' });
-    } finally {
-      setIsSearchingLocation(false);
     }
   }, [applyHit, locationQuery]);
 
@@ -357,148 +366,113 @@ export default function LocationPicker({
   }, [doReverseGeocode, updateMarker]);
 
   const inputClassName =
-    'w-full px-3 py-2 text-sm rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-kadesh dark:focus:ring-kadesh-400';
+    'w-full rounded-xl border border-[#d8dee8] bg-white px-3 py-2 text-sm text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh dark:border-white/18 dark:bg-night dark:text-[#eef1f6] dark:placeholder:text-[#9aa3b2]';
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      <div className="space-y-3">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <label className="block text-sm font-medium text-[#212121] dark:text-[#ffffff]">
-              Ubicación <span className="text-red-500">*</span>
-            </label>
-            <p className="text-xs text-[#616161] dark:text-[#b0b0b0] mt-1">
-              Da clic en el mapa para seleccionar una ubicación.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={handleUseCurrentLocation}
-            disabled={isLoadingLocation || !ready}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-kadesh hover:bg-kadesh-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <HugeiconsIcon
-              icon={Location01Icon}
-              size={15}
-              className={isLoadingLocation ? 'animate-pulse text-white' : 'text-white'}
-              strokeWidth={1.5}
-            />
-            {isLoadingLocation ? 'Obteniendo...' : 'Usar mi ubicación actual'}
-          </button>
-        </div>
-
+    <div className={`space-y-3 ${className}`}>
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <label
-            htmlFor="location-search"
-            className="block text-xs font-medium text-[#616161] dark:text-[#b0b0b0] mb-1"
-          >
-            Buscar ubicación por nombre
+          <label className="block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+            Ubicación <span className="text-red-600">*</span>
           </label>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="relative w-full">
-              <input
-                id="location-search"
-                type="text"
-                value={locationQuery}
-                onChange={(e) => setLocationQuery(e.target.value)}
-                onFocus={() => {
-                  if (suggestions.length > 0) setShowSuggestions(true);
-                }}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (suggestions[0]) {
-                      applyHit(suggestions[0]);
-                      return;
-                    }
-                    void handleSearchLocation();
-                  }
-                }}
-                className={inputClassName}
-                placeholder="Ej: Parque México, Condesa"
-              />
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-white shadow-lg dark:border-[#3a3a3a] dark:bg-[#121212]">
-                  {suggestions.map((hit) => (
-                    <button
-                      key={hit.id}
-                      type="button"
-                      onMouseDown={() => applyHit(hit)}
-                      className="w-full px-3 py-2 text-left text-sm text-[#212121] transition-colors hover:bg-[#f5f5f5] dark:text-white dark:hover:bg-[#1f1f1f]"
-                    >
-                      {hit.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => void handleSearchLocation()}
-              disabled={isSearchingLocation || !locationQuery.trim()}
-              className="rounded-lg bg-[#212121] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#333333] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#f5f5f5] dark:text-[#121212] dark:hover:bg-[#e0e0e0]"
-            >
-              {isSearchingLocation ? 'Buscando...' : 'Buscar'}
-            </button>
-          </div>
+          <p className="mt-1 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+            Toca el mapa o usa tu posición.
+          </p>
         </div>
+        <button
+          type="button"
+          onClick={handleUseCurrentLocation}
+          disabled={isLoadingLocation || !ready}
+          className="inline-flex items-center gap-2 rounded-full bg-kadesh px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <HugeiconsIcon
+            icon={Location01Icon}
+            size={16}
+            className={isLoadingLocation ? 'animate-pulse text-white' : 'text-white'}
+            strokeWidth={1.5}
+          />
+          {isLoadingLocation ? 'Buscando…' : 'Estoy aquí'}
+        </button>
       </div>
 
-      <div className="relative overflow-hidden rounded-xl border border-[#e0e0e0] shadow-md dark:border-[#3a3a3a]">
-        <div
-          ref={mapContainerRef}
-          className={`h-[400px] w-full ${
-            isDarkMode ? 'kadesh-free-map--night' : 'kadesh-free-map--standard'
-          }`}
-          style={{ minHeight: 300 }}
+      <div className="relative">
+        <input
+          id="location-search"
+          type="search"
+          value={locationQuery}
+          onChange={(e) => setLocationQuery(e.target.value)}
+          onFocus={() => {
+            if (suggestions.length > 0) setShowSuggestions(true);
+          }}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (suggestions[0]) {
+                applyHit(suggestions[0]);
+                return;
+              }
+              void handleSearchLocation();
+            }
+          }}
+          className={inputClassName}
+          placeholder="Colonia, parque o calle"
         />
-        {!ready && (
-          <div className="absolute inset-0 z-[1] flex items-center justify-center bg-[#f5f5f5] dark:bg-[#1e1e1e]">
-            <div className="text-center">
-              <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-b-2 border-kadesh" />
-              <p className="text-sm text-[#616161] dark:text-[#b0b0b0]">Cargando mapa...</p>
-            </div>
+        {showSuggestions && suggestions.length > 0 && (
+          <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-[#d8dee8] bg-white shadow-[0_12px_28px_rgba(15,35,80,0.14)] dark:border-white/12 dark:bg-night-raised">
+            {suggestions.map((hit) => (
+              <button
+                key={hit.id}
+                type="button"
+                onMouseDown={() => applyHit(hit)}
+                className="w-full px-3 py-2 text-left text-sm text-[#121212] transition-colors hover:bg-kadesh-50 dark:text-[#eef1f6] dark:hover:bg-kadesh/15"
+              >
+                {hit.label}
+              </button>
+            ))}
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div>
-          <label htmlFor="lat" className="mb-1 block text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
-            Latitud {hasValidCoordinates ? null : <span className="text-red-500">*</span>}
-          </label>
-          <input id="lat" type="text" value={lat} disabled className={inputClassName} placeholder="Ej: 19.4326" />
-        </div>
-        <div>
-          <label htmlFor="lng" className="mb-1 block text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
-            Longitud
-          </label>
-          <input id="lng" type="text" value={lng} disabled className={inputClassName} placeholder="Ej: -99.1332" />
-        </div>
+      <div
+        className={`relative overflow-hidden rounded-xl border border-[#d8dee8] shadow-[0_10px_24px_rgba(15,35,80,0.1)] dark:border-white/12 ${
+          compact ? 'h-[280px] sm:h-[360px]' : 'h-[360px]'
+        }`}
+      >
+        <div
+          ref={mapContainerRef}
+          className={`h-full w-full ${
+            isDarkMode ? 'kadesh-free-map--night' : 'kadesh-free-map--standard'
+          }`}
+        />
+        {!ready && (
+          <div className="absolute inset-0 z-[1] flex items-center justify-center bg-[#f7f8fa] dark:bg-night-raised">
+            <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">Cargando mapa…</p>
+          </div>
+        )}
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="lp-address" className="mb-1 block text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
-            Dirección{' '}
-            {isGeocoding && <span className="text-xs text-kadesh">(Obteniendo...)</span>}
-          </label>
-          <input
-            id="lp-address"
-            type="text"
-            value={localAddress}
-            onChange={(e) => {
-              setLocalAddress(e.target.value);
-              onAddressChange?.(e.target.value, localCity, localState, localCountry);
-            }}
-            className={inputClassName}
-            placeholder="Dirección"
-          />
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div>
+        <label htmlFor="lp-address" className="mb-1 block text-xs font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
+          Dirección {isGeocoding ? <span className="text-kadesh">(obteniendo…)</span> : null}
+        </label>
+        <input
+          id="lp-address"
+          type="text"
+          value={localAddress}
+          onChange={(e) => {
+            setLocalAddress(e.target.value);
+            onAddressChange?.(e.target.value, localCity, localState, localCountry);
+          }}
+          className={inputClassName}
+          placeholder="Se completa al fijar el pin"
+        />
+      </div>
+
+      {!compact && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
-            <label htmlFor="lp-city" className="mb-1 block text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
+            <label htmlFor="lp-city" className="mb-1 block text-xs font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
               Ciudad
             </label>
             <input
@@ -514,8 +488,8 @@ export default function LocationPicker({
             />
           </div>
           <div>
-            <label htmlFor="lp-state" className="mb-1 block text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
-              Estado/Provincia
+            <label htmlFor="lp-state" className="mb-1 block text-xs font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
+              Estado
             </label>
             <input
               id="lp-state"
@@ -526,11 +500,11 @@ export default function LocationPicker({
                 onAddressChange?.(localAddress, localCity, e.target.value, localCountry);
               }}
               className={inputClassName}
-              placeholder="Estado/Provincia"
+              placeholder="Estado"
             />
           </div>
           <div>
-            <label htmlFor="lp-country" className="mb-1 block text-xs font-medium text-[#616161] dark:text-[#b0b0b0]">
+            <label htmlFor="lp-country" className="mb-1 block text-xs font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
               País
             </label>
             <input
@@ -546,11 +520,17 @@ export default function LocationPicker({
             />
           </div>
         </div>
-      </div>
+      )}
 
-      <p className="text-xs text-[#616161] dark:text-[#b0b0b0]">
-        Haz click en el mapa para seleccionar la ubicación
-      </p>
+      {hasValidCoordinates ? (
+        <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+          Pin fijado{localCity ? ` · ${localCity}` : ''}. Arrástralo si hay que afinar.
+        </p>
+      ) : (
+        <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+          Sin pin todavía. Estoy aquí o un toque en el mapa.
+        </p>
+      )}
     </div>
   );
 }

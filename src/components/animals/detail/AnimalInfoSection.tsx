@@ -1,119 +1,88 @@
 "use client";
 
 import { AnimalDetail } from './hooks/useAnimalDetail';
-import { getStatusLabel, getStatusColor, ANIMAL_TYPE_LABELS, ANIMAL_TYPE_ICONS } from '../constants';
+import { ANIMAL_TYPE_LABELS } from '../constants';
+import { TypeGlyph } from '../TypeGlyph';
 import { formatDate } from 'kadesh/utils/format-date';
-import { UserInfo } from 'kadesh/components/shared';
+import Avatar from 'kadesh/components/shared/Avatar';
 
 interface AnimalInfoSectionProps {
   animal: AnimalDetail;
 }
 
-export default function AnimalInfoSection({ animal }: AnimalInfoSectionProps) {
-  const lastLog = animal.logs && animal.logs.length > 0 ? animal.logs[0] : null;
-  const statusColor = getStatusColor(lastLog?.status || 'register');
-  const statusLabel = getStatusLabel(lastLog?.status || 'register');
-
+function Fact({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="flex flex-row items-center justify-between gap-2">
-          <h1 className="text-2xl font-bold text-[#212121] dark:text-[#ffffff] mb-3">{animal.name || 'Sin nombre'}</h1>
-          <span className="text-3xl">{ANIMAL_TYPE_ICONS[animal.animal_breed.animal_type.name]}</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 mb-6">
-          <span
-            className="px-3 py-1.5 rounded-full text-xs font-semibold text-white shadow-sm"
-            style={{ backgroundColor: statusColor }}
-          >
-            {statusLabel}
-          </span>
-          <span className="text-[#616161] dark:text-[#b0b0b0] text-xs">
-            Registrado {formatDate(animal.createdAt)}
-          </span>
-        </div>
-      </div>
-
-      <div className="space-y-4 pt-4 border-t border-[#e0e0e0] dark:border-[#3a3a3a]">
-
-        <div className="flex flex-row gap-10">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="text-xs font-semibold text-[#616161] dark:text-[#b0b0b0] uppercase tracking-wide mb-1">Tipo de Animal</h3>
-                <p className="text-[#212121] dark:text-[#ffffff] font-medium">{ANIMAL_TYPE_LABELS[animal.animal_breed.animal_type.name]}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="text-xs font-semibold text-[#616161] dark:text-[#b0b0b0] uppercase tracking-wide mb-1">Raza</h3>
-                <p className="text-[#212121] dark:text-[#ffffff] font-medium">{animal.animal_breed.breed}</p>
-              </div>
-            </div>
-          </div>
-
-          {animal.sex && (
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="text-xs font-semibold text-[#616161] dark:text-[#b0b0b0] uppercase tracking-wide mb-1">Sexo</h3>
-                <p className="text-[#212121] dark:text-[#ffffff] font-medium">
-                  {animal.sex === 'male' ? 'Macho' : animal.sex === 'female' ? 'Hembra' : 'Desconocido'}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* New Fields: Age, Color, Size */}
-        {(animal.age || animal.color || animal.size) && (
-          <div className="pt-4 border-t border-[#e0e0e0] dark:border-[#3a3a3a]">
-            <div className="flex flex-row gap-10">
-              {animal.age && (
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-xs font-semibold text-[#616161] dark:text-[#b0b0b0] uppercase tracking-wide mb-1">Edad</h3>
-                    <p className="text-[#212121] dark:text-[#ffffff] font-medium">{animal.age}</p>
-                  </div>
-                </div>
-              )}
-              {animal.color && (
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-xs font-semibold text-[#616161] dark:text-[#b0b0b0] uppercase tracking-wide mb-1">Color</h3>
-                    <p className="text-[#212121] dark:text-[#ffffff] font-medium">{animal.color}</p>
-                  </div>
-                </div>
-              )}
-              {animal.size && (
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-xs font-semibold text-[#616161] dark:text-[#b0b0b0] uppercase tracking-wide mb-1">Tamaño</h3>
-                    <p className="text-[#212121] dark:text-[#ffffff] font-medium">{animal.size}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Physical Description */}
-        {animal.physical_description && (
-          <div className="pt-4 border-t border-[#e0e0e0] dark:border-[#3a3a3a]">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="text-xs font-semibold text-[#616161] dark:text-[#b0b0b0] uppercase tracking-wide mb-1">Descripción Física</h3>
-                <p className="text-[#212121] dark:text-[#ffffff] font-medium leading-relaxed">{animal.physical_description}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <UserInfo user={animal.user} contactNumber={animal.contactNumber ?? undefined} label="Reportado por" />
-      </div>
+    <div>
+      <dt className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">{label}</dt>
+      <dd className="mt-0.5 font-semibold text-[#121212] dark:text-[#eef1f6]">{value}</dd>
     </div>
   );
 }
 
+function sexLabel(sex?: string | null) {
+  if (sex === 'male') return 'Macho';
+  if (sex === 'female') return 'Hembra';
+  if (sex === 'unknown') return 'No se sabe';
+  return null;
+}
 
+export default function AnimalInfoSection({ animal }: AnimalInfoSectionProps) {
+  const typeName = animal.animal_breed?.animal_type?.name || '';
+  const typeLabel = ANIMAL_TYPE_LABELS[typeName] || typeName;
 
+  return (
+    <div className="flex h-full flex-col gap-5">
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+        {typeLabel ? (
+          <div className="flex items-start gap-2">
+            <TypeGlyph type={typeName} className="mt-1 h-5 w-5 text-kadesh" />
+            <div>
+              <dt className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">Tipo</dt>
+              <dd className="mt-0.5 font-semibold text-[#121212] dark:text-[#eef1f6]">
+                {typeLabel}
+              </dd>
+            </div>
+          </div>
+        ) : null}
+        <Fact label="Raza" value={animal.animal_breed?.breed} />
+        <Fact label="Sexo" value={sexLabel(animal.sex)} />
+        <Fact label="Edad" value={animal.age} />
+        <Fact label="Color" value={animal.color} />
+        <Fact label="Tamaño" value={animal.size} />
+      </dl>
+
+      {animal.physical_description ? (
+        <div>
+          <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">Señas particulares</p>
+          <p className="mt-1 leading-relaxed text-[#121212] dark:text-[#eef1f6]">
+            {animal.physical_description}
+          </p>
+        </div>
+      ) : null}
+
+      <div className="mt-auto flex items-center gap-3 border-t border-[#ececec] pt-4 dark:border-white/10">
+        <Avatar
+          author={{
+            id: animal.user.username || '',
+            name: animal.user.name,
+            lastName: animal.user.lastName || '',
+            username: animal.user.username,
+            verified: animal.user.verified || false,
+            profileImage: animal.user.profileImage,
+            createdAt: animal.user.createdAt,
+          }}
+          verify={animal.user.verified || false}
+        />
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-[#121212] dark:text-[#eef1f6]">
+            {animal.user.name} {animal.user.lastName || ''}
+          </p>
+          <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+            Publicado {formatDate(animal.createdAt)}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

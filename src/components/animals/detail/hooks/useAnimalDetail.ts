@@ -2,6 +2,7 @@
 
 import { useQuery } from '@apollo/client';
 import { GET_ANIMAL_QUERY } from '../../queries';
+import { sortMultimediaByOrder } from 'kadesh/components/animals/sortMultimedia';
 
 export interface AnimalDetail {
   id: string;
@@ -20,6 +21,7 @@ export interface AnimalDetail {
     };
   };
   multimedia: Array<{
+    order?: number | null;
     image: {
       url: string;
     };
@@ -86,7 +88,10 @@ export function useAnimalDetail(animalId: string) {
     }
   );
 
-  const animal = data?.animal || null;
+  const raw = data?.animal || null;
+  const animal = raw
+    ? { ...raw, multimedia: sortMultimediaByOrder(raw.multimedia) }
+    : null;
   
 /*   // Sort logs by createdAt descending (most recent first)
   const sortedLogs = animal?.logs

@@ -32,17 +32,66 @@ export function isAnimalReportStatus(
 export const ANIMAL_SEX_OPTIONS = [
   { label: "Macho", value: "male" },
   { label: "Hembra", value: "female" },
-  { label: "Desconocido", value: "unknown" },
+  { label: "No lo sé", value: "unknown" },
 ];
+
+export const ANIMAL_SIZE_OPTIONS = [
+  { label: 'Pequeño', value: 'Pequeño' },
+  { label: 'Mediano', value: 'Mediano' },
+  { label: 'Grande', value: 'Grande' },
+] as const;
+
+export const ANIMAL_AGE_OPTIONS = [
+  { label: 'Cachorro', value: 'Cachorro' },
+  { label: 'Joven', value: 'Joven' },
+  { label: 'Adulto', value: 'Adulto' },
+  { label: 'Mayor', value: 'Mayor' },
+] as const;
+
+/** Alta sin nombre conocido: encontrado, abandonado o rescatado. */
+export const UNNAMED_BY_DEFAULT_STATUSES: readonly AnimalReportStatus[] = [
+  'found',
+  'abandoned',
+  'rescued',
+];
+
+export const REPORT_COPY: Record<
+  AnimalReportStatus,
+  { title: string; submit: string }
+> = {
+  lost: { title: 'Reportar perdido', submit: 'Publicar reporte' },
+  found: { title: 'Reportar encontrado', submit: 'Publicar reporte' },
+  in_adoption: { title: 'Dar en adopción', submit: 'Publicar' },
+  abandoned: { title: 'Reportar abandonado', submit: 'Publicar reporte' },
+  rescued: { title: 'Reportar rescatado', submit: 'Publicar reporte' },
+};
+
+const MIXED_BREED_RE =
+  /mestizo|mixto|desconoc|criollo|sin raza|otro|mixed|unknown|cross/i;
+
+export function findFallbackBreedId(
+  options: { id: string; breed?: string; label?: string }[]
+): string | null {
+  const mixed = options.find((option) =>
+    MIXED_BREED_RE.test(option.breed || option.label || '')
+  );
+  return mixed?.id ?? null;
+}
 
 // Mapeo de valores de AnimalType a labels en español
 export const ANIMAL_TYPE_LABELS: Record<string, string> = {
   dog: "Perro",
+  perro: "Perro",
   cat: "Gato",
+  gato: "Gato",
   bird: "Ave",
+  ave: "Ave",
   fish: "Pez",
+  pez: "Pez",
   reptil: "Reptil",
   mammal: "Mamífero",
+  mamifero: "Mamífero",
+  mamífero: "Mamífero",
 };
 
 // Mapeo de valores a emojis
@@ -54,6 +103,65 @@ export const ANIMAL_TYPE_ICONS: Record<string, string> = {
   reptil: "🦎",
   mammal: "🦁",
 };
+
+/** Estatus que el visitante busca en el directorio (mismos trabajos del hero). */
+export const DIRECTORY_STATUS_PRIMARY = [
+  { label: 'Perdido', value: 'lost' },
+  { label: 'Encontrado', value: 'found' },
+  { label: 'En adopción', value: 'in_adoption' },
+] as const;
+
+/** Estatus extra para rescate; no saturan la fila principal. */
+export const DIRECTORY_STATUS_MORE = [
+  { label: 'Abandonado', value: 'abandoned' },
+  { label: 'Rescatado', value: 'rescued' },
+] as const;
+
+const TYPE_PLURAL: Record<string, string> = {
+  perro: 'perros',
+  dog: 'perros',
+  gato: 'gatos',
+  cat: 'gatos',
+  ave: 'aves',
+  bird: 'aves',
+  pez: 'peces',
+  fish: 'peces',
+  reptil: 'reptiles',
+  mammal: 'mamíferos',
+  mamifero: 'mamíferos',
+  conejo: 'conejos',
+  rabbit: 'conejos',
+};
+
+const STATUS_PLURAL: Record<string, string> = {
+  lost: 'perdidos',
+  found: 'encontrados',
+  in_adoption: 'en adopción',
+  abandoned: 'abandonados',
+  rescued: 'rescatados',
+  adopted: 'adoptados',
+};
+
+export function emptyDirectoryHeadline(
+  filters: { type?: string | null; status?: string | null },
+  radiusKm: number
+): string {
+  const typeKey = filters.type?.toLowerCase() ?? '';
+  const typePhrase =
+    typeKey && TYPE_PLURAL[typeKey] ? TYPE_PLURAL[typeKey] : null;
+  const statusPhrase = filters.status ? STATUS_PLURAL[filters.status] ?? null : null;
+
+  if (typePhrase && statusPhrase) {
+    return `No hay ${typePhrase} ${statusPhrase} en ${radiusKm} km`;
+  }
+  if (statusPhrase) {
+    return `No hay animales ${statusPhrase} en ${radiusKm} km`;
+  }
+  if (typePhrase) {
+    return `No hay ${typePhrase} en ${radiusKm} km`;
+  }
+  return `No hay reportes en ${radiusKm} km`;
+}
 
 export const getStatusColor = (status: string) => {
   switch (status) {

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect } from 'react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Cancel01Icon } from '@hugeicons/core-free-icons';
 import LogMap from './LogMap';
 
 interface MapModalProps {
@@ -27,37 +29,22 @@ export default function MapModal({ isOpen, onClose, lat, lng, status }: MapModal
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75"
       onClick={onClose}
     >
-      <div
-        className="relative w-full h-full max-w-7xl mx-4 my-4"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="relative mx-4 my-4 h-[80vh] w-full max-w-7xl" onClick={(e) => e.stopPropagation()}>
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 bg-white dark:bg-[#1e1e1e] text-[#212121] dark:text-white rounded-full p-2 shadow-lg hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a] transition-colors"
+          className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#121212] shadow-[0_8px_18px_rgba(15,35,80,0.18)] hover:bg-[#f7f8fa] dark:bg-night-raised dark:text-[#eef1f6]"
           aria-label="Cerrar mapa"
         >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <HugeiconsIcon icon={Cancel01Icon} size={20} strokeWidth={1.5} />
         </button>
-        <LogMap lat={lat} lng={lng} status={status} height="100%" />
+        <div className="h-full overflow-hidden rounded-2xl">
+          <LogMap lat={lat} lng={lng} status={status} />
+        </div>
       </div>
     </div>
   );
 }
-
-
-

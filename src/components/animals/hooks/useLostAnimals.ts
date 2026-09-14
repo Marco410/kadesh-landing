@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_NEARBY_ANIMALS_QUERY, GET_ANIMAL_TYPES_QUERY } from '../queries';
 import { LostAnimal, AnimalFilters, AnimalType } from '../types';
 import { DEFAULT_ANIMALS_PER_PAGE, DEFAULT_RADIUS } from 'kadesh/constants/constans';
+import { sortMultimediaByOrder } from '../sortMultimedia';
 
 
 // Function to normalize text by removing accents
@@ -17,6 +18,7 @@ function normalizeText(text: string): string {
 
 interface NearbyAnimal {
   id: string;
+  slug?: string | null;
   name: string;
   distance: number | null;
   sex: string;
@@ -45,6 +47,7 @@ interface NearbyAnimal {
   multimedia: Array<{
     id: string;
     url: string;
+    order?: number | null;
   }>;
 }
 
@@ -61,7 +64,7 @@ function transformAnimal(animal: NearbyAnimal): LostAnimal {
       ? `${animal.lat}, ${animal.lng}` 
       : 'Ubicación no disponible';
 
-  const image = animal.multimedia?.[0];
+  const image = sortMultimediaByOrder(animal.multimedia)?.[0];
 
   const typeName = animal.animal_type?.name?.toLowerCase() || '';
   const typeMap: Record<string, AnimalType> = {
@@ -74,6 +77,7 @@ function transformAnimal(animal: NearbyAnimal): LostAnimal {
 
   return {
     id: animal.id,
+    slug: animal.slug,
     name: animal.name,
     type: mappedType,
     breed: animal.animal_breed?.breed || '',
@@ -98,6 +102,10 @@ export function useLostAnimals(
   const ANIMALS_PER_PAGE = animalsPerPage || DEFAULT_ANIMALS_PER_PAGE;
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<AnimalFilters>(initialFilters || {});
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [radiusKm]);
 
   // Get animal types to map Spanish names to English database values
   const { data: animalTypesData } = useQuery(GET_ANIMAL_TYPES_QUERY, {

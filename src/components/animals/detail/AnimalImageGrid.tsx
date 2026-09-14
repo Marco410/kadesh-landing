@@ -1,136 +1,155 @@
 "use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { getStatusColor } from '../constants';
-import FullscreenCarousel from './FullscreenCarousel';
+import { useState } from "react";
+import Image from "next/image";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Image01Icon,
+  SquareArrowExpand01Icon,
+} from "@hugeicons/core-free-icons";
+import FullscreenCarousel from "./FullscreenCarousel";
+import { TypeGlyph } from "../TypeGlyph";
+import { sortMultimediaByOrder } from "../sortMultimedia";
 
 interface AnimalImageGridProps {
-  images: Array<{ image: { url: string } }>;
+  images: Array<{ order?: number | null; image: { url: string } }>;
   animalName: string;
-  logs?: Array<{ status: string }>;
+  typeName?: string;
+  statusColor: string;
+  fill?: boolean;
 }
 
-export default function AnimalImageGrid({ images, animalName, logs }: AnimalImageGridProps) {
+function EmptyPhoto({ typeName, fill }: { typeName?: string; fill?: boolean }) {
+  return (
+    <div
+      className={`flex w-full flex-col items-center justify-center gap-3 bg-[#f3f5f8] dark:bg-night ${
+        fill ? "h-full min-h-[16rem]" : "h-[min(38vh,280px)]"
+      }`}
+    >
+      {typeName ? (
+        <TypeGlyph type={typeName} className="h-16 w-16 text-[#9aa3b2]" />
+      ) : (
+        <HugeiconsIcon
+          icon={Image01Icon}
+          size={40}
+          className="text-[#9aa3b2]"
+          strokeWidth={1.5}
+        />
+      )}
+      <p className="text-sm font-medium text-[#5a5a5a] dark:text-[#9aa3b2]">
+        Sin foto
+      </p>
+    </div>
+  );
+}
+
+export default function AnimalImageGrid({
+  images,
+  animalName,
+  typeName,
+  statusColor,
+  fill = false,
+}: AnimalImageGridProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [broken, setBroken] = useState<Record<number, boolean>>({});
 
-  const latestLog = logs && logs.length > 0 ? logs[0] : null;
-  const statusColor = getStatusColor(latestLog?.status || 'register');
+  const ordered = sortMultimediaByOrder(images);
+  const imageUrls = ordered
+    .map((item) => item.image?.url)
+    .filter(Boolean) as string[];
+  const visibleUrls = imageUrls.filter((_, index) => !broken[index]);
 
-  if (!images || images.length === 0) {
-    return (
-      <div className="w-full h-[400px] bg-gradient-to-br from-[#f5f5f5] to-[#e5e5e5] dark:from-[#2a2a2a] dark:to-[#1e1e1e] rounded-lg flex flex-col items-center justify-center border-2 border-dashed border-[#e0e0e0] dark:border-[#3a3a3a]">
-        <svg className="w-16 h-16 text-[#616161] dark:text-[#b0b0b0] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <p className="text-[#616161] dark:text-[#b0b0b0] text-sm font-medium">No hay imágenes disponibles</p>
-      </div>
-    );
+  if (visibleUrls.length === 0) {
+    return <EmptyPhoto typeName={typeName} fill={fill} />;
   }
 
-  const imageUrls = images.map((item) => item.image?.url).filter(Boolean) as string[];
-
-  if (imageUrls.length === 0) {
-    return (
-      <div className="w-full h-[400px] bg-gradient-to-br from-[#f5f5f5] to-[#e5e5e5] dark:from-[#2a2a2a] dark:to-[#1e1e1e] rounded-lg flex flex-col items-center justify-center border-2 border-dashed border-[#e0e0e0] dark:border-[#3a3a3a]">
-        <svg className="w-16 h-16 text-[#616161] dark:text-[#b0b0b0] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <p className="text-[#616161] dark:text-[#b0b0b0] text-sm font-medium">No hay imágenes disponibles</p>
-      </div>
-    );
-  }
-
-  const selectedImage = imageUrls[selectedImageIndex] || imageUrls[0];
+  const selectedImage =
+    visibleUrls[Math.min(selectedImageIndex, visibleUrls.length - 1)];
 
   return (
-    <div className="w-full">
+    <div
+      className={
+        fill ? "relative flex h-full min-h-[16rem] flex-col" : "w-full"
+      }
+    >
       <div
-        className="relative w-full h-[400px] md:h-[400px] rounded-xl overflow-hidden shadow-xl transition-all"
-        style={{ 
-          border: `5px solid ${statusColor}`,
-          boxShadow: `0 10px 30px -5px ${statusColor}40, 0 0 0 1px ${statusColor}20`
-        }}
+        className={`relative w-full overflow-hidden bg-[#f3f5f8] dark:bg-night ${
+          fill ? "min-h-0 flex-1" : "h-[min(38vh,280px)]"
+        }`}
       >
         <Image
           src={selectedImage}
-          alt={`${animalName} - Imagen ${selectedImageIndex + 1}`}
+          alt={animalName || "Animal"}
           fill
           className="object-cover"
           priority={selectedImageIndex === 0}
-          sizes="(max-width: 768px) 100vw, 50vw"
+          sizes="(max-width: 1024px) 100vw, 50vw"
+          onError={() => {
+            const originalIndex = imageUrls.indexOf(selectedImage);
+            if (originalIndex >= 0) {
+              setBroken((current) => ({ ...current, [originalIndex]: true }));
+            }
+          }}
         />
-
-        {/* Botón pantalla completa */}
         <button
+          type="button"
           onClick={() => setIsFullscreen(true)}
-          className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors backdrop-blur-sm"
-          title="Ver en pantalla completa"
+          className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#121212]/55 text-white backdrop-blur-sm hover:bg-[#121212]/75"
           aria-label="Ver en pantalla completa"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-          </svg>
+          <HugeiconsIcon
+            icon={SquareArrowExpand01Icon}
+            size={18}
+            strokeWidth={1.5}
+          />
         </button>
-
-        {imageUrls.length > 1 && (
-          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10">
-            <div className="flex gap-3 px-4 py-3 bg-black/70 dark:bg-black/60 backdrop-blur-md rounded-2xl border border-white/30 shadow-2xl">
-              {imageUrls.map((url, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImageIndex(index)}
-                  className={`relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden transition-all duration-300 ${
-                    selectedImageIndex === index
-                      ? 'scale-110'
-                      : 'hover:scale-105 opacity-75 hover:opacity-100'
-                  }`}
-                  style={{
-                    border: selectedImageIndex === index 
-                      ? `3px solid ${statusColor}` 
-                      : '2px solid rgba(255, 255, 255, 0.4)',
-                    boxShadow: selectedImageIndex === index 
-                      ? `0 4px 12px ${statusColor}80, 0 0 0 2px ${statusColor}40` 
-                      : '0 2px 4px rgba(0, 0, 0, 0.2)'
-                  }}
-                >
-                  <Image
-                    src={url}
-                    alt={`${animalName} - Miniatura ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="80px"
-                  />
-                  {selectedImageIndex === index && (
-                    <div
-                      className="absolute inset-0 rounded-xl"
-                      style={{ 
-                        background: `linear-gradient(to bottom, ${statusColor}40, ${statusColor}20)`,
-                        boxShadow: `inset 0 0 20px ${statusColor}30`
-                      }}
-                    />
-                  )}
-                  {selectedImageIndex !== index && (
-                    <div className="absolute inset-0 bg-black/20 rounded-xl" />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Modal pantalla completa con el mismo carrusel */}
+      {visibleUrls.length > 1 && (
+        <div
+          className={
+            fill
+              ? "absolute bottom-3 left-3 z-10 flex gap-2 overflow-x-auto rounded-xl bg-[#121212]/50 p-1.5 backdrop-blur-sm"
+              : "flex gap-2 overflow-x-auto p-3"
+          }
+        >
+          {visibleUrls.map((url, index) => (
+            <button
+              key={url}
+              type="button"
+              onClick={() => setSelectedImageIndex(index)}
+              className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
+              style={{
+                boxShadow:
+                  selectedImageIndex === index
+                    ? `inset 0 0 0 2px ${statusColor}`
+                    : "inset 0 0 0 1px rgba(0,0,0,0.08)",
+              }}
+              aria-label={`Foto ${index + 1}`}
+              aria-pressed={selectedImageIndex === index}
+            >
+              <Image
+                src={url}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="64px"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+
       {isFullscreen && (
         <FullscreenCarousel
-          imageUrls={imageUrls}
+          imageUrls={visibleUrls}
           animalName={animalName}
           statusColor={statusColor}
           initialIndex={selectedImageIndex}
           onClose={(lastIndex) => {
             setIsFullscreen(false);
-            if (typeof lastIndex === 'number') setSelectedImageIndex(lastIndex);
+            if (typeof lastIndex === "number") setSelectedImageIndex(lastIndex);
           }}
         />
       )}

@@ -2,9 +2,12 @@
 
 import { useQuery } from '@apollo/client';
 import { GET_ANIMAL_QUERY } from '../../queries';
+import { sortMultimediaByOrder } from 'kadesh/components/animals/sortMultimedia';
+import { isAnimalKeystoneId } from 'kadesh/components/animals/animalSlug';
 
 export interface AnimalDetail {
   id: string;
+  slug?: string | null;
   name: string;
   sex?: string | null;
   physical_description?: string | null;
@@ -20,6 +23,7 @@ export interface AnimalDetail {
     };
   };
   multimedia: Array<{
+    order?: number | null;
     image: {
       url: string;
     };
@@ -60,33 +64,37 @@ interface GetAnimalQueryResponse {
 
 interface GetAnimalQueryVariables {
   where: {
-    id: string;
+    id?: string;
+    slug?: string;
   };
   orderBy: Array<{
     date_status?: 'asc' | 'desc';
   }>;
 }
 
-export function useAnimalDetail(animalId: string) {
+export function useAnimalDetail(animalKey: string) {
   const { data, loading, error, refetch } = useQuery<GetAnimalQueryResponse, GetAnimalQueryVariables>(
     GET_ANIMAL_QUERY,
     {
       variables: {
-        where: {
-          id: animalId,
-        },
-        "orderBy": [
+        where: isAnimalKeystoneId(animalKey)
+          ? { id: animalKey }
+          : { slug: animalKey },
+        orderBy: [
           {
             date_status: 'desc',
           },
         ],
       },
       fetchPolicy: 'cache-and-network',
-      skip: !animalId,
+      skip: !animalKey,
     }
   );
 
-  const animal = data?.animal || null;
+  const raw = data?.animal || null;
+  const animal = raw
+    ? { ...raw, multimedia: sortMultimediaByOrder(raw.multimedia) }
+    : null;
   
 /*   // Sort logs by createdAt descending (most recent first)
   const sortedLogs = animal?.logs

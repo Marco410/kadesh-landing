@@ -114,7 +114,10 @@ export interface LeafletDivIcon {
 }
 
 export interface LeafletLib {
-  map(el: HTMLElement, options?: { zoomControl?: boolean }): LeafletMap;
+  map(
+    el: HTMLElement,
+    options?: { zoomControl?: boolean; attributionControl?: boolean }
+  ): LeafletMap;
   divIcon(options: {
     className: string;
     html: string;

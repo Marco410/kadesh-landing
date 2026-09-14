@@ -269,6 +269,8 @@ html.dark .kadesh-hero-fade {
 .kadesh-free-map--standard,
 .kadesh-free-map--night {
   position: relative;
+  z-index: 0;
+  isolation: isolate;
   height: 100%;
   width: 100%;
 }

@@ -2,6 +2,7 @@ export type AnimalType = 'perro' | 'gato' | 'conejo' | 'ave' | 'otro';
 
 export interface LostAnimal {
   id: string;
+  slug?: string | null;
   name: string;
   type: AnimalType;
   breed?: string;

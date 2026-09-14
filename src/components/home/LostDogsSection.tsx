@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useLostAnimals } from '../animals';
 import { getStatusLabel, getStatusColor, getTypeLabel } from '../animals/constants';
 import { formatDate } from 'kadesh/utils/format-date';
+import { animalDetailHref } from 'kadesh/components/animals/animalSlug';
 import { Routes } from 'kadesh/core/routes';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
@@ -192,7 +193,7 @@ export default function LostDogsSection() {
                   </div>
 
                   <Link
-                    href={Routes.animals.detail(animal.id)}
+                    href={animalDetailHref(animal)}
                     className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-kadesh px-5 py-3 font-semibold text-white transition-colors hover:bg-kadesh-600"
                   >
                     <HugeiconsIcon icon={SentIcon} size={18} />

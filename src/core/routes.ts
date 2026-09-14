@@ -50,7 +50,7 @@ export const Routes = {
   animals: {
     index: '/animales',
     new: '/animales/nuevo',
-    detail: (id: string): string => `/animales/${id}`,
+    detail: (slug: string): string => `/animales/${slug}`,
   },
 
   // Veterinaries (pet places)

@@ -1,14 +1,21 @@
 "use client";
 
-import { useState, useMemo } from 'react';
-import { useQuery } from '@apollo/client';
-import { GET_NEARBY_PET_PLACES } from '../queries';
-import type { PetPlace, NearbyPetPlacesInput, PetPlaceWhereInput } from '../types';
-import { DEFAULT_RADIUS_VETERINARIES, FETCH_LIMIT_VETERINARIES, VETERINARIES_PER_PAGE } from 'kadesh/constants/constans';
-
+import { useState, useMemo } from "react";
+import { useQuery } from "@apollo/client";
+import { GET_NEARBY_PET_PLACES } from "../queries";
+import type {
+  PetPlace,
+  NearbyPetPlacesInput,
+  PetPlaceWhereInput,
+} from "../types";
+import {
+  DEFAULT_RADIUS_VETERINARIES,
+  FETCH_LIMIT_VETERINARIES,
+  VETERINARIES_PER_PAGE,
+} from "kadesh/constants/constans";
 
 const WHERE_VETERINARY: PetPlaceWhereInput = {
-  types: { some: { value: { equals: 'veterinary' } } },
+  types: { some: { value: { equals: "veterinary" } } },
 };
 
 export interface GetNearbyPetPlacesQueryResult {
@@ -28,7 +35,7 @@ export interface GetNearbyPetPlacesQueryVariables {
 export function useNearbyPetPlaces(
   userLocation?: { lat: number | null; lng: number | null },
   limit?: number,
-  radiusKm?: number
+  radiusKm?: number,
 ) {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -39,7 +46,7 @@ export function useNearbyPetPlaces(
       lng: userLocation.lng,
       radius: radiusKm ?? DEFAULT_RADIUS_VETERINARIES,
       limit: limit ?? FETCH_LIMIT_VETERINARIES,
-      type: 'veterinary',
+      type: "veterinary",
     };
   }, [userLocation, limit, radiusKm]);
 
@@ -57,7 +64,10 @@ export function useNearbyPetPlaces(
   }, [data]);
 
   const totalPlaces = petPlaces.length;
-  const totalPages = Math.max(1, Math.ceil(totalPlaces / VETERINARIES_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalPlaces / VETERINARIES_PER_PAGE),
+  );
   const paginatedPlaces = useMemo(() => {
     const start = (currentPage - 1) * VETERINARIES_PER_PAGE;
     return petPlaces.slice(start, start + VETERINARIES_PER_PAGE);
@@ -88,6 +98,7 @@ export function useNearbyPetPlaces(
     previousPage,
     hasNextPage: currentPage < totalPages,
     hasPreviousPage: currentPage > 1,
-    hasLocation: !!userLocation && userLocation.lat != null && userLocation.lng != null,
+    hasLocation:
+      !!userLocation && userLocation.lat != null && userLocation.lng != null,
   };
 }

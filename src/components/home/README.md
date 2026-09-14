@@ -33,3 +33,7 @@ Personalidad **Premium**. Momento autorial: el recuadro-mapa se revela y los pin
 ## Secciones y anclas
 
 Inicio, qué es, animales, veterinarias, historias, donaciones, cómo funciona, roadmap, preguntas frecuentes (`#preguntas-frecuentes`). El dropdown de Inicio debe coincidir con estas anclas.
+
+## Veterinarias en portada
+
+No reutiliza `VeterinaryCard` del directorio (esa ficha es una fila para el mapa). En home, cada clínica es una tarjeta con recuadro-mapa (el mismo pin de marca del hero), abierto/cerrado, distancia y llamada. Va a `/veterinarias/[id]`, no al índice. No se exporta del barrel: solo la usa esta sección.

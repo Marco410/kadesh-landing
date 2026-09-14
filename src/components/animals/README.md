@@ -24,13 +24,15 @@ Es una **herramienta de tres pasos**, no un formulario largo ni una landing. Qui
 2. **Cómo reconocerlo** — tamaño y edad en chips, color, sexo, raza y **señas particulares** (obligatorias). **No sé** busca mestizo/sin raza; si no existe, pide la más cercana.
 3. **Dónde** — estatus (prellenado con `?status=`): Perdido, Encontrado, En adopción, Abandonado y Rescatado siempre visibles, sin Más. Hoy / otra fecha, mapa, teléfono (prellenado del perfil). Lat/lng y ciudad/estado/país no se muestran; el pin y la dirección bastan. Nota detrás de un enlace.
 
-Barra de **tres círculos** (1 · 2 · 3). El paso listo muestra un check y la línea se llena con GSAP. El pie queda fijo: Atrás / Continuar, y en el último paso **Publicar reporte**. El H1 cambia con el trabajo (`Reportar perdido`, `Dar en adopción`…). Sin franja azul, sin footer del sitio. Al publicar, va a la ficha del animal.
+Barra de **tres círculos** (1 · 2 · 3). El paso listo muestra un check y la línea se llena con GSAP. El pie queda fijo: Atrás / Continuar, y en el último paso **Publicar reporte**. El H1 cambia con el trabajo (`Reportar perdido`, `Dar en adopción`…). Sin franja azul, sin footer del sitio. Al publicar, va a la ficha (`/animales/luna-perdido-roma-a1b2c3`). El slug lo genera Keystone (nombre o tipo, estatus, ciudad y un sufijo del id) y no cambia si editan el nombre.
 
 El borrador se guarda en el navegador (paso, campos y fotos) por usuario. Recargar o volver más tarde retoma donde iba. Se borra al publicar.
 
 El mapa del picker no enseña coordenadas ni nombra el proveedor. CTA de posición: **Estoy aquí**.
 
-## Ficha (`/animales/[id]`)
+## Ficha (`/animales/[slug]`)
+
+La URL canónica es el slug. Los enlaces viejos `/animales/{id}` siguen abriendo la ficha y redirigen al slug cuando existe. Si el animal aún no tiene slug, se usa el id.
 
 Misma familia que la ficha de veterinaria: `pt-[72px]`, `night` / `night-raised`, sin franja azul y sin footer del sitio.
 

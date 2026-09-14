@@ -1,8 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowLeft01Icon,
@@ -39,10 +40,16 @@ function DetailShell({ children }: { children: ReactNode }) {
 
 export default function AnimalDetailPage() {
   const params = useParams();
-  const animalId = params?.id as string;
+  const router = useRouter();
+  const animalKey = (params?.slug || params?.id) as string;
   const { animal, logs, loading, error, refetch } = useAnimalDetail(
-    animalId || "",
+    animalKey || "",
   );
+
+  useEffect(() => {
+    if (!animal?.slug || animal.slug === animalKey) return;
+    router.replace(Routes.animals.detail(animal.slug));
+  }, [animal?.slug, animalKey, router]);
 
   if (loading) {
     return (

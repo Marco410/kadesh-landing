@@ -520,7 +520,7 @@ export default function NewAnimalForm({
         throw new Error('Error al crear el animal');
       }
 
-      await createAnimalLog({
+      const logResult = await createAnimalLog({
         variables: {
           data: {
             animal: { connect: { id: animalId } },
@@ -551,7 +551,11 @@ export default function NewAnimalForm({
       }
 
       await clearAnimalReportDraft(user.id);
-      router.push(Routes.animals.detail(animalId));
+      const slug =
+        logResult.data?.createAnimalLog?.animal?.slug ||
+        animalData?.createAnimal?.slug ||
+        animalId;
+      router.push(Routes.animals.detail(slug));
     } catch (error: unknown) {
       sileo.error({
         title: 'No se pudo publicar',

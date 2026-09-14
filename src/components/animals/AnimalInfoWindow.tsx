@@ -7,7 +7,7 @@ import { getStatusColor, getStatusLabel, getTypeLabel } from './constants';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Cancel01Icon, SentIcon } from '@hugeicons/core-free-icons';
 import { formatDate } from 'kadesh/utils/format-date';
-import { Routes } from 'kadesh/core/routes';
+import { animalDetailHref } from 'kadesh/components/animals/animalSlug';
 
 interface AnimalInfoWindowProps {
   animal: LostAnimal;
@@ -196,7 +196,7 @@ export default function AnimalInfoWindow({
             {formatDate(animal.createdAt)}
           </p>
           <Link
-            href={Routes.animals.detail(animal.id)}
+            href={animalDetailHref(animal)}
             style={{
               display: 'flex',
               alignItems: 'center',

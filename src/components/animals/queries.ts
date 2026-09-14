@@ -7,6 +7,7 @@ export const GET_ANIMALS_QUERY = gql`
     animals(skip: $skip, take: $take, orderBy: $orderBy, where: $where) {
       name
       id
+      slug
       createdAt
       user {
         id
@@ -79,6 +80,7 @@ export const GET_NEARBY_ANIMALS_QUERY = gql`
       total
       animals {
         id
+        slug
         name
         distance
         sex
@@ -141,6 +143,7 @@ export const CREATE_ANIMAL_MUTATION = gql`
   mutation CreateAnimal($data: AnimalCreateInput!) {
     createAnimal(data: $data) {
       id
+      slug
       animal_breed {
         breed
         id
@@ -170,7 +173,9 @@ export const CREATE_ANIMAL_LOG_MUTATION = gql`
       lat
       lng
       animal {
+        id
         name
+        slug
       }
       notes
       status
@@ -203,7 +208,9 @@ export interface CreateAnimalLogResponse {
     lat: string | null;
     lng: string | null;
     animal: {
+      id: string;
       name: string;
+      slug?: string | null;
     };
     notes: string | null;
     status: string;
@@ -250,6 +257,7 @@ export const CREATE_ANIMAL_MULTIMEDIA_MUTATION = gql`
 export const GET_ANIMAL_QUERY = gql`
   query GetAnimal($where: AnimalWhereUniqueInput!, $orderBy: [AnimalLogOrderByInput!]!) {
     animal(where: $where) {
+      slug
       animal_breed {
         breed
         animal_type {

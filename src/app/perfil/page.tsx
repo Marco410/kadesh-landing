@@ -1,27 +1,30 @@
 "use client";
 
 import { Suspense, useEffect } from "react";
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Tabs, Tab } from '@heroui/tabs';
-import { useUser } from 'kadesh/utils/UserContext';
-import { Routes } from 'kadesh/core/routes';
-import ProfileData from 'kadesh/components/profile/ProfileData';
-import UserPostsSection from 'kadesh/components/profile/UserPostsSection';
-import SalesSection from 'kadesh/components/profile/sales/SalesSection';
-import EmptyState from 'kadesh/components/shared/EmptyState';
-import { Footer, Navigation } from 'kadesh/components/layout';
-import { Role } from 'kadesh/constants/constans';
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useUser } from "kadesh/utils/UserContext";
+import { Routes } from "kadesh/core/routes";
+import ProfileData from "kadesh/components/profile/ProfileData";
+import UserPostsSection from "kadesh/components/profile/UserPostsSection";
+import UserAnimalsSection from "kadesh/components/profile/UserAnimalsSection";
+import ProfileTabs, {
+  isProfileTabKey,
+  type ProfileTabKey,
+} from "kadesh/components/profile/ProfileTabs";
+import { Navigation } from "kadesh/components/layout";
 
-const VALID_TABS = ['profile', 'posts', 'ventas', 'veterinaries', 'donations', 'shelters', 'animals', 'pets'] as const;
+function getValidTab(tabFromUrl: string | null): ProfileTabKey {
+  if (tabFromUrl && isProfileTabKey(tabFromUrl)) return tabFromUrl;
+  return "profile";
+}
 
-function getValidTab(tabFromUrl: string | null, hasVendedorRole: boolean): string {
-  if (!tabFromUrl || !VALID_TABS.includes(tabFromUrl as (typeof VALID_TABS)[number])) {
-    return 'profile';
-  }
-  if (tabFromUrl === 'ventas' && !hasVendedorRole) {
-    return 'profile';
-  }
-  return tabFromUrl;
+function ProfileShell({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="min-h-dvh bg-[#f7f8fa] pt-[72px] dark:bg-night">
+      <Navigation />
+      {children}
+    </main>
+  );
 }
 
 function ProfilePageContent() {
@@ -29,128 +32,70 @@ function ProfilePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const tabFromUrl = searchParams.get("tab");
-  const hasVendedorRole = user?.roles?.some((r) => r.name === Role.VENDEDOR) ?? false;
-  const selectedTab = getValidTab(tabFromUrl, hasVendedorRole);
+  const selectedTab = getValidTab(searchParams.get("tab"));
 
-  const handleTabChange = (key: React.Key) => {
-    router.replace(`${pathname}?tab=${String(key)}`, { scroll: false });
+  const handleTabChange = (key: ProfileTabKey) => {
+    router.replace(`${pathname}?tab=${key}`, { scroll: false });
   };
 
   useEffect(() => {
     if (!loading && !user?.id) {
-      router.push(Routes.auth.login);
+      router.push(
+        `${Routes.auth.login}?redirect=${encodeURIComponent(Routes.profile)}`,
+      );
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  if (loading || !user?.id) {
     return (
-      <div className="min-h-screen bg-[#ffffff] dark:bg-[#121212] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-[#616161] dark:text-[#b0b0b0]">Cargando perfil...</p>
+      <ProfileShell>
+        <div className="mx-auto w-full max-w-3xl px-4 py-10">
+          <div className="h-8 w-48 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10" />
+          <div className="mt-6 h-64 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10" />
         </div>
-      </div>
+      </ProfileShell>
     );
   }
 
-  if (!user?.id) {
-    return null;
-  }
-
   return (
-    <div className="min-h-screen  via-white to-white dark:from-orange-900 dark:via-[#121212] dark:to-[#0f0f0f]">
-    <Navigation />
-    <div className="min-h-screen  via-white to-white dark:from-orange-900 dark:via-[#121212] dark:to-[#0f0f0f] pt-24 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#212121] dark:text-[#ffffff] mb-2">
-            Mi Perfil
+    <ProfileShell>
+      <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6">
+        <header className="mb-5">
+          <h1 className="text-2xl font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
+            Perfil
           </h1>
-          <p className="text-[#616161] dark:text-[#b0b0b0]">
-            Gestiona tu información personal y actividad
-          </p>
-        </div>
+          {user.username ? (
+            <p className="mt-0.5 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+              @{user.username}
+            </p>
+          ) : null}
+        </header>
 
-        <Tabs
-          selectedKey={selectedTab}
-          onSelectionChange={handleTabChange}
-          classNames={{
-            tabList: "w-full bg-[#f5f5f5] dark:bg-[#2a2a2a] rounded-lg p-1",
-            tab: "flex-1 text-sm font-semibold data-[selected=true]:bg-white dark:data-[selected=true]:bg-[#1e1e1e] data-[selected=true]:text-orange-500 dark:data-[selected=true]:text-orange-400 rounded-lg  min-w-34 min-h-11",
-            tabContent: "text-[#616161] dark:text-[#b0b0b0]",
-            panel: "mt-6",
-          }}
-        >
-          <Tab key="profile" title="Datos del Perfil">
-            <ProfileData user={user} />
-          </Tab>
+        <ProfileTabs value={selectedTab} onChange={handleTabChange} />
 
-          <Tab key="posts" title="Posts">
+        <div className="mt-5">
+          {selectedTab === "profile" ? <ProfileData user={user} /> : null}
+          {selectedTab === "posts" ? (
             <UserPostsSection userId={user.id} />
-          </Tab>
-
-          {hasVendedorRole && (
-            <Tab key="ventas" title="Ventas">
-              <SalesSection userId={user.id} />
-            </Tab>
-          )}
-
-          <Tab key="veterinaries" title="Veterinarias">
-            <EmptyState
-              title="Veterinarias"
-              description="Próximamente podrás agregar y gestionar veterinarias desde aquí."
-              icon="🏥"
-            />
-          </Tab>
-
-          <Tab key="donations" title="Donaciones">
-            <EmptyState
-              title="Donaciones"
-              description="Próximamente podrás ver y gestionar tus donaciones desde aquí."
-              icon="💝"
-            />
-          </Tab>
-
-          <Tab key="shelters" title="Refugios">
-            <EmptyState
-              title="Refugios"
-              description="Próximamente podrás agregar y gestionar refugios desde aquí."
-              icon="🏠"
-            />
-          </Tab>
-
-          <Tab key="animals" title="Animales">
-            <EmptyState
-              title="Animales"
-              description="Próximamente podrás agregar y gestionar animales desde aquí."
-              icon="🐾"
-            />
-          </Tab>
-
-          <Tab key="pets" title="Mascotas">
-            <EmptyState
-              title="Mascotas"
-              description="Próximamente podrás agregar y gestionar tus mascotas desde aquí."
-              icon="🐕"
-            />
-          </Tab>
-        </Tabs>
+          ) : null}
+          {selectedTab === "animals" ? (
+            <UserAnimalsSection userId={user.id} />
+          ) : null}
+        </div>
       </div>
-    </div>
-    <Footer />
-    </div>
+    </ProfileShell>
   );
 }
 
 function ProfilePageFallback() {
   return (
-    <div className="min-h-screen bg-[#ffffff] dark:bg-[#121212] flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto" />
-        <p className="mt-4 text-[#616161] dark:text-[#b0b0b0]">Cargando perfil...</p>
+    <main className="min-h-dvh bg-[#f7f8fa] pt-[72px] dark:bg-night">
+      <Navigation />
+      <div className="mx-auto w-full max-w-3xl px-4 py-10">
+        <div className="h-8 w-48 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10" />
+        <div className="mt-6 h-64 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10" />
       </div>
-    </div>
+    </main>
   );
 }
 

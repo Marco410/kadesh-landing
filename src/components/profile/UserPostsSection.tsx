@@ -1,59 +1,60 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Tabs, Tab } from '@heroui/tabs';
-import { useUserFavoritePosts } from './hooks/useUserFavoritePosts';
-import { useUserLikedPosts } from './hooks/useUserLikedPosts';
-import EmptyState from '../shared/EmptyState';
-import BlogCardSkeleton from '../blog/BlogCardSkeleton';
-import BlogCard from '../blog/BlogCard';
-import { useUserComments } from './hooks/useUserComments';
-import { Routes } from 'kadesh/core/routes';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ConfirmModal } from '../shared';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { Delete02Icon } from '@hugeicons/core-free-icons';
+import { useState, useEffect } from "react";
+import { useUserFavoritePosts } from "./hooks/useUserFavoritePosts";
+import { useUserLikedPosts } from "./hooks/useUserLikedPosts";
+import BlogCardSkeleton from "../blog/BlogCardSkeleton";
+import BlogCard from "../blog/BlogCard";
+import { useUserComments } from "./hooks/useUserComments";
+import { Routes } from "kadesh/core/routes";
+import Image from "next/image";
+import Link from "next/link";
+import { ConfirmModal } from "kadesh/components/shared";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete02Icon } from "@hugeicons/core-free-icons";
+import type { UserComment } from "./queries";
 
 interface UserPostsSectionProps {
   userId: string;
 }
 
-interface UserCommentItem {
-  id: string;
-  comment: string;
-  createdAt: string;
-  post: {
-    url: string;
-    title: string;
-    image?: { url: string } | null;
-  };
-}
+const POST_TABS = [
+  { key: "favorites", label: "Favoritos" },
+  { key: "liked", label: "Me gusta" },
+  { key: "comments", label: "Comentarios" },
+] as const;
 
 export default function UserPostsSection({ userId }: UserPostsSectionProps) {
-  const [selectedTab, setSelectedTab] = useState('favorites');
+  const [selectedTab, setSelectedTab] =
+    useState<(typeof POST_TABS)[number]["key"]>("favorites");
 
-  const { posts: favoritePosts, loading: favoritesLoading } = useUserFavoritePosts(userId);
-  const { posts: likedPosts, loading: likesLoading } = useUserLikedPosts(userId);
-  const { comments, loading: commentsLoading, refetch: refetchComments, handleDelete, isDeletingComment } = useUserComments(userId);
+  const { posts: favoritePosts, loading: favoritesLoading } =
+    useUserFavoritePosts(userId);
+  const { posts: likedPosts, loading: likesLoading } =
+    useUserLikedPosts(userId);
+  const {
+    comments,
+    loading: commentsLoading,
+    refetch: refetchComments,
+    handleDelete,
+    isDeletingComment,
+  } = useUserComments(userId);
 
   useEffect(() => {
-    if (selectedTab === 'comments') {
+    if (selectedTab === "comments") {
       refetchComments();
     }
   }, [selectedTab, refetchComments]);
 
-
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-MX', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateString).toLocaleDateString("es-MX", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
-  
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
@@ -75,129 +76,143 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
     }
   };
 
+  const countFor = {
+    favorites: favoritePosts.length,
+    liked: likedPosts.length,
+    comments: comments.length,
+  };
 
   return (
-    <div className="bg-white dark:bg-[#1e1e1e] rounded-xl p-6 sm:p-8 border border-[#e0e0e0] dark:border-[#3a3a3a] shadow-md dark:shadow-lg">
-      <Tabs
-        selectedKey={selectedTab}
-        onSelectionChange={(key) => setSelectedTab(key as string)}
-        classNames={{
-          tabList: "w-full bg-[#f5f5f5] dark:bg-[#2a2a2a] rounded-lg p-1",
-          tab: "flex-1 text-sm font-semibold data-[selected=true]:bg-white dark:data-[selected=true]:bg-[#1e1e1e] data-[selected=true]:text-orange-500 dark:data-[selected=true]:text-orange-400 rounded-lg w-34 h-10",
-          tabContent: "text-[#616161] dark:text-[#b0b0b0]",
-          panel: "mt-6",
-        }}
+    <div>
+      <div
+        role="tablist"
+        aria-label="Publicaciones"
+        className="flex flex-wrap gap-2"
       >
-        <Tab key="favorites" title={`Favoritos (${favoritePosts.length})`}>
-          {favoritesLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {POST_TABS.map((tab) => {
+          const selected = tab.key === selectedTab;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              onClick={() => setSelectedTab(tab.key)}
+              className={`inline-flex min-h-9 items-center rounded-full px-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
+                selected
+                  ? "bg-kadesh text-white shadow-[0_8px_18px_rgba(15,35,80,0.18)]"
+                  : "bg-[#f3f5f8] text-[#3a3a3a] hover:bg-kadesh-50 dark:bg-night dark:text-[#d0d0d0] dark:hover:bg-kadesh/20"
+              }`}
+            >
+              {tab.label} ({countFor[tab.key]})
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-5">
+        {selectedTab === "favorites" &&
+          (favoritesLoading ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {[1, 2, 3].map((i) => (
                 <BlogCardSkeleton key={i} />
               ))}
             </div>
           ) : favoritePosts.length === 0 ? (
-            <EmptyState
-              title="No tienes posts favoritos"
-              description="Los posts que guardes como favoritos aparecerán aquí."
-              icon="⭐"
-            />
+            <p className="rounded-2xl border border-[#ececec] bg-white px-5 py-6 text-sm text-[#5a5a5a] dark:border-white/10 dark:bg-night-raised dark:text-[#9aa3b2]">
+              Los artículos que guardes aparecen aquí.
+            </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {favoritePosts.map((post, index) => (
-                <div key={post.id} className="border border-[#e0e0e0] dark:border-[#4a4a4a] rounded-xl overflow-hidden shadow-sm dark:shadow-md">
-                  <BlogCard post={post} index={index} />
-                </div>
+                <BlogCard key={post.id} post={post} index={index} />
               ))}
             </div>
-          )}
-        </Tab>
+          ))}
 
-        <Tab key="liked" title={`Likeados (${likedPosts.length})`}>
-          {likesLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {selectedTab === "liked" &&
+          (likesLoading ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {[1, 2, 3].map((i) => (
                 <BlogCardSkeleton key={i} />
               ))}
             </div>
           ) : likedPosts.length === 0 ? (
-            <EmptyState
-              title="No has dado like a ningún post"
-              description="Los posts a los que les des like aparecerán aquí."
-              icon="❤️"
-            />
+            <p className="rounded-2xl border border-[#ececec] bg-white px-5 py-6 text-sm text-[#5a5a5a] dark:border-white/10 dark:bg-night-raised dark:text-[#9aa3b2]">
+              Los artículos que marques con me gusta aparecen aquí.
+            </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {likedPosts.map((post, index) => (
-                <div key={post.id} className="border border-[#e0e0e0] dark:border-[#4a4a4a] rounded-xl overflow-hidden shadow-sm dark:shadow-md">
-                  <BlogCard post={post} index={index} />
-                </div>
+                <BlogCard key={post.id} post={post} index={index} />
               ))}
             </div>
-          )}
-        </Tab>
+          ))}
 
-        <Tab key="comments" title={`Comentarios (${comments.length})`}>
-          {commentsLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {selectedTab === "comments" &&
+          (commentsLoading ? (
+            <div className="space-y-2">
               {[1, 2, 3].map((i) => (
-                <BlogCardSkeleton key={i} />
+                <div
+                  key={i}
+                  className="h-24 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10"
+                />
               ))}
             </div>
           ) : comments.length === 0 ? (
-            <EmptyState
-              title="No has comentado en ningún post"
-              description="Los comentarios que hagas en los posts aparecerán aquí."
-              icon="💬"
-            />
+            <p className="rounded-2xl border border-[#ececec] bg-white px-5 py-6 text-sm text-[#5a5a5a] dark:border-white/10 dark:bg-night-raised dark:text-[#9aa3b2]">
+              Tus comentarios en el blog aparecen aquí.
+            </p>
           ) : (
-            <div className="grid grid-cols-1 gap-6">
-              {comments.map((comment: UserCommentItem) => (
-              <div
-                key={comment.id}
-                className="block bg-white dark:bg-[#2a2a2a] rounded-lg p-4 hover:shadow-md transition-all duration-300 relative group"
-              >
-                <Link href={Routes.blog.post(comment.post.url)}>
-                  <div className="flex gap-4">
+            <div className="space-y-2">
+              {comments.map((comment: UserComment) => (
+                <div
+                  key={comment.id}
+                  className="relative rounded-2xl border border-[#ececec] bg-white p-3 dark:border-white/10 dark:bg-night-raised"
+                >
+                  <Link
+                    href={Routes.blog.post(comment.post.url)}
+                    className="flex gap-3"
+                  >
                     {comment.post.image?.url && (
-                      <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
                         <Image
                           src={comment.post.image.url}
-                          alt={comment.post.title}
+                          alt=""
                           fill
                           className="object-cover"
                         />
                       </div>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-[#212121] dark:text-[#ffffff] mb-2 line-clamp-1">
+                    <div className="min-w-0 flex-1 pr-8">
+                      <h3 className="truncate font-semibold text-[#121212] dark:text-[#eef1f6]">
                         {comment.post.title}
                       </h3>
-                      <p className="text-[#616161] dark:text-[#b0b0b0] mb-3 line-clamp-2">
+                      <p className="mt-1 line-clamp-2 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
                         {comment.comment}
                       </p>
-                      <p className="text-xs text-[#616161] dark:text-[#b0b0b0]">
+                      <p className="mt-1 text-xs text-[#9aa3b2]">
                         {formatDate(comment.createdAt)}
                       </p>
                     </div>
-                  </div>
-                </Link>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    openDeleteModal(comment.id);
-                  }}
-                  className="absolute top-4 right-4 p-2 text-[#616161] dark:text-[#b0b0b0] hover:text-red-500 dark:hover:text-red-400 transition-colors "
-                  aria-label="Eliminar comentario"
-                >
-                  <HugeiconsIcon icon={Delete02Icon} size={20} />
-                </button>
-              </div>
-            ))}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      openDeleteModal(comment.id);
+                    }}
+                    className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#5a5a5a] hover:bg-red-50 hover:text-red-600 dark:text-[#9aa3b2] dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                    aria-label="Eliminar comentario"
+                  >
+                    <HugeiconsIcon icon={Delete02Icon} size={16} />
+                  </button>
+                </div>
+              ))}
             </div>
-          )}
-        </Tab>
-      </Tabs>
+          ))}
+      </div>
 
       <ConfirmModal
         isOpen={deleteModalOpen}

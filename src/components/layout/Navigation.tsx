@@ -10,27 +10,17 @@ import Link from 'next/link';
 import { Routes } from 'kadesh/core/routes';
 import { useUser } from 'kadesh/utils/UserContext';
 
-interface DropdownLink {
-  label: string;
-  href: string;
-  anchor: string | null;
-}
-
-const DROPDOWN_LINKS: DropdownLink[] = [
-  { label: 'Home', href: Routes.home, anchor: null },
-  { label: '¿Qué es KADESH?', href: Routes.navigation.whatIsKadesh, anchor: Routes.navigation.whatIsKadesh },
-  { label: 'Animales perdidos', href: Routes.navigation.lostAnimals, anchor: Routes.navigation.lostAnimals },
-  { label: 'Veterinarias', href: Routes.navigation.veterinarians, anchor: Routes.navigation.veterinarians },
-  { label: 'Historias', href: Routes.navigation.stories, anchor: Routes.navigation.stories },
-  { label: 'Donaciones', href: Routes.navigation.donations, anchor: Routes.navigation.donations },
-  { label: 'Cómo funciona', href: Routes.navigation.howItWorks, anchor: Routes.navigation.howItWorks },
-  { label: 'Roadmap', href: Routes.navigation.roadmap, anchor: Routes.navigation.roadmap },
-  { label: 'Preguntas frecuentes', href: Routes.navigation.faq, anchor: Routes.navigation.faq },
-];
+const PRIMARY_NAV = [
+  { label: 'Inicio', href: Routes.home },
+  { label: 'Veterinarias', href: Routes.veterinaries.index },
+  { label: 'Animales', href: Routes.animals.index },
+  { label: 'Blog', href: Routes.blog.index },
+  { label: 'Conócenos', href: Routes.conocenos },
+  { label: 'Contacto', href: Routes.contact },
+] as const;
 
 export default function Navigation() {
   const [opened, setOpened] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -38,7 +28,6 @@ export default function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, setUser } = useUser();
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const avatarDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -64,12 +53,8 @@ export default function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [pathname]);
 
-  // Cerrar dropdowns al hacer click fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
-      }
       if (avatarDropdownRef.current && !avatarDropdownRef.current.contains(event.target as Node)) {
         setAvatarDropdownOpen(false);
       }
@@ -79,24 +64,12 @@ export default function Navigation() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, anchor: string | null) => {
-    // Si el link tiene un anchor y no estamos en la página principal, redirigir a home con el anchor
-    if (anchor && pathname !== Routes.home) {
-      e.preventDefault();
-      window.location.href = `${Routes.home}${anchor}`;
-      return;
-    }
-    
-    // Si estamos en la página principal y es un anchor, hacer scroll suave
-    if (anchor && pathname === Routes.home) {
-      e.preventDefault();
-      const el = document.querySelector(anchor);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-    
-    setOpened(false);
+  const goToHomeTop = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href !== Routes.home) return;
+    if (pathname !== Routes.home) return;
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.history.replaceState(null, '', Routes.home);
   };
 
   const toggleTheme = () => {
@@ -149,89 +122,17 @@ export default function Navigation() {
           <Logo size={48} className={atTopLight ? 'invert' : ''} />
         </Link>
         
-        {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center gap-6">
-          {/* Inicio Dropdown */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              className={`font-semibold text-sm flex items-center gap-1 ${navLinkClass}`}
+          {PRIMARY_NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={(e) => goToHomeTop(e, item.href)}
+              className={`font-semibold text-sm ${navLinkClass}`}
             >
-              Inicio
-              <svg 
-                className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            <AnimatePresence>
-              {dropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full left-0 mt-2 bg-white dark:bg-[#1e1e1e] rounded-lg shadow-lg py-2 min-w-[200px] z-50"
-                >
-                  {DROPDOWN_LINKS.map((link: DropdownLink) => (
-                    <a
-                      key={link.label}
-                      href={link.anchor ? `${Routes.home}${link.anchor}` : link.href}
-                      onClick={(e) => {
-                        handleLinkClick(e, link.href, link.anchor);
-                        setDropdownOpen(false);
-                      }}
-                      className="block px-4 py-2 text-sm text-[#212121] dark:text-[#ffffff] hover:bg-orange-500/10 dark:hover:bg-white/10 transition-colors"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Veterinarias Link */}
-          <Link
-            href={Routes.veterinaries.index}
-            className={`font-semibold text-sm ${navLinkClass}`}
-          >
-            Veterinarias
-          </Link>
-
-          {/* Animales Link */}
-          <Link
-            href={Routes.animals.index}
-            className={`font-semibold text-sm ${navLinkClass}`}
-          >
-            Animales
-          </Link>
-
-          {/* Blog Link */}
-          <Link
-            href={Routes.blog.index}
-            className={`font-semibold text-sm ${navLinkClass}`}
-          >
-            Blog
-          </Link>
-
-          {/* Conócenos Link */}
-          <Link
-            href={Routes.conocenos}
-            className={`font-semibold text-sm ${navLinkClass}`}
-          >
-            Conócenos
-          </Link>
-
-          {/* Contacto Link */}
-          <Link
-            href={Routes.contact}
-            className={`font-semibold text-sm ${navLinkClass}`}
-          >
-            Contacto
-          </Link>
+              {item.label}
+            </Link>
+          ))}
           
           {/* Theme Toggle Button */}
           {mounted && (
@@ -390,97 +291,19 @@ export default function Navigation() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-4">
-                  {/* Inicio Dropdown Mobile */}
-                  <div>
-                    <button
-                      onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className="w-full text-left text-white font-semibold text-lg opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all flex items-center justify-between"
+                  {PRIMARY_NAV.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={(e) => {
+                        goToHomeTop(e, item.href);
+                        setOpened(false);
+                      }}
+                      className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
                     >
-                      Inicio
-                      <svg 
-                        className={`w-5 h-5 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    <AnimatePresence>
-                      {dropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="pl-4 pt-2 flex flex-col gap-2">
-                            {DROPDOWN_LINKS.map((link: DropdownLink, index: number) => (
-                              <motion.a
-                                key={link.label}
-                                href={link.anchor ? `${Routes.home}${link.anchor}` : link.href}
-                                onClick={(e) => {
-                                  handleLinkClick(e, link.href, link.anchor);
-                                  setDropdownOpen(false);
-                                }}
-                                className="text-white font-medium text-base opacity-80 hover:opacity-100 py-2 px-4 rounded-lg bg-white/5 hover:bg-white/10 transition-all"
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.05 }}
-                              >
-                                {link.label}
-                              </motion.a>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Veterinarias Link Mobile */}
-                  <Link
-                    href={Routes.veterinaries.index}
-                    onClick={() => setOpened(false)}
-                    className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
-                  >
-                    Veterinarias
-                  </Link>
-
-                  {/* Animales Link Mobile */}
-                  <Link
-                    href={Routes.animals.index}
-                    onClick={() => setOpened(false)}
-                    className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
-                  >
-                    Animales
-                  </Link>
-                  
-                  {/* Blog Link Mobile */}
-                  <Link
-                    href={Routes.blog.index}
-                    onClick={() => setOpened(false)}
-                    className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
-                  >
-                    Blog
-                  </Link>
-
-                  {/* Conócenos Link Mobile */}
-                  <Link
-                    href={Routes.conocenos}
-                    onClick={() => setOpened(false)}
-                    className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
-                  >
-                    Conócenos
-                  </Link>
-
-                  {/* Contacto Link Mobile */}
-                  <Link
-                    href={Routes.contact}
-                    onClick={() => setOpened(false)}
-                    className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
-                  >
-                    Contacto
-                  </Link>
+                      {item.label}
+                    </Link>
+                  ))}
 
                   {/* User Avatar or Login Button Mobile */}
                   {user?.id ? (

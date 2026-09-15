@@ -5,10 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMutation, useQuery } from "@apollo/client";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  InformationCircleIcon,
-  Edit01Icon,
-} from "@hugeicons/core-free-icons";
+import { Edit01Icon } from "@hugeicons/core-free-icons";
 import {
   UPDATE_USER_MUTATION,
   USER_QUERY,
@@ -20,15 +17,26 @@ import {
 import { useUser } from "kadesh/utils/UserContext";
 import { Routes } from "kadesh/core/routes";
 import type { AuthenticatedItem } from "kadesh/utils/types";
+import {
+  fieldErrorFromGraphQL,
+  normalizePhone,
+  validateProfileFields,
+  type ProfileFieldErrors,
+  type ProfileFieldKey,
+} from "./validateProfile";
 
 const INPUT_CLASS =
-  "w-full px-4 py-3 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#ffffff] placeholder:text-[#616161] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all disabled:opacity-60 disabled:cursor-not-allowed";
+  "w-full rounded-xl border border-[#d8dee8] bg-white px-4 py-3 text-sm text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh dark:border-white/18 dark:bg-night dark:text-[#eef1f6] dark:placeholder:text-[#9aa3b2] disabled:cursor-not-allowed disabled:opacity-60";
+
+const INPUT_ERROR_CLASS =
+  "border-red-400 focus:ring-red-400 dark:border-red-500/70";
+
+function fieldClass(hasError: boolean) {
+  return hasError ? `${INPUT_CLASS} ${INPUT_ERROR_CLASS}` : INPUT_CLASS;
+}
 
 const DISABLED_FIELD_CLASS =
-  "w-full px-4 py-3 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-[#f5f5f5] dark:bg-[#2a2a2a] text-[#616161] dark:text-[#b0b0b0]";
-
-const CONTACT_MESSAGE =
-  'Si necesitas actualizar este campo, envía un mensaje en contacto.';
+  "w-full rounded-xl border border-[#ececec] bg-[#f3f5f8] px-4 py-3 text-sm text-[#5a5a5a] dark:border-white/10 dark:bg-night dark:text-[#9aa3b2]";
 
 function toDateInputValue(isoOrNull: string | null | undefined): string {
   if (!isoOrNull) return "";
@@ -41,12 +49,14 @@ interface SaveChangesButtonProps {
   isDirty: boolean;
   saving: boolean;
   onSave: () => void;
+  className?: string;
 }
 
 function SaveChangesButton({
   isDirty,
   saving,
   onSave,
+  className = "hidden sm:inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto lg:min-h-9",
 }: SaveChangesButtonProps) {
   if (!isDirty) return null;
   return (
@@ -54,7 +64,7 @@ function SaveChangesButton({
       type="button"
       onClick={onSave}
       disabled={saving}
-      className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full sm:w-auto"
+      className={className}
     >
       {saving ? (
         <>
@@ -76,10 +86,11 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
   const { refreshUser } = useUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data, loading: userLoading, refetch: refetchUser } = useQuery<
-    UserQueryResponse,
-    UserQueryVariables
-  >(USER_QUERY, {
+  const {
+    data,
+    loading: userLoading,
+    refetch: refetchUser,
+  } = useQuery<UserQueryResponse, UserQueryVariables>(USER_QUERY, {
     variables: { where: { id: userProp.id } },
     skip: !userProp?.id,
   });
@@ -92,24 +103,21 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
     user.secondLastName ?? "",
   );
   const [phone, setPhone] = useState(user.phone ?? "");
-  const [birthday, setBirthday] = useState(
-    toDateInputValue((user as { birthday?: string | null }).birthday),
-  );
+  const [birthday, setBirthday] = useState(toDateInputValue(user.birthday));
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<ProfileFieldErrors>({});
 
   useEffect(() => {
     setName(user.name ?? "");
     setLastName(user.lastName ?? "");
     setSecondLastName(user.secondLastName ?? "");
     setPhone(user.phone ?? "");
-    setBirthday(
-      toDateInputValue((user as { birthday?: string | null }).birthday),
-    );
+    setBirthday(toDateInputValue(user.birthday));
   }, [user]);
 
-  const currentBirthdayIso = (user as { birthday?: string | null }).birthday
-    ? toDateInputValue((user as { birthday?: string | null }).birthday)
+  const currentBirthdayIso = user.birthday
+    ? toDateInputValue(user.birthday)
     : "";
   const isDirty =
     name !== (user.name ?? "") ||
@@ -118,41 +126,68 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
     (phone || "") !== (user.phone ?? "") ||
     (birthday || "") !== currentBirthdayIso;
 
+  const [saveError, setSaveError] = useState("");
+
   const [updateUser, { loading: saving }] = useMutation<
     UpdateUserResponse,
     UpdateUserVariables
   >(UPDATE_USER_MUTATION, {
     onCompleted: async () => {
       setSaveError("");
+      setFieldErrors({});
       await Promise.all([refetchUser(), refreshUser()]);
     },
-    onError: () => {
+    onError: (error) => {
+      const fromGraphQL = fieldErrorFromGraphQL(error.message);
+      if (Object.keys(fromGraphQL).length > 0) {
+        setFieldErrors(fromGraphQL);
+        setSaveError("");
+        return;
+      }
       setSaveError("No se pudo guardar. Intenta de nuevo.");
     },
   });
 
-  const [saveError, setSaveError] = useState("");
+  const clearFieldError = (key: ProfileFieldKey) => {
+    setFieldErrors((current) => {
+      if (!current[key]) return current;
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+  };
 
   const handleSave = async () => {
     if (!isDirty || !user.id) return;
+    const nextErrors = validateProfileFields({
+      name,
+      lastName,
+      phone,
+      birthday,
+    });
+    setFieldErrors(nextErrors);
     setSaveError("");
+    if (Object.keys(nextErrors).length > 0) {
+      const first = (Object.keys(nextErrors) as ProfileFieldKey[])[0];
+      document.getElementById(`profile-${first}`)?.focus();
+      return;
+    }
+
     await updateUser({
       variables: {
         where: { id: user.id },
         data: {
-          name: name || undefined,
-          lastName: lastName || undefined,
+          name: name.trim(),
+          lastName: lastName.trim(),
           secondLastName: secondLastName.trim() || null,
-          phone: phone.trim() || null,
+          phone: normalizePhone(phone),
           birthday: birthday || null,
         },
       },
     });
   };
 
-  const handleImageChange = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith("image/") || !user.id) {
       if (file && !file.type.startsWith("image/")) {
@@ -190,36 +225,28 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
 
   if (userLoading && !data?.user) {
     return (
-      <div className="bg-white dark:bg-[#1e1e1e] rounded-xl p-6 sm:p-8 border border-[#e0e0e0] dark:border-[#3a3a3a] shadow-md dark:shadow-lg">
-        <div className="flex items-center justify-center py-12">
-          <span className="animate-spin size-8 border-2 border-orange-500 border-t-transparent rounded-full" />
+      <div className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6">
+        <div className="h-6 w-40 animate-pulse rounded-lg bg-[#e6e9ef] dark:bg-white/10" />
+        <div className="mt-5 flex items-center gap-4">
+          <div className="h-20 w-20 animate-pulse rounded-full bg-[#e6e9ef] dark:bg-white/10" />
+          <div className="h-5 w-48 animate-pulse rounded-lg bg-[#e6e9ef] dark:bg-white/10" />
+        </div>
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+          {[1, 2, 3, 4].map((item) => (
+            <div
+              key={item}
+              className="h-14 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10"
+            />
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-[#1e1e1e] rounded-xl p-6 sm:p-8 border border-[#e0e0e0] dark:border-[#3a3a3a] shadow-md dark:shadow-lg">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-        <h2 className="text-2xl font-bold text-[#212121] dark:text-[#ffffff]">
-          Información Personal
-        </h2>
-        <SaveChangesButton
-          isDirty={isDirty}
-          saving={saving}
-          onSave={handleSave}
-        />
-      </div>
-
-      {saveError && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm font-medium">
-          {saveError}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Avatar con botón editar */}
-        <div className="md:col-span-2 flex items-center gap-6 mb-4 pb-6 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">
+    <div className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6">
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-center gap-4">
           <div className="flex flex-col items-start gap-1">
             <input
               ref={fileInputRef}
@@ -233,13 +260,14 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={imageUploading}
-              className="relative w-24 h-24 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-2xl overflow-hidden group cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-[#1e1e1e] disabled:opacity-70 disabled:cursor-not-allowed"
+              className="group relative flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-kadesh text-2xl font-bold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-kadesh focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 dark:focus-visible:ring-offset-night-raised"
             >
               {user.profileImage?.url ? (
                 <Image
                   src={user.profileImage.url}
                   alt={user.name || "Usuario"}
                   fill
+                  sizes="80px"
                   className="object-cover"
                 />
               ) : (
@@ -268,63 +296,107 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
             )}
           </div>
           <div>
-            <h3 className="text-xl font-bold text-[#212121] dark:text-[#ffffff]">
+            <h3 className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
               {user.name} {user.lastName} {user.secondLastName || ""}
             </h3>
-            <p className="text-[#616161] dark:text-[#b0b0b0]">
-              @{user.username}
-            </p>
             {user.verified && (
-              <span className="inline-flex items-center gap-1 mt-1 text-xs text-orange-500 dark:text-orange-400">
-                <svg
-                  className="w-4 h-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 .723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+              <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-kadesh">
+                <Image
+                  src="/icons/firmar.png"
+                  alt=""
+                  width={14}
+                  height={14}
+                  className="object-contain"
+                />
                 Verificado
               </span>
             )}
           </div>
         </div>
+        <SaveChangesButton
+          isDirty={isDirty}
+          saving={saving}
+          onSave={handleSave}
+        />
+      </div>
 
-        {/* Nombre - editable */}
+      {saveError && (
+        <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+          {saveError}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-semibold text-[#616161] dark:text-[#b0b0b0] mb-2">
+          <label
+            htmlFor="profile-name"
+            className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]"
+          >
             Nombre
           </label>
           <input
+            id="profile-name"
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              clearFieldError("name");
+            }}
             placeholder="Tu nombre"
-            className={INPUT_CLASS}
+            autoComplete="given-name"
+            aria-invalid={Boolean(fieldErrors.name)}
+            aria-describedby={
+              fieldErrors.name ? "profile-name-error" : undefined
+            }
+            className={fieldClass(Boolean(fieldErrors.name))}
           />
+          {fieldErrors.name ? (
+            <p
+              id="profile-name-error"
+              className="mt-1.5 text-xs text-red-600 dark:text-red-400"
+            >
+              {fieldErrors.name}
+            </p>
+          ) : null}
         </div>
 
-        {/* Apellido Paterno - editable */}
         <div>
-          <label className="block text-sm font-semibold text-[#616161] dark:text-[#b0b0b0] mb-2">
-            Apellido Paterno
+          <label
+            htmlFor="profile-lastName"
+            className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]"
+          >
+            Apellido paterno
           </label>
           <input
+            id="profile-lastName"
             type="text"
             value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            onChange={(e) => {
+              setLastName(e.target.value);
+              clearFieldError("lastName");
+            }}
             placeholder="Apellido paterno"
-            className={INPUT_CLASS}
+            autoComplete="family-name"
+            aria-invalid={Boolean(fieldErrors.lastName)}
+            aria-describedby={
+              fieldErrors.lastName ? "profile-lastName-error" : undefined
+            }
+            className={fieldClass(Boolean(fieldErrors.lastName))}
           />
+          {fieldErrors.lastName ? (
+            <p
+              id="profile-lastName-error"
+              className="mt-1.5 text-xs text-red-600 dark:text-red-400"
+            >
+              {fieldErrors.lastName}
+            </p>
+          ) : null}
         </div>
 
         {/* Apellido Materno - editable */}
         <div>
-          <label className="block text-sm font-semibold text-[#616161] dark:text-[#b0b0b0] mb-2">
-            Apellido Materno
+          <label className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
+            Apellido materno
           </label>
           <input
             type="text"
@@ -337,8 +409,8 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
 
         {/* Username - no editable */}
         <div>
-          <label className="block text-sm font-semibold text-[#616161] dark:text-[#b0b0b0] mb-2">
-            Nombre de Usuario
+          <label className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
+            Usuario
           </label>
           <div className="flex items-center gap-2">
             <input
@@ -349,11 +421,11 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
               className={DISABLED_FIELD_CLASS}
             />
           </div>
-          <p className="mt-1.5 text-xs text-[#616161] dark:text-[#b0b0b0]">
+          <p className="mt-1.5 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
             Si necesitas actualizar este campo, envía un mensaje en{" "}
             <Link
               href={Routes.contact}
-              className="text-orange-500 dark:text-orange-400 hover:underline font-medium"
+              className="font-medium text-kadesh hover:underline"
             >
               contacto
             </Link>
@@ -363,8 +435,8 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
 
         {/* Email - no editable */}
         <div>
-          <label className="block text-sm font-semibold text-[#616161] dark:text-[#b0b0b0] mb-2">
-            Correo Electrónico
+          <label className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
+            Correo
           </label>
           <div className="flex items-center gap-2">
             <input
@@ -375,11 +447,11 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
               className={DISABLED_FIELD_CLASS}
             />
           </div>
-          <p className="mt-1.5 text-xs text-[#616161] dark:text-[#b0b0b0]">
+          <p className="mt-1.5 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
             Si necesitas actualizar este campo, envía un mensaje en{" "}
             <Link
               href={Routes.contact}
-              className="text-orange-500 dark:text-orange-400 hover:underline font-medium"
+              className="font-medium text-kadesh hover:underline"
             >
               contacto
             </Link>
@@ -387,74 +459,89 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
           </p>
         </div>
 
-        {/* Teléfono - editable */}
         <div>
-          <label className="block text-sm font-semibold text-[#616161] dark:text-[#b0b0b0] mb-2">
+          <label
+            htmlFor="profile-phone"
+            className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]"
+          >
             Teléfono
           </label>
           <input
+            id="profile-phone"
             type="tel"
+            inputMode="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+52 55 1234 5678"
-            className={INPUT_CLASS}
+            onChange={(e) => {
+              setPhone(e.target.value);
+              clearFieldError("phone");
+            }}
+            placeholder="55 1234 5678"
+            autoComplete="tel"
+            aria-invalid={Boolean(fieldErrors.phone)}
+            aria-describedby={
+              fieldErrors.phone ? "profile-phone-error" : undefined
+            }
+            className={fieldClass(Boolean(fieldErrors.phone))}
           />
+          {fieldErrors.phone ? (
+            <p
+              id="profile-phone-error"
+              className="mt-1.5 text-xs text-red-600 dark:text-red-400"
+            >
+              {fieldErrors.phone}
+            </p>
+          ) : null}
         </div>
 
-        {/* Fecha de Nacimiento - editable */}
         <div>
-          <label className="block text-sm font-semibold text-[#616161] dark:text-[#b0b0b0] mb-2">
-            Fecha de Nacimiento
+          <label
+            htmlFor="profile-birthday"
+            className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]"
+          >
+            Fecha de nacimiento
           </label>
           <input
+            id="profile-birthday"
             type="date"
             value={birthday}
-            onChange={(e) => setBirthday(e.target.value)}
-            className={INPUT_CLASS}
+            onChange={(e) => {
+              setBirthday(e.target.value);
+              clearFieldError("birthday");
+            }}
+            aria-invalid={Boolean(fieldErrors.birthday)}
+            aria-describedby={
+              fieldErrors.birthday ? "profile-birthday-error" : undefined
+            }
+            className={fieldClass(Boolean(fieldErrors.birthday))}
           />
+          {fieldErrors.birthday ? (
+            <p
+              id="profile-birthday-error"
+              className="mt-1.5 text-xs text-red-600 dark:text-red-400"
+            >
+              {fieldErrors.birthday}
+            </p>
+          ) : null}
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-[#616161] dark:text-[#b0b0b0] mb-2">
-            Edad
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={
-                (user as { age?: number | null }).age
-                  ? `${(user as { age?: number | null }).age} años`
-                  : "No especificado"
-              }
-              readOnly
-              disabled
-              className={DISABLED_FIELD_CLASS}
-            />
-          </div>
-          <p className="mt-1.5 text-xs text-[#616161] dark:text-[#b0b0b0]">
-            Se autogenera con tu fecha de nacimiento.
+        {/* Miembro desde */}
+        <div className="md:col-span-2">
+          <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+            Miembro desde {formatDate(user.createdAt)}
           </p>
         </div>
+      </div>
 
-        {/* Miembro desde - no editable */}
-        <div className="md:col-span-2">
-          <label className="block text-sm font-semibold text-[#616161] dark:text-[#b0b0b0] mb-2">
-            Miembro desde
-          </label>
-          <div className="px-4 py-3 rounded-lg border border-[#e0e0e0] dark:border-[#3a3a3a] bg-[#f5f5f5] dark:bg-[#2a2a2a] text-[#616161] dark:text-[#b0b0b0]">
-            {formatDate(user.createdAt)}
-          </div>
-        </div>
-
-        {/* Botón guardar abajo (visible en móvil) */}
-        <div className="md:col-span-2 flex justify-center sm:justify-end pt-2">
+      {isDirty ? (
+        <div className="sticky bottom-4 mt-4 sm:hidden">
           <SaveChangesButton
             isDirty={isDirty}
             saving={saving}
             onSave={handleSave}
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-70"
           />
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

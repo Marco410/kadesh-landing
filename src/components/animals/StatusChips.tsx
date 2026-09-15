@@ -34,7 +34,7 @@ function StatusChip({
         pulse();
         onSelect(value);
       }}
-      className={`inline-flex min-h-9 origin-center items-center gap-1.5 rounded-full px-3 text-sm font-semibold transition-[background-color,color,box-shadow] duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
+      className={`inline-flex min-h-11 origin-center items-center gap-1.5 rounded-full px-3 text-sm font-semibold transition-[background-color,color,box-shadow] duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
         selected
           ? 'text-white shadow-[0_8px_18px_rgba(15,35,80,0.18)]'
           : 'bg-[#f3f5f8] text-[#3a3a3a] hover:bg-kadesh-50 dark:bg-night dark:text-[#d0d0d0] dark:hover:bg-kadesh/20'
@@ -136,7 +136,7 @@ export default function StatusChips({
             pulseMoreToggle();
             setShowMore((open) => !open);
           }}
-          className="inline-flex min-h-9 origin-center items-center rounded-full px-3 text-sm font-semibold text-kadesh hover:bg-kadesh-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:hover:bg-kadesh/20"
+          className="inline-flex min-h-11 origin-center items-center rounded-full px-3 text-sm font-semibold text-kadesh hover:bg-kadesh-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:hover:bg-kadesh/20"
         >
           {showMore ? 'Menos' : 'Más'}
         </button>

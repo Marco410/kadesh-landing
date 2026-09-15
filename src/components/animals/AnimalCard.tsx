@@ -65,7 +65,7 @@ export default function AnimalCard({
               onClick?.();
             }
           }}
-          className="flex w-full gap-3 text-left"
+          className="flex w-full cursor-pointer gap-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
         >
           <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]">
             {animal.image?.url ? (

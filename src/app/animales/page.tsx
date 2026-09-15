@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Navigation, Footer } from 'kadesh/components/layout';
+import { Navigation } from 'kadesh/components/layout';
 import {
   AnimalCard,
   AnimalFilters,
@@ -12,7 +12,11 @@ import {
 } from 'kadesh/components/animals';
 import { ANIMAL_LOGS_OPTIONS, emptyDirectoryHeadline } from 'kadesh/components/animals/constants';
 import { useUser } from 'kadesh/utils/UserContext';
-import { ConfirmModal } from 'kadesh/components/shared';
+import {
+  ConfirmModal,
+  DirectoryPagination,
+  DirectoryRadiusChips,
+} from 'kadesh/components/shared';
 import { Routes } from 'kadesh/core/routes';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
@@ -20,7 +24,11 @@ import {
   Location01Icon,
   Search01Icon,
 } from '@hugeicons/core-free-icons';
-import { DEFAULT_RADIUS, RADIUS_OPTIONS_ANIMALS } from 'kadesh/constants/constans';
+import {
+  DEFAULT_RADIUS,
+  RADIUS_OPTIONS_ANIMALS,
+  parseRadiusOption,
+} from 'kadesh/constants/constans';
 
 function LostAnimalsPageContent() {
   const router = useRouter();
@@ -30,6 +38,11 @@ function LostAnimalsPageContent() {
     statusFromQuery && ANIMAL_LOGS_OPTIONS.some((option) => option.value === statusFromQuery)
       ? statusFromQuery
       : undefined;
+  const radiusKm = parseRadiusOption(
+    searchParams.get('radius'),
+    RADIUS_OPTIONS_ANIMALS,
+    DEFAULT_RADIUS
+  );
   const { user, loading: userLoading } = useUser();
   const [selectedAnimal, setSelectedAnimal] = useState<LostAnimal | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -38,7 +51,6 @@ function LostAnimalsPageContent() {
   >(undefined);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
-  const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
@@ -109,6 +121,15 @@ function LostAnimalsPageContent() {
     }
   }, [allAnimals, selectedAnimal]);
 
+  useEffect(() => {
+    const urlStatus =
+      statusFromQuery && ANIMAL_LOGS_OPTIONS.some((option) => option.value === statusFromQuery)
+        ? statusFromQuery
+        : null;
+    if ((filters.status ?? null) === urlStatus) return;
+    updateFilters({ status: urlStatus });
+  }, [statusFromQuery]);
+
   const handleAnimalClick = (animal: LostAnimal | null) => {
     setSelectedAnimal(animal);
     if (animal) {
@@ -119,10 +140,36 @@ function LostAnimalsPageContent() {
     }
   };
 
+  const replaceDirectoryQuery = (mutate: (params: URLSearchParams) => void) => {
+    const params = new URLSearchParams(searchParams.toString());
+    mutate(params);
+    const next = params.toString();
+    router.replace(`/animales${next ? `?${next}` : ''}`, { scroll: false });
+  };
+
   const handleRadiusChange = (km: number) => {
-    setRadiusKm(km);
+    replaceDirectoryQuery((params) => {
+      if (km === DEFAULT_RADIUS) params.delete('radius');
+      else params.set('radius', String(km));
+    });
     goToPage(1);
     setSelectedAnimal(null);
+  };
+
+  const handleFiltersChange = (next: Parameters<typeof updateFilters>[0]) => {
+    updateFilters(next);
+    replaceDirectoryQuery((params) => {
+      const status = next.status !== undefined ? next.status : filters.status;
+      if (status) params.set('status', status);
+      else params.delete('status');
+    });
+  };
+
+  const handleClearFilters = () => {
+    clearFilters();
+    replaceDirectoryQuery((params) => {
+      params.delete('status');
+    });
   };
 
   const handleReportAnimalClick = () => {
@@ -140,11 +187,11 @@ function LostAnimalsPageContent() {
   };
 
   return (
-    <main className="min-h-screen bg-white pt-[72px] dark:bg-night">
+    <main className="min-h-dvh bg-white pt-[72px] dark:bg-night">
       <Navigation />
 
-      <div className="flex flex-col md:h-[calc(100vh-72px)] md:flex-row md:overflow-hidden">
-        <div className="relative h-[42vh] min-h-[280px] w-full min-w-0 flex-shrink-0 md:order-2 md:h-full md:min-h-0 md:flex-1">
+      <div className="flex flex-col md:h-[calc(100dvh-72px)] md:flex-row md:overflow-hidden">
+        <div className="relative h-[42dvh] min-h-[280px] w-full min-w-0 flex-shrink-0 md:order-2 md:h-full md:min-h-0 md:flex-1">
           <AnimalsMap
             animals={allAnimals}
             selectedAnimal={selectedAnimal}
@@ -187,7 +234,7 @@ function LostAnimalsPageContent() {
             </div>
 
             {locationLoading && (
-              <p className="mt-3 text-sm font-medium text-kadesh">
+              <p className="mt-3 text-sm font-medium text-kadesh" aria-live="polite">
                 Obteniendo tu ubicación…
               </p>
             )}
@@ -198,44 +245,30 @@ function LostAnimalsPageContent() {
                   size={16}
                   className="mt-0.5 flex-shrink-0"
                   strokeWidth={1.5}
+                  aria-hidden="true"
                 />
                 <span>{locationError}</span>
               </p>
             )}
 
             {hasLocation && !locationError && (
-              <div
-                role="group"
-                aria-label="Radio de búsqueda"
-                className="mt-4 flex flex-wrap gap-1.5"
-              >
-                {RADIUS_OPTIONS_ANIMALS.map((km) => (
-                  <button
-                    key={km}
-                    type="button"
-                    onClick={() => handleRadiusChange(km)}
-                    className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
-                      radiusKm === km
-                        ? 'bg-kadesh text-white'
-                        : 'bg-[#f3f5f8] text-[#3a3a3a] hover:bg-kadesh-50 dark:bg-night dark:text-[#d0d0d0] dark:hover:bg-kadesh/20'
-                    }`}
-                  >
-                    {km} km
-                  </button>
-                ))}
-              </div>
+              <DirectoryRadiusChips
+                options={RADIUS_OPTIONS_ANIMALS}
+                value={radiusKm}
+                onChange={handleRadiusChange}
+              />
             )}
 
             <div className="mt-4">
               <AnimalFilters
                 filters={filters}
-                onFiltersChange={updateFilters}
-                onClearFilters={clearFilters}
+                onFiltersChange={handleFiltersChange}
+                onClearFilters={handleClearFilters}
               />
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4" aria-busy={locationLoading || animalsLoading}>
             {(locationLoading || animalsLoading) && animals.length === 0 ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
@@ -258,7 +291,7 @@ function LostAnimalsPageContent() {
             ) : animals.length === 0 ? (
               <div className="flex flex-col items-center px-4 py-12 text-center">
                 <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
-                  <HugeiconsIcon icon={Search01Icon} size={28} strokeWidth={1.5} />
+                  <HugeiconsIcon icon={Search01Icon} size={28} strokeWidth={1.5} aria-hidden="true" />
                 </span>
                 <p className="text-base font-semibold text-[#121212] dark:text-white">
                   {locationError
@@ -276,7 +309,27 @@ function LostAnimalsPageContent() {
                           ? 'Amplía el radio: en esta zona los reportes suelen aparecer más lejos.'
                           : 'No encontramos reportes en el radio máximo. Publica el tuyo para que otros lo vean.'}
                 </p>
-                {hasActiveFilters && nextRadius ? (
+                {locationError ? (
+                  hasActiveFilters ? (
+                    <button
+                      type="button"
+                      onClick={handleClearFilters}
+                      className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
+                    >
+                      Quitar filtros
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleReportAnimalClick}
+                      disabled={userLoading}
+                      className="mt-5 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:opacity-50"
+                    >
+                      <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
+                      Reportar un animal
+                    </button>
+                  )
+                ) : hasActiveFilters && nextRadius ? (
                   <div className="mt-5 flex flex-col items-center gap-2">
                     <button
                       type="button"
@@ -287,8 +340,8 @@ function LostAnimalsPageContent() {
                     </button>
                     <button
                       type="button"
-                      onClick={clearFilters}
-                      className="text-sm font-semibold text-kadesh hover:text-kadesh-600"
+                      onClick={handleClearFilters}
+                      className="inline-flex min-h-11 items-center text-sm font-semibold text-kadesh hover:text-kadesh-600"
                     >
                       Quitar filtros
                     </button>
@@ -296,7 +349,7 @@ function LostAnimalsPageContent() {
                 ) : hasActiveFilters ? (
                   <button
                     type="button"
-                    onClick={clearFilters}
+                    onClick={handleClearFilters}
                     className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
                   >
                     Quitar filtros
@@ -316,7 +369,7 @@ function LostAnimalsPageContent() {
                     disabled={userLoading}
                     className="mt-5 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:opacity-50"
                   >
-                    <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
+                    <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
                     Reportar un animal
                   </button>
                 )}
@@ -334,62 +387,15 @@ function LostAnimalsPageContent() {
                     />
                   ))}
                 </div>
-
-                {totalPages > 1 && (
-                  <div className="mt-6 flex items-center justify-center gap-2 border-t border-[#ececec] pt-4 dark:border-white/10">
-                    <button
-                      type="button"
-                      onClick={previousPage}
-                      disabled={!hasPreviousPage}
-                      className="rounded-lg border border-[#ececec] bg-white px-3 py-1.5 text-sm font-medium text-[#121212] disabled:cursor-not-allowed disabled:opacity-50 hover:bg-[#f7f8fa] dark:border-white/10 dark:bg-night dark:text-white dark:hover:bg-night-raised"
-                    >
-                      Anterior
-                    </button>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                        if (
-                          page === 1 ||
-                          page === totalPages ||
-                          (page >= currentPage - 1 && page <= currentPage + 1)
-                        ) {
-                          return (
-                            <button
-                              key={page}
-                              type="button"
-                              onClick={() => goToPage(page)}
-                              className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-                                currentPage === page
-                                  ? 'bg-kadesh text-white'
-                                  : 'border border-[#ececec] bg-white text-[#121212] hover:bg-[#f7f8fa] dark:border-white/10 dark:bg-night dark:text-white'
-                              }`}
-                            >
-                              {page}
-                            </button>
-                          );
-                        }
-                        if (page === currentPage - 2 || page === currentPage + 2) {
-                          return (
-                            <span
-                              key={page}
-                              className="px-1 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]"
-                            >
-                              …
-                            </span>
-                          );
-                        }
-                        return null;
-                      })}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={nextPage}
-                      disabled={!hasNextPage}
-                      className="rounded-lg border border-[#ececec] bg-white px-3 py-1.5 text-sm font-medium text-[#121212] disabled:cursor-not-allowed disabled:opacity-50 hover:bg-[#f7f8fa] dark:border-white/10 dark:bg-night dark:text-white dark:hover:bg-night-raised"
-                    >
-                      Siguiente
-                    </button>
-                  </div>
-                )}
+                <DirectoryPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPage={goToPage}
+                  onPrevious={previousPage}
+                  onNext={nextPage}
+                  hasPreviousPage={hasPreviousPage}
+                  hasNextPage={hasNextPage}
+                />
               </>
             )}
           </div>
@@ -405,8 +411,6 @@ function LostAnimalsPageContent() {
         confirmText="Ir a registro"
         cancelText="Cancelar"
       />
-
-      <Footer />
     </main>
   );
 }
@@ -415,7 +419,7 @@ export default function LostAnimalsPage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen bg-white pt-[72px] dark:bg-night">
+        <main className="min-h-dvh bg-white pt-[72px] dark:bg-night">
           <Navigation />
         </main>
       }

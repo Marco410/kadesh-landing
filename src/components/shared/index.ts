@@ -6,6 +6,8 @@ export { default as Autocomplete } from './Autocomplete';
 export type { AutocompleteOption } from './Autocomplete';
 export { default as ConfirmModal } from './ConfirmModal';
 export { default as UserInfo } from './UserInfo';
+export { default as DirectoryRadiusChips } from './DirectoryRadiusChips';
+export { default as DirectoryPagination } from './DirectoryPagination';
 export { default as StatusDatePicker } from './StatusDatePicker';
 export type { StatusDatePickerProps } from './StatusDatePicker';
 export { dateToCalendarDateTime, calendarDateTimeToStr } from './StatusDatePicker';

@@ -6,6 +6,8 @@ import { useNearbyPetPlaces } from "kadesh/components/veterinaries/hooks/useNear
 import HomeVeterinaryCard from "kadesh/components/home/HomeVeterinaryCard";
 import { DEFAULT_RADIUS_VETERINARIES } from "kadesh/constants/constans";
 import { Routes } from "kadesh/core/routes";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { HospitalLocationIcon, Location01Icon } from "@hugeicons/core-free-icons";
 import { gsap, useGSAP, HOME_EASE } from "kadesh/components/home/gsap-register";
 
 const NEARBY_LIMIT = 4;
@@ -87,9 +89,9 @@ export default function VeterinariansSection() {
               >
                 <div className="h-36 animate-pulse bg-[#eef3f8] dark:bg-[#1a2433]" />
                 <div className="space-y-3 p-5">
-                  <div className="h-6 w-3/4 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-                  <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-                  <div className="h-12 animate-pulse rounded-xl bg-gray-200 dark:bg-gray-700" />
+                  <div className="h-6 w-3/4 animate-pulse rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
+                  <div className="h-4 w-1/2 animate-pulse rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
+                  <div className="h-12 animate-pulse rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]" />
                 </div>
               </div>
             ))}
@@ -97,16 +99,25 @@ export default function VeterinariansSection() {
         )}
 
         {!loading && !hasLocation && (
-          <p className="mb-10 text-center text-[#5a5a5a] dark:text-[#b0b0b0]">
-            Activa tu ubicación para ver veterinarias cercanas a ti.
-          </p>
+          <div className="mb-12 flex flex-col items-center px-4 text-center">
+            <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
+              <HugeiconsIcon icon={Location01Icon} size={28} strokeWidth={1.5} aria-hidden="true" />
+            </span>
+            <p className="max-w-md text-[#5a5a5a] dark:text-[#b0b0b0]">
+              Activa tu ubicación para ver veterinarias cercanas a ti, o abre el directorio y busca por radio.
+            </p>
+          </div>
         )}
 
         {!loading && hasLocation && nearbyVets.length === 0 && (
-          <p className="mb-10 text-center text-[#5a5a5a] dark:text-[#b0b0b0]">
-            No encontramos veterinarias cercanas en tu zona. Revisa el
-            directorio completo.
-          </p>
+          <div className="mb-12 flex flex-col items-center px-4 text-center">
+            <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
+              <HugeiconsIcon icon={HospitalLocationIcon} size={28} strokeWidth={1.5} aria-hidden="true" />
+            </span>
+            <p className="max-w-md text-[#5a5a5a] dark:text-[#b0b0b0]">
+              No encontramos veterinarias en {DEFAULT_RADIUS_VETERINARIES} km. Amplía el radio en el directorio.
+            </p>
+          </div>
         )}
 
         {!loading && nearbyVets.length > 0 && (
@@ -123,15 +134,15 @@ export default function VeterinariansSection() {
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Link
             href="/veterinarias/registro"
-            className="inline-flex items-center justify-center rounded-xl bg-kadesh px-8 py-4 text-lg font-bold text-white transition-colors hover:bg-kadesh-600"
+            className="inline-flex min-h-14 items-center justify-center rounded-xl bg-kadesh px-8 py-4 text-lg font-bold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
           >
             Registra tu veterinaria
           </Link>
           <Link
             href={Routes.veterinaries.index}
-            className="inline-flex items-center justify-center rounded-xl border-2 border-kadesh px-8 py-4 text-lg font-bold text-kadesh transition-colors hover:bg-kadesh hover:text-white dark:text-kadesh-300"
+            className="inline-flex min-h-14 items-center justify-center rounded-xl border-2 border-kadesh px-8 py-4 text-lg font-bold text-kadesh transition-colors hover:bg-kadesh hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:text-kadesh-300"
           >
-            Ver directorio completo →
+            Ver directorio completo
           </Link>
         </div>
       </div>

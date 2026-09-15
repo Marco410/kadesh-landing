@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Navigation, Footer } from "kadesh/components/layout";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Navigation } from "kadesh/components/layout";
 import {
   VeterinaryCard,
   VeterinariesMap,
@@ -9,20 +10,43 @@ import {
 } from "kadesh/components/veterinaries";
 import type { PetPlace } from "kadesh/components/veterinaries";
 import {
+  DirectoryPagination,
+  DirectoryRadiusChips,
+} from "kadesh/components/shared";
+import {
   DEFAULT_RADIUS_VETERINARIES,
   RADIUS_OPTIONS_VETERINARIES,
+  parseRadiusOption,
 } from "kadesh/constants/constans";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { HospitalLocationIcon, Location01Icon } from "@hugeicons/core-free-icons";
 
-export default function VeterinariesPage() {
+function replaceQueryParam(
+  search: string,
+  key: string,
+  value: string | null,
+): string {
+  const params = new URLSearchParams(search);
+  if (value == null || value === "") params.delete(key);
+  else params.set(key, value);
+  const next = params.toString();
+  return next ? `?${next}` : "";
+}
+
+function VeterinariesPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [userLocation, setUserLocation] = useState<
     { lat: number; lng: number } | { lat: null; lng: null } | undefined
   >(undefined);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
   const [selectedPlace, setSelectedPlace] = useState<PetPlace | null>(null);
-  const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS_VETERINARIES);
+  const radiusKm = parseRadiusOption(
+    searchParams.get("radius"),
+    RADIUS_OPTIONS_VETERINARIES,
+    DEFAULT_RADIUS_VETERINARIES,
+  );
 
   useEffect(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
@@ -88,17 +112,22 @@ export default function VeterinariesPage() {
   };
 
   const handleRadiusChange = (km: number) => {
-    setRadiusKm(km);
+    const href = replaceQueryParam(
+      searchParams.toString(),
+      "radius",
+      km === DEFAULT_RADIUS_VETERINARIES ? null : String(km),
+    );
+    router.replace(`/veterinarias${href}`, { scroll: false });
     goToPage(1);
     setSelectedPlace(null);
   };
 
   return (
-    <main className="min-h-screen bg-white pt-[72px] dark:bg-night">
+    <main className="min-h-dvh bg-white pt-[72px] dark:bg-night">
       <Navigation />
 
-      <div className="flex flex-col md:h-[calc(100vh-72px)] md:flex-row md:overflow-hidden">
-        <div className="relative h-[42vh] min-h-[280px] w-full min-w-0 flex-shrink-0 md:order-2 md:h-full md:min-h-0 md:flex-1">
+      <div className="flex flex-col md:h-[calc(100dvh-72px)] md:flex-row md:overflow-hidden">
+        <div className="relative h-[42dvh] min-h-[280px] w-full min-w-0 flex-shrink-0 md:order-2 md:h-full md:min-h-0 md:flex-1">
           <VeterinariesMap
             places={allPlaces}
             selectedPlace={selectedPlace}
@@ -119,7 +148,7 @@ export default function VeterinariesPage() {
             </p>
 
             {locationLoading && (
-              <p className="mt-3 text-sm font-medium text-kadesh">
+              <p className="mt-3 text-sm font-medium text-kadesh" aria-live="polite">
                 Obteniendo tu ubicación…
               </p>
             )}
@@ -130,36 +159,22 @@ export default function VeterinariesPage() {
                   size={16}
                   className="mt-0.5 flex-shrink-0"
                   strokeWidth={1.5}
+                  aria-hidden="true"
                 />
                 <span>{locationError}</span>
               </p>
             )}
 
             {hasLocation && !locationError && (
-              <div
-                role="group"
-                aria-label="Radio de búsqueda"
-                className="mt-4 flex flex-wrap gap-1.5"
-              >
-                {RADIUS_OPTIONS_VETERINARIES.map((km) => (
-                  <button
-                    key={km}
-                    type="button"
-                    onClick={() => handleRadiusChange(km)}
-                    className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
-                      radiusKm === km
-                        ? "bg-kadesh text-white"
-                        : "bg-[#f3f5f8] text-[#3a3a3a] hover:bg-kadesh-50 dark:bg-night dark:text-[#d0d0d0] dark:hover:bg-kadesh/20"
-                    }`}
-                  >
-                    {km} km
-                  </button>
-                ))}
-              </div>
+              <DirectoryRadiusChips
+                options={RADIUS_OPTIONS_VETERINARIES}
+                value={radiusKm}
+                onChange={handleRadiusChange}
+              />
             )}
           </header>
 
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4" aria-busy={locationLoading || placesLoading}>
             {(locationLoading || placesLoading) && places.length === 0 ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
@@ -181,7 +196,12 @@ export default function VeterinariesPage() {
             ) : places.length === 0 ? (
               <div className="flex flex-col items-center px-4 py-12 text-center">
                 <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
-                  <HugeiconsIcon icon={HospitalLocationIcon} size={28} strokeWidth={1.5} />
+                  <HugeiconsIcon
+                    icon={HospitalLocationIcon}
+                    size={28}
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
                 </span>
                 <p className="text-base font-semibold text-[#121212] dark:text-white">
                   {locationError
@@ -217,74 +237,36 @@ export default function VeterinariesPage() {
                     />
                   ))}
                 </div>
-
-                {totalPages > 1 && (
-                  <div className="mt-6 flex items-center justify-center gap-2 border-t border-[#ececec] pt-4 dark:border-white/10">
-                    <button
-                      type="button"
-                      onClick={previousPage}
-                      disabled={!hasPreviousPage}
-                      className="rounded-lg border border-[#ececec] bg-white px-3 py-1.5 text-sm font-medium text-[#121212] disabled:cursor-not-allowed disabled:opacity-50 hover:bg-[#f7f8fa] dark:border-white/10 dark:bg-night dark:text-white dark:hover:bg-night-raised"
-                    >
-                      Anterior
-                    </button>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (page) => {
-                          if (
-                            page === 1 ||
-                            page === totalPages ||
-                            (page >= currentPage - 1 && page <= currentPage + 1)
-                          ) {
-                            return (
-                              <button
-                                key={page}
-                                type="button"
-                                onClick={() => goToPage(page)}
-                                className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-                                  currentPage === page
-                                    ? "bg-kadesh text-white"
-                                    : "border border-[#ececec] bg-white text-[#121212] hover:bg-[#f7f8fa] dark:border-white/10 dark:bg-night dark:text-white"
-                                }`}
-                              >
-                                {page}
-                              </button>
-                            );
-                          }
-                          if (
-                            page === currentPage - 2 ||
-                            page === currentPage + 2
-                          ) {
-                            return (
-                              <span
-                                key={page}
-                                className="px-1 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]"
-                              >
-                                …
-                              </span>
-                            );
-                          }
-                          return null;
-                        },
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={nextPage}
-                      disabled={!hasNextPage}
-                      className="rounded-lg border border-[#ececec] bg-white px-3 py-1.5 text-sm font-medium text-[#121212] disabled:cursor-not-allowed disabled:opacity-50 hover:bg-[#f7f8fa] dark:border-white/10 dark:bg-night dark:text-white dark:hover:bg-night-raised"
-                    >
-                      Siguiente
-                    </button>
-                  </div>
-                )}
+                <DirectoryPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPage={goToPage}
+                  onPrevious={previousPage}
+                  onNext={nextPage}
+                  hasPreviousPage={hasPreviousPage}
+                  hasNextPage={hasNextPage}
+                />
               </>
             )}
           </div>
         </aside>
       </div>
-
-      <Footer />
     </main>
+  );
+}
+
+function VeterinariesFallback() {
+  return (
+    <main className="min-h-dvh bg-white pt-[72px] dark:bg-night">
+      <Navigation />
+    </main>
+  );
+}
+
+export default function VeterinariesPage() {
+  return (
+    <Suspense fallback={<VeterinariesFallback />}>
+      <VeterinariesPageContent />
+    </Suspense>
   );
 }

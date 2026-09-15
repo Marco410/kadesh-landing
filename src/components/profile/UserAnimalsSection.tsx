@@ -50,14 +50,17 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
   if (animals.length === 0) {
     return (
       <div className="flex flex-col items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised">
+        <p className="font-semibold text-[#121212] dark:text-[#eef1f6]">
+          Aún no has publicado un reporte
+        </p>
         <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
-          Aún no has publicado un reporte.
+          Publica un animal perdido, encontrado o en adopción. Quedará en esta lista y en el mapa.
         </p>
         <Link
           href={Routes.animals.new}
           className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
         >
-          <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
+          <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
           Reportar
         </Link>
       </div>
@@ -69,7 +72,7 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
       <div className="mb-4 flex items-center justify-end">
         <Link
           href={Routes.animals.new}
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-kadesh px-3 text-sm font-semibold text-white hover:bg-kadesh-600"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
         >
           <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
           Reportar

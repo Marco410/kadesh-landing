@@ -8,8 +8,8 @@ Encontrar una veterinaria cercana con distancia, horario y contacto. El mapa y l
 
 ## UI
 
-- Sin franja azul de héroe. El H1 vive en el panel.
-- Radio en chips (`5–30 km`). Si el radio actual no tiene resultados, el vacío propone el siguiente (`Buscar en 10 km`, etc.).
+- Sin franja azul de héroe. El H1 vive en el panel. Sin pie del sitio: el split lista + mapa ocupa `100dvh` menos la barra.
+- Radio en chips (`5–30 km`) con `aria-pressed`. Vive también en `?radius=` para compartir la búsqueda. Si el radio actual no tiene resultados, el vacío propone el siguiente (`Buscar en 10 km`, etc.).
 - Ficha de lista: pin de marca (el mismo del mapa), abierto/cerrado, distancia, llamar, ver ficha. No es el recuadro-mapa de la portada: aquí la densidad importa.
 - Oscuro: `night` / `night-raised`, no OLED.
 

@@ -43,7 +43,7 @@ export default function AnimalFilters({
         <button
           type="button"
           onClick={onClearFilters}
-          className="text-xs font-semibold text-kadesh hover:text-kadesh-600"
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-kadesh hover:text-kadesh-600"
         >
           Quitar filtros
         </button>

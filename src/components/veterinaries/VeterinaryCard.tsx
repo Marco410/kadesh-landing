@@ -95,7 +95,7 @@ export default function VeterinaryCard({
             onClick?.();
           }
         }}
-        className="flex w-full gap-3 text-left"
+        className="flex w-full cursor-pointer gap-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
       >
         <VetPin selected={isSelected} />
         <div className="min-w-0 flex-1">

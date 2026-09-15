@@ -74,12 +74,32 @@ function ProfilePageContent() {
         <ProfileTabs value={selectedTab} onChange={handleTabChange} />
 
         <div className="mt-5">
-          {selectedTab === "profile" ? <ProfileData user={user} /> : null}
+          {selectedTab === "profile" ? (
+            <div
+              role="tabpanel"
+              id="perfil-panel-profile"
+              aria-labelledby="perfil-tab-profile"
+            >
+              <ProfileData user={user} />
+            </div>
+          ) : null}
           {selectedTab === "posts" ? (
-            <UserPostsSection userId={user.id} />
+            <div
+              role="tabpanel"
+              id="perfil-panel-posts"
+              aria-labelledby="perfil-tab-posts"
+            >
+              <UserPostsSection userId={user.id} />
+            </div>
           ) : null}
           {selectedTab === "animals" ? (
-            <UserAnimalsSection userId={user.id} />
+            <div
+              role="tabpanel"
+              id="perfil-panel-animals"
+              aria-labelledby="perfil-tab-animals"
+            >
+              <UserAnimalsSection userId={user.id} />
+            </div>
           ) : null}
         </div>
       </div>

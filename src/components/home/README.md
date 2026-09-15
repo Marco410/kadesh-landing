@@ -32,7 +32,9 @@ Personalidad **Premium**. Momento autorial: el recuadro-mapa se revela y los pin
 
 ## Secciones y anclas
 
-Inicio, qué es, animales, veterinarias, historias, donaciones, cómo funciona, roadmap, preguntas frecuentes (`#preguntas-frecuentes`). El dropdown de Inicio debe coincidir con estas anclas.
+## Secciones y anclas
+
+Inicio, qué es, animales, veterinarias, historias, donaciones, cómo funciona, roadmap, preguntas frecuentes (`#preguntas-frecuentes`). **Inicio** en la barra va al tope de la portada; las anclas viven en la página (y en URLs `/#…`), no en un dropdown del nav.
 
 ## Veterinarias en portada
 

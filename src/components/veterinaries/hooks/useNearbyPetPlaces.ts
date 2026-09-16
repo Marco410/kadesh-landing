@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import { GET_NEARBY_PET_PLACES } from "../queries";
 import type {
@@ -36,7 +36,9 @@ export function useNearbyPetPlaces(
   userLocation?: { lat: number | null; lng: number | null },
   limit?: number,
   radiusKm?: number,
+  options?: { openNow?: boolean },
 ) {
+  const openNow = Boolean(options?.openNow);
   const [currentPage, setCurrentPage] = useState(1);
 
   const input = useMemo<NearbyPetPlacesInput | null>(() => {
@@ -58,20 +60,36 @@ export function useNearbyPetPlaces(
     skip: !input,
   });
 
-  const petPlaces = useMemo(() => {
+  const nearbyPlaces = useMemo(() => {
     const list = data?.getNearbyPetPlaces?.petPlaces ?? [];
     return Array.isArray(list) ? list : [];
   }, [data]);
 
-  const totalPlaces = petPlaces.length;
+  const openCount = useMemo(
+    () => nearbyPlaces.filter((place) => place.isOpen === true).length,
+    [nearbyPlaces],
+  );
+
+  const filteredPlaces = useMemo(() => {
+    if (!openNow) return nearbyPlaces;
+    return nearbyPlaces.filter((place) => place.isOpen === true);
+  }, [nearbyPlaces, openNow]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [openNow, radiusKm]);
+
+  const totalPlaces = filteredPlaces.length;
+  const nearbyCount = nearbyPlaces.length;
   const totalPages = Math.max(
     1,
     Math.ceil(totalPlaces / VETERINARIES_PER_PAGE),
   );
+  const safePage = Math.min(currentPage, totalPages);
   const paginatedPlaces = useMemo(() => {
-    const start = (currentPage - 1) * VETERINARIES_PER_PAGE;
-    return petPlaces.slice(start, start + VETERINARIES_PER_PAGE);
-  }, [petPlaces, currentPage]);
+    const start = (safePage - 1) * VETERINARIES_PER_PAGE;
+    return filteredPlaces.slice(start, start + VETERINARIES_PER_PAGE);
+  }, [filteredPlaces, safePage]);
 
   const goToPage = (page: number) => {
     const p = Math.max(1, Math.min(page, totalPages));
@@ -79,25 +97,27 @@ export function useNearbyPetPlaces(
   };
 
   const nextPage = () => {
-    if (currentPage < totalPages) setCurrentPage((p) => p + 1);
+    if (safePage < totalPages) setCurrentPage((p) => p + 1);
   };
 
   const previousPage = () => {
-    if (currentPage > 1) setCurrentPage((p) => p - 1);
+    if (safePage > 1) setCurrentPage((p) => p - 1);
   };
 
   return {
     places: paginatedPlaces,
-    allPlaces: petPlaces,
+    allPlaces: filteredPlaces,
+    nearbyCount,
+    openCount,
     loading,
-    currentPage,
+    currentPage: safePage,
     totalPages,
     totalPlaces,
     goToPage,
     nextPage,
     previousPage,
-    hasNextPage: currentPage < totalPages,
-    hasPreviousPage: currentPage > 1,
+    hasNextPage: safePage < totalPages,
+    hasPreviousPage: safePage > 1,
     hasLocation:
       !!userLocation && userLocation.lat != null && userLocation.lng != null,
   };

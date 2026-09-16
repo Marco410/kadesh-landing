@@ -6,6 +6,7 @@ import { Navigation } from "kadesh/components/layout";
 import {
   VeterinaryCard,
   VeterinariesMap,
+  OpenNowChip,
   useNearbyPetPlaces,
 } from "kadesh/components/veterinaries";
 import type { PetPlace } from "kadesh/components/veterinaries";
@@ -13,6 +14,7 @@ import {
   DirectoryPagination,
   DirectoryRadiusChips,
 } from "kadesh/components/shared";
+import { Routes } from "kadesh/core/routes";
 import {
   DEFAULT_RADIUS_VETERINARIES,
   RADIUS_OPTIONS_VETERINARIES,
@@ -47,6 +49,7 @@ function VeterinariesPageContent() {
     RADIUS_OPTIONS_VETERINARIES,
     DEFAULT_RADIUS_VETERINARIES,
   );
+  const openNow = searchParams.get("open") === "1";
 
   useEffect(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
@@ -81,6 +84,8 @@ function VeterinariesPageContent() {
   const {
     places,
     allPlaces,
+    nearbyCount,
+    openCount,
     loading: placesLoading,
     currentPage,
     totalPages,
@@ -91,7 +96,7 @@ function VeterinariesPageContent() {
     hasNextPage,
     hasPreviousPage,
     hasLocation,
-  } = useNearbyPetPlaces(userLocation, undefined, radiusKm);
+  } = useNearbyPetPlaces(userLocation, undefined, radiusKm, { openNow });
 
   const nextRadius = RADIUS_OPTIONS_VETERINARIES.find((km) => km > radiusKm);
 
@@ -117,10 +122,25 @@ function VeterinariesPageContent() {
       "radius",
       km === DEFAULT_RADIUS_VETERINARIES ? null : String(km),
     );
-    router.replace(`/veterinarias${href}`, { scroll: false });
+    router.replace(`${Routes.veterinaries.index}${href}`, { scroll: false });
     goToPage(1);
     setSelectedPlace(null);
   };
+
+  const handleOpenNowToggle = () => {
+    const href = replaceQueryParam(
+      searchParams.toString(),
+      "open",
+      openNow ? null : "1",
+    );
+    router.replace(`${Routes.veterinaries.index}${href}`, { scroll: false });
+    setSelectedPlace(null);
+  };
+
+  const nearbyCountLabel = openNow
+    ? `${totalPlaces} abierta${totalPlaces === 1 ? "" : "s"} cerca de ti`
+    : `${totalPlaces} cerca de ti`;
+  const noOpenNow = openNow && nearbyCount > 0 && totalPlaces === 0;
 
   return (
     <main className="min-h-dvh bg-white pt-[72px] dark:bg-night">
@@ -143,7 +163,7 @@ function VeterinariesPageContent() {
             </h1>
             <p className="mt-1 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
               {hasLocation
-                ? `${totalPlaces} cerca de ti`
+                ? nearbyCountLabel
                 : "Encuentra clínicas según tu ubicación"}
             </p>
 
@@ -166,11 +186,18 @@ function VeterinariesPageContent() {
             )}
 
             {hasLocation && !locationError && (
-              <DirectoryRadiusChips
-                options={RADIUS_OPTIONS_VETERINARIES}
-                value={radiusKm}
-                onChange={handleRadiusChange}
-              />
+              <>
+                <DirectoryRadiusChips
+                  options={RADIUS_OPTIONS_VETERINARIES}
+                  value={radiusKm}
+                  onChange={handleRadiusChange}
+                />
+                <OpenNowChip
+                  pressed={openNow}
+                  onToggle={handleOpenNowToggle}
+                  count={placesLoading ? undefined : openCount}
+                />
+              </>
             )}
           </header>
 
@@ -206,23 +233,44 @@ function VeterinariesPageContent() {
                 <p className="text-base font-semibold text-[#121212] dark:text-white">
                   {locationError
                     ? "Sin ubicación no podemos ordenar por distancia"
-                    : `No hay clínicas en ${radiusKm} km`}
+                    : noOpenNow
+                      ? `Ninguna abierta ahora en ${radiusKm} km`
+                      : `No hay clínicas en ${radiusKm} km`}
                 </p>
                 <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#5a5a5a] dark:text-[#b0b0b0]">
                   {locationError
                     ? "Activa la ubicación en el navegador para ver veterinarias cerca de ti."
-                    : nextRadius
-                      ? "Amplía el radio: en esta zona las clínicas suelen aparecer a partir de un rango mayor."
-                      : "No encontramos veterinarias en el radio máximo. Vuelve más tarde o registra la tuya."}
+                    : noOpenNow
+                      ? "Hay clínicas en este radio, pero ahora mismo están cerradas. Quita el filtro o amplía la búsqueda."
+                      : nextRadius
+                        ? "Amplía el radio: en esta zona las clínicas suelen aparecer a partir de un rango mayor."
+                        : "No encontramos veterinarias en el radio máximo. Vuelve más tarde o registra la tuya."}
                 </p>
-                {hasLocation && nextRadius && (
-                  <button
-                    type="button"
-                    onClick={() => handleRadiusChange(nextRadius)}
-                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
-                  >
-                    Buscar en {nextRadius} km
-                  </button>
+                {(noOpenNow || (hasLocation && nextRadius)) && (
+                  <div className="mt-5 flex flex-col items-center gap-2">
+                    {noOpenNow && (
+                      <button
+                        type="button"
+                        onClick={handleOpenNowToggle}
+                        className="inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
+                      >
+                        Ver todas
+                      </button>
+                    )}
+                    {hasLocation && nextRadius && (
+                      <button
+                        type="button"
+                        onClick={() => handleRadiusChange(nextRadius)}
+                        className={`inline-flex min-h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold transition-colors ${
+                          noOpenNow
+                            ? "border-2 border-kadesh text-kadesh hover:bg-kadesh hover:text-white"
+                            : "bg-kadesh text-white hover:bg-kadesh-600"
+                        }`}
+                      >
+                        Buscar en {nextRadius} km
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             ) : (

@@ -10,6 +10,7 @@ Encontrar una veterinaria cercana con distancia, horario y contacto. El mapa y l
 
 - Sin franja azul de héroe. El H1 vive en el panel. Sin pie del sitio: el split lista + mapa ocupa `100dvh` menos la barra.
 - Radio en chips (`5–30 km`) con `aria-pressed`. Vive también en `?radius=` para compartir la búsqueda. Si el radio actual no tiene resultados, el vacío propone el siguiente (`Buscar en 10 km`, etc.).
+- Chip **Abiertas ahora** debajo del radio. Filtra lista y mapa a `isOpen === true` (las que no tienen horario no entran). Vive en `?open=1`. El chip muestra cuántas están abiertas en el radio actual. Si ninguna lo está, el vacío ofrece **Ver todas**.
 - Ficha de lista: pin de marca (el mismo del mapa), abierto/cerrado, distancia, llamar, ver ficha. No es el recuadro-mapa de la portada: aquí la densidad importa.
 - Oscuro: `night` / `night-raised`, no OLED.
 
@@ -17,7 +18,7 @@ Encontrar una veterinaria cercana con distancia, horario y contacto. El mapa y l
 
 Mismo stack gratuito que animales: **Leaflet + MapLibre GL + OpenFreeMap Liberty** (`src/components/shared/free-map.ts`), empaquetado en la app. Sin API de Google Maps. Pins y acentos usan `--color-kadesh`.
 
-El mapa pinta `allPlaces` del query; la lista pagina de a 10.
+El mapa pinta `allPlaces` del listado visible (incluye el filtro de abiertas); la lista pagina de a 10.
 
 ## Ficha (`/veterinarias/[id]`)
 
@@ -29,4 +30,4 @@ Nunca decimos «Google Maps», «Leaflet» ni el nombre del tile server. Si el u
 
 ## Acceso
 
-Público. El radio filtra el listado GraphQL.
+Público. El radio filtra el listado GraphQL. **Abiertas ahora** se aplica en cliente sobre `isOpen`.

@@ -54,7 +54,7 @@ function TypeChip({
         onClick();
       }}
       disabled={disabled}
-      className={`inline-flex min-h-9 origin-center items-center gap-1.5 rounded-full border px-3 text-sm font-semibold transition-[background-color,border-color,color] duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh disabled:opacity-50 ${
+      className={`inline-flex min-h-11 origin-center items-center gap-1.5 rounded-full border px-3 text-sm font-semibold transition-[background-color,border-color,color] duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh disabled:opacity-50 ${
         selected
           ? 'border-kadesh bg-kadesh text-white'
           : 'border-[#d8dee8] bg-transparent text-[#3a3a3a] hover:border-kadesh/50 hover:bg-kadesh-50 dark:border-white/18 dark:text-[#e8edf4] dark:hover:border-kadesh/50 dark:hover:bg-kadesh/15'

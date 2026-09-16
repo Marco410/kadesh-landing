@@ -10,10 +10,12 @@ import { animalDetailHref } from 'kadesh/components/animals/animalSlug';
 import { Routes } from 'kadesh/core/routes';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
-  SentIcon,
+  ArrowRight01Icon,
   Location01Icon,
   Calendar02Icon,
   Alert02Icon,
+  Image01Icon,
+  Search01Icon,
 } from '@hugeicons/core-free-icons';
 import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 
@@ -116,10 +118,10 @@ export default function LostDogsSection() {
                 key={index}
                 className="overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-[#1e1e1e]"
               >
-                <div className="h-48 animate-pulse bg-gray-200 dark:bg-gray-800" />
+                <div className="h-48 animate-pulse bg-[#e8edf3] dark:bg-[#2a3548]" />
                 <div className="space-y-3 p-6">
-                  <div className="h-6 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
-                  <div className="h-4 w-2/3 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
+                  <div className="h-6 animate-pulse rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
+                  <div className="h-4 w-2/3 animate-pulse rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
                 </div>
               </div>
             ))}
@@ -135,7 +137,7 @@ export default function LostDogsSection() {
                 data-animal-card
                 className="group flex flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,35,80,0.1)] dark:border-[#2a2a2a] dark:bg-[#1e1e1e]"
               >
-                <div className="relative h-56 w-full overflow-hidden bg-gray-200 dark:bg-gray-800">
+                <div className="relative h-56 w-full overflow-hidden bg-[#e8edf3] dark:bg-[#2a3548]">
                   {animal.image?.url ? (
                     <Image
                       src={animal.image.url}
@@ -145,8 +147,8 @@ export default function LostDogsSection() {
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400">
-                      <HugeiconsIcon icon={SentIcon} size={40} />
+                    <div className="flex h-full w-full items-center justify-center text-[#5a5a5a]">
+                      <HugeiconsIcon icon={Image01Icon} size={40} strokeWidth={1.5} aria-hidden="true" />
                     </div>
                   )}
                   <span
@@ -186,38 +188,39 @@ export default function LostDogsSection() {
                     {animal.distance && (
                       <p className="font-medium text-kadesh">
                         {animal.distance < 1
-                          ? `${Math.round(animal.distance * 1000)} m`
-                          : `${animal.distance.toFixed(1)} km`}
+                          ? `${Math.round(animal.distance * 1000)} m de ti`
+                          : `${animal.distance.toFixed(1)} km de ti`}
                       </p>
                     )}
                   </div>
 
                   <Link
                     href={animalDetailHref(animal)}
-                    className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-kadesh px-5 py-3 font-semibold text-white transition-colors hover:bg-kadesh-600"
+                    className="mt-auto inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-kadesh px-5 py-3 font-semibold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
                   >
-                    <HugeiconsIcon icon={SentIcon} size={18} />
-                    <span>Ver detalles</span>
+                    <span>Ver ficha</span>
+                    <HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={2} aria-hidden="true" />
                   </Link>
                 </div>
               </article>
             ))}
           </div>
         ) : (
-          <div className="py-16 text-center">
-            <h3 className="mb-2 text-xl font-bold text-[#212121] dark:text-white">
-              No hay animales disponibles
+          <div className="flex flex-col items-center px-4 py-16 text-center">
+            <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
+              <HugeiconsIcon icon={Search01Icon} size={28} strokeWidth={1.5} aria-hidden="true" />
+            </span>
+            <h3 className="mb-2 text-xl font-bold text-[#121212] dark:text-white">
+              Aún no hay reportes cerca
             </h3>
-            <p className="mb-6 text-[#616161] dark:text-[#b0b0b0]">
-              Aún no hay animales reportados en este momento. Sé el primero en
-              reportar uno.
+            <p className="mb-6 max-w-md text-[#5a5a5a] dark:text-[#b0b0b0]">
+              Publica un animal perdido, encontrado o en adopción para que la comunidad pueda ayudar.
             </p>
             <Link
               href={Routes.animals.new}
-              className="inline-flex items-center gap-2 rounded-xl bg-kadesh px-6 py-3 font-semibold text-white hover:bg-kadesh-600"
+              className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-kadesh px-6 py-3 font-semibold text-white hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
             >
-              <HugeiconsIcon icon={SentIcon} size={20} />
-              Reportar animal
+              Reportar un animal
             </Link>
           </div>
         )}
@@ -226,14 +229,13 @@ export default function LostDogsSection() {
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href={Routes.animals.new}
-              className="inline-flex items-center gap-3 rounded-full bg-kadesh px-8 py-4 text-lg font-bold text-white shadow-[0_12px_32px_color-mix(in_srgb,var(--color-kadesh)_35%,transparent)] transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:bg-kadesh-600"
+              className="inline-flex min-h-14 items-center gap-3 rounded-full bg-kadesh px-8 py-4 text-lg font-bold text-white shadow-[0_12px_32px_color-mix(in_srgb,var(--color-kadesh)_35%,transparent)] transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
             >
-              <HugeiconsIcon icon={SentIcon} size={22} className="text-white" />
               <span>Reportar animal</span>
             </Link>
             <Link
               href={Routes.animals.index}
-              className="inline-flex items-center gap-2 rounded-xl border-2 border-kadesh px-8 py-4 text-lg font-bold text-kadesh transition-colors hover:bg-kadesh hover:text-white dark:text-kadesh-300"
+              className="inline-flex min-h-14 items-center gap-2 rounded-xl border-2 border-kadesh px-8 py-4 text-lg font-bold text-kadesh transition-colors hover:bg-kadesh hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:text-kadesh-300"
             >
               <span>Ver todos los animales</span>
             </Link>

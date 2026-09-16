@@ -38,4 +38,6 @@ Inicio, qué es, animales, veterinarias, historias, donaciones, cómo funciona, 
 
 ## Veterinarias en portada
 
-No reutiliza `VeterinaryCard` del directorio (esa ficha es una fila para el mapa). En home, cada clínica es una tarjeta con recuadro-mapa (el mismo pin de marca del hero), abierto/cerrado, distancia y llamada. Va a `/veterinarias/[id]`, no al índice. No se exporta del barrel: solo la usa esta sección.
+No reutiliza `VeterinaryCard` del directorio (esa ficha es una fila para el mapa). En home, cada clínica es una tarjeta con recuadro-mapa (el mismo pin de marca del hero), abierto/cerrado, distancia y llamada. Va a `/veterinarias/[id]`, no al índice. CTA de directorio: **Ver directorio completo**. No se exporta del barrel: solo la usa esta sección.
+
+En **Animales perdidos y en adopción**, la ficha usa **Ver ficha** (el mismo verbo que el directorio). El vacío nombra que no hay reportes cerca y ofrece publicar.

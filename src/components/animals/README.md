@@ -8,8 +8,8 @@ Ayudar a encontrar o adoptar. El mapa y las tarjetas muestran el mismo conjunto;
 
 ## UI
 
-- Sin franja azul de héroe. El H1 vive en el panel (`Animales`).
-- Radio en chips (`10–50 km`).
+- Sin franja azul de héroe. El H1 vive en el panel (`Animales`). Sin pie del sitio: el split lista + mapa ocupa `100dvh` menos la barra.
+- Radio en chips (`10–50 km`) con `aria-pressed`, también en `?radius=`.
 - Filtros siempre visibles, sin cajón: **Todos / Perdido / Encontrado / En adopción** (punto del color del pin). Tipo: **Perro y Gato** al frente, con trazo; Ave, Pez, Reptil y Mamífero van en **Más**. Contorno vs relleno de marca para el seleccionado.
 - Motion (GSAP, `useGSAP` + timeline): pulso `scale` al tocar un chip; Más/Menos entra/sale en stagger (`autoAlpha` + `y`). `prefers-reduced-motion` lo apaga.
 - Si no hay resultados, el vacío nombra la búsqueda (`No hay reptiles rescatados en 10 km`) y ofrece ampliar radio o quitar filtros.

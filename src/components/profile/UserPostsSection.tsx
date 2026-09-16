@@ -98,7 +98,7 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
               role="tab"
               aria-selected={selected}
               onClick={() => setSelectedTab(tab.key)}
-              className={`inline-flex min-h-9 items-center rounded-full px-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
+              className={`inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
                 selected
                   ? "bg-kadesh text-white shadow-[0_8px_18px_rgba(15,35,80,0.18)]"
                   : "bg-[#f3f5f8] text-[#3a3a3a] hover:bg-kadesh-50 dark:bg-night dark:text-[#d0d0d0] dark:hover:bg-kadesh/20"
@@ -119,9 +119,17 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
               ))}
             </div>
           ) : favoritePosts.length === 0 ? (
-            <p className="rounded-2xl border border-[#ececec] bg-white px-5 py-6 text-sm text-[#5a5a5a] dark:border-white/10 dark:bg-night-raised dark:text-[#9aa3b2]">
-              Los artículos que guardes aparecen aquí.
-            </p>
+            <div className="flex flex-col items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised">
+              <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+                Los artículos que guardes aparecen aquí.
+              </p>
+              <Link
+                href={Routes.blog.index}
+                className="inline-flex min-h-11 items-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+              >
+                Ir al blog
+              </Link>
+            </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {favoritePosts.map((post, index) => (
@@ -138,9 +146,17 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
               ))}
             </div>
           ) : likedPosts.length === 0 ? (
-            <p className="rounded-2xl border border-[#ececec] bg-white px-5 py-6 text-sm text-[#5a5a5a] dark:border-white/10 dark:bg-night-raised dark:text-[#9aa3b2]">
-              Los artículos que marques con me gusta aparecen aquí.
-            </p>
+            <div className="flex flex-col items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised">
+              <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+                Los artículos que marques con me gusta aparecen aquí.
+              </p>
+              <Link
+                href={Routes.blog.index}
+                className="inline-flex min-h-11 items-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+              >
+                Ir al blog
+              </Link>
+            </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {likedPosts.map((post, index) => (
@@ -160,9 +176,17 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
               ))}
             </div>
           ) : comments.length === 0 ? (
-            <p className="rounded-2xl border border-[#ececec] bg-white px-5 py-6 text-sm text-[#5a5a5a] dark:border-white/10 dark:bg-night-raised dark:text-[#9aa3b2]">
-              Tus comentarios en el blog aparecen aquí.
-            </p>
+            <div className="flex flex-col items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised">
+              <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+                Tus comentarios en el blog aparecen aquí.
+              </p>
+              <Link
+                href={Routes.blog.index}
+                className="inline-flex min-h-11 items-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+              >
+                Ir al blog
+              </Link>
+            </div>
           ) : (
             <div className="space-y-2">
               {comments.map((comment: UserComment) => (
@@ -203,7 +227,7 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
                       e.stopPropagation();
                       openDeleteModal(comment.id);
                     }}
-                    className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#5a5a5a] hover:bg-red-50 hover:text-red-600 dark:text-[#9aa3b2] dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                    className="absolute right-2 top-2 inline-flex h-11 w-11 items-center justify-center rounded-lg text-[#5a5a5a] hover:bg-red-50 hover:text-red-600 dark:text-[#9aa3b2] dark:hover:bg-red-950/40 dark:hover:text-red-400"
                     aria-label="Eliminar comentario"
                   >
                     <HugeiconsIcon icon={Delete02Icon} size={16} />

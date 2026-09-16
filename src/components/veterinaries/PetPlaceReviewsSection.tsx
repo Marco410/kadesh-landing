@@ -1,14 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowDown01Icon, StarIcon, Delete02Icon, UserIcon } from '@hugeicons/core-free-icons';
+import {
+  ArrowDown01Icon,
+  ArrowUp01Icon,
+  StarIcon,
+  Delete02Icon,
+  UserIcon,
+} from '@hugeicons/core-free-icons';
 import { useUser } from 'kadesh/utils/UserContext';
 import { Routes } from 'kadesh/core/routes';
 import { ConfirmModal } from 'kadesh/components/shared';
 import { usePetPlaceReviews } from './hooks/usePetPlaceReviews';
 import type { PetPlaceDetail } from './types';
+
+const REVIEWS_PREVIEW = 3;
 
 interface PetPlaceReviewsSectionProps {
   place: PetPlaceDetail;
@@ -36,6 +44,7 @@ export default function PetPlaceReviewsSection({
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   const openDeleteModal = (reviewId: string) => {
     setReviewToDelete(reviewId);
@@ -56,30 +65,11 @@ export default function PetPlaceReviewsSection({
 
   const reviews = place.pet_place_reviews ?? [];
   const reviewsCount = place.reviewsCount ?? reviews.length;
-  const listRef = useRef<HTMLUListElement>(null);
-  const [hasMoreBelow, setHasMoreBelow] = useState(false);
-
-  const updateOverflow = () => {
-    const el = listRef.current;
-    if (!el) {
-      setHasMoreBelow(false);
-      return;
-    }
-    const remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
-    setHasMoreBelow(el.scrollHeight > el.clientHeight + 8 && remaining > 12);
-  };
-
-  useEffect(() => {
-    updateOverflow();
-    const el = listRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver(updateOverflow);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [reviews.length]);
+  const visibleReviews = expanded ? reviews : reviews.slice(0, REVIEWS_PREVIEW);
+  const canToggle = reviews.length > REVIEWS_PREVIEW;
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex min-h-0 flex-col lg:h-full">
       <h2 className="mb-3 shrink-0 text-sm font-bold text-[#121212] dark:text-white">
         Reseñas {reviewsCount > 0 ? `(${reviewsCount})` : ''}
       </h2>
@@ -137,18 +127,13 @@ export default function PetPlaceReviewsSection({
         </p>
       )}
 
-      <div className="relative min-h-0 flex-1">
-        <ul
-          ref={listRef}
-          onScroll={updateOverflow}
-          className="absolute inset-0 space-y-2 overflow-y-auto pr-1"
-        >
-          {reviews.length === 0 ? (
-            <li className="py-6 text-center text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
-              Aún no hay reseñas.
-            </li>
-          ) : (
-            reviews.map((rev) => (
+      <ul className="space-y-2 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+        {reviews.length === 0 ? (
+          <li className="py-6 text-center text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+            Aún no hay reseñas.
+          </li>
+        ) : (
+          visibleReviews.map((rev) => (
             <li
               key={rev.id}
               className="rounded-xl border border-[#ececec] p-3 dark:border-white/10 dark:bg-night/40"
@@ -181,7 +166,7 @@ export default function PetPlaceReviewsSection({
                           ? rev.google_user
                           : 'Anónimo'}
                     </p>
-                    {rev.user?.id === user?.id && (
+                    {user?.id && rev.user?.id === user.id && (
                       <button
                         type="button"
                         onClick={() => openDeleteModal(rev.id)}
@@ -223,16 +208,24 @@ export default function PetPlaceReviewsSection({
             </li>
           ))
         )}
-        </ul>
-        {hasMoreBelow && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-white via-white/90 to-transparent pb-2 pt-10 dark:from-night-raised dark:via-night-raised/90">
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-kadesh">
-              Más reseñas
-              <HugeiconsIcon icon={ArrowDown01Icon} size={14} />
-            </span>
-          </div>
-        )}
-      </div>
+      </ul>
+
+      {canToggle && (
+        <button
+          type="button"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((open) => !open)}
+          className="mt-3 inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:hover:bg-kadesh/20"
+        >
+          {expanded ? 'Menos reseñas' : 'Más reseñas'}
+          <HugeiconsIcon
+            icon={expanded ? ArrowUp01Icon : ArrowDown01Icon}
+            size={16}
+            strokeWidth={2}
+            aria-hidden
+          />
+        </button>
+      )}
 
       <ConfirmModal
         isOpen={deleteModalOpen}

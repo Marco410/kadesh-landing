@@ -343,23 +343,23 @@ export default function VeterinaryDetailPage() {
 
   return (
     <DetailShell>
-      <div className="mx-auto flex min-h-0 w-full max-w-[90rem] flex-1 flex-col gap-3 px-4 py-3 lg:px-6">
-        <header className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
+      <div className="mx-auto flex min-h-0 w-full max-w-[90rem] flex-1 flex-col gap-3 px-4 py-3 pb-8 lg:px-6 lg:pb-3">
+        <header className="flex shrink-0 flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
           <Link
             href={Routes.veterinaries.index}
-            className="inline-flex items-center gap-1 text-sm font-medium text-kadesh hover:underline"
+            className="inline-flex self-start items-center gap-1 text-sm font-medium text-kadesh hover:underline"
           >
             <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2} />
             Directorio
           </Link>
 
-          <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="flex min-w-0 flex-1 items-start gap-3 lg:items-center">
             <VetPin />
-            <div className="min-w-0">
-              <h1 className="truncate text-xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-2xl">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-pretty text-xl font-black leading-tight tracking-[-0.03em] text-[#121212] dark:text-white sm:text-2xl lg:truncate">
                 {displayName}
               </h1>
-              <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                 {(place.averageRating != null || (place.reviewsCount ?? 0) > 0) && (
                   <span className="inline-flex items-center gap-1 text-[#121212] dark:text-white">
                     <HugeiconsIcon
@@ -391,13 +391,17 @@ export default function VeterinaryDetailPage() {
             </div>
           </div>
 
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <div
+            className={`grid w-full gap-2 sm:flex sm:w-auto lg:shrink-0 ${
+              howToGetHref && phoneHref ? "grid-cols-2" : "grid-cols-1"
+            }`}
+          >
             {howToGetHref && (
               <a
                 href={howToGetHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-kadesh px-5 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white sm:px-5"
               >
                 <HugeiconsIcon icon={Location01Icon} size={18} strokeWidth={1.5} />
                 Cómo llegar
@@ -406,7 +410,7 @@ export default function VeterinaryDetailPage() {
             {phoneHref && (
               <a
                 href={phoneHref}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-kadesh px-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 sm:px-5"
               >
                 <HugeiconsIcon icon={Call02Icon} size={18} strokeWidth={1.5} />
                 Llamar
@@ -418,7 +422,7 @@ export default function VeterinaryDetailPage() {
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]">
           <div className="flex min-h-0 flex-col gap-3">
             {hasValidCoords ? (
-              <div className="min-h-[220px] flex-1 overflow-hidden rounded-2xl border border-[#ececec] dark:border-white/10">
+              <div className="h-[240px] overflow-hidden rounded-2xl border border-[#ececec] sm:h-[280px] lg:h-auto lg:min-h-0 lg:flex-1 dark:border-white/10">
                 <VeterinariesMap
                   places={[mapPlace]}
                   selectedPlace={null}
@@ -427,7 +431,7 @@ export default function VeterinaryDetailPage() {
                 />
               </div>
             ) : (
-              <div className="flex flex-1 items-center justify-center rounded-2xl border border-[#ececec] text-sm text-[#5a5a5a] dark:border-white/10 dark:text-[#b0b0b0]">
+              <div className="flex h-[240px] items-center justify-center rounded-2xl border border-[#ececec] text-sm text-[#5a5a5a] sm:h-[280px] lg:h-auto lg:min-h-0 lg:flex-1 dark:border-white/10 dark:text-[#b0b0b0]">
                 Sin coordenadas para el mapa.
               </div>
             )}
@@ -538,7 +542,7 @@ export default function VeterinaryDetailPage() {
               </div>
             )}
 
-            <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+            <div className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-hidden">
               <PetPlaceReviewsSection place={place} refetchPlace={refetch} />
             </div>
           </div>

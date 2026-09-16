@@ -22,7 +22,7 @@ El mapa pinta `allPlaces` del listado visible (incluye el filtro de abiertas); l
 
 ## Ficha (`/veterinarias/[id]`)
 
-En escritorio es un lienzo de una pantalla (`100dvh`, sin footer): identidad, un solo **Cómo llegar** (abre la ruta en Maps) y llamar arriba; mapa + contacto a la izquierda; horarios agrupados, servicios y reseñas a la derecha. El backend guarda el día en español (`Lunes`, `Miércoles`…); se agrupan por horario (p. ej. «Lunes a sábado»). Las reseñas hacen scroll interno y muestran «Más reseñas» mientras haya contenido debajo. El mapa no abre el popup al cargar. En móvil la columna se apila y sí puede hacer scroll de página.
+En escritorio es un lienzo de una pantalla (`100dvh`, sin footer): identidad, un solo **Cómo llegar** (abre la ruta en Maps) y llamar arriba; mapa + contacto a la izquierda; horarios agrupados, servicios y reseñas a la derecha. El backend guarda el día en español (`Lunes`, `Miércoles`…); se agrupan por horario (p. ej. «Lunes a sábado»). Las reseñas muestran las 3 más recientes; **Más reseñas** es un botón que expande el resto (y **Menos reseñas** las vuelve a plegar). En móvil el encabezado se apila (nombre completo, luego las acciones a ancho completo), el mapa tiene altura fija y la página sí hace scroll.
 
 ## Copy
 

@@ -190,6 +190,13 @@ export default function Navigation() {
                     >
                       Mi perfil
                     </Link>
+                    <Link
+                      href={`${Routes.profile}?tab=appointments`}
+                      onClick={() => setAvatarDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-[#212121] dark:text-[#ffffff] hover:bg-orange-500/10 dark:hover:bg-white/10 transition-colors"
+                    >
+                      Mis citas
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-[#212121] dark:text-[#ffffff] hover:bg-orange-500/10 dark:hover:bg-white/10 transition-colors"
@@ -335,6 +342,13 @@ export default function Navigation() {
                         className="block text-white font-semibold text-lg opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all mb-2"
                       >
                         Mi perfil
+                      </Link>
+                      <Link
+                        href={`${Routes.profile}?tab=appointments`}
+                        onClick={() => setOpened(false)}
+                        className="block text-white font-semibold text-lg opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all mb-2"
+                      >
+                        Mis citas
                       </Link>
                       <button
                         onClick={() => {

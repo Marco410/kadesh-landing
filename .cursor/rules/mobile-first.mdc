@@ -1,0 +1,37 @@
+---
+description: Toda UI se diseña y verifica primero en móvil (~390px). Desktop es una ampliación, no el default.
+alwaysApply: true
+---
+
+# Mobile first
+
+El default es el teléfono (~390px de ancho). `sm:` / `md:` / `lg:` / `xl:` solo **añaden** layout en pantallas más grandes. No se diseña escritorio y luego se “aprieta”.
+
+Antes de dar por terminada una pantalla: apílala, textos completos, toques de al menos 44px, sin scroll interno que recorte datos. Luego abre `lg`.
+
+## Hacer
+
+- Base sin breakpoint: columna, wrap, texto que se parte (`break-words`).
+- Filas, sticky, mitades de viewport y `truncate` solo desde `lg:`.
+- Iconos junto a un título: en móvil van **debajo** o en wrap; `lg:flex-row lg:justify-between` si caben.
+- Verificar el flujo real en viewport móvil, no solo un screenshot de escritorio.
+
+## No hacer
+
+```tsx
+// ❌ Escritorio como base: en 390px el título pelea con iconos y el texto se corta
+<div className="flex items-center justify-between">
+  <h2>Contacto</h2>
+  <nav className="flex shrink-0">{icons}</nav>
+</div>
+<p className="truncate">{address}</p>
+<div className="grid grid-cols-2 h-[calc(100dvh-8rem)]">
+
+// ✅ Móvil primero; escritorio escala
+<div className="flex flex-col gap-1 lg:flex-row lg:items-center lg:justify-between">
+  <h2>Contacto</h2>
+  <nav className="flex flex-wrap">{icons}</nav>
+</div>
+<p className="break-words">{address}</p>
+<div className="flex flex-col lg:grid lg:grid-cols-2 lg:h-[calc(100dvh-8rem)]">
+```

@@ -8,6 +8,7 @@ import { UserProvider } from "kadesh/utils/UserContext";
 import { HeroUIProvider } from "@heroui/system";
 import { Toaster } from "sileo";
 import { useTheme } from "next-themes";
+import KadeshHelpWhatsApp from "kadesh/components/layout/KadeshHelpWhatsApp";
 
 function ThemedToaster() {
   const { resolvedTheme } = useTheme();
@@ -30,6 +31,7 @@ export default function ClientProviders({
         <ApolloProviderWrapper>
           <UserProvider>
             {children}
+            <KadeshHelpWhatsApp />
             <ThemedToaster />
             <SpeedInsights />
             <Analytics />

@@ -491,7 +491,7 @@ export default function VeterinaryDetailPage() {
         </header>
 
         <div className="grid min-h-0 flex-1 grid-cols-1 items-start gap-3 lg:grid-cols-2">
-          <div className="grid min-h-0 w-full grid-rows-[240px_minmax(16rem,1fr)] gap-3 sm:grid-rows-[280px_minmax(16rem,1fr)] lg:sticky lg:top-[5.5rem] lg:h-[calc(100dvh-8.5rem)] lg:grid-rows-2">
+          <div className="grid min-h-0 w-full grid-rows-[240px_auto] gap-3 sm:grid-rows-[280px_auto] lg:sticky lg:top-[5.5rem] lg:h-[calc(100dvh-8.5rem)] lg:grid-rows-2">
             {hasValidCoords ? (
               <div className="min-h-0 overflow-hidden rounded-2xl border border-[#ececec] dark:border-white/10">
                 <VeterinariesMap

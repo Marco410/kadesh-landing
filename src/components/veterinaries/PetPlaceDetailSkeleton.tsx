@@ -44,15 +44,15 @@ export default function PetPlaceDetailSkeleton() {
       </header>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 items-start gap-3 lg:grid-cols-2">
-        <div className="grid min-h-0 w-full grid-rows-[240px_minmax(16rem,1fr)] gap-3 sm:grid-rows-[280px_minmax(16rem,1fr)] lg:h-[calc(100dvh-8.5rem)] lg:grid-rows-2">
+        <div className="grid min-h-0 w-full grid-rows-[240px_auto] gap-3 sm:grid-rows-[280px_auto] lg:h-[calc(100dvh-8.5rem)] lg:grid-rows-2">
           <Bone className="min-h-0 animate-pulse rounded-2xl" />
           <section className="flex min-h-0 flex-col gap-2 overflow-hidden rounded-2xl border-2 border-[#ececec] bg-white p-4 dark:border-white/15 dark:bg-night-raised lg:p-5">
-            <div className="flex shrink-0 items-center justify-between gap-3">
+            <div className="flex shrink-0 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <Bone className="h-6 w-28 animate-pulse rounded-lg" />
               <div className="flex gap-1">
-                <Bone className="h-11 w-11 animate-pulse rounded-xl" />
-                <Bone className="h-11 w-11 animate-pulse rounded-xl" />
-                <Bone className="h-11 w-11 animate-pulse rounded-xl" />
+                <Bone className="h-10 w-10 animate-pulse rounded-xl sm:h-11 sm:w-11" />
+                <Bone className="h-10 w-10 animate-pulse rounded-xl sm:h-11 sm:w-11" />
+                <Bone className="h-10 w-10 animate-pulse rounded-xl sm:h-11 sm:w-11" />
               </div>
             </div>
             <Bone className="mt-2 min-h-[4.25rem] animate-pulse rounded-2xl" />

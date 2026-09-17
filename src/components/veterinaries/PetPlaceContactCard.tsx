@@ -61,7 +61,7 @@ function OutboundIconLink({
       rel="noopener noreferrer"
       aria-label={label}
       title={label}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-kadesh transition-colors hover:bg-kadesh-50 dark:hover:bg-kadesh/15"
+      className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-kadesh transition-colors hover:bg-kadesh-50 sm:h-11 sm:w-11 dark:hover:bg-kadesh/15"
     >
       <HugeiconsIcon
         icon={icon}
@@ -107,12 +107,12 @@ function ContactRow({
         <span className="block text-xs font-semibold uppercase tracking-wide text-[#5a5a5a] dark:text-[#9aa3b2]">
           {label}
         </span>
-        <span className="mt-0.5 block truncate text-base font-semibold text-[#121212] dark:text-white">
+        <span className="mt-0.5 block break-words text-base font-semibold leading-snug text-[#121212] dark:text-white">
           {value}
         </span>
       </span>
       {action ? (
-        <span className="shrink-0 text-sm font-semibold text-kadesh">
+        <span className="shrink-0 self-center text-sm font-semibold text-kadesh">
           {action}
         </span>
       ) : null}
@@ -120,7 +120,7 @@ function ContactRow({
   );
 
   const className =
-    "flex min-h-[4.25rem] items-center gap-3 rounded-2xl border border-[#ececec] bg-white px-3 py-3 transition-colors dark:border-white/10 dark:bg-night";
+    "flex min-h-[4.25rem] items-start gap-3 rounded-2xl border border-[#ececec] bg-white px-3 py-3 transition-colors dark:border-white/10 dark:bg-night";
 
   if (!href) {
     return <div className={className}>{body}</div>;
@@ -180,14 +180,14 @@ export default function PetPlaceContactCard({
 
   return (
     <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border-2 border-[#ececec] bg-white p-4 shadow-sm dark:border-white/15 dark:bg-night-raised lg:p-5">
-      <div className="flex shrink-0 items-center justify-between gap-3">
+      <div className="flex shrink-0 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <h2 className="text-lg font-bold tracking-[-0.02em] text-[#121212] dark:text-white">
           Contacto
         </h2>
         {websiteHref || socials.length > 0 ? (
           <nav
             aria-label="Sitio y redes"
-            className="flex shrink-0 items-center"
+            className="-ml-1.5 flex flex-wrap items-center sm:ml-0 sm:justify-end"
           >
             {websiteHref ? (
               <OutboundIconLink
@@ -221,7 +221,7 @@ export default function PetPlaceContactCard({
         </ul>
       ) : null}
 
-      <div className="mt-4 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col gap-2 lg:overflow-y-auto">
         {addressValue ? (
           <ContactRow
             icon={MapPinIcon}

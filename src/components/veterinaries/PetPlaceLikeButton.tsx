@@ -69,7 +69,7 @@ export default function PetPlaceLikeButton({
           aria-hidden="true"
           className={isLiked ? "fill-current" : undefined}
         />
-        <span>{likesCount}</span>
+        {likesCount > 0 ? <span>{likesCount}</span> : null}
       </button>
       <ConfirmModal
         isOpen={showAuthModal}

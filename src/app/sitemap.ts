@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/veterinarias',
     '/conocenos',
     '/contacto',
+    '/novedades',
     '/terminos',
     '/privacidad',
     '/auth/login',

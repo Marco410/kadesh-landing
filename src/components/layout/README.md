@@ -1,6 +1,6 @@
 # Layout
 
-Barra fija y pie. La barra es global; el pie solo en páginas de persuasión (home, blog, conócenos…), no en herramientas (`/animales`, `/veterinarias`, `/perfil`).
+Barra fija y pie. La barra es global; el pie solo en páginas de persuasión (home, blog, conócenos, novedades…), no en herramientas (`/animales`, `/veterinarias`, `/perfil`). En Recursos el pie enlaza Blog, Novedades y Conócenos.
 
 ## Nav
 

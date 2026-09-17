@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import Logo from '../shared/Logo';
+import { Routes } from 'kadesh/core/routes';
 
 const FOOTER_LINKS = {
   recursos: [
-    { label: "Blog", href: "/blog" },
-    { label: "Noticias", href: "/noticias" },
-    { label: "Historias", href: "/historias" },
+    { label: "Blog", href: Routes.blog.index },
+    { label: "Novedades", href: Routes.novedades },
+    { label: "Conócenos", href: Routes.conocenos },
   ],
   servicios: [
     { label: "Donaciones", href: "/donaciones" },

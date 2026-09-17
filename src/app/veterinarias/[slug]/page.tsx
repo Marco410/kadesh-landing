@@ -1,29 +1,42 @@
 "use client";
 
-import type { ReactNode } from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useQuery } from '@apollo/client';
-import { HugeiconsIcon } from '@hugeicons/react';
+import type { ReactNode } from "react";
+import { useEffect } from "react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useQuery } from "@apollo/client";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowLeft01Icon,
   Call02Icon,
   HealthIcon,
   HeartCheckIcon,
   Hospital01Icon,
-  LinkSquare02Icon,
   Location01Icon,
-  MapPinIcon,
   MedicalFileIcon,
   Medicine02Icon,
   StarIcon,
   Stethoscope02Icon,
-} from '@hugeicons/core-free-icons';
-import { Navigation } from 'kadesh/components/layout';
-import { Routes } from 'kadesh/core/routes';
-import { GET_PET_PLACE } from 'kadesh/components/veterinaries/queries';
-import { VeterinariesMap, PetPlaceReviewsSection } from 'kadesh/components/veterinaries';
-import type { PetPlace, PetPlaceDetail, PetPlaceSchedule } from 'kadesh/components/veterinaries/types';
+} from "@hugeicons/core-free-icons";
+import { Navigation } from "kadesh/components/layout";
+import { Routes } from "kadesh/core/routes";
+import { GET_PET_PLACE } from "kadesh/components/veterinaries/queries";
+import {
+  VeterinariesMap,
+  PetPlaceReviewsSection,
+  ClaimPetPlaceSection,
+  PetPlaceContactCard,
+  VerifiedBadge,
+  PetPlaceLikeButton,
+} from "kadesh/components/veterinaries";
+import { isPetPlaceKeystoneId } from "kadesh/components/veterinaries/petPlaceSlug";
+import PetPlaceDetailSkeleton from "kadesh/components/veterinaries/PetPlaceDetailSkeleton";
+import type {
+  PetPlace,
+  PetPlaceDetail,
+  PetPlaceSchedule,
+  PetPlaceWhereUniqueInput,
+} from "kadesh/components/veterinaries/types";
 
 const SERVICE_ICONS = [
   Stethoscope02Icon,
@@ -34,11 +47,19 @@ const SERVICE_ICONS = [
   MedicalFileIcon,
 ] as const;
 
-function getServiceIcon(name: string | null, slug: string | null, index: number) {
-  const text = `${name ?? ''} ${slug ?? ''}`.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+function getServiceIcon(
+  name: string | null,
+  slug: string | null,
+  index: number,
+) {
+  const text = `${name ?? ""} ${slug ?? ""}`
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
   if (/\b(consulta|revision|general)\b/.test(text)) return Stethoscope02Icon;
   if (/\b(esteriliz|cirugia|quirurgic)\b/.test(text)) return Hospital01Icon;
-  if (/\b(paliativ|cuidado|emergencia|urgencia)\b/.test(text)) return HeartCheckIcon;
+  if (/\b(paliativ|cuidado|emergencia|urgencia)\b/.test(text))
+    return HeartCheckIcon;
   if (/\b(medicina|tratamiento|farmacia)\b/.test(text)) return Medicine02Icon;
   if (/\b(vacuna|prevencion|salud)\b/.test(text)) return HealthIcon;
   if (/\b(analisis|laboratorio|archivo)\b/.test(text)) return MedicalFileIcon;
@@ -49,6 +70,7 @@ function detailToMapPlace(place: PetPlaceDetail): PetPlace {
   return {
     id: place.id,
     name: place.name,
+    slug: place.slug,
     description: place.description,
     phone: place.phone,
     address: place.address,
@@ -69,7 +91,7 @@ function detailToMapPlace(place: PetPlaceDetail): PetPlace {
     pet_place_reviews: [],
     pet_place_social_media: place.pet_place_social_media.map((s) => ({
       ...s,
-      createdAt: '',
+      createdAt: "",
     })),
     pet_place_likes: [],
     services: place.services.map((s) => ({
@@ -78,7 +100,7 @@ function detailToMapPlace(place: PetPlaceDetail): PetPlace {
       slug: s.slug,
       description: null,
       active: null,
-      createdAt: '',
+      createdAt: "",
     })),
     types: [],
     user: place.user
@@ -87,7 +109,7 @@ function detailToMapPlace(place: PetPlaceDetail): PetPlace {
           name: place.user.name,
           lastName: place.user.lastName,
           username: place.user.username,
-          email: '',
+          email: "",
           phone: null,
           verified: place.user.verified,
           profileImage: place.user.profileImage,
@@ -95,17 +117,18 @@ function detailToMapPlace(place: PetPlaceDetail): PetPlace {
       : null,
     reviewsCount: place.reviewsCount ?? null,
     averageRating: place.averageRating ?? null,
+    verified: place.verified ?? null,
   };
 }
 
 const WEEKDAYS = [
-  'Lunes',
-  'Martes',
-  'Miércoles',
-  'Jueves',
-  'Viernes',
-  'Sábado',
-  'Domingo',
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
 ] as const;
 
 const DAY_INDEX: Record<string, number> = {
@@ -123,20 +146,20 @@ const DAY_INDEX: Record<string, number> = {
   viernes: 4,
   sabado: 5,
   domingo: 6,
-  '1': 0,
-  '2': 1,
-  '3': 2,
-  '4': 3,
-  '5': 4,
-  '6': 5,
-  '0': 6,
+  "1": 0,
+  "2": 1,
+  "3": 2,
+  "4": 3,
+  "5": 4,
+  "6": 5,
+  "0": 6,
 };
 
 function dayKey(day: string): string {
   return String(day)
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '');
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
 }
 
 function dayIndex(day: string): number {
@@ -144,9 +167,9 @@ function dayIndex(day: string): number {
 }
 
 function formatTimeDisplay(t: string | number | null | undefined): string {
-  if (t == null) return '—';
+  if (t == null) return "—";
   const s = String(t).trim();
-  if (!s) return '—';
+  if (!s) return "—";
   if (/^\d{1,2}$/.test(s)) return `${s}:00`;
   return s;
 }
@@ -154,12 +177,14 @@ function formatTimeDisplay(t: string | number | null | undefined): string {
 function hoursKey(schedule: PetPlaceSchedule): string {
   const start = formatTimeDisplay(schedule.timeIni);
   const end = formatTimeDisplay(schedule.timeEnd);
-  if (start === '—' && end === '—') return 'closed';
+  if (start === "—" && end === "—") return "closed";
   return `${start}|${end}`;
 }
 
 function formatDayRuns(indices: number[]): string {
-  const unique = [...new Set(indices.filter((i) => i >= 0))].sort((a, b) => a - b);
+  const unique = [...new Set(indices.filter((i) => i >= 0))].sort(
+    (a, b) => a - b,
+  );
   const runs: number[][] = [];
   for (const index of unique) {
     const last = runs[runs.length - 1];
@@ -178,10 +203,12 @@ function formatDayRuns(indices: number[]): string {
     return `${first} a ${lastName.toLowerCase()}`;
   });
 
-  if (parts.length <= 1) return parts[0] ?? '';
-  const rest = parts.slice(1).map((part) => part.charAt(0).toLowerCase() + part.slice(1));
+  if (parts.length <= 1) return parts[0] ?? "";
+  const rest = parts
+    .slice(1)
+    .map((part) => part.charAt(0).toLowerCase() + part.slice(1));
   if (rest.length === 1) return `${parts[0]} y ${rest[0]}`;
-  return `${parts[0]}, ${rest.slice(0, -1).join(', ')} y ${rest[rest.length - 1]}`;
+  return `${parts[0]}, ${rest.slice(0, -1).join(", ")} y ${rest[rest.length - 1]}`;
 }
 
 function groupSchedules(schedules: PetPlaceSchedule[]) {
@@ -202,11 +229,11 @@ function groupSchedules(schedules: PetPlaceSchedule[]) {
 
   const groups = [...byHours.entries()]
     .map(([key, days]) => {
-      const closed = key === 'closed';
-      const [start, end] = closed ? ['', ''] : key.split('|');
+      const closed = key === "closed";
+      const [start, end] = closed ? ["", ""] : key.split("|");
       return {
         label: formatDayRuns(days),
-        hours: closed ? 'Cerrado' : `${start}–${end}`,
+        hours: closed ? "Cerrado" : `${start}–${end}`,
         closed,
         firstDay: Math.min(...days),
       };
@@ -216,10 +243,10 @@ function groupSchedules(schedules: PetPlaceSchedule[]) {
   for (const schedule of unknown) {
     const start = formatTimeDisplay(schedule.timeIni);
     const end = formatTimeDisplay(schedule.timeEnd);
-    const closed = start === '—' && end === '—';
+    const closed = start === "—" && end === "—";
     groups.push({
       label: String(schedule.day),
-      hours: closed ? 'Cerrado' : `${start}–${end}`,
+      hours: closed ? "Cerrado" : `${start}–${end}`,
       closed,
       firstDay: 99,
     });
@@ -256,11 +283,15 @@ function ScheduleList({ schedules }: { schedules: PetPlaceSchedule[] }) {
           key={`${group.label}-${group.hours}`}
           className="flex items-center justify-between gap-3 border-b border-[#ececec] py-1.5 last:border-0 dark:border-white/10"
         >
-          <span className="font-medium text-[#121212] dark:text-white">{group.label}</span>
+          <span className="font-medium text-[#121212] dark:text-white">
+            {group.label}
+          </span>
           {group.closed ? (
             <span className="text-[#5a5a5a] dark:text-[#b0b0b0]">Cerrado</span>
           ) : (
-            <span className="tabular-nums font-semibold text-kadesh">{group.hours}</span>
+            <span className="tabular-nums font-semibold text-kadesh">
+              {group.hours}
+            </span>
           )}
         </li>
       ))}
@@ -270,7 +301,7 @@ function ScheduleList({ schedules }: { schedules: PetPlaceSchedule[] }) {
 
 function DetailShell({ children }: { children: ReactNode }) {
   return (
-    <main className="flex min-h-[100dvh] flex-col bg-white pt-[72px] dark:bg-night lg:h-[100dvh] lg:overflow-hidden">
+    <main className="flex min-h-[100dvh] flex-col bg-white pt-[72px] dark:bg-night">
       <Navigation />
       {children}
     </main>
@@ -279,22 +310,33 @@ function DetailShell({ children }: { children: ReactNode }) {
 
 export default function VeterinaryDetailPage() {
   const params = useParams();
-  const id = params?.id as string | undefined;
+  const router = useRouter();
+  const placeKey = typeof params?.slug === "string" ? params.slug : undefined;
 
-  const { data, loading, error, refetch } = useQuery<{ petPlace: PetPlaceDetail | null }>(
-    GET_PET_PLACE,
-    {
-      variables: { where: { id } },
-      skip: !id,
-    }
-  );
+  const { data, loading, error, refetch } = useQuery<
+    { petPlace: PetPlaceDetail | null },
+    { where: PetPlaceWhereUniqueInput }
+  >(GET_PET_PLACE, {
+    variables: {
+      where: isPetPlaceKeystoneId(placeKey ?? "")
+        ? { id: placeKey }
+        : { slug: placeKey },
+    },
+    skip: !placeKey,
+    fetchPolicy: "cache-and-network",
+  });
 
   const place = data?.petPlace ?? null;
 
-  if (!id || loading || error || !place) {
+  useEffect(() => {
+    if (!place?.slug || !placeKey || place.slug === placeKey) return;
+    router.replace(Routes.veterinaries.detail(place.slug));
+  }, [place?.slug, placeKey, router]);
+
+  if (!placeKey) {
     return (
       <DetailShell>
-        <div className="mx-auto flex w-full max-w-7xl flex-1 items-start px-4 py-6">
+        <div className="mx-auto flex w-full max-w-[90rem] flex-1 items-start px-4 py-6 lg:px-6">
           <div>
             <Link
               href={Routes.veterinaries.index}
@@ -303,47 +345,65 @@ export default function VeterinaryDetailPage() {
               <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
               Directorio
             </Link>
-            {loading ? (
-              <div className="h-40 w-80 animate-pulse rounded-2xl bg-[#eef3f8] dark:bg-night-raised" />
-            ) : (
-              <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
-                {error ? 'Error al cargar la veterinaria.' : 'No se encontró esta veterinaria.'}
-              </p>
-            )}
+            <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+              No se encontró esta veterinaria.
+            </p>
           </div>
         </div>
       </DetailShell>
     );
   }
 
-  const displayName = place.name?.trim() || 'Veterinaria';
-  const locationLine =
-    [place.municipality, place.state].filter(Boolean).join(', ') ||
-    place.address ||
-    place.street;
-  const streetLine =
-    place.street || place.address
-      ? locationLine !== (place.street || place.address)
-        ? place.street || place.address
-        : null
-      : null;
+  if (loading && !place) {
+    return (
+      <DetailShell>
+        <PetPlaceDetailSkeleton />
+      </DetailShell>
+    );
+  }
+
+  if (error || !place) {
+    return (
+      <DetailShell>
+        <div className="mx-auto flex w-full max-w-[90rem] flex-1 items-start px-4 py-6 lg:px-6">
+          <div>
+            <Link
+              href={Routes.veterinaries.index}
+              className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-kadesh hover:underline"
+            >
+              <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
+              Directorio
+            </Link>
+            <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+              {error
+                ? "Error al cargar la veterinaria."
+                : "No se encontró esta veterinaria."}
+            </p>
+          </div>
+        </div>
+      </DetailShell>
+    );
+  }
+
+  const displayName = place.name?.trim() || "Veterinaria";
   const hasSchedules = (place.pet_place_schedules?.length ?? 0) > 0;
-  const hasServices = (place.services?.length ?? 0) > 0;
-  const hasSocial = (place.pet_place_social_media?.length ?? 0) > 0;
+  const services = (place.services ?? []).filter(
+    (service) => service.active !== false && Boolean(service.name?.trim()),
+  );
   const mapPlace = detailToMapPlace(place);
   const hasValidCoords =
-    !Number.isNaN(parseFloat(place.lat)) && !Number.isNaN(parseFloat(place.lng));
-  const phoneHref = place.phone ? `tel:${place.phone.replace(/\s/g, '')}` : null;
-  const howToGetHref = hasValidCoords ? directionsUrl(place.lat, place.lng) : null;
-  const websiteHref = place.website
-    ? place.website.startsWith('http')
-      ? place.website
-      : `https://${place.website}`
+    !Number.isNaN(parseFloat(place.lat)) &&
+    !Number.isNaN(parseFloat(place.lng));
+  const phoneHref = place.phone
+    ? `tel:${place.phone.replace(/\s/g, "")}`
+    : null;
+  const howToGetHref = hasValidCoords
+    ? directionsUrl(place.lat, place.lng)
     : null;
 
   return (
     <DetailShell>
-      <div className="mx-auto flex min-h-0 w-full max-w-[90rem] flex-1 flex-col gap-3 px-4 py-3 pb-8 lg:px-6 lg:pb-3">
+      <div className="mx-auto flex min-h-0 w-full max-w-[90rem] flex-1 flex-col gap-3 px-4 py-3 pb-24 lg:px-6">
         <header className="flex shrink-0 flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
           <Link
             href={Routes.veterinaries.index}
@@ -356,11 +416,13 @@ export default function VeterinaryDetailPage() {
           <div className="flex min-w-0 flex-1 items-start gap-3 lg:items-center">
             <VetPin />
             <div className="min-w-0 flex-1">
-              <h1 className="text-pretty text-xl font-black leading-tight tracking-[-0.03em] text-[#121212] dark:text-white sm:text-2xl lg:truncate">
-                {displayName}
+              <h1 className="flex min-w-0 items-center gap-2 text-pretty text-xl font-black leading-tight tracking-[-0.03em] text-[#121212] dark:text-white sm:text-2xl">
+                <span className="min-w-0 lg:truncate">{displayName}</span>
+                {place.verified ? <VerifiedBadge size={22} /> : null}
               </h1>
               <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                {(place.averageRating != null || (place.reviewsCount ?? 0) > 0) && (
+                {(place.averageRating != null ||
+                  (place.reviewsCount ?? 0) > 0) && (
                   <span className="inline-flex items-center gap-1 text-[#121212] dark:text-white">
                     <HugeiconsIcon
                       icon={StarIcon}
@@ -369,11 +431,14 @@ export default function VeterinaryDetailPage() {
                       strokeWidth={1.5}
                     />
                     {place.averageRating != null && (
-                      <span className="font-semibold">{place.averageRating.toFixed(1)}</span>
+                      <span className="font-semibold">
+                        {place.averageRating.toFixed(1)}
+                      </span>
                     )}
                     {(place.reviewsCount ?? 0) > 0 && (
                       <span className="text-[#5a5a5a] dark:text-[#b0b0b0]">
-                        · {place.reviewsCount} reseña{(place.reviewsCount ?? 0) !== 1 ? 's' : ''}
+                        · {place.reviewsCount} reseña
+                        {(place.reviewsCount ?? 0) !== 1 ? "s" : ""}
                       </span>
                     )}
                   </span>
@@ -381,36 +446,42 @@ export default function VeterinaryDetailPage() {
                 {place.isOpen != null && (
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-bold ${
-                      place.isOpen ? 'bg-green-600 text-white' : 'bg-[#3a3a3a] text-white'
+                      place.isOpen
+                        ? "bg-green-600 text-white"
+                        : "bg-[#3a3a3a] text-white"
                     }`}
                   >
-                    {place.isOpen ? 'Abierto' : 'Cerrado'}
+                    {place.isOpen ? "Abierto" : "Cerrado"}
                   </span>
                 )}
               </div>
             </div>
           </div>
 
-          <div
-            className={`grid w-full gap-2 sm:flex sm:w-auto lg:shrink-0 ${
-              howToGetHref && phoneHref ? "grid-cols-2" : "grid-cols-1"
-            }`}
-          >
+          <div className="flex w-full gap-2 sm:w-auto lg:shrink-0">
             {howToGetHref && (
               <a
                 href={howToGetHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white sm:px-5"
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white sm:flex-none sm:px-5"
               >
-                <HugeiconsIcon icon={Location01Icon} size={18} strokeWidth={1.5} />
+                <HugeiconsIcon
+                  icon={Location01Icon}
+                  size={18}
+                  strokeWidth={1.5}
+                />
                 Cómo llegar
               </a>
             )}
+            <PetPlaceLikeButton
+              petPlaceId={place.id}
+              initialCount={place.pet_place_likesCount ?? 0}
+            />
             {phoneHref && (
               <a
                 href={phoneHref}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-kadesh px-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 sm:px-5"
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-kadesh px-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 sm:flex-none sm:px-5"
               >
                 <HugeiconsIcon icon={Call02Icon} size={18} strokeWidth={1.5} />
                 Llamar
@@ -419,10 +490,10 @@ export default function VeterinaryDetailPage() {
           </div>
         </header>
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]">
-          <div className="flex min-h-0 flex-col gap-3">
+        <div className="grid min-h-0 flex-1 grid-cols-1 items-start gap-3 lg:grid-cols-2">
+          <div className="grid min-h-0 w-full grid-rows-[240px_minmax(16rem,1fr)] gap-3 sm:grid-rows-[280px_minmax(16rem,1fr)] lg:sticky lg:top-[5.5rem] lg:h-[calc(100dvh-8.5rem)] lg:grid-rows-2">
             {hasValidCoords ? (
-              <div className="h-[240px] overflow-hidden rounded-2xl border border-[#ececec] sm:h-[280px] lg:h-auto lg:min-h-0 lg:flex-1 dark:border-white/10">
+              <div className="min-h-0 overflow-hidden rounded-2xl border border-[#ececec] dark:border-white/10">
                 <VeterinariesMap
                   places={[mapPlace]}
                   selectedPlace={null}
@@ -431,79 +502,12 @@ export default function VeterinaryDetailPage() {
                 />
               </div>
             ) : (
-              <div className="flex h-[240px] items-center justify-center rounded-2xl border border-[#ececec] text-sm text-[#5a5a5a] sm:h-[280px] lg:h-auto lg:min-h-0 lg:flex-1 dark:border-white/10 dark:text-[#b0b0b0]">
+              <div className="flex min-h-0 items-center justify-center rounded-2xl border border-[#ececec] text-sm text-[#5a5a5a] dark:border-white/10 dark:text-[#b0b0b0]">
                 Sin coordenadas para el mapa.
               </div>
             )}
 
-            <div className="shrink-0 rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
-              <h2 className="mb-2 text-sm font-bold text-[#121212] dark:text-white">
-                Contacto
-              </h2>
-              <div className="space-y-2 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
-                {locationLine && (
-                  <p className="flex items-start gap-2">
-                    <HugeiconsIcon
-                      icon={MapPinIcon}
-                      size={16}
-                      className="mt-0.5 flex-shrink-0 text-kadesh"
-                      strokeWidth={1.5}
-                    />
-                    <span>
-                      {locationLine}
-                      {streetLine ? (
-                        <>
-                          <br />
-                          {streetLine}
-                        </>
-                      ) : null}
-                    </span>
-                  </p>
-                )}
-                {phoneHref && (
-                  <a href={phoneHref} className="flex items-center gap-2 font-medium text-kadesh hover:underline">
-                    <HugeiconsIcon icon={Call02Icon} size={16} strokeWidth={1.5} />
-                    {place.phone}
-                  </a>
-                )}
-                {websiteHref && (
-                  <a
-                    href={websiteHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 font-medium text-kadesh hover:underline"
-                  >
-                    <HugeiconsIcon icon={LinkSquare02Icon} size={16} strokeWidth={1.5} />
-                    Sitio web
-                  </a>
-                )}
-                {hasSocial && (
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {place.pet_place_social_media.map(
-                      (social, index) =>
-                        social.link && (
-                          <a
-                            key={`${social.link}-${index}`}
-                            href={
-                              social.link.startsWith('http')
-                                ? social.link
-                                : `https://${social.link}`
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="rounded-lg bg-kadesh-50 px-2.5 py-1 text-xs font-medium text-kadesh-700 dark:bg-kadesh/15 dark:text-kadesh-300"
-                          >
-                            {social.social_media || 'Enlace'}
-                          </a>
-                        )
-                    )}
-                  </div>
-                )}
-                {!locationLine && !place.phone && !place.website && (
-                  <p>Sin información de contacto.</p>
-                )}
-              </div>
-            </div>
+            <PetPlaceContactCard place={place} />
           </div>
 
           <div className="flex min-h-0 flex-col gap-3">
@@ -520,33 +524,47 @@ export default function VeterinaryDetailPage() {
               )}
             </div>
 
-            {hasServices && (
-              <div className="shrink-0 rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
-                <h2 className="mb-2 text-sm font-bold text-[#121212] dark:text-white">
-                  Servicios
-                </h2>
+            <div className="shrink-0 rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+              <h2 className="mb-2 text-sm font-bold text-[#121212] dark:text-white">
+                Servicios
+              </h2>
+              {services.length > 0 ? (
                 <ul className="flex flex-wrap gap-1.5">
-                  {place.services.map((service, index) => {
-                    const IconComponent = getServiceIcon(service.name, service.slug, index);
+                  {services.map((service, index) => {
+                    const IconComponent = getServiceIcon(
+                      service.name,
+                      service.slug,
+                      index,
+                    );
                     return (
                       <li
                         key={service.id}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-kadesh-50 px-2.5 py-1 text-xs font-medium text-kadesh-700 dark:bg-kadesh/15 dark:text-kadesh-300"
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-kadesh-50 px-2.5 py-1.5 text-xs font-medium text-kadesh-700 dark:bg-kadesh/15 dark:text-kadesh-300"
                       >
-                        <HugeiconsIcon icon={IconComponent} size={14} strokeWidth={1.5} />
-                        {service.name ?? 'Servicio'}
+                        <HugeiconsIcon
+                          icon={IconComponent}
+                          size={14}
+                          strokeWidth={1.5}
+                        />
+                        {service.name}
                       </li>
                     );
                   })}
                 </ul>
-              </div>
-            )}
+              ) : (
+                <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+                  Sin servicios registrados.
+                </p>
+              )}
+            </div>
 
             <div className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-hidden">
               <PetPlaceReviewsSection place={place} refetchPlace={refetch} />
             </div>
           </div>
         </div>
+
+        <ClaimPetPlaceSection place={place} onClaimed={() => refetch()} />
       </div>
     </DetailShell>
   );

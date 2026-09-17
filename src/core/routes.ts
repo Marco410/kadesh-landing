@@ -56,7 +56,7 @@ export const Routes = {
   // Veterinaries (pet places)
   veterinaries: {
     index: '/veterinarias',
-    detail: (id: string): string => `/veterinarias/${id}`,
+    detail: (slug: string): string => `/veterinarias/${slug}`,
   },
   
   // About

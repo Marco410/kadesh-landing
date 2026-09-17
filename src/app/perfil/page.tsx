@@ -7,6 +7,7 @@ import { Routes } from "kadesh/core/routes";
 import ProfileData from "kadesh/components/profile/ProfileData";
 import UserPostsSection from "kadesh/components/profile/UserPostsSection";
 import UserAnimalsSection from "kadesh/components/profile/UserAnimalsSection";
+import UserVeterinariesSection from "kadesh/components/profile/UserVeterinariesSection";
 import ProfileTabs, {
   isProfileTabKey,
   type ProfileTabKey,
@@ -99,6 +100,15 @@ function ProfilePageContent() {
               aria-labelledby="perfil-tab-animals"
             >
               <UserAnimalsSection userId={user.id} />
+            </div>
+          ) : null}
+          {selectedTab === "clinics" ? (
+            <div
+              role="tabpanel"
+              id="perfil-panel-clinics"
+              aria-labelledby="perfil-tab-clinics"
+            >
+              <UserVeterinariesSection userId={user.id} />
             </div>
           ) : null}
         </div>

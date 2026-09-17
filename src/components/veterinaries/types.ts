@@ -18,6 +18,7 @@ export interface PetPlaceReview {
 }
 
 export interface PetPlaceSocialMedia {
+  id?: string;
   link: string | null;
   social_media: string | null;
   createdAt: string;
@@ -51,6 +52,7 @@ export interface PetPlaceUser {
 export interface PetPlace {
   id: string;
   name: string;
+  slug?: string | null;
   description: string | null;
   phone: string | null;
   address: string | null;
@@ -71,11 +73,13 @@ export interface PetPlace {
   pet_place_reviews: PetPlaceReview[];
   pet_place_social_media: PetPlaceSocialMedia[];
   pet_place_likes: { id: string }[];
+  pet_place_likesCount?: number | null;
   services: PetPlaceService[];
   types: PetPlaceType[];
   user: PetPlaceUser | null;
   reviewsCount?: number | null;
   averageRating?: number | null;
+  verified?: boolean | null;
 }
 
 export interface NearbyPetPlacesInput {
@@ -95,6 +99,7 @@ export interface PetPlaceWhereInput {
 
 export interface PetPlaceWhereUniqueInput {
   id?: string;
+  slug?: string;
 }
 
 /** Schedule row for detail page (day, timeIni, timeEnd) */
@@ -109,6 +114,7 @@ export interface PetPlaceSchedule {
 export interface PetPlaceDetail {
   id: string;
   name: string;
+  slug?: string | null;
   description: string | null;
   address: string | null;
   street: string | null;
@@ -120,6 +126,13 @@ export interface PetPlaceDetail {
   lng: string;
   phone: string | null;
   website: string | null;
+  whatsapp: string | null;
+  email: string | null;
+  emergencies: boolean | null;
+  parking: boolean | null;
+  appointmentRequired: boolean | null;
+  verified: boolean | null;
+  claimStatus: string | null;
   isOpen: boolean | null;
   views: string | null;
   averageRating: number | null;
@@ -143,8 +156,18 @@ export interface PetPlaceDetail {
   }>;
   pet_place_reviewsCount: number | null;
   pet_place_schedules: PetPlaceSchedule[];
-  pet_place_social_media: Array<{ link: string | null; social_media: string | null }>;
-  services: Array<{ id: string; name: string | null; slug: string | null; description: string | null }>;
+  pet_place_social_media: Array<{
+    id?: string;
+    link: string | null;
+    social_media: string | null;
+  }>;
+  services: Array<{
+    id: string;
+    name: string | null;
+    slug: string | null;
+    description: string | null;
+    active?: boolean | null;
+  }>;
   user: {
     id: string;
     name: string;

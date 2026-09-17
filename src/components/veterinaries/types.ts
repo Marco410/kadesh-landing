@@ -168,6 +168,7 @@ export interface PetPlaceDetail {
     description: string | null;
     active?: boolean | null;
   }>;
+  types?: PetPlaceType[];
   user: {
     id: string;
     name: string;

@@ -8,6 +8,7 @@ import ProfileData from "kadesh/components/profile/ProfileData";
 import UserPostsSection from "kadesh/components/profile/UserPostsSection";
 import UserAnimalsSection from "kadesh/components/profile/UserAnimalsSection";
 import UserVeterinariesSection from "kadesh/components/profile/UserVeterinariesSection";
+import { UserAppointmentsSection } from "kadesh/components/veterinaries";
 import ProfileTabs, {
   isProfileTabKey,
   type ProfileTabKey,
@@ -41,11 +42,14 @@ function ProfilePageContent() {
 
   useEffect(() => {
     if (!loading && !user?.id) {
+      const next = searchParams.toString()
+        ? `${pathname}?${searchParams.toString()}`
+        : pathname;
       router.push(
-        `${Routes.auth.login}?redirect=${encodeURIComponent(Routes.profile)}`,
+        `${Routes.auth.login}?redirect=${encodeURIComponent(next)}`,
       );
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, pathname, searchParams]);
 
   if (loading || !user?.id) {
     return (
@@ -100,6 +104,15 @@ function ProfilePageContent() {
               aria-labelledby="perfil-tab-animals"
             >
               <UserAnimalsSection userId={user.id} />
+            </div>
+          ) : null}
+          {selectedTab === "appointments" ? (
+            <div
+              role="tabpanel"
+              id="perfil-panel-appointments"
+              aria-labelledby="perfil-tab-appointments"
+            >
+              <UserAppointmentsSection />
             </div>
           ) : null}
           {selectedTab === "clinics" ? (

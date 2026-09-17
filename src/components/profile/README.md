@@ -1,6 +1,6 @@
 # Perfil
 
-Cuenta de quien ya tiene sesión: datos, publicaciones del blog, los reportes de animales que publicó y las clínicas que reclamó.
+Cuenta de quien ya tiene sesión: datos, publicaciones del blog, los reportes de animales que publicó, las citas que reservó y las clínicas que reclamó.
 
 ## Promesa
 
@@ -9,11 +9,15 @@ Editar lo que sí se puede cambiar (nombre, teléfono, foto) y ver la actividad 
 ## UI
 
 - Sin footer del sitio. H1 **Perfil**, `pt-[72px]`, `night` / `night-raised`, chips de pestaña (contorno vs relleno de marca).
-- Cuatro pestañas: **Datos**, **Publicaciones**, **Reportes**, **Clínicas**. `?tab=` (`profile` | `posts` | `animals` | `clinics`). Flechas del teclado recorren las pestañas.
-- Vacío con siguiente paso: Reportes invita a publicar; Publicaciones manda al blog; Clínicas manda al directorio para reclamar una ficha.
+- Cinco pestañas: **Datos**, **Publicaciones**, **Reportes**, **Citas**, **Clínicas**. `?tab=` (`profile` | `posts` | `animals` | `appointments` | `clinics`). Flechas del teclado recorren las pestañas.
+- Vacío con siguiente paso: Reportes invita a publicar; Publicaciones manda al blog; Citas manda al directorio para reservar; Clínicas manda al directorio para reclamar una ficha.
 - No hay pestañas de “próximamente” (donaciones, refugios, mascotas) ni **Ventas**.
 - Correo y usuario no se editan aquí: se manda a **contacto**. Edad no se muestra: sale de la fecha de nacimiento.
 - Al guardar: nombre y apellido paterno obligatorios. Teléfono obligatorio, 10 dígitos (espacios y guiones se quitan); Keystone no acepta `null` en ese campo. Fecha de nacimiento opcional, no posterior a hoy.
+
+## Citas
+
+Son las que el usuario reservó como cliente, no las de la clínica que administra. El copy de estados vive alineado con la ficha (`Pendiente` no es confirmada). Cancelar pide confirmación y un motivo opcional; solo aparece si la cita está pendiente o confirmada. El flujo de reserva y las reglas de types están documentados en `src/components/veterinaries/README.md`.
 
 ## Clínicas
 
@@ -25,4 +29,4 @@ El CRM de ventas (`/perfil/ventas`) redirige a `/perfil`. Quien llegue con `?tab
 
 ## Acceso
 
-Exige sesión. Si no hay usuario, va a login y vuelve a `/perfil`.
+Exige sesión. Si no hay usuario, va a login y vuelve a la misma pestaña (`/perfil` o `/perfil?tab=appointments`, etc.).

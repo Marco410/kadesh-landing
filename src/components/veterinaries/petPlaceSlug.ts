@@ -1,4 +1,4 @@
-import { Routes } from 'kadesh/core/routes';
+import { Routes } from "kadesh/core/routes";
 
 /** Keystone `@default(cuid())` ids have no hyphens; slugs always do. */
 export function isPetPlaceKeystoneId(value: string): boolean {
@@ -10,4 +10,11 @@ export function veterinaryDetailHref(place: {
   slug?: string | null;
 }): string {
   return Routes.veterinaries.detail(place.slug || place.id);
+}
+
+export function veterinaryBookHref(place: {
+  id: string;
+  slug?: string | null;
+}): string {
+  return Routes.veterinaries.book(place.slug || place.id);
 }

@@ -36,10 +36,13 @@ export default function PetPlaceDetailSkeleton() {
           </div>
         </div>
 
-        <div className="flex w-full gap-2 sm:w-auto lg:shrink-0">
-          <Bone className="h-11 flex-1 animate-pulse rounded-xl sm:w-32 sm:flex-none" />
-          <Bone className="h-11 w-11 shrink-0 animate-pulse rounded-xl" />
-          <Bone className="h-11 flex-1 animate-pulse rounded-xl sm:w-28 sm:flex-none" />
+        <div className="flex w-full flex-col gap-2 lg:w-auto lg:shrink-0 lg:flex-row lg:flex-wrap lg:justify-end">
+          <Bone className="h-11 w-full animate-pulse rounded-xl lg:w-40" />
+          <div className="flex w-full gap-2 sm:w-auto">
+            <Bone className="h-11 flex-1 animate-pulse rounded-xl sm:w-32 sm:flex-none" />
+            <Bone className="h-11 w-11 shrink-0 animate-pulse rounded-xl" />
+            <Bone className="h-11 flex-1 animate-pulse rounded-xl sm:w-28 sm:flex-none" />
+          </div>
         </div>
       </header>
 

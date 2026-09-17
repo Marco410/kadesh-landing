@@ -28,7 +28,9 @@ import {
   PetPlaceContactCard,
   VerifiedBadge,
   PetPlaceLikeButton,
+  PetPlaceBookCta,
 } from "kadesh/components/veterinaries";
+import { getPetPlaceBookingMode } from "kadesh/components/veterinaries/appointments";
 import { isPetPlaceKeystoneId } from "kadesh/components/veterinaries/petPlaceSlug";
 import PetPlaceDetailSkeleton from "kadesh/components/veterinaries/PetPlaceDetailSkeleton";
 import type {
@@ -102,7 +104,7 @@ function detailToMapPlace(place: PetPlaceDetail): PetPlace {
       active: null,
       createdAt: "",
     })),
-    types: [],
+    types: place.types ?? [],
     user: place.user
       ? {
           id: place.user.id,
@@ -400,6 +402,7 @@ export default function VeterinaryDetailPage() {
   const howToGetHref = hasValidCoords
     ? directionsUrl(place.lat, place.lng)
     : null;
+  const isBookable = getPetPlaceBookingMode(place.types) !== null;
 
   return (
     <DetailShell>
@@ -458,35 +461,42 @@ export default function VeterinaryDetailPage() {
             </div>
           </div>
 
-          <div className="flex w-full gap-2 sm:w-auto lg:shrink-0">
-            {howToGetHref && (
-              <a
-                href={howToGetHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white sm:flex-none sm:px-5"
-              >
-                <HugeiconsIcon
-                  icon={Location01Icon}
-                  size={18}
-                  strokeWidth={1.5}
-                />
-                Cómo llegar
-              </a>
-            )}
-            <PetPlaceLikeButton
-              petPlaceId={place.id}
-              initialCount={place.pet_place_likesCount ?? 0}
-            />
-            {phoneHref && (
-              <a
-                href={phoneHref}
-                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-kadesh px-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 sm:flex-none sm:px-5"
-              >
-                <HugeiconsIcon icon={Call02Icon} size={18} strokeWidth={1.5} />
-                Llamar
-              </a>
-            )}
+          <div className="flex w-full flex-col gap-2 lg:w-auto lg:shrink-0 lg:flex-row lg:flex-wrap lg:justify-end">
+            <PetPlaceBookCta place={place} />
+            <div className="flex w-full gap-2 sm:w-auto">
+              {howToGetHref && (
+                <a
+                  href={howToGetHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white sm:flex-none sm:px-5"
+                >
+                  <HugeiconsIcon
+                    icon={Location01Icon}
+                    size={18}
+                    strokeWidth={1.5}
+                  />
+                  Cómo llegar
+                </a>
+              )}
+              <PetPlaceLikeButton
+                petPlaceId={place.id}
+                initialCount={place.pet_place_likesCount ?? 0}
+              />
+              {phoneHref && (
+                <a
+                  href={phoneHref}
+                  className={`inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors sm:flex-none sm:px-5 ${
+                    isBookable
+                      ? "border-2 border-kadesh text-kadesh hover:bg-kadesh hover:text-white"
+                      : "bg-kadesh text-white hover:bg-kadesh-600"
+                  }`}
+                >
+                  <HugeiconsIcon icon={Call02Icon} size={18} strokeWidth={1.5} />
+                  Llamar
+                </a>
+              )}
+            </div>
           </div>
         </header>
 

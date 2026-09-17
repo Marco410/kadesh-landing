@@ -25,6 +25,8 @@ export function parseRadiusOption(
 export const VETERINARIES_PER_PAGE = 10;
 export const FETCH_LIMIT_VETERINARIES = 100;
 
+export const KADESH_WHATSAPP = "524439382330";
+
 export enum Role {
   ADMIN = "admin",
   USER = "user",

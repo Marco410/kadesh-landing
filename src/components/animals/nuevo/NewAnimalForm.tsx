@@ -2,20 +2,19 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMutation, useQuery } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
 import {
-  GET_ANIMAL_BREEDS_QUERY,
   CREATE_ANIMAL_MUTATION,
   CREATE_ANIMAL_LOG_MUTATION,
   CREATE_ANIMAL_MULTIMEDIA_MUTATION,
 } from 'kadesh/components/animals/queries';
 import { useUser } from 'kadesh/utils/UserContext';
-import { Autocomplete, AutocompleteOption } from 'kadesh/components/shared';
 import LocationPicker from 'kadesh/components/animals/nuevo/LocationPicker';
 import AnimalNameInput from 'kadesh/components/animals/nuevo/AnimalNameInput';
 import AnimalTypeSelector from 'kadesh/components/animals/nuevo/AnimalTypeSelector';
+import AnimalBreedPicker from 'kadesh/components/animals/nuevo/AnimalBreedPicker';
 import PhotoPicker from 'kadesh/components/animals/nuevo/PhotoPicker';
 import ReportStepper from 'kadesh/components/animals/nuevo/ReportStepper';
 import NewAnimalFormSkeleton from 'kadesh/components/animals/nuevo/NewAnimalFormSkeleton';
@@ -30,7 +29,6 @@ import {
   ANIMAL_SIZE_OPTIONS,
   REPORT_COPY,
   UNNAMED_BY_DEFAULT_STATUSES,
-  findFallbackBreedId,
   getStatusLabel,
   isAnimalReportStatus,
   type AnimalReportStatus,
@@ -324,25 +322,6 @@ export default function NewAnimalForm({
     }, 60000);
     return () => window.clearInterval(interval);
   }, [hydrated, isToday]);
-
-  const { data: animalBreedsData, loading: loadingBreeds } = useQuery(
-    GET_ANIMAL_BREEDS_QUERY,
-    {
-      variables: {
-        where: { animal_type: { id: { equals: animalTypeId } } },
-        orderBy: [{ breed: 'asc' }],
-      },
-      skip: !animalTypeId,
-    }
-  );
-
-  const breedOptions: AutocompleteOption[] = (
-    animalBreedsData?.animalBreeds || []
-  ).map((breed: { id: string; breed: string }) => ({
-    id: breed.id,
-    label: breed.breed,
-    breed: breed.breed,
-  }));
 
   const [createAnimal] = useMutation(CREATE_ANIMAL_MUTATION);
   const [createAnimalLog] = useMutation(CREATE_ANIMAL_LOG_MUTATION);
@@ -732,49 +711,13 @@ export default function NewAnimalForm({
               </div>
 
               <div>
-                <div className="mb-2 flex items-end justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <Autocomplete
-                      id="animalBreed"
-                      label="Raza"
-                      value={animalBreedId}
-                      options={breedOptions}
-                      onChange={() => undefined}
-                      onSelect={(option) => setAnimalBreedId(option.id)}
-                      placeholder={
-                        !animalTypeId
-                          ? 'Primero elige un tipo'
-                          : loadingBreeds
-                            ? 'Cargando razas…'
-                            : 'Busca o selecciona'
-                      }
-                      required
-                      disabled={!animalTypeId}
-                      loading={loadingBreeds}
-                      searchKey="breed"
-                      displayKey="breed"
-                      error={errors.animalBreedId}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    disabled={!animalTypeId || loadingBreeds}
-                    onClick={() => {
-                      const fallback = findFallbackBreedId(breedOptions);
-                      if (fallback) {
-                        setAnimalBreedId(fallback);
-                        return;
-                      }
-                      sileo.error({
-                        title: 'Busca mestizo',
-                        description: 'No hay una raza “no sé” en este tipo. Elige la más cercana.',
-                      });
-                    }}
-                    className="mb-0.5 shrink-0 rounded-full px-3 py-2 text-sm font-semibold text-kadesh hover:bg-kadesh-50 disabled:opacity-40 dark:hover:bg-kadesh/20"
-                  >
-                    No sé
-                  </button>
-                </div>
+                <AnimalBreedPicker
+                  animalTypeId={animalTypeId}
+                  value={animalBreedId}
+                  onChange={setAnimalBreedId}
+                  required
+                  error={errors.animalBreedId}
+                />
               </div>
 
               <div>

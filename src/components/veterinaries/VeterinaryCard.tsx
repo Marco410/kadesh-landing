@@ -8,7 +8,9 @@ import {
   MapPinIcon,
   StarIcon,
 } from '@hugeicons/core-free-icons';
-import { Routes } from 'kadesh/core/routes';
+import { veterinaryDetailHref } from './petPlaceSlug';
+import VerifiedBadge from './VerifiedBadge';
+import PetPlaceLikesMeta, { petPlaceLikesCount } from './PetPlaceLikesMeta';
 import type { PetPlace } from './types';
 
 interface VeterinaryCardProps {
@@ -71,7 +73,8 @@ export default function VeterinaryCard({
       ? place.averageRating
       : averageRating(place.pet_place_reviews ?? []);
   const reviewsCount = place.reviewsCount ?? place.pet_place_reviews?.length ?? 0;
-  const detailHref = Routes.veterinaries.detail(place.id);
+  const likesCount = petPlaceLikesCount(place);
+  const detailHref = veterinaryDetailHref(place);
   const phoneHref = place.phone ? `tel:${place.phone.replace(/\s/g, '')}` : null;
 
   return (
@@ -100,8 +103,9 @@ export default function VeterinaryCard({
         <VetPin selected={isSelected} />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="line-clamp-2 text-base font-bold leading-tight text-[#121212] dark:text-white">
-              {displayName}
+            <h3 className="flex min-w-0 items-start gap-1.5 text-base font-bold leading-tight text-[#121212] dark:text-white">
+              <span className="line-clamp-2">{displayName}</span>
+              {place.verified ? <VerifiedBadge size={16} /> : null}
             </h3>
             {place.isOpen != null && (
               <span
@@ -120,24 +124,29 @@ export default function VeterinaryCard({
             <p className="mt-1 text-sm font-semibold text-kadesh">{distanceStr}</p>
           )}
 
-          {(rating != null || reviewsCount > 0) && (
-            <p className="mt-1 flex items-center gap-1.5 text-sm text-[#121212] dark:text-white">
-              <HugeiconsIcon
-                icon={StarIcon}
-                size={14}
-                className="flex-shrink-0 text-amber-500"
-                strokeWidth={1.5}
-              />
-              {rating != null && (
-                <span className="font-semibold">{rating.toFixed(1)}</span>
-              )}
-              {reviewsCount > 0 && (
-                <span className="text-[#5a5a5a] dark:text-[#b0b0b0]">
-                  {rating != null
-                    ? `· ${reviewsCount} reseña${reviewsCount !== 1 ? 's' : ''}`
-                    : `${reviewsCount} reseña${reviewsCount !== 1 ? 's' : ''}`}
+          {(rating != null || reviewsCount > 0 || likesCount > 0) && (
+            <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-[#121212] dark:text-white">
+              {(rating != null || reviewsCount > 0) && (
+                <span className="inline-flex items-center gap-1.5">
+                  <HugeiconsIcon
+                    icon={StarIcon}
+                    size={14}
+                    className="flex-shrink-0 text-amber-500"
+                    strokeWidth={1.5}
+                  />
+                  {rating != null && (
+                    <span className="font-semibold">{rating.toFixed(1)}</span>
+                  )}
+                  {reviewsCount > 0 && (
+                    <span className="text-[#5a5a5a] dark:text-[#b0b0b0]">
+                      {rating != null
+                        ? `· ${reviewsCount} reseña${reviewsCount !== 1 ? 's' : ''}`
+                        : `${reviewsCount} reseña${reviewsCount !== 1 ? 's' : ''}`}
+                    </span>
+                  )}
                 </span>
               )}
+              <PetPlaceLikesMeta count={likesCount} />
             </p>
           )}
 

@@ -1,15 +1,19 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { HugeiconsIcon } from '@hugeicons/react';
+import Link from "next/link";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight01Icon,
   Call02Icon,
   MapPinIcon,
   StarIcon,
-} from '@hugeicons/core-free-icons';
-import { Routes } from 'kadesh/core/routes';
-import type { PetPlace } from 'kadesh/components/veterinaries/types';
+} from "@hugeicons/core-free-icons";
+import { veterinaryDetailHref } from "kadesh/components/veterinaries/petPlaceSlug";
+import VerifiedBadge from "kadesh/components/veterinaries/VerifiedBadge";
+import PetPlaceLikesMeta, {
+  petPlaceLikesCount,
+} from "kadesh/components/veterinaries/PetPlaceLikesMeta";
+import type { PetPlace } from "kadesh/components/veterinaries/types";
 
 function formatDistance(distance: number | null | undefined): string | null {
   if (distance == null || Number.isNaN(distance)) return null;
@@ -21,7 +25,7 @@ function formatDistance(distance: number | null | undefined): string | null {
 function averageRating(reviews: { rating: number | null }[]): number | null {
   const withRating = reviews.filter(
     (review): review is { rating: number } =>
-      review.rating != null && !Number.isNaN(review.rating)
+      review.rating != null && !Number.isNaN(review.rating),
   );
   if (withRating.length === 0) return null;
   const sum = withRating.reduce((total, review) => total + review.rating, 0);
@@ -50,13 +54,53 @@ function MiniMap({ seed }: { seed: number }) {
         className="absolute inset-0 h-full w-full"
         style={{ transform: `translate(${shiftX}px, ${shiftY}px) scale(1.12)` }}
       >
-        <rect width="400" height="220" className="fill-[#eef3f8] dark:fill-[#1a2433]" />
-        <rect x="0" y="48" width="400" height="16" className="fill-white dark:fill-[#2a3548]" />
-        <rect x="0" y="118" width="400" height="20" className="fill-white dark:fill-[#2a3548]" />
-        <rect x="0" y="178" width="400" height="14" className="fill-white dark:fill-[#2a3548]" />
-        <rect x="64" y="0" width="16" height="220" className="fill-white dark:fill-[#2a3548]" />
-        <rect x="176" y="0" width="22" height="220" className="fill-white dark:fill-[#2a3548]" />
-        <rect x="292" y="0" width="16" height="220" className="fill-white dark:fill-[#2a3548]" />
+        <rect
+          width="400"
+          height="220"
+          className="fill-[#eef3f8] dark:fill-[#1a2433]"
+        />
+        <rect
+          x="0"
+          y="48"
+          width="400"
+          height="16"
+          className="fill-white dark:fill-[#2a3548]"
+        />
+        <rect
+          x="0"
+          y="118"
+          width="400"
+          height="20"
+          className="fill-white dark:fill-[#2a3548]"
+        />
+        <rect
+          x="0"
+          y="178"
+          width="400"
+          height="14"
+          className="fill-white dark:fill-[#2a3548]"
+        />
+        <rect
+          x="64"
+          y="0"
+          width="16"
+          height="220"
+          className="fill-white dark:fill-[#2a3548]"
+        />
+        <rect
+          x="176"
+          y="0"
+          width="22"
+          height="220"
+          className="fill-white dark:fill-[#2a3548]"
+        />
+        <rect
+          x="292"
+          y="0"
+          width="16"
+          height="220"
+          className="fill-white dark:fill-[#2a3548]"
+        />
         <rect
           x="92"
           y="70"
@@ -94,23 +138,29 @@ function MiniMap({ seed }: { seed: number }) {
 }
 
 export default function HomeVeterinaryCard({ place }: { place: PetPlace }) {
-  const displayName = place.name?.trim() || 'Veterinaria';
+  const displayName = place.name?.trim() || "Veterinaria";
   const distanceStr = formatDistance(place.distance ?? undefined);
   const locationLine =
-    [place.municipality, place.state, place.country].filter(Boolean).join(', ') ||
+    [place.municipality, place.state, place.country]
+      .filter(Boolean)
+      .join(", ") ||
     place.address ||
     place.street;
   const rating =
     place.averageRating != null && !Number.isNaN(place.averageRating)
       ? place.averageRating
       : averageRating(place.pet_place_reviews ?? []);
-  const reviewsCount = place.reviewsCount ?? place.pet_place_reviews?.length ?? 0;
+  const reviewsCount =
+    place.reviewsCount ?? place.pet_place_reviews?.length ?? 0;
+  const likesCount = petPlaceLikesCount(place);
   const serviceTags = (place.services ?? [])
     .filter((service) => service.name && service.active !== false)
     .slice(0, 2)
     .map((service) => service.name as string);
-  const detailHref = Routes.veterinaries.detail(place.id);
-  const phoneHref = place.phone ? `tel:${place.phone.replace(/\s/g, '')}` : null;
+  const detailHref = veterinaryDetailHref(place);
+  const phoneHref = place.phone
+    ? `tel:${place.phone.replace(/\s/g, "")}`
+    : null;
 
   return (
     <article
@@ -128,11 +178,11 @@ export default function HomeVeterinaryCard({ place }: { place: PetPlace }) {
             <span
               className={`absolute top-3 right-3 z-10 rounded-full px-3 py-1 text-xs font-bold shadow-md ${
                 place.isOpen
-                  ? 'bg-green-600 text-white'
-                  : 'bg-[#3a3a3a] text-white'
+                  ? "bg-green-600 text-white"
+                  : "bg-[#3a3a3a] text-white"
               }`}
             >
-              {place.isOpen ? 'Abierto' : 'Cerrado'}
+              {place.isOpen ? "Abierto" : "Cerrado"}
             </span>
           )}
 
@@ -143,63 +193,67 @@ export default function HomeVeterinaryCard({ place }: { place: PetPlace }) {
           )}
         </div>
 
-        <div className="flex flex-1 flex-col p-5 pb-4">
-          <h3 className="mb-3 line-clamp-2 text-xl font-bold leading-tight text-[#121212] dark:text-white">
-            {displayName}
+        <div className="flex min-h-0 flex-1 flex-col p-5 pb-4">
+          <h3 className="mb-3 flex min-h-[3.5rem] min-w-0 items-start gap-1.5 text-xl font-bold leading-tight text-[#121212] dark:text-white">
+            <span className="line-clamp-2">{displayName}</span>
+            {place.verified ? <VerifiedBadge size={20} /> : null}
           </h3>
 
-          <div className="flex-1 space-y-2 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
-            {(rating != null || reviewsCount > 0) && (
-              <p className="flex items-center gap-1.5 text-[#121212] dark:text-white">
-                <HugeiconsIcon
-                  icon={StarIcon}
-                  size={16}
-                  className="flex-shrink-0 text-amber-500"
-                  strokeWidth={1.5}
-                />
-                {rating != null && (
-                  <span className="font-semibold">{rating.toFixed(1)}</span>
-                )}
-                {reviewsCount > 0 && (
-                  <span className="text-[#5a5a5a] dark:text-[#b0b0b0]">
-                    {rating != null
-                      ? `· ${reviewsCount} reseña${reviewsCount !== 1 ? 's' : ''}`
-                      : `${reviewsCount} reseña${reviewsCount !== 1 ? 's' : ''}`}
-                  </span>
-                )}
-              </p>
-            )}
+          <div className="flex min-h-0 flex-1 flex-col gap-2 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+            <p className="flex h-5 min-w-0 flex-nowrap items-center gap-2.5 overflow-hidden text-[#121212] dark:text-white">
+              {(rating != null || reviewsCount > 0) && (
+                <span className="inline-flex min-w-0 items-center gap-1.5">
+                  <HugeiconsIcon
+                    icon={StarIcon}
+                    size={16}
+                    className="flex-shrink-0 text-amber-500"
+                    strokeWidth={1.5}
+                  />
+                  {rating != null && (
+                    <span className="font-semibold">{rating.toFixed(1)}</span>
+                  )}
+                  {reviewsCount > 0 && (
+                    <span className="truncate text-[#5a5a5a] dark:text-[#b0b0b0]">
+                      {rating != null
+                        ? `· ${reviewsCount} reseña${reviewsCount !== 1 ? "s" : ""}`
+                        : `${reviewsCount} reseña${reviewsCount !== 1 ? "s" : ""}`}
+                    </span>
+                  )}
+                </span>
+              )}
+              <PetPlaceLikesMeta count={likesCount} iconSize={16} />
+            </p>
 
-            {locationLine && (
-              <p className="flex items-start gap-2">
-                <HugeiconsIcon
-                  icon={MapPinIcon}
-                  size={16}
-                  className="mt-0.5 flex-shrink-0 text-kadesh"
-                  strokeWidth={1.5}
-                />
-                <span className="line-clamp-2 leading-relaxed">{locationLine}</span>
-              </p>
-            )}
+            <p className="flex min-h-5 items-center gap-2">
+              {locationLine ? (
+                <>
+                  <HugeiconsIcon
+                    icon={MapPinIcon}
+                    size={16}
+                    className="flex-shrink-0 text-kadesh"
+                    strokeWidth={1.5}
+                  />
+                  <span className="truncate leading-relaxed">{locationLine}</span>
+                </>
+              ) : null}
+            </p>
 
-            {serviceTags.length > 0 && (
-              <ul className="flex flex-wrap gap-1.5 pt-1">
-                {serviceTags.map((name) => (
-                  <li
-                    key={name}
-                    className="rounded-md bg-kadesh-50 px-2 py-0.5 text-xs font-medium text-kadesh-700 dark:bg-kadesh/15 dark:text-kadesh-300"
-                  >
-                    {name}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <ul className="mt-auto flex h-6 min-w-0 gap-1.5 overflow-hidden">
+              {serviceTags.map((name) => (
+                <li
+                  key={name}
+                  className="max-w-[calc(100%-0.375rem)] shrink-0 truncate whitespace-nowrap rounded-md bg-kadesh-50 px-2 py-0.5 text-xs font-medium text-kadesh-700 dark:bg-kadesh/15 dark:text-kadesh-300"
+                >
+                  {name}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </Link>
 
       <div
-        className={`grid gap-2 px-5 pb-5 ${phoneHref ? 'grid-cols-[auto_1fr]' : 'grid-cols-1'}`}
+        className={`mt-auto grid gap-2 px-5 pb-5 ${phoneHref ? "grid-cols-[auto_1fr]" : "grid-cols-1"}`}
       >
         {phoneHref && (
           <a

@@ -123,7 +123,7 @@ export default function VeterinariansSection() {
         {!loading && nearbyVets.length > 0 && (
           <div
             data-vet-grid
-            className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4"
+            className="mb-12 grid auto-rows-fr grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-4"
           >
             {nearbyVets.map((place) => (
               <HomeVeterinaryCard key={place.id} place={place} />

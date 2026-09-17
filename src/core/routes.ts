@@ -28,6 +28,8 @@ export const Routes = {
     index: '/blog',
     post: (url: string): string => `/blog/${url}`,
   },
+
+  novedades: '/novedades',
   
   // Landing
   landing: '/landing',

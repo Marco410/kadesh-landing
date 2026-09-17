@@ -1,120 +1,129 @@
-'use client';
+import Link from "next/link";
+import { Routes } from "kadesh/core/routes";
 
 const ROADMAP_ITEMS = [
   {
     id: 1,
-    title: 'Diseño y prototipado',
-    status: 'completed',
-    description: 'Diseño de UI/UX y prototipos funcionales',
+    title: "Directorio",
+    status: "completed",
+    description:
+      "Encuentra veterinarias, refugios y hospitales cercanos. Distancia, horario y ficha con contacto.",
   },
   {
     id: 2,
-    title: 'Desarrollo del backend',
-    status: 'completed',
-    description: 'API y base de datos en desarrollo',
+    title: "Rescate de animales",
+    status: "completed",
+    description:
+      "Publica y ve en el mapa la última ubicación de animales perdidos, encontrados o en situación de calle.",
   },
   {
     id: 3,
-    title: 'Directorio',
-    status: 'completed',
+    title: "Adopciones",
+    status: "completed",
     description:
-      'Encuentra fácilmente veterinarias, refugios, hospitales y animales cercanos a tu ubicación.',
+      "Publica un animal en adopción o filtra el listado para adoptar. La ficha lleva foto, ubicación y contacto.",
   },
   {
     id: 4,
-    title: 'Rescate de animales',
-    status: 'completed',
+    title: "Citas en veterinarias",
+    status: "completed",
     description:
-      'Visualiza en el mapa la última ubicación reportada de animales en situación de calle o extraviados.',
+      "Reserva una cita o una estancia desde la ficha del negocio. El estado se sigue en Mis citas.",
   },
   {
     id: 5,
-    title: 'Sistema de adopciones',
-    status: 'in-progress',
-    description: 'Plataforma de adopción y matching',
+    title: "Bitácora de rescates",
+    status: "completed",
+    description:
+      "Sigue el avance de cada reporte: actualizaciones, comentarios y fotos en la ficha del animal.",
   },
   {
     id: 6,
-    title: 'App móvil iOS y Android',
-    status: 'pending',
-    description: 'Aplicaciones nativas en desarrollo',
+    title: "Blog",
+    status: "completed",
+    description:
+      "Historias, consejos y notas de la comunidad animal en México.",
   },
   {
     id: 7,
-    title: 'Sistema de donaciones',
-    status: 'in-progress',
-    description: 'Integración de pagos y transparencia',
+    title: "Contacto",
+    status: "completed",
+    description: "Escribe al equipo de KADESH desde la página de contacto.",
   },
   {
     id: 8,
-    title: 'Comunidad y blog',
-    status: 'completed',
-    description: 'Espacio para historias y noticias',
+    title: "Reclamar ficha de clínica",
+    status: "completed",
+    description:
+      "Si es tu veterinaria, pide completar horarios, WhatsApp y el resto de la ficha pública.",
   },
   {
     id: 9,
-    title: 'Anuncios',
-    status: 'in-progress',
-    description: 'Publica anuncios de animales en adopción, rescates, etc.',
+    title: "Donaciones",
+    status: "in-progress",
+    description:
+      "Ya puedes apoyar el proyecto. Falta un recuento claro de a qué se destina cada aportación.",
   },
   {
     id: 10,
-    title: 'Recompensas',
-    status: 'pending',
+    title: "Anuncios",
+    status: "in-progress",
     description:
-      'Programa de recompensas para los usuarios que ayudan a la comunidad',
+      "Publicar avisos de adopción, rescate y servicios más allá del reporte de un animal.",
   },
   {
     id: 11,
-    title: 'Tienda en línea',
-    status: 'pending',
-    description: 'Compra y vende productos para animales',
+    title: "App móvil iOS y Android",
+    status: "pending",
+    description:
+      "Aplicaciones nativas para reportar y buscar sin abrir el navegador.",
   },
   {
     id: 12,
-    title: 'Calendario',
-    status: 'pending',
+    title: "Recompensas",
+    status: "pending",
     description:
-      'Consulta eventos importantes de la comunidad: campañas de vacunación, esterilización, adopciones y actividades solidarias.',
+      "Reconocimientos para quienes ayudan a la comunidad con reportes y rescates.",
   },
   {
     id: 13,
-    title: 'Perfil de mascota',
-    status: 'pending',
+    title: "Tienda en línea",
+    status: "pending",
     description:
-      'Crea un perfil personalizado para cada una de tus mascotas y lleva un control de su salud, vacunas y actividades.',
+      "Comprar productos para animales; lo recaudado apoya casos urgentes.",
   },
   {
     id: 14,
-    title: 'Historias',
-    status: 'pending',
+    title: "Calendario",
+    status: "pending",
     description:
-      'Descubre y comparte historias inspiradoras de animales rescatados. Motívate y motiva a otros a seguir ayudando.',
+      "Campañas de vacunación, esterilización, adopciones y actividades solidarias.",
   },
   {
     id: 15,
-    title: 'Contacto',
-    status: 'completed',
-    description: 'Contacta con el equipo de KADESH',
-  },
-  {
-    id: 16,
-    title: 'Estatus de rescates',
-    status: 'completed',
+    title: "Perfil de mascota",
+    status: "pending",
     description:
-      'Sigue el avance de cada rescate en tiempo real: actualizaciones, comentarios, fotos y logros para que todos puedan apoyar y celebrar juntos.',
+      "Un perfil por mascota con salud, vacunas y actividades. Hoy el alta vive en el reporte y en la cita.",
   },
 ] as const;
 
 const COLUMNS = [
-  { status: 'completed', label: 'Completado', tone: 'bg-green-500' },
-  { status: 'in-progress', label: 'En progreso', tone: 'bg-kadesh' },
-  { status: 'pending', label: 'Pendiente', tone: 'bg-gray-300 dark:bg-gray-600' },
+  { status: "completed", label: "Completado", tone: "bg-green-500" },
+  { status: "in-progress", label: "En progreso", tone: "bg-kadesh" },
+  {
+    status: "pending",
+    label: "Pendiente",
+    tone: "bg-gray-300 dark:bg-gray-600",
+  },
 ] as const;
 
 export default function RoadmapSection() {
   return (
-    <section id="roadmap" className="w-full bg-[#f7f8fa] py-24 dark:bg-night-raised">
+    <section
+      id="roadmap"
+      className="w-full bg-[#f7f8fa] py-24 dark:bg-night-raised"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="mb-4 text-4xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-5xl">
@@ -122,7 +131,8 @@ export default function RoadmapSection() {
           </h2>
           <p className="text-lg text-[#5a5a5a] dark:text-[#b0b0b0]">
             Lo que ya opera, lo que estamos construyendo y lo que sigue. Sin
-            métricas inventadas: solo el estado que el equipo publica aquí.
+            métricas inventadas: solo el estado que el equipo publica aquí. El
+            detalle de cada versión está en Novedades.
           </p>
         </div>
 
@@ -136,31 +146,34 @@ export default function RoadmapSection() {
                 </h3>
               </div>
               <ul className="space-y-3">
-                {ROADMAP_ITEMS.filter((item) => item.status === column.status).map(
-                  (item) => (
-                    <li
-                      key={item.id}
-                      className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-[#2a2a2a] dark:bg-[#1e1e1e]"
-                    >
-                      <h4 className="mb-1 font-bold text-[#121212] dark:text-white">
-                        {item.title}
-                      </h4>
-                      <p className="text-sm leading-relaxed text-[#5a5a5a] dark:text-[#b0b0b0]">
-                        {item.description}
-                      </p>
-                    </li>
-                  )
-                )}
+                {ROADMAP_ITEMS.filter(
+                  (item) => item.status === column.status,
+                ).map((item) => (
+                  <li
+                    key={item.id}
+                    className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-[#2a2a2a] dark:bg-[#1e1e1e]"
+                  >
+                    <h4 className="mb-1 font-bold text-[#121212] dark:text-white">
+                      {item.title}
+                    </h4>
+                    <p className="text-sm leading-relaxed text-[#5a5a5a] dark:text-[#b0b0b0]">
+                      {item.description}
+                    </p>
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
         </div>
 
         <p className="mt-12 text-center text-[#5a5a5a] dark:text-[#b0b0b0]">
-          ¿Quieres estar al día con nuestros avances?{' '}
-          <a href="/comunidad" className="font-semibold text-kadesh hover:underline">
-            Únete a la comunidad →
-          </a>
+          ¿Quieres el historial de versiones ya publicadas?{" "}
+          <Link
+            href={Routes.novedades}
+            className="font-semibold text-kadesh hover:underline"
+          >
+            Ver novedades →
+          </Link>
         </p>
       </div>
     </section>

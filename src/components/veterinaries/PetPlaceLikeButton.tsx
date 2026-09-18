@@ -8,6 +8,8 @@ import { ConfirmModal } from "kadesh/components/shared";
 import { Routes } from "kadesh/core/routes";
 import { useUser } from "kadesh/utils/UserContext";
 import { usePetPlaceLikes } from "./hooks/usePetPlaceLikes";
+import { motion } from "framer-motion";
+import { useUiMotion } from "kadesh/components/shared/motion";
 
 interface PetPlaceLikeButtonProps {
   petPlaceId: string;
@@ -28,6 +30,7 @@ export default function PetPlaceLikeButton({
     petPlaceId,
     initialCount,
   );
+  const motionPrefs = useUiMotion();
 
   const onClick = () => {
     if (!user?.id) {
@@ -48,7 +51,7 @@ export default function PetPlaceLikeButton({
 
   return (
     <>
-      <button
+      <motion.button
         type="button"
         onClick={onClick}
         disabled={isBusy}
@@ -56,6 +59,7 @@ export default function PetPlaceLikeButton({
         aria-label={
           isLiked ? "Quitar me gusta de esta veterinaria" : "Me gusta esta veterinaria"
         }
+        whileTap={isBusy ? undefined : motionPrefs.tapDay}
         className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border-2 px-3 text-sm font-semibold tabular-nums transition-colors disabled:cursor-wait disabled:opacity-60 ${
           isLiked
             ? "border-kadesh bg-kadesh text-white hover:bg-kadesh-600"
@@ -70,7 +74,7 @@ export default function PetPlaceLikeButton({
           className={isLiked ? "fill-current" : undefined}
         />
         {likesCount > 0 ? <span>{likesCount}</span> : null}
-      </button>
+      </motion.button>
       <ConfirmModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}

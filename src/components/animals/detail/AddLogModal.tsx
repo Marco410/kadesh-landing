@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Cancel01Icon } from '@hugeicons/core-free-icons';
 import { ANIMAL_LOGS_OPTIONS, getStatusColor } from '../constants';
 import LocationPicker from '../nuevo/LocationPicker';
 import StatusDatePicker from 'kadesh/components/shared/StatusDatePicker';
 import { useCreateLog } from './hooks/useCreateLog';
+import { useUiMotion } from 'kadesh/components/shared/motion';
 
 interface AddLogModalProps {
   isOpen: boolean;
@@ -146,14 +148,27 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
     onClose();
   };
 
-  if (!isOpen) return null;
+  const motionPrefs = useUiMotion();
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={handleClose}>
-      <div
-        className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border border-[#ececec] bg-white shadow-[0_16px_40px_rgba(15,35,80,0.18)] dark:border-white/10 dark:bg-night-raised"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen ? (
+        <motion.div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+          onClick={handleClose}
+          variants={motionPrefs.overlay}
+          initial={motionPrefs.overlay ? 'hidden' : false}
+          animate="show"
+          exit="exit"
+        >
+          <motion.div
+            className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border border-[#ececec] bg-white shadow-[0_16px_40px_rgba(15,35,80,0.18)] dark:border-white/10 dark:bg-night-raised"
+            onClick={(e) => e.stopPropagation()}
+            variants={motionPrefs.sheet}
+            initial={motionPrefs.sheet ? 'hidden' : false}
+            animate="show"
+            exit="exit"
+          >
         <div className="flex items-center justify-between border-b border-[#ececec] p-4 dark:border-white/10">
           <h2 className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
             Registro de {animalName}
@@ -303,23 +318,27 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
           </div>
 
           <div className="flex gap-3 border-t border-[#ececec] p-4 dark:border-white/10">
-            <button
+            <motion.button
               type="button"
               onClick={handleClose}
+              whileTap={motionPrefs.tap}
               className="min-h-11 flex-1 rounded-xl bg-[#f3f5f8] px-4 text-sm font-semibold text-[#121212] hover:bg-[#e6e9ef] dark:bg-night dark:text-[#eef1f6] dark:hover:bg-white/10"
             >
               Cancelar
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               type="submit"
               disabled={isSubmitting}
+              whileTap={isSubmitting ? undefined : motionPrefs.tap}
               className="min-h-11 flex-1 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSubmitting ? 'Guardando…' : 'Guardar'}
-            </button>
+            </motion.button>
           </div>
         </form>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }

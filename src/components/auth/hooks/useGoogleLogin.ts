@@ -12,6 +12,7 @@ import { useUser } from "kadesh/utils/UserContext";
 import { Routes } from "kadesh/core/routes";
 import type { AuthenticatedItem } from "kadesh/utils/types";
 import { loadGoogleGsiScript } from "kadesh/utils/load-google-gsi";
+import { friendlyAuthError } from "kadesh/components/auth/authErrors";
 
 declare global {
   interface Window {
@@ -111,12 +112,22 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
           router.push(Routes.home);
         }
       } else if (result.__typename === "UserAuthenticationWithGoogleFailure") {
-        setError(result.message || "No se pudo iniciar sesión con Google");
+        setError(
+          friendlyAuthError(
+            result.message,
+            "No se pudo iniciar sesión con Google. Intenta de nuevo.",
+          ),
+        );
         setLoading(false);
       }
     },
     onError: (err) => {
-      setError(err.message || "Error al iniciar sesión con Google");
+      setError(
+        friendlyAuthError(
+          err,
+          "No se pudo iniciar sesión con Google. Intenta de nuevo.",
+        ),
+      );
       setLoading(false);
     },
   });
@@ -171,7 +182,10 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
       })
       .catch((err) => {
         setError(
-          err instanceof Error ? err.message : "Error al cargar Google Sign-In",
+          friendlyAuthError(
+            err,
+            "No se pudo cargar Google. Recarga la página.",
+          ),
         );
       });
   }, [handleCredential]);

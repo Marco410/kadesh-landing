@@ -21,6 +21,8 @@ import {
 import { Navigation } from "kadesh/components/layout";
 import { Routes } from "kadesh/core/routes";
 import { GET_PET_PLACE } from "kadesh/components/veterinaries/queries";
+import { motion } from "framer-motion";
+import { useUiMotion } from "kadesh/components/shared/motion";
 import {
   VeterinariesMap,
   PetPlaceReviewsSection,
@@ -31,6 +33,7 @@ import {
   PetPlaceBookCta,
 } from "kadesh/components/veterinaries";
 import { getPetPlaceBookingMode } from "kadesh/components/veterinaries/appointments";
+import { formatPetPlaceTypeLabels } from "kadesh/components/veterinaries/constants";
 import { isPetPlaceKeystoneId } from "kadesh/components/veterinaries/petPlaceSlug";
 import PetPlaceDetailSkeleton from "kadesh/components/veterinaries/PetPlaceDetailSkeleton";
 import type {
@@ -313,6 +316,7 @@ function DetailShell({ children }: { children: ReactNode }) {
 export default function VeterinaryDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const motionPrefs = useUiMotion();
   const placeKey = typeof params?.slug === "string" ? params.slug : undefined;
 
   const { data, loading, error, refetch } = useQuery<
@@ -403,10 +407,16 @@ export default function VeterinaryDetailPage() {
     ? directionsUrl(place.lat, place.lng)
     : null;
   const isBookable = getPetPlaceBookingMode(place.types) !== null;
+  const typeLine = formatPetPlaceTypeLabels(place.types);
 
   return (
     <DetailShell>
-      <div className="mx-auto flex min-h-0 w-full max-w-[90rem] flex-1 flex-col gap-3 px-4 py-3 pb-24 lg:px-6">
+      <motion.div
+        className="mx-auto flex min-h-0 w-full max-w-[90rem] flex-1 flex-col gap-3 px-4 py-3 pb-24 lg:px-6"
+        variants={motionPrefs.panel}
+        initial={motionPrefs.panel ? "hidden" : false}
+        animate="show"
+      >
         <header className="flex shrink-0 flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
           <Link
             href={Routes.veterinaries.index}
@@ -423,6 +433,11 @@ export default function VeterinaryDetailPage() {
                 <span className="min-w-0 lg:truncate">{displayName}</span>
                 {place.verified ? <VerifiedBadge size={22} /> : null}
               </h1>
+              {typeLine ? (
+                <p className="mt-1 break-words text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+                  {typeLine}
+                </p>
+              ) : null}
               <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                 {(place.averageRating != null ||
                   (place.reviewsCount ?? 0) > 0) && (
@@ -465,10 +480,11 @@ export default function VeterinaryDetailPage() {
             <PetPlaceBookCta place={place} />
             <div className="flex w-full gap-2 sm:w-auto">
               {howToGetHref && (
-                <a
+                <motion.a
                   href={howToGetHref}
                   target="_blank"
                   rel="noopener noreferrer"
+                  whileTap={motionPrefs.tap}
                   className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white sm:flex-none sm:px-5"
                 >
                   <HugeiconsIcon
@@ -477,24 +493,29 @@ export default function VeterinaryDetailPage() {
                     strokeWidth={1.5}
                   />
                   Cómo llegar
-                </a>
+                </motion.a>
               )}
               <PetPlaceLikeButton
                 petPlaceId={place.id}
                 initialCount={place.pet_place_likesCount ?? 0}
               />
               {phoneHref && (
-                <a
+                <motion.a
                   href={phoneHref}
+                  whileTap={motionPrefs.tap}
                   className={`inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors sm:flex-none sm:px-5 ${
                     isBookable
                       ? "border-2 border-kadesh text-kadesh hover:bg-kadesh hover:text-white"
                       : "bg-kadesh text-white hover:bg-kadesh-600"
                   }`}
                 >
-                  <HugeiconsIcon icon={Call02Icon} size={18} strokeWidth={1.5} />
+                  <HugeiconsIcon
+                    icon={Call02Icon}
+                    size={18}
+                    strokeWidth={1.5}
+                  />
                   Llamar
-                </a>
+                </motion.a>
               )}
             </div>
           </div>
@@ -539,7 +560,12 @@ export default function VeterinaryDetailPage() {
                 Servicios
               </h2>
               {services.length > 0 ? (
-                <ul className="flex flex-wrap gap-1.5">
+                <motion.ul
+                  className="flex flex-wrap gap-1.5"
+                  variants={motionPrefs.list}
+                  initial={motionPrefs.list ? "hidden" : false}
+                  animate="show"
+                >
                   {services.map((service, index) => {
                     const IconComponent = getServiceIcon(
                       service.name,
@@ -547,8 +573,9 @@ export default function VeterinaryDetailPage() {
                       index,
                     );
                     return (
-                      <li
+                      <motion.li
                         key={service.id}
+                        variants={motionPrefs.item}
                         className="inline-flex items-center gap-1.5 rounded-lg bg-kadesh-50 px-2.5 py-1.5 text-xs font-medium text-kadesh-700 dark:bg-kadesh/15 dark:text-kadesh-300"
                       >
                         <HugeiconsIcon
@@ -557,10 +584,10 @@ export default function VeterinaryDetailPage() {
                           strokeWidth={1.5}
                         />
                         {service.name}
-                      </li>
+                      </motion.li>
                     );
                   })}
-                </ul>
+                </motion.ul>
               ) : (
                 <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
                   Sin servicios registrados.
@@ -575,7 +602,7 @@ export default function VeterinaryDetailPage() {
         </div>
 
         <ClaimPetPlaceSection place={place} onClaimed={() => refetch()} />
-      </div>
+      </motion.div>
     </DetailShell>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useUserFavoritePosts } from "./hooks/useUserFavoritePosts";
 import { useUserLikedPosts } from "./hooks/useUserLikedPosts";
 import BlogCardSkeleton from "../blog/BlogCardSkeleton";
@@ -13,6 +14,7 @@ import { ConfirmModal } from "kadesh/components/shared";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete02Icon } from "@hugeicons/core-free-icons";
 import type { UserComment } from "./queries";
+import { useProfileMotion } from "./motion";
 
 interface UserPostsSectionProps {
   userId: string;
@@ -25,6 +27,7 @@ const POST_TABS = [
 ] as const;
 
 export default function UserPostsSection({ userId }: UserPostsSectionProps) {
+  const motionPrefs = useProfileMotion();
   const [selectedTab, setSelectedTab] =
     useState<(typeof POST_TABS)[number]["key"]>("favorites");
 
@@ -92,25 +95,43 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
         {POST_TABS.map((tab) => {
           const selected = tab.key === selectedTab;
           return (
-            <button
+            <motion.button
               key={tab.key}
               type="button"
               role="tab"
               aria-selected={selected}
               onClick={() => setSelectedTab(tab.key)}
-              className={`inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
+              whileTap={motionPrefs.tap}
+              className={`relative inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
                 selected
-                  ? "bg-kadesh text-white shadow-[0_8px_18px_rgba(15,35,80,0.18)]"
+                  ? "text-white"
                   : "bg-[#f3f5f8] text-[#3a3a3a] hover:bg-kadesh-50 dark:bg-night dark:text-[#d0d0d0] dark:hover:bg-kadesh/20"
               }`}
             >
-              {tab.label} ({countFor[tab.key]})
-            </button>
+              {selected ? (
+                <motion.span
+                  layoutId="perfil-posts-tab-pill"
+                  className="absolute inset-0 rounded-full bg-kadesh shadow-[0_8px_18px_rgba(15,35,80,0.18)]"
+                  transition={motionPrefs.transition}
+                />
+              ) : null}
+              <span className="relative z-10">
+                {tab.label} ({countFor[tab.key]})
+              </span>
+            </motion.button>
           );
         })}
       </div>
 
       <div className="mt-5">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={selectedTab}
+            variants={motionPrefs.panel}
+            initial={motionPrefs.reduce ? false : "hidden"}
+            animate="show"
+            exit="exit"
+          >
         {selectedTab === "favorites" &&
           (favoritesLoading ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -188,10 +209,16 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
               </Link>
             </div>
           ) : (
-            <div className="space-y-2">
+            <motion.div
+              className="space-y-2"
+              variants={motionPrefs.list}
+              initial={motionPrefs.reduce ? false : "hidden"}
+              animate="show"
+            >
               {comments.map((comment: UserComment) => (
-                <div
+                <motion.div
                   key={comment.id}
+                  variants={motionPrefs.item}
                   className="relative rounded-2xl border border-[#ececec] bg-white p-3 dark:border-white/10 dark:bg-night-raised"
                 >
                   <Link
@@ -232,10 +259,12 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
                   >
                     <HugeiconsIcon icon={Delete02Icon} size={16} />
                   </button>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           ))}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       <ConfirmModal

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowDown01Icon,
@@ -15,6 +16,7 @@ import { Routes } from 'kadesh/core/routes';
 import { ConfirmModal } from 'kadesh/components/shared';
 import { usePetPlaceReviews } from './hooks/usePetPlaceReviews';
 import type { PetPlaceDetail } from './types';
+import { useUiMotion } from 'kadesh/components/shared/motion';
 
 const REVIEWS_PREVIEW = 3;
 
@@ -45,6 +47,7 @@ export default function PetPlaceReviewsSection({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const motionPrefs = useUiMotion();
 
   const openDeleteModal = (reviewId: string) => {
     setReviewToDelete(reviewId);
@@ -109,13 +112,18 @@ export default function PetPlaceReviewsSection({
             disabled={isSubmitting || isCreatingReview}
           />
           <div className="mt-2 flex justify-end">
-            <button
+            <motion.button
               type="submit"
               disabled={rating < 1 || isSubmitting || isCreatingReview}
+              whileTap={
+                rating < 1 || isSubmitting || isCreatingReview
+                  ? undefined
+                  : motionPrefs.tap
+              }
               className="rounded-xl bg-kadesh px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSubmitting || isCreatingReview ? 'Publicando…' : 'Publicar'}
-            </button>
+            </motion.button>
           </div>
         </form>
       ) : (
@@ -133,9 +141,15 @@ export default function PetPlaceReviewsSection({
             Aún no hay reseñas.
           </li>
         ) : (
-          visibleReviews.map((rev) => (
-            <li
+          <AnimatePresence initial={false}>
+            {visibleReviews.map((rev) => (
+            <motion.li
               key={rev.id}
+              variants={motionPrefs.item}
+              initial={motionPrefs.item ? 'hidden' : false}
+              animate="show"
+              exit="exit"
+              layout={!motionPrefs.reduce}
               className="rounded-xl border border-[#ececec] p-3 dark:border-white/10 dark:bg-night/40"
             >
               <div className="flex gap-2.5">
@@ -205,16 +219,18 @@ export default function PetPlaceReviewsSection({
                   )}
                 </div>
               </div>
-            </li>
-          ))
+            </motion.li>
+          ))}
+          </AnimatePresence>
         )}
       </ul>
 
       {canToggle && (
-        <button
+        <motion.button
           type="button"
           aria-expanded={expanded}
           onClick={() => setExpanded((open) => !open)}
+          whileTap={motionPrefs.tap}
           className="mt-3 inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:hover:bg-kadesh/20"
         >
           {expanded ? 'Menos reseñas' : 'Más reseñas'}
@@ -224,7 +240,7 @@ export default function PetPlaceReviewsSection({
             strokeWidth={2}
             aria-hidden
           />
-        </button>
+        </motion.button>
       )}
 
       <ConfirmModal

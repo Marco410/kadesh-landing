@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@apollo/client";
+import { motion } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon, Image01Icon } from "@hugeicons/core-free-icons";
 import { Routes } from "kadesh/core/routes";
@@ -18,8 +19,10 @@ import {
   type GetMyAnimalsResponse,
   type GetMyAnimalsVariables,
 } from "./queries";
+import { useProfileMotion } from "./motion";
 
 export default function UserAnimalsSection({ userId }: { userId: string }) {
+  const motionPrefs = useProfileMotion();
   const { data, loading } = useQuery<
     GetMyAnimalsResponse,
     GetMyAnimalsVariables
@@ -49,7 +52,12 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
 
   if (animals.length === 0) {
     return (
-      <div className="flex flex-col items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised">
+      <motion.div
+        variants={motionPrefs.item}
+        initial={motionPrefs.reduce ? false : "hidden"}
+        animate="show"
+        className="flex flex-col items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised"
+      >
         <p className="font-semibold text-[#121212] dark:text-[#eef1f6]">
           Aún no has publicado un reporte
         </p>
@@ -63,28 +71,36 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
           <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
           Reportar
         </Link>
-      </div>
+      </motion.div>
     );
   }
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-end">
-        <Link
-          href={Routes.animals.new}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
-        >
-          <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
-          Reportar
-        </Link>
+        <motion.div whileTap={motionPrefs.tap}>
+          <Link
+            href={Routes.animals.new}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+          >
+            <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
+            Reportar
+          </Link>
+        </motion.div>
       </div>
-      <ul className="space-y-2">
+      <motion.ul
+        className="space-y-2"
+        variants={motionPrefs.list}
+        initial={motionPrefs.reduce ? false : "hidden"}
+        animate="show"
+      >
         {animals.map((animal) => {
           const status = animal.logs[0]?.status;
           const typeName = animal.animal_breed?.animal_type?.name || "";
           const cover = animal.multimedia[0]?.image?.url;
           return (
-            <li key={animal.id}>
+            <motion.li key={animal.id} variants={motionPrefs.item}>
+              <motion.div whileTap={motionPrefs.tap}>
               <Link
                 href={animalDetailHref(animal)}
                 className="flex items-center gap-3 rounded-2xl border border-[#ececec] bg-white p-3 transition-colors hover:border-kadesh-300 dark:border-white/10 dark:bg-night-raised dark:hover:border-kadesh/40"
@@ -133,10 +149,11 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
                   </p>
                 </div>
               </Link>
-            </li>
+              </motion.div>
+            </motion.li>
           );
         })}
-      </ul>
+      </motion.ul>
     </div>
   );
 }

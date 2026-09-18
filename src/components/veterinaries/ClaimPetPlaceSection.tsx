@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useMutation } from "@apollo/client";
+import { motion } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { CheckmarkCircle02Icon, WhatsappIcon } from "@hugeicons/core-free-icons";
 import { useUser } from "kadesh/utils/UserContext";
@@ -23,6 +24,7 @@ import {
 } from "./constants";
 import { claimWhatsAppUrl, disputeClaimWhatsAppUrl } from "./claimWhatsApp";
 import type { PetPlaceDetail } from "./types";
+import { useUiMotion } from "kadesh/components/shared/motion";
 
 const INPUT_CLASS =
   "w-full rounded-xl border border-[#d8dee8] bg-white px-4 py-3 text-sm text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh dark:border-white/18 dark:bg-night dark:text-white dark:placeholder:text-[#9aa3b2]";
@@ -41,6 +43,7 @@ export default function ClaimPetPlaceSection({
   const [phone, setPhone] = useState(user?.phone ?? "");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const motionPrefs = useUiMotion();
 
   const [claimPetPlace, { loading }] = useMutation<
     ClaimPetPlaceResponse,
@@ -216,11 +219,12 @@ export default function ClaimPetPlaceSection({
               {CLAIM_ROLE_OPTIONS.map((option) => {
                 const selected = role === option.value;
                 return (
-                  <button
+                  <motion.button
                     key={option.value}
                     type="button"
                     aria-pressed={selected}
                     onClick={() => setRole(option.value)}
+                    whileTap={motionPrefs.tap}
                     className={`inline-flex min-h-11 items-center rounded-full px-3.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
                       selected
                         ? "bg-kadesh text-white"
@@ -228,7 +232,7 @@ export default function ClaimPetPlaceSection({
                     }`}
                   >
                     {option.label}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -267,14 +271,15 @@ export default function ClaimPetPlaceSection({
             <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
           ) : null}
 
-          <button
+          <motion.button
             type="submit"
             disabled={loading}
+            whileTap={loading ? undefined : motionPrefs.tap}
             className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
             <HugeiconsIcon icon={WhatsappIcon} size={18} strokeWidth={1.5} />
             {loading ? "Enviando…" : "Reclamar y enviar por WhatsApp"}
-          </button>
+          </motion.button>
         </form>
       )}
     </section>

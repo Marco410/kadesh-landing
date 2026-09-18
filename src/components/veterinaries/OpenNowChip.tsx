@@ -1,5 +1,8 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { useUiMotion } from "kadesh/components/shared/motion";
+
 interface OpenNowChipProps {
   pressed: boolean;
   onToggle: () => void;
@@ -11,12 +14,15 @@ export default function OpenNowChip({
   onToggle,
   count,
 }: OpenNowChipProps) {
+  const motionPrefs = useUiMotion();
+
   return (
     <div role="group" aria-label="Horario" className="mt-2.5 flex flex-wrap gap-1.5">
-      <button
+      <motion.button
         type="button"
         aria-pressed={pressed}
         onClick={onToggle}
+        whileTap={motionPrefs.tap}
         className={`inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
           pressed
             ? "bg-green-600 text-white"
@@ -39,7 +45,7 @@ export default function OpenNowChip({
             {count}
           </span>
         )}
-      </button>
+      </motion.button>
     </div>
   );
 }

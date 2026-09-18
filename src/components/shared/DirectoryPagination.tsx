@@ -1,5 +1,8 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { useUiMotion } from "./motion";
+
 interface DirectoryPaginationProps {
   currentPage: number;
   totalPages: number;
@@ -19,6 +22,8 @@ export default function DirectoryPagination({
   hasPreviousPage,
   hasNextPage,
 }: DirectoryPaginationProps) {
+  const motionPrefs = useUiMotion();
+
   if (totalPages <= 1) return null;
 
   return (
@@ -26,14 +31,15 @@ export default function DirectoryPagination({
       aria-label="Paginación"
       className="mt-6 flex items-center justify-center gap-2 border-t border-[#ececec] pt-4 dark:border-white/10"
     >
-      <button
+      <motion.button
         type="button"
         onClick={onPrevious}
         disabled={!hasPreviousPage}
+        whileTap={hasPreviousPage ? motionPrefs.tap : undefined}
         className="inline-flex min-h-11 cursor-pointer items-center rounded-xl border border-[#ececec] bg-white px-3 text-sm font-medium text-[#121212] hover:bg-[#f7f8fa] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-night dark:text-white dark:hover:bg-night-raised"
       >
         Anterior
-      </button>
+      </motion.button>
       <div className="flex flex-wrap items-center justify-center gap-1">
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
           if (
@@ -43,12 +49,13 @@ export default function DirectoryPagination({
           ) {
             const selected = currentPage === page;
             return (
-              <button
+              <motion.button
                 key={page}
                 type="button"
                 aria-current={selected ? "page" : undefined}
                 aria-label={`Página ${page}`}
                 onClick={() => onPage(page)}
+                whileTap={motionPrefs.tapDay}
                 className={`inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-xl text-sm font-medium ${
                   selected
                     ? "bg-kadesh text-white"
@@ -56,7 +63,7 @@ export default function DirectoryPagination({
                 }`}
               >
                 {page}
-              </button>
+              </motion.button>
             );
           }
           if (page === currentPage - 2 || page === currentPage + 2) {
@@ -72,14 +79,15 @@ export default function DirectoryPagination({
           return null;
         })}
       </div>
-      <button
+      <motion.button
         type="button"
         onClick={onNext}
         disabled={!hasNextPage}
+        whileTap={hasNextPage ? motionPrefs.tap : undefined}
         className="inline-flex min-h-11 cursor-pointer items-center rounded-xl border border-[#ececec] bg-white px-3 text-sm font-medium text-[#121212] hover:bg-[#f7f8fa] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-night dark:text-white dark:hover:bg-night-raised"
       >
         Siguiente
-      </button>
+      </motion.button>
     </nav>
   );
 }

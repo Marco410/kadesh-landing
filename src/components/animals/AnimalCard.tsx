@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { LostAnimal } from './types';
 import { formatDate } from 'kadesh/utils/format-date';
 import { animalDetailHref } from 'kadesh/components/animals/animalSlug';
+import { useUiMotion } from 'kadesh/components/shared/motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowRight01Icon,
@@ -14,6 +15,8 @@ import {
   MapsLocation01Icon,
 } from '@hugeicons/core-free-icons';
 import { getStatusColor, getStatusLabel, getTypeLabel } from './constants';
+
+const MotionLink = motion.create(Link);
 
 interface AnimalCardProps {
   animal: LostAnimal;
@@ -42,15 +45,21 @@ export default function AnimalCard({
 }: AnimalCardProps) {
   const distanceStr = formatDistance(animal.distance);
   const detailHref = animalDetailHref(animal);
+  const motionPrefs = useUiMotion();
 
   if (variant === 'horizontal') {
     return (
-      <article
+      <motion.article
         id={`animal-${animal.id}`}
-        className={`flex flex-col rounded-2xl border p-4 transition-[border-color,box-shadow,background-color,transform] duration-150 ${
+        variants={motionPrefs.item}
+        whileTap={motionPrefs.tap}
+        whileHover={
+          motionPrefs.reduce || isSelected ? undefined : { y: -2 }
+        }
+        className={`flex flex-col rounded-2xl border p-4 transition-[border-color,box-shadow,background-color] duration-150 ${
           isSelected
             ? 'border-kadesh bg-kadesh-50 shadow-[0_10px_28px_rgba(15,35,80,0.12)] dark:border-kadesh dark:bg-kadesh/15'
-            : 'border-[#ececec] bg-white hover:-translate-y-0.5 hover:border-kadesh-300 hover:shadow-[0_10px_24px_rgba(15,35,80,0.08)] dark:border-white/10 dark:bg-night dark:hover:border-kadesh/40'
+            : 'border-[#ececec] bg-white hover:border-kadesh-300 hover:shadow-[0_10px_24px_rgba(15,35,80,0.08)] dark:border-white/10 dark:bg-night dark:hover:border-kadesh/40'
         }`}
       >
         <div
@@ -118,25 +127,30 @@ export default function AnimalCard({
           </div>
         </div>
 
-        <Link
+        <MotionLink
           href={detailHref}
           onClick={(event) => event.stopPropagation()}
+          whileTap={motionPrefs.tap}
           className="mt-3 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
         >
           Ver ficha
           <HugeiconsIcon icon={ArrowRight01Icon} size={14} strokeWidth={2} />
-        </Link>
-      </article>
+        </MotionLink>
+      </motion.article>
     );
   }
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 30 }}
+      initial={motionPrefs.reduce ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      whileHover={{ y: -5 }}
-      className="flex flex-col overflow-hidden rounded-xl border border-transparent bg-white shadow-[0_10px_24px_rgba(15,35,80,0.08)] transition-all duration-300 hover:shadow-[0_12px_28px_rgba(15,35,80,0.12)] dark:border-white/10 dark:bg-night-raised"
+      transition={{
+        ...motionPrefs.transition,
+        delay: motionPrefs.reduce ? 0 : index * 0.055,
+      }}
+      whileHover={motionPrefs.reduce ? undefined : { y: -2 }}
+      whileTap={motionPrefs.tap}
+      className="flex flex-col overflow-hidden rounded-xl border border-transparent bg-white shadow-[0_10px_24px_rgba(15,35,80,0.08)] transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(15,35,80,0.12)] dark:border-white/10 dark:bg-night-raised"
     >
       <div className="relative w-full bg-[#e8edf3] dark:bg-[#2a3548]">
         {animal.image?.url ? (
@@ -198,12 +212,13 @@ export default function AnimalCard({
         )}
 
         <div className="mt-auto border-t border-[#ececec] pt-4 dark:border-white/10">
-          <Link
+          <MotionLink
             href={detailHref}
+            whileTap={motionPrefs.tap}
             className="block w-full rounded-xl bg-kadesh px-4 py-2 text-center font-semibold text-white transition-colors hover:bg-kadesh-600"
           >
             Ver ficha
-          </Link>
+          </MotionLink>
         </div>
       </div>
     </motion.article>

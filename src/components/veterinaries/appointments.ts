@@ -35,6 +35,35 @@ export function canCancelAppointment(status: string | null | undefined): boolean
   );
 }
 
+export type OwnerAppointmentAction = {
+  status: AppointmentStatus;
+  label: string;
+  tone: "primary" | "danger" | "neutral";
+};
+
+export function ownerAppointmentActions(
+  status: string | null | undefined,
+): OwnerAppointmentAction[] {
+  if (status === APPOINTMENT_STATUS.PENDING) {
+    return [
+      { status: APPOINTMENT_STATUS.CONFIRMED, label: "Confirmar", tone: "primary" },
+      { status: APPOINTMENT_STATUS.CANCELLED, label: "Cancelar", tone: "danger" },
+    ];
+  }
+  if (status === APPOINTMENT_STATUS.CONFIRMED) {
+    return [
+      {
+        status: APPOINTMENT_STATUS.COMPLETED,
+        label: "Completada",
+        tone: "primary",
+      },
+      { status: APPOINTMENT_STATUS.NO_SHOW, label: "No se presentó", tone: "neutral" },
+      { status: APPOINTMENT_STATUS.CANCELLED, label: "Cancelar", tone: "danger" },
+    ];
+  }
+  return [];
+}
+
 export const APPOINTMENT_STATUS_BADGE: Record<AppointmentStatus, string> = {
   pending:
     "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200",

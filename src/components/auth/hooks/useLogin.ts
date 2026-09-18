@@ -11,6 +11,7 @@ import {
 import { useUser } from "kadesh/utils/UserContext";
 import { Routes } from "kadesh/core/routes";
 import type { AuthenticatedItem } from "kadesh/utils/types";
+import { friendlyAuthError } from "kadesh/components/auth/authErrors";
 
 interface UseLoginOptions {
   redirectTo?: string | null;
@@ -74,7 +75,9 @@ export function useLogin(options?: UseLoginOptions) {
       }
     },
     onError: (error) => {
-      setError(error.message || "Error al iniciar sesión");
+      setError(
+        friendlyAuthError(error, "No se pudo iniciar sesión. Intenta de nuevo."),
+      );
     },
   });
 

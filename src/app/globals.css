@@ -71,6 +71,7 @@
 @layer base {
   html {
     scroll-padding-top: 72px;
+    font-size: calc(100% * var(--kadesh-font-scale, 1));
   }
 
   html,
@@ -501,4 +502,25 @@ html.dark .status-date-picker-popover [data-slot="cell"] > span[data-disabled="t
 html.dark .add-log-date-picker-popover [data-slot="cell"] > span[data-outside-month="true"],
 html.dark .status-date-picker-popover [data-slot="cell"] > span[data-outside-month="true"] {
   color: #606060;
+}
+
+.font-scale-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: currentColor;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.font-scale-slider::-moz-range-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }

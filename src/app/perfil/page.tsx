@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { useUser } from "kadesh/utils/UserContext";
 import { Routes } from "kadesh/core/routes";
 import ProfileData from "kadesh/components/profile/ProfileData";
@@ -14,6 +15,7 @@ import ProfileTabs, {
   type ProfileTabKey,
 } from "kadesh/components/profile/ProfileTabs";
 import { Navigation } from "kadesh/components/layout";
+import { useProfileMotion } from "kadesh/components/profile/motion";
 
 function getValidTab(tabFromUrl: string | null): ProfileTabKey {
   if (tabFromUrl && isProfileTabKey(tabFromUrl)) return tabFromUrl;
@@ -35,6 +37,7 @@ function ProfilePageContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const selectedTab = getValidTab(searchParams.get("tab"));
+  const motionPrefs = useProfileMotion();
 
   const handleTabChange = (key: ProfileTabKey) => {
     router.replace(`${pathname}?tab=${key}`, { scroll: false });
@@ -64,7 +67,9 @@ function ProfilePageContent() {
 
   return (
     <ProfileShell>
-      <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6">
+      <div className={`mx-auto w-full px-4 py-6 sm:px-6 ${
+        selectedTab === "clinics" ? "max-w-5xl" : "max-w-3xl"
+      }`}>
         <header className="mb-5">
           <h1 className="text-2xl font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
             Perfil
@@ -79,51 +84,32 @@ function ProfilePageContent() {
         <ProfileTabs value={selectedTab} onChange={handleTabChange} />
 
         <div className="mt-5">
-          {selectedTab === "profile" ? (
-            <div
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedTab}
               role="tabpanel"
-              id="perfil-panel-profile"
-              aria-labelledby="perfil-tab-profile"
+              id={`perfil-panel-${selectedTab}`}
+              aria-labelledby={`perfil-tab-${selectedTab}`}
+              variants={motionPrefs.panel}
+              initial={motionPrefs.reduce ? false : "hidden"}
+              animate="show"
+              exit="exit"
             >
-              <ProfileData user={user} />
-            </div>
-          ) : null}
-          {selectedTab === "posts" ? (
-            <div
-              role="tabpanel"
-              id="perfil-panel-posts"
-              aria-labelledby="perfil-tab-posts"
-            >
-              <UserPostsSection userId={user.id} />
-            </div>
-          ) : null}
-          {selectedTab === "animals" ? (
-            <div
-              role="tabpanel"
-              id="perfil-panel-animals"
-              aria-labelledby="perfil-tab-animals"
-            >
-              <UserAnimalsSection userId={user.id} />
-            </div>
-          ) : null}
-          {selectedTab === "appointments" ? (
-            <div
-              role="tabpanel"
-              id="perfil-panel-appointments"
-              aria-labelledby="perfil-tab-appointments"
-            >
-              <UserAppointmentsSection />
-            </div>
-          ) : null}
-          {selectedTab === "clinics" ? (
-            <div
-              role="tabpanel"
-              id="perfil-panel-clinics"
-              aria-labelledby="perfil-tab-clinics"
-            >
-              <UserVeterinariesSection userId={user.id} />
-            </div>
-          ) : null}
+              {selectedTab === "profile" ? <ProfileData user={user} /> : null}
+              {selectedTab === "posts" ? (
+                <UserPostsSection userId={user.id} />
+              ) : null}
+              {selectedTab === "animals" ? (
+                <UserAnimalsSection userId={user.id} />
+              ) : null}
+              {selectedTab === "appointments" ? (
+                <UserAppointmentsSection />
+              ) : null}
+              {selectedTab === "clinics" ? (
+                <UserVeterinariesSection userId={user.id} />
+              ) : null}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </ProfileShell>

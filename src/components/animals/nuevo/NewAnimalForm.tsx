@@ -23,6 +23,8 @@ import { sileo } from 'sileo';
 import { Routes } from 'kadesh/core/routes';
 import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 import { useChipPulse } from 'kadesh/components/animals/useChipMotion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useUiMotion } from 'kadesh/components/shared/motion';
 import {
   ANIMAL_AGE_OPTIONS,
   ANIMAL_SEX_OPTIONS,
@@ -167,6 +169,7 @@ export default function NewAnimalForm({
   const copy = REPORT_COPY[status];
   const unnamedByDefault = UNNAMED_BY_DEFAULT_STATUSES.includes(status);
   const lastSeen = status !== 'in_adoption';
+  const motionPrefs = useUiMotion();
 
   useGSAP(
     () => {
@@ -780,6 +783,12 @@ export default function NewAnimalForm({
                   />
                 </div>
                 {!isToday && (
+                  <motion.div
+                    variants={motionPrefs.expand}
+                    initial={motionPrefs.expand ? 'hidden' : false}
+                    animate="show"
+                    className="overflow-hidden"
+                  >
                   <input
                     id="dateStatus"
                     type="datetime-local"
@@ -787,6 +796,7 @@ export default function NewAnimalForm({
                     onChange={(e) => setDateStatus(e.target.value)}
                     className={fieldClass}
                   />
+                  </motion.div>
                 )}
               </div>
 
@@ -839,8 +849,16 @@ export default function NewAnimalForm({
                 ) : null}
               </div>
 
+              <AnimatePresence initial={false} mode="wait">
               {showNotes ? (
-                <div>
+                <motion.div
+                  key="notes"
+                  variants={motionPrefs.expand}
+                  initial={motionPrefs.expand ? 'hidden' : false}
+                  animate="show"
+                  exit="exit"
+                  className="overflow-hidden"
+                >
                   <label
                     htmlFor="notes"
                     className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
@@ -855,16 +873,23 @@ export default function NewAnimalForm({
                     className={`${fieldClass} resize-none`}
                     placeholder="Algo extra que convenga saber"
                   />
-                </div>
+                </motion.div>
               ) : (
-                <button
+                <motion.button
+                  key="add-note"
                   type="button"
                   onClick={() => setShowNotes(true)}
+                  whileTap={motionPrefs.tap}
+                  variants={motionPrefs.panel}
+                  initial={motionPrefs.panel ? 'hidden' : false}
+                  animate="show"
+                  exit="exit"
                   className="text-sm font-semibold text-kadesh hover:text-kadesh-600"
                 >
                   Agregar una nota
-                </button>
+                </motion.button>
               )}
+              </AnimatePresence>
             </div>
           )}
         </div>
@@ -872,16 +897,18 @@ export default function NewAnimalForm({
 
       <div className="shrink-0 border-t border-[#e6e9ef] bg-white px-4 py-3 dark:border-white/10 dark:bg-night-raised sm:px-6">
         <div className="mx-auto flex max-w-2xl gap-3">
-          <button
+          <motion.button
             type="button"
             onClick={goBack}
+            whileTap={motionPrefs.tap}
             className="rounded-xl px-4 py-3 text-sm font-semibold text-[#3a3a3a] hover:bg-[#f3f5f8] dark:text-[#d0d0d0] dark:hover:bg-night"
           >
             {step === 0 ? 'Cancelar' : 'Atrás'}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             type="submit"
             disabled={loading}
+            whileTap={loading ? undefined : motionPrefs.tap}
             className="flex-1 rounded-xl bg-kadesh px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading
@@ -889,7 +916,7 @@ export default function NewAnimalForm({
               : step < STEPS.length - 1
                 ? 'Continuar'
                 : copy.submit}
-          </button>
+          </motion.button>
         </div>
       </div>
     </form>

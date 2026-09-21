@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Navigation } from 'kadesh/components/layout';
 import {
   AnimalCard,
@@ -29,10 +30,12 @@ import {
   RADIUS_OPTIONS_ANIMALS,
   parseRadiusOption,
 } from 'kadesh/constants/constans';
+import { useUiMotion } from 'kadesh/components/shared/motion';
 
 function LostAnimalsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const motionPrefs = useUiMotion();
   const statusFromQuery = searchParams.get('status');
   const initialStatus =
     statusFromQuery && ANIMAL_LOGS_OPTIONS.some((option) => option.value === statusFromQuery)
@@ -191,26 +194,37 @@ function LostAnimalsPageContent() {
       <Navigation />
 
       <div className="flex flex-col md:h-[calc(100dvh-72px)] md:flex-row md:overflow-hidden">
-        <div className="relative h-[42dvh] min-h-[280px] w-full min-w-0 flex-shrink-0 md:order-2 md:h-full md:min-h-0 md:flex-1">
+        <motion.div
+          className="relative h-[42dvh] min-h-[280px] w-full min-w-0 flex-shrink-0 md:order-2 md:h-full md:min-h-0 md:flex-1"
+          initial={motionPrefs.reduce ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={motionPrefs.transition}
+        >
           <AnimalsMap
             animals={allAnimals}
             selectedAnimal={selectedAnimal}
             onAnimalClick={handleAnimalClick}
             height="100%"
           />
-          <button
+          <motion.button
             type="button"
             onClick={handleReportAnimalClick}
             disabled={userLoading}
+            whileTap={userLoading ? undefined : motionPrefs.tap}
             className="absolute right-3 top-3 z-10 inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(15,35,80,0.18)] transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:hidden"
           >
             <HugeiconsIcon icon={Add01Icon} size={18} strokeWidth={1.5} />
             Reportar
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
 
         <aside className="flex w-full flex-col border-t border-[#ececec] bg-white md:order-1 md:h-full md:w-[400px] md:flex-shrink-0 md:border-t-0 md:border-r xl:w-[440px] dark:border-white/10 dark:bg-night-raised">
-          <header className="flex-shrink-0 border-b border-[#ececec] px-5 py-5 dark:border-white/10">
+          <motion.header
+            className="flex-shrink-0 border-b border-[#ececec] px-5 py-5 dark:border-white/10"
+            variants={motionPrefs.panel}
+            initial={motionPrefs.panel ? "hidden" : false}
+            animate="show"
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h1 className="text-2xl font-black tracking-[-0.03em] text-[#121212] dark:text-white">
@@ -222,15 +236,16 @@ function LostAnimalsPageContent() {
                     : 'Perdidos, encontrados y en adopción'}
                 </p>
               </div>
-              <button
+              <motion.button
                 type="button"
                 onClick={handleReportAnimalClick}
                 disabled={userLoading}
+                whileTap={userLoading ? undefined : motionPrefs.tap}
                 className="hidden min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh md:inline-flex"
               >
                 <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
                 Reportar
-              </button>
+              </motion.button>
             </div>
 
             {locationLoading && (
@@ -266,11 +281,19 @@ function LostAnimalsPageContent() {
                 onClearFilters={handleClearFilters}
               />
             </div>
-          </header>
+          </motion.header>
 
           <div className="flex-1 overflow-y-auto p-4" aria-busy={locationLoading || animalsLoading}>
+            <AnimatePresence mode="wait">
             {(locationLoading || animalsLoading) && animals.length === 0 ? (
-              <div className="space-y-3">
+              <motion.div
+                key="loading"
+                className="space-y-3"
+                variants={motionPrefs.panel}
+                initial={motionPrefs.panel ? "hidden" : false}
+                animate="show"
+                exit="exit"
+              >
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
@@ -287,9 +310,16 @@ function LostAnimalsPageContent() {
                     <div className="mt-3 h-11 rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]" />
                   </div>
                 ))}
-              </div>
+              </motion.div>
             ) : animals.length === 0 ? (
-              <div className="flex flex-col items-center px-4 py-12 text-center">
+              <motion.div
+                key="empty"
+                className="flex flex-col items-center px-4 py-12 text-center"
+                variants={motionPrefs.panel}
+                initial={motionPrefs.panel ? "hidden" : false}
+                animate="show"
+                exit="exit"
+              >
                 <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
                   <HugeiconsIcon icon={Search01Icon} size={28} strokeWidth={1.5} aria-hidden="true" />
                 </span>
@@ -311,72 +341,90 @@ function LostAnimalsPageContent() {
                 </p>
                 {locationError ? (
                   hasActiveFilters ? (
-                    <button
+                    <motion.button
                       type="button"
                       onClick={handleClearFilters}
+                      whileTap={motionPrefs.tap}
                       className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
                     >
                       Quitar filtros
-                    </button>
+                    </motion.button>
                   ) : (
-                    <button
+                    <motion.button
                       type="button"
                       onClick={handleReportAnimalClick}
                       disabled={userLoading}
+                      whileTap={userLoading ? undefined : motionPrefs.tap}
                       className="mt-5 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:opacity-50"
                     >
                       <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
                       Reportar un animal
-                    </button>
+                    </motion.button>
                   )
                 ) : hasActiveFilters && nextRadius ? (
                   <div className="mt-5 flex flex-col items-center gap-2">
-                    <button
+                    <motion.button
                       type="button"
                       onClick={() => handleRadiusChange(nextRadius)}
+                      whileTap={motionPrefs.tap}
                       className="inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
                     >
                       Buscar en {nextRadius} km
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                       type="button"
                       onClick={handleClearFilters}
+                      whileTap={motionPrefs.tap}
                       className="inline-flex min-h-11 items-center text-sm font-semibold text-kadesh hover:text-kadesh-600"
                     >
                       Quitar filtros
-                    </button>
+                    </motion.button>
                   </div>
                 ) : hasActiveFilters ? (
-                  <button
+                  <motion.button
                     type="button"
                     onClick={handleClearFilters}
+                    whileTap={motionPrefs.tap}
                     className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
                   >
                     Quitar filtros
-                  </button>
+                  </motion.button>
                 ) : hasLocation && nextRadius ? (
-                  <button
+                  <motion.button
                     type="button"
                     onClick={() => handleRadiusChange(nextRadius)}
+                    whileTap={motionPrefs.tap}
                     className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
                   >
                     Buscar en {nextRadius} km
-                  </button>
+                  </motion.button>
                 ) : (
-                  <button
+                  <motion.button
                     type="button"
                     onClick={handleReportAnimalClick}
                     disabled={userLoading}
+                    whileTap={userLoading ? undefined : motionPrefs.tap}
                     className="mt-5 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:opacity-50"
                   >
                     <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
                     Reportar un animal
-                  </button>
+                  </motion.button>
                 )}
-              </div>
+              </motion.div>
             ) : (
-              <>
-                <div className="space-y-3">
+              <motion.div
+                key={`${radiusKm}-${filters.type ?? ""}-${filters.status ?? ""}-${currentPage}`}
+                variants={motionPrefs.panel}
+                initial={motionPrefs.panel ? "hidden" : false}
+                animate="show"
+                exit="exit"
+              >
+                <motion.div
+                  className="space-y-3"
+                  variants={motionPrefs.list}
+                  initial={motionPrefs.list ? "hidden" : false}
+                  animate="show"
+                >
                   {animals.map((animal) => (
                     <AnimalCard
                       key={animal.id}
@@ -386,7 +434,7 @@ function LostAnimalsPageContent() {
                       onClick={() => handleAnimalClick(animal)}
                     />
                   ))}
-                </div>
+                </motion.div>
                 <DirectoryPagination
                   currentPage={currentPage}
                   totalPages={totalPages}
@@ -396,8 +444,9 @@ function LostAnimalsPageContent() {
                   hasPreviousPage={hasPreviousPage}
                   hasNextPage={hasNextPage}
                 />
-              </>
+              </motion.div>
             )}
+            </AnimatePresence>
           </div>
         </aside>
       </div>

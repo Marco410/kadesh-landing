@@ -8,6 +8,12 @@ import '@fontsource/inter/400.css';
 import '@fontsource/inter/700.css';
 import ClientProviders from './ClientProviders';
 import { Metadata } from 'next';
+import {
+  FONT_SCALE_DEFAULT,
+  FONT_SCALE_MAX,
+  FONT_SCALE_MIN,
+  FONT_SCALE_STORAGE_KEY,
+} from 'kadesh/components/layout/font-scale';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kadesh.com.mx'),
@@ -84,6 +90,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
+      <head>
+        <script
+          id="kadesh-font-scale"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var n=parseFloat(localStorage.getItem("${FONT_SCALE_STORAGE_KEY}")||"");if(isNaN(n))n=${FONT_SCALE_DEFAULT};if(n<${FONT_SCALE_MIN})n=${FONT_SCALE_MIN};if(n>${FONT_SCALE_MAX})n=${FONT_SCALE_MAX};document.documentElement.style.setProperty("--kadesh-font-scale",String(n));}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="font-sans bg-white dark:bg-night text-[#212121] dark:text-[#eef1f6] transition-colors duration-200">
         {/*
           THESIS: KADESH is a digital sanctuary for lost animals and local vets in Mexico; refuse a generic pet-SaaS card stack.

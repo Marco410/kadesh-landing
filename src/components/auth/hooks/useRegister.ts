@@ -12,6 +12,7 @@ import {
   AuthenticateUserResponse
 } from 'kadesh/utils/queries';
 import { useUser } from 'kadesh/utils/UserContext';
+import { friendlyAuthError } from 'kadesh/components/auth/authErrors';
 
 interface UseRegisterOptions {
   onSuccess?: () => void;
@@ -98,7 +99,9 @@ export function useRegister(options?: UseRegisterOptions) {
       }
     },
     onError: (error) => {
-      setError(error.message || 'Error al registrar usuario');
+      setError(
+        friendlyAuthError(error, "No se pudo crear la cuenta. Intenta de nuevo."),
+      );
     },
   });
 

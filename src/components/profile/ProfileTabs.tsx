@@ -1,5 +1,8 @@
 "use client";
 
+import { LayoutGroup, motion } from "framer-motion";
+import { useProfileMotion } from "./motion";
+
 export const PROFILE_TABS = [
   { key: "profile", label: "Datos" },
   { key: "posts", label: "Publicaciones" },
@@ -21,7 +24,10 @@ export default function ProfileTabs({
   value: ProfileTabKey;
   onChange: (key: ProfileTabKey) => void;
 }) {
+  const motionPrefs = useProfileMotion();
+
   return (
+    <LayoutGroup id="perfil-tabs">
     <div
       role="tablist"
       aria-label="Secciones del perfil"
@@ -44,7 +50,7 @@ export default function ProfileTabs({
       {PROFILE_TABS.map((tab) => {
         const selected = tab.key === value;
         return (
-          <button
+          <motion.button
             key={tab.key}
             type="button"
             role="tab"
@@ -53,16 +59,26 @@ export default function ProfileTabs({
             aria-selected={selected}
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(tab.key)}
-            className={`inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
+            whileTap={motionPrefs.tap}
+            whileHover={motionPrefs.reduce || selected ? undefined : { scale: 1.03 }}
+            className={`relative inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
               selected
-                ? "bg-kadesh text-white shadow-[0_8px_18px_rgba(15,35,80,0.18)]"
+                ? "text-white"
                 : "bg-[#f3f5f8] text-[#3a3a3a] hover:bg-kadesh-50 dark:bg-night dark:text-[#d0d0d0] dark:hover:bg-kadesh/20"
             }`}
           >
-            {tab.label}
-          </button>
+            {selected ? (
+              <motion.span
+                layoutId="perfil-tab-pill"
+                className="absolute inset-0 rounded-full bg-kadesh shadow-[0_8px_18px_rgba(15,35,80,0.18)]"
+                transition={motionPrefs.transition}
+              />
+            ) : null}
+            <span className="relative z-10">{tab.label}</span>
+          </motion.button>
         );
       })}
     </div>
+    </LayoutGroup>
   );
 }

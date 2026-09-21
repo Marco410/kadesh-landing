@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowRight01Icon,
@@ -8,10 +9,13 @@ import {
   MapPinIcon,
   StarIcon,
 } from '@hugeicons/core-free-icons';
+import { useUiMotion } from 'kadesh/components/shared/motion';
 import { veterinaryDetailHref } from './petPlaceSlug';
 import VerifiedBadge from './VerifiedBadge';
 import PetPlaceLikesMeta, { petPlaceLikesCount } from './PetPlaceLikesMeta';
 import type { PetPlace } from './types';
+
+const MotionLink = motion.create(Link);
 
 interface VeterinaryCardProps {
   place: PetPlace;
@@ -76,14 +80,20 @@ export default function VeterinaryCard({
   const likesCount = petPlaceLikesCount(place);
   const detailHref = veterinaryDetailHref(place);
   const phoneHref = place.phone ? `tel:${place.phone.replace(/\s/g, '')}` : null;
+  const motionPrefs = useUiMotion();
 
   return (
-    <article
+    <motion.article
       id={`veterinary-${place.id}`}
-      className={`flex flex-col rounded-2xl border p-4 transition-[border-color,box-shadow,background-color,transform] duration-150 ${
+      variants={motionPrefs.item}
+      whileTap={motionPrefs.tap}
+      whileHover={
+        motionPrefs.reduce || isSelected ? undefined : { y: -2 }
+      }
+      className={`flex flex-col rounded-2xl border p-4 transition-[border-color,box-shadow,background-color] duration-150 ${
         isSelected
           ? 'border-kadesh bg-kadesh-50 shadow-[0_10px_28px_rgba(15,35,80,0.12)] dark:border-kadesh dark:bg-kadesh/15'
-          : 'border-[#ececec] bg-white hover:-translate-y-0.5 hover:border-kadesh-300 hover:shadow-[0_10px_24px_rgba(15,35,80,0.08)] dark:border-white/10 dark:bg-night dark:hover:border-kadesh/40'
+          : 'border-[#ececec] bg-white hover:border-kadesh-300 hover:shadow-[0_10px_24px_rgba(15,35,80,0.08)] dark:border-white/10 dark:bg-night dark:hover:border-kadesh/40'
       }`}
     >
       <div
@@ -166,24 +176,26 @@ export default function VeterinaryCard({
 
       <div className={`mt-3 grid gap-2 ${phoneHref ? 'grid-cols-[auto_1fr]' : 'grid-cols-1'}`}>
         {phoneHref && (
-          <a
+          <motion.a
             href={phoneHref}
             onClick={(event) => event.stopPropagation()}
             aria-label={`Llamar a ${displayName}`}
+            whileTap={motionPrefs.tap}
             className="inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-kadesh px-3 text-kadesh transition-colors hover:bg-kadesh hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
           >
             <HugeiconsIcon icon={Call02Icon} size={18} strokeWidth={1.5} />
-          </a>
+          </motion.a>
         )}
-        <Link
+        <MotionLink
           href={detailHref}
           onClick={(event) => event.stopPropagation()}
+          whileTap={motionPrefs.tap}
           className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
         >
           Ver ficha
           <HugeiconsIcon icon={ArrowRight01Icon} size={14} strokeWidth={2} />
-        </Link>
+        </MotionLink>
       </div>
-    </article>
+    </motion.article>
   );
 }

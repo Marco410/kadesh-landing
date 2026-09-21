@@ -12,6 +12,8 @@ import {
 } from "@hugeicons/core-free-icons";
 import { Navigation } from "kadesh/components/layout";
 import { Routes } from "kadesh/core/routes";
+import { motion } from "framer-motion";
+import { useUiMotion } from "kadesh/components/shared/motion";
 import {
   useAnimalDetail,
   AnimalImageGrid,
@@ -44,6 +46,7 @@ const actionClass =
 export default function AnimalDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const motionPrefs = useUiMotion();
   const animalKey = (params?.slug || params?.id) as string;
   const { animal, logs, loading, error, refetch } = useAnimalDetail(
     animalKey || "",
@@ -111,7 +114,12 @@ export default function AnimalDetailPage() {
 
   return (
     <DetailShell>
-      <div className="mx-auto flex w-full max-w-[92rem] flex-col px-3 lg:px-4">
+      <motion.div
+        className="mx-auto flex w-full max-w-[92rem] flex-col px-3 lg:px-4"
+        variants={motionPrefs.panel}
+        initial={motionPrefs.panel ? "hidden" : false}
+        animate="show"
+      >
         <div className="flex min-h-0 flex-col gap-3 py-3 lg:h-[calc(100dvh-72px)] lg:overflow-hidden">
           <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2">
             <Link
@@ -134,10 +142,11 @@ export default function AnimalDetailPage() {
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2">
               {howToGetHref && (
-                <a
+                <motion.a
                   href={howToGetHref}
                   target="_blank"
                   rel="noopener noreferrer"
+                  whileTap={motionPrefs.tap}
                   className={`${actionClass} border-2 border-kadesh text-kadesh hover:bg-kadesh hover:text-white`}
                 >
                   <HugeiconsIcon
@@ -146,11 +155,12 @@ export default function AnimalDetailPage() {
                     strokeWidth={1.5}
                   />
                   Cómo llegar
-                </a>
+                </motion.a>
               )}
               {phoneHref && (
-                <a
+                <motion.a
                   href={phoneHref}
+                  whileTap={motionPrefs.tap}
                   className={`${actionClass} bg-kadesh text-white hover:bg-kadesh-600`}
                 >
                   <HugeiconsIcon
@@ -159,7 +169,7 @@ export default function AnimalDetailPage() {
                     strokeWidth={1.5}
                   />
                   Llamar
-                </a>
+                </motion.a>
               )}
             </div>
           </header>
@@ -193,7 +203,7 @@ export default function AnimalDetailPage() {
         <div className="pb-6">
           <AnimalCommentsSection animal={animal} />
         </div>
-      </div>
+      </motion.div>
     </DetailShell>
   );
 }

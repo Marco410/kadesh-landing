@@ -40,6 +40,11 @@ const nextConfig: NextConfig = {
         hostname: "*.s3.us-east-2.amazonaws.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.r2.cloudflarestorage.com",
+        pathname: "/**",
+      },
     ],
   },
 };

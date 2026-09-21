@@ -14,7 +14,7 @@ Listado de artículos publicados y detalle de cada post. La promesa es la misma 
 - El HTML del post (título, fechas, cuerpo) sale del servidor. Likes, comentarios y vistas siguen siendo islas de cliente.
 - Schema: `Blog` + `ItemList` en el índice; `BlogPosting` + `BreadcrumbList` en el detalle. El publisher apunta a la Organization de KADESH (`/#organization`).
 - Canonical del índice: `/blog` (también con `?category=`). Canonical del post: `/blog/<url>` en `pet.kadesh.com.mx`.
-- Open Graph tipo `article` (fechas, autor, imagen). Si la imagen del CMS es una URL firmada (caduca), el share usa `/og-image.png` para no romper WhatsApp/Facebook.
+- Open Graph tipo `article` (fechas, autor, imagen). La portada del CMS es una URL firmada (caduca), así que el share apunta a `/blog/<url>/og` (route handler que descarga la portada vigente y la sirve con caché). Sin portada o si falla la descarga, redirige a `/og-image.png`.
 
 ## Copy
 

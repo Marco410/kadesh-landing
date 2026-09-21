@@ -27,6 +27,7 @@ export const Routes = {
   blog: {
     index: '/blog',
     post: (url: string): string => `/blog/${url}`,
+    postImage: (url: string): string => `/blog/${url}/og`,
   },
 
   novedades: '/novedades',

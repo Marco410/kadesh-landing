@@ -13,6 +13,7 @@ import {
 import { usePostLikes } from '../hooks/usePostLikes';
 import { usePostComments } from '../hooks/usePostComments';
 import { usePostFavorites } from '../hooks/usePostFavorites';
+import { SITE_URL } from 'kadesh/core/site';
 import { useUser } from 'kadesh/utils/UserContext';
 import ConfirmModal from 'kadesh/components/shared/ConfirmModal';
 import { Routes } from 'kadesh/core/routes';
@@ -70,7 +71,7 @@ export default function PostActions({ postId, viewsCount, postUrl, postTitle }: 
   };
 
   const handleShare = async () => {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kadesh.com.mx';
+    const baseUrl = SITE_URL;
     const url = postUrl 
       ? `${baseUrl}${postUrl.startsWith('/') ? postUrl : `/${postUrl}`}`
       : typeof window !== 'undefined' 

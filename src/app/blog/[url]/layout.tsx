@@ -1,4 +1,5 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
+import { SITE_URL } from 'kadesh/core/site';
 import { Routes } from 'kadesh/core/routes';
 
 interface PostData {
@@ -76,7 +77,7 @@ async function getPostByUrl(url: string): Promise<PostData | null> {
 }
 
 function getImageUrl(imageUrl: string | null | undefined): string {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kadesh.com.mx';
+  const baseUrl = SITE_URL;
   
   if (!imageUrl) {
     return `${baseUrl}/og-image.png`;
@@ -115,7 +116,7 @@ export async function generateMetadata({
     };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kadesh.com.mx';
+  const baseUrl = SITE_URL;
   const postUrl = `${baseUrl}${Routes.blog.post(post.url)}`;
   const imageUrl = getImageUrl(post.image?.url);
   const description = post.excerpt || `Lee este artículo en el blog de KADESH: ${post.title}`;
@@ -147,6 +148,7 @@ export async function generateMetadata({
   const metadata: Metadata = {
     title: `${post.title} | KADESH Blog`,
     description,
+    alternates: { canonical: postUrl },
     openGraph,
     twitter: {
       card: 'summary_large_image',

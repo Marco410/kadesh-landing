@@ -42,7 +42,7 @@ export default function TermsPage() {
             5. Donaciones y pagos
           </h2>
           <p className="text-base text-brown-700">
-            Las donaciones realizadas a través de la plataforma se depositan en una cuenta de KADESH y son destinadas a apoyar casos y necesidades de animales. KADESH solo facilita el proceso de pago y no cobra comisión adicional. Si requieres un reembolso, puedes solicitarlo a través de los canales de contacto.
+            Las donaciones realizadas a través de la plataforma se depositan en una cuenta de KADESH y se destinan a los gastos del proyecto: personas que lo operan, servidores, dominios y herramientas, difusión y apoyo a casos urgentes. El recuento público está en la página de donaciones. Si requieres un reembolso, puedes solicitarlo a través de los canales de contacto.
           </p>
 
           <h2 className="text-2xl text-orange-500 mt-4 font-semibold">
@@ -73,7 +73,7 @@ export default function TermsPage() {
             KADESH se reserva el derecho de modificar estos términos y condiciones en cualquier momento. Los cambios serán notificados a través de la plataforma. Para cualquier duda o aclaración, puedes contactarnos por correo electrónico o WhatsApp.
           </p>
           <p className="text-[15px] text-gray-500 mt-8 text-center">
-            Última actualización: Julio 2025
+            Última actualización: septiembre de 2026
           </p>
         </div>
       </div>

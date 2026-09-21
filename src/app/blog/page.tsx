@@ -9,6 +9,7 @@ import { BlogSection, CategorySection } from 'kadesh/components/blog';
 import { NewsletterSubscription } from 'kadesh/components/newsletter';
 import { useSearchParams } from 'next/navigation';
 import { Routes } from 'kadesh/core/routes';
+import { SITE_URL } from 'kadesh/core/site';
 
 function BlogFilters() {
   const searchParams = useSearchParams();
@@ -37,14 +38,14 @@ export default function BlogPage() {
     '@type': 'Blog',
     name: 'Blog KADESH',
     description: 'Blog sobre bienestar animal, adopción, rescate, cuidado de mascotas y veterinarias en México',
-    url: 'https://www.kadesh.com.mx/blog',
+    url: `${SITE_URL}/blog`,
     publisher: {
       '@type': 'Organization',
       name: 'KADESH',
-      url: 'https://www.kadesh.com.mx',
+      url: SITE_URL,
       logo: {
         '@type': 'ImageObject',
-        url: 'https://www.kadesh.com.mx/logo.png',
+        url: `${SITE_URL}/logo.png`,
       },
     },
     about: {

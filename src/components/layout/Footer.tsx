@@ -11,7 +11,7 @@ const FOOTER_LINKS = {
     { label: "Conócenos", href: Routes.conocenos },
   ],
   servicios: [
-    { label: "Donaciones", href: "/donaciones" },
+    { label: "Donaciones", href: Routes.donations },
     { label: "Registro de veterinarias", href: "/veterinarias/registro" },
     { label: "Directorio", href: "/veterinarias" },
   ],

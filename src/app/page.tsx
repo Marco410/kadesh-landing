@@ -10,7 +10,7 @@ import {
 } from "kadesh/components/home";
 import FaqSection from "kadesh/components/home/FaqSection";
 import HomeJsonLd from "kadesh/components/home/HomeJsonLd";
-import { HOME_DEFINITION, SITE_URL } from "kadesh/components/home/constants";
+import { HOME_DEFINITION } from "kadesh/components/home/constants";
 import { Footer, Navigation } from "kadesh/components/layout";
 import { NewsletterSubscription } from "kadesh/components/newsletter";
 import type { Metadata } from "next";
@@ -18,7 +18,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "KADESH — Conectando vidas, rescatando almas",
   description: HOME_DEFINITION,
-  alternates: { canonical: SITE_URL },
+  alternates: { canonical: '/' },
+  openGraph: { url: '/' },
 };
 
 export default function HomePage() {

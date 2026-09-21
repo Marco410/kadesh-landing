@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Blog | KADESH',
     description: 'Blog KADESH - Historias, consejos y recursos para el bienestar animal. Descubre artículos sobre adopción, rescate, cuidado de mascotas y más.',
-    url: 'https://www.kadesh.com.mx/blog',
+    url: '/blog',
     siteName: 'KADESH',
     locale: 'es_MX',
     type: 'website',
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     description: 'Blog KADESH - Historias, consejos y recursos para el bienestar animal. Descubre artículos sobre adopción, rescate, cuidado de mascotas y más.',
   },
   alternates: {
-    canonical: 'https://www.kadesh.com.mx/blog',
+    canonical: '/blog',
   },
 };
 

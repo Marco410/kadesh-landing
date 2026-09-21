@@ -32,9 +32,9 @@ Personalidad **Premium**. Momento autorial: el recuadro-mapa se revela y los pin
 
 ## Secciones y anclas
 
-Inicio, qué es, animales, veterinarias, historias, donaciones, cómo funciona, roadmap, preguntas frecuentes (`#preguntas-frecuentes`). **Inicio** en la barra va al tope de la portada; las anclas viven en la página (y en URLs `/#…`), no en un dropdown del nav.
+Inicio, qué es, animales, veterinarias, historias, donaciones, cómo funciona, roadmap, preguntas frecuentes (`#preguntas-frecuentes`). **Inicio** en la barra va al tope de la portada; las anclas viven en la página (y en URLs `/#…`), no en un dropdown del nav. Donaciones en portada responde a qué se destina y apunta a `/donaciones`.
 
-El **roadmap** es kanban de producto (completado / en progreso / pendiente), no un changelog. Lo interno (diseño, backend) no se lista. Completado incluye directorio, reportes, adopciones, citas, bitácora, blog, contacto y reclamo de ficha. El pie de la sección va a `/novedades`.
+El **roadmap** es kanban de producto (completado / en progreso / pendiente), no un changelog. Lo interno (diseño, backend) no se lista. Completado incluye directorio, reportes, adopciones, citas, bitácora, blog, contacto, reclamo de ficha y donaciones (con recuento de destinos). El pie de la sección va a `/novedades`.
 
 ## Veterinarias en portada
 

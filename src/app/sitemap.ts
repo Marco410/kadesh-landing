@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next';
-
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kadesh.com.mx';
+import { SITE_URL } from 'kadesh/core/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const paths = [
@@ -11,13 +10,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/conocenos',
     '/contacto',
     '/novedades',
+    '/donaciones',
     '/terminos',
     '/privacidad',
     '/auth/login',
   ];
 
   return paths.map((path) => ({
-    url: `${SITE}${path === '/' ? '/' : path}`,
+    url: `${SITE_URL}${path === '/' ? '/' : path}`,
     changeFrequency: path === '/' ? 'daily' : 'weekly',
     priority: path === '/' ? 1 : 0.7,
   }));

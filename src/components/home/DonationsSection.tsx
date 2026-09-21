@@ -1,6 +1,6 @@
-'use client';
-
 import Link from 'next/link';
+import { Routes } from 'kadesh/core/routes';
+import { DONATIONS_LEAD, STRIPE_DONATE_URL } from 'kadesh/components/donations/constants';
 
 export default function DonationsSection() {
   return (
@@ -14,30 +14,28 @@ export default function DonationsSection() {
         </h2>
 
         <p className="mb-4 text-lg leading-relaxed text-white/90 sm:text-xl">
-          Cada contribución sostiene el santuario digital: reportes, directorio
-          veterinario y la red de rescatistas. El apoyo es opcional y no es
-          requisito para usar la plataforma.
+          {DONATIONS_LEAD}
         </p>
 
         <p className="mb-10 text-base text-white/80">
-          Puedes donar ahora o unirte como fundador si quieres acompañar el
-          crecimiento de KADESH a largo plazo.
+          El recuento completo está en la página de donaciones. También
+          puedes apoyar en especie si tienes una marca o una tienda.
         </p>
 
-        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+        <div className="flex flex-col justify-center gap-4 lg:flex-row">
           <Link
-            href="https://donate.stripe.com/6oU7sL6467dtdrY9FZgUM00"
+            href={STRIPE_DONATE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-lg font-bold text-kadesh shadow-[0_10px_28px_rgba(15,35,80,0.2)] transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-white px-8 py-4 text-lg font-bold text-kadesh shadow-[0_10px_28px_rgba(15,35,80,0.2)] transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5"
           >
             Apoyar el proyecto
           </Link>
           <Link
-            href="/fundadores"
-            className="inline-flex items-center justify-center rounded-xl border-2 border-white/40 px-8 py-4 text-lg font-bold text-white transition-colors hover:bg-white/10"
+            href={Routes.donations}
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-white/40 px-8 py-4 text-lg font-bold text-white transition-colors hover:bg-white/10"
           >
-            Convertirme en fundador
+            Ver a qué se destina
           </Link>
         </div>
       </div>

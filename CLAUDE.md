@@ -24,7 +24,7 @@ There is no test suite configured in this repo currently (no test files, no test
 
 Required in `.env.local` (all client-exposed, hence `NEXT_PUBLIC_` prefix):
 - `NEXT_PUBLIC_API_URL` — KeystoneJS GraphQL endpoint, used by the Apollo client (`src/providers/apollo-client.ts`) and blog server fetches (`src/app/blog/[url]/layout.tsx`).
-- `NEXT_PUBLIC_SITE_URL` — canonical site URL for metadata/OG tags.
+- `NEXT_PUBLIC_SITE_URL` — canonical origin of **this** app: `https://pet.kadesh.com.mx`. Defined in `src/core/site.ts`. Never point it at `www.kadesh.com.mx` (that host is the B2B SaaS). Canonical, Open Graph, JSON-LD, sitemap and robots must be self-referential on pet.
 - `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` — Google Maps (animal/veterinary map views, location picker).
 - `NEXT_PUBLIC_GOOGLE_CLIENT_ID` — Google OAuth login.
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — Stripe subscriptions (sales plans).
@@ -42,7 +42,7 @@ All internal imports use the `kadesh/*` alias, mapped to `./src/*` in `tsconfig.
 
 - `app/` — Next.js App Router routes. `layout.tsx` defines global metadata/fonts and delegates client-side setup to `app/ClientProviders.tsx`. Route folders mirror `core/routes.ts` (e.g. `app/animales/[id]`, `app/perfil/ventas/planes`, `app/blog/[url]`).
 - `components/<feature>/` — feature-colocated UI. A feature typically contains its components, `hooks/`, `queries.ts` (Apollo queries/mutations), `constants.ts`, `types.ts`, and a barrel `index.ts` that re-exports the feature's public API (e.g. `src/components/animals/index.ts`). Prefer importing from the barrel (`kadesh/components/animals`) rather than reaching into a feature's internal files.
-- `core/routes.ts` — the single source of truth for all route paths/anchors. Always use `Routes` from `kadesh/core/routes` instead of hardcoding path strings.
+- `core/site.ts` — canonical origin (`https://pet.kadesh.com.mx`). `core/routes.ts` — the single source of truth for all route paths/anchors. Always use `Routes` from `kadesh/core/routes` instead of hardcoding path strings. Always use `SITE_URL` from `kadesh/core/site` for absolute URLs (canonical, OG, JSON-LD, sitemap).
 - `providers/` — cross-cutting React context/client setup: `apollo-client.ts` (Apollo client factory + auth link that attaches the KeystoneJS session token from `localStorage`), `ApolloProviderWrapper.tsx`, `ThemeProvider.tsx` (next-themes).
 - `utils/` — pure helpers plus `UserContext.tsx` (the app-wide authenticated-user context/hook `useUser`) and `getAuthUser.ts` (fetches `authenticatedItem` from Keystone). No UI in this folder.
 - `constants/` — app-wide constants; feature-specific constants live inside the feature folder instead.

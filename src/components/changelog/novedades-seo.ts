@@ -2,8 +2,9 @@
  * SEO y bloques extraíbles para /novedades — metadatos y JSON-LD (layout + página).
  */
 
-export const NOVEDADES_BASE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kadesh.com.mx';
+import { SITE_URL } from 'kadesh/core/site';
+
+export const NOVEDADES_BASE_URL = SITE_URL;
 export const NOVEDADES_PATH = '/novedades';
 export const NOVEDADES_CANONICAL = `${NOVEDADES_BASE_URL}${NOVEDADES_PATH}`;
 

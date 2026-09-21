@@ -13,6 +13,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { WhatIsKadesh } from 'kadesh/components/home';
 import { ContactForm } from 'kadesh/components/contact';
+import { SITE_URL } from 'kadesh/core/site';
 
 export default function ConocenosPage() {
   const fadeInUp = {
@@ -60,11 +61,11 @@ export default function ConocenosPage() {
     '@type': 'AboutPage',
     name: 'Conócenos - KADESH',
     description: 'Conoce KADESH, la plataforma digital que conecta adoptantes, rescatistas, veterinarias y tiendas para transformar el bienestar animal en México',
-    url: 'https://www.kadesh.com.mx/conocenos',
+    url: `${SITE_URL}/conocenos`,
     mainEntity: {
       '@type': 'Organization',
       name: 'KADESH',
-      url: 'https://www.kadesh.com.mx',
+      url: SITE_URL,
       description: 'Plataforma digital para conectar adoptantes, rescatistas, veterinarias y tiendas para el bienestar animal en México',
       founder: {
         '@type': 'Person',
@@ -249,7 +250,7 @@ export default function ConocenosPage() {
               },
               {
                 title: 'Donaciones',
-                description: 'Permitimos que la comunidad apoye casos de emergencia y necesidades de animales a través de donaciones seguras.',
+                description: 'Las donaciones cubren la operación de KADESH (personas, servidores, dominios), la difusión y el apoyo a casos urgentes. El recuento está en la página de donaciones.',
               },
               {
                 title: 'Directorio de Veterinarias',

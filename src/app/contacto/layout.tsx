@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Contacto | KADESH',
     description: 'Contáctanos en KADESH. Estamos aquí para ayudarte con adopciones, rescates, donaciones y cualquier consulta sobre bienestar animal.',
-    url: 'https://www.kadesh.com.mx/contacto',
+    url: '/contacto',
     siteName: 'KADESH',
     locale: 'es_MX',
     type: 'website',
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     description: 'Contáctanos en KADESH. Estamos aquí para ayudarte con adopciones, rescates, donaciones y cualquier consulta sobre bienestar animal.',
   },
   alternates: {
-    canonical: 'https://www.kadesh.com.mx/contacto',
+    canonical: '/contacto',
   },
 };
 

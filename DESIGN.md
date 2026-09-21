@@ -71,7 +71,7 @@ Poppins es display y UI (400–900). Inter es fallback. Títulos `font-black` co
 
 ## Layout
 
-Home: hero full-bleed → definición → animales → veterinarias → historias → donaciones (campo de marca) → cómo funciona (secuencia) → roadmap en tres columnas de estado → FAQ visible → newsletter. Ritmo de sección ~96px. Más aire arriba del H2 que debajo.
+Home: hero full-bleed → definición → animales → veterinarias → historias → donaciones (campo de marca) → cómo funciona (secuencia) → roadmap en tres columnas de estado → FAQ visible → newsletter. Ritmo de sección ~96px. Más aire arriba del H2 que debajo. `/donaciones` es página de lectura: recuento de destinos, luego CTA; sin cifras inventadas.
 
 ## Elevation & Depth
 

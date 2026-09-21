@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Conócenos | KADESH',
     description: 'Conoce KADESH, la plataforma digital que conecta adoptantes, rescatistas, veterinarias y tiendas para transformar el bienestar animal en México.',
-    url: 'https://www.kadesh.com.mx/conocenos',
+    url: '/conocenos',
     siteName: 'KADESH',
     locale: 'es_MX',
     type: 'website',
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     description: 'Conoce KADESH, la plataforma digital que conecta adoptantes, rescatistas, veterinarias y tiendas para transformar el bienestar animal en México.',
   },
   alternates: {
-    canonical: 'https://www.kadesh.com.mx/conocenos',
+    canonical: '/conocenos',
   },
 };
 

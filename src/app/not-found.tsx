@@ -123,7 +123,7 @@ export default function NotFound() {
               </Link>
               <span className="text-white/40">•</span>
               <Link
-                href="/#donaciones"
+                href={Routes.donations}
                 className="hover:text-white hover:underline transition-colors text-sm"
               >
                 Donaciones

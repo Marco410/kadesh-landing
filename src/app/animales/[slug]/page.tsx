@@ -20,6 +20,7 @@ import {
   AnimalInfoSection,
   LogTimeline,
   AnimalCommentsSection,
+  ShareAnimalButton,
 } from "kadesh/components/animals/detail";
 import {
   getStatusColor,
@@ -41,7 +42,7 @@ function DetailShell({ children }: { children: ReactNode }) {
 }
 
 const actionClass =
-  "inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 text-sm font-semibold transition-colors lg:min-h-9";
+  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-4 text-sm font-semibold transition-colors lg:min-h-9";
 
 export default function AnimalDetailPage() {
   const params = useParams();
@@ -121,57 +122,69 @@ export default function AnimalDetailPage() {
         animate="show"
       >
         <div className="flex min-h-0 flex-col gap-3 py-3 lg:h-[calc(100dvh-72px)] lg:overflow-hidden">
-          <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2">
+          <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 lg:flex-nowrap">
             <Link
               href={Routes.animals.index}
-              className="inline-flex items-center gap-1 text-sm font-medium text-kadesh hover:underline"
+              className="order-1 inline-flex min-h-11 items-center gap-1 text-sm font-medium text-kadesh hover:underline lg:min-h-0"
             >
               <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2} />
               Animales
             </Link>
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <h1 className="truncate text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6] sm:text-xl">
+            <ShareAnimalButton
+              animal={animal}
+              statusLabel={statusLabel}
+              city={lastLog?.city}
+              className="order-2 ml-auto lg:order-3 lg:ml-0 lg:shrink-0"
+            />
+            <div className="order-3 flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-1 lg:order-2 lg:w-auto lg:flex-1 lg:flex-nowrap">
+              <h1 className="min-w-0 break-words text-2xl font-black leading-tight tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6] lg:truncate lg:text-xl">
                 {animal.name || "Sin nombre"}
               </h1>
               <span
-                className="shrink-0 rounded-full px-2 py-0.5 text-xs font-bold text-white"
+                className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold text-white"
                 style={{ backgroundColor: statusColor }}
               >
                 {statusLabel}
               </span>
             </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-2">
-              {howToGetHref && (
-                <motion.a
-                  href={howToGetHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileTap={motionPrefs.tap}
-                  className={`${actionClass} border-2 border-kadesh text-kadesh hover:bg-kadesh hover:text-white`}
-                >
-                  <HugeiconsIcon
-                    icon={Location01Icon}
-                    size={16}
-                    strokeWidth={1.5}
-                  />
-                  Cómo llegar
-                </motion.a>
-              )}
-              {phoneHref && (
-                <motion.a
-                  href={phoneHref}
-                  whileTap={motionPrefs.tap}
-                  className={`${actionClass} bg-kadesh text-white hover:bg-kadesh-600`}
-                >
-                  <HugeiconsIcon
-                    icon={Call02Icon}
-                    size={16}
-                    strokeWidth={1.5}
-                  />
-                  Llamar
-                </motion.a>
-              )}
-            </div>
+            {(howToGetHref || phoneHref) && (
+              <div
+                className={`order-4 grid w-full gap-2 lg:flex lg:w-auto lg:shrink-0 ${
+                  howToGetHref && phoneHref ? "grid-cols-2" : "grid-cols-1"
+                }`}
+              >
+                {howToGetHref && (
+                  <motion.a
+                    href={howToGetHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileTap={motionPrefs.tap}
+                    className={`${actionClass} border-2 border-kadesh text-kadesh hover:bg-kadesh hover:text-white`}
+                  >
+                    <HugeiconsIcon
+                      icon={Location01Icon}
+                      size={16}
+                      strokeWidth={1.5}
+                    />
+                    Cómo llegar
+                  </motion.a>
+                )}
+                {phoneHref && (
+                  <motion.a
+                    href={phoneHref}
+                    whileTap={motionPrefs.tap}
+                    className={`${actionClass} bg-kadesh text-white hover:bg-kadesh-600`}
+                  >
+                    <HugeiconsIcon
+                      icon={Call02Icon}
+                      size={16}
+                      strokeWidth={1.5}
+                    />
+                    Llamar
+                  </motion.a>
+                )}
+              </div>
+            )}
           </header>
 
           <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(17rem,1fr)_minmax(0,1.2fr)] lg:grid-rows-[auto_minmax(0,1fr)]">

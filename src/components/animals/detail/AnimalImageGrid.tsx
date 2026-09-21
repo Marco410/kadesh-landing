@@ -23,7 +23,7 @@ function EmptyPhoto({ typeName, fill }: { typeName?: string; fill?: boolean }) {
   return (
     <div
       className={`flex w-full flex-col items-center justify-center gap-3 bg-[#f3f5f8] dark:bg-night ${
-        fill ? "h-full min-h-[16rem]" : "h-[min(38vh,280px)]"
+        fill ? "h-full min-h-[16rem] sm:min-h-[22rem] lg:min-h-[16rem]" : "h-[min(38vh,280px)]"
       }`}
     >
       {typeName ? (
@@ -70,7 +70,9 @@ export default function AnimalImageGrid({
   return (
     <div
       className={
-        fill ? "relative flex h-full min-h-[16rem] flex-col" : "w-full"
+        fill
+          ? "relative flex h-full min-h-[18rem] flex-col sm:min-h-[26rem] lg:min-h-[16rem]"
+          : "w-full"
       }
     >
       <div

@@ -12,3 +12,4 @@ export { default as AnimalCommentsSection } from './AnimalCommentsSection';
 
 
 
+export { default as ShareAnimalButton } from './ShareAnimalButton';

@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
+import { SITE_URL } from 'kadesh/core/site';
 
+/** Unused duplicate of root layout metadata. Kept in sync so it cannot reintroduce www.kadesh.com.mx. */
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kadesh.com.mx'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'KADESH - Conectando vidas, rescatando almas',
     template: '%s | KADESH',
@@ -38,7 +40,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'KADESH - Conectando vidas, rescatando almas',
     description: 'KADESH es la plataforma para conectar adoptantes, rescatistas, veterinarias y tiendas para el bienestar animal real en México.',
-    url: 'https://www.kadesh.com.mx/',
     siteName: 'KADESH',
     images: [
       {
@@ -56,12 +57,5 @@ export const metadata: Metadata = {
     title: 'KADESH - Conectando vidas, rescatando almas',
     description: 'KADESH es la plataforma para conectar adoptantes, rescatistas, veterinarias y tiendas para el bienestar animal real en México.',
     images: ['/og-image.png'],
-  },
-  alternates: {
-    canonical: 'https://www.kadesh.com.mx/',
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
   },
 };

@@ -20,11 +20,11 @@ Santuario digital para el bienestar animal en México: reportes, directorio vete
 
 ## Operating Context
 
-App Next.js contra un backend KeystoneJS (GraphQL). Sesión en `localStorage`. Mapas de Google para animales y veterinarias. Pagos de donación vía Stripe. Comunidad en Instagram y Facebook.
+App Next.js contra un backend KeystoneJS (GraphQL). Dominio público de este producto: `https://pet.kadesh.com.mx` (`www.kadesh.com.mx` es el SaaS B2B, no la canónica de Pet). Sesión en `localStorage`. Mapas de Google para animales y veterinarias. Pagos de donación vía Stripe. Comunidad en Instagram y Facebook.
 
 ## Capabilities and Constraints
 
-Confirmado en producto: reportes de animales, directorio de veterinarias con radio de 5 km, blog, donaciones Stripe, registro de veterinarias, newsletter, login (correo y Google), planes de ventas. Roadmap público mezcla hecho y pendiente (app móvil, tienda, recompensas). No fabricar métricas de rescates, precios de planes ni testimonios.
+Confirmado en producto: reportes de animales, directorio de veterinarias con radio de 5 km, blog, donaciones Stripe, registro de veterinarias, newsletter, login (correo y Google), planes de ventas. Las donaciones cubren operación del proyecto (personas, servidores, dominios), difusión y casos urgentes; el recuento está en `/donaciones`. Roadmap público mezcla hecho y pendiente (app móvil, tienda, recompensas). No fabricar métricas de rescates, precios de planes, porcentajes de donación ni testimonios.
 
 ## Brand Commitments
 

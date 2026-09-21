@@ -30,6 +30,7 @@ export const Routes = {
   },
 
   novedades: '/novedades',
+  donations: '/donaciones',
   
   // Landing
   landing: '/landing',

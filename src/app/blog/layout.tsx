@@ -1,8 +1,14 @@
 import { Metadata } from 'next';
+import {
+  BLOG_INDEX_DESCRIPTION,
+  BLOG_INDEX_OG_DESCRIPTION,
+  BLOG_INDEX_TITLE,
+  BLOG_OG_IMAGE,
+} from 'kadesh/components/blog/blog-seo';
 
 export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Blog KADESH - Historias, consejos y recursos para el bienestar animal. Descubre artículos sobre adopción, rescate, cuidado de mascotas, veterinarias y más en nuestra plataforma.',
+  title: BLOG_INDEX_TITLE,
+  description: BLOG_INDEX_DESCRIPTION,
   keywords: [
     'blog bienestar animal',
     'consejos mascotas',
@@ -15,20 +21,25 @@ export const metadata: Metadata = {
     'bienestar animal México',
   ],
   openGraph: {
-    title: 'Blog | KADESH',
-    description: 'Blog KADESH - Historias, consejos y recursos para el bienestar animal. Descubre artículos sobre adopción, rescate, cuidado de mascotas y más.',
-    url: 'https://www.kadesh.com.mx/blog',
+    title: `${BLOG_INDEX_TITLE} | KADESH`,
+    description: BLOG_INDEX_OG_DESCRIPTION,
     siteName: 'KADESH',
     locale: 'es_MX',
     type: 'website',
+    images: [
+      {
+        url: BLOG_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: 'Blog KADESH — historias y consejos de bienestar animal',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Blog | KADESH',
-    description: 'Blog KADESH - Historias, consejos y recursos para el bienestar animal. Descubre artículos sobre adopción, rescate, cuidado de mascotas y más.',
-  },
-  alternates: {
-    canonical: 'https://www.kadesh.com.mx/blog',
+    title: `${BLOG_INDEX_TITLE} | KADESH`,
+    description: BLOG_INDEX_OG_DESCRIPTION,
+    images: [BLOG_OG_IMAGE],
   },
 };
 

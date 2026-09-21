@@ -29,7 +29,7 @@ const STEPS = [
     number: '3',
     title: 'Ayuda',
     description:
-      'Apoya con donaciones, voluntariado o compartiendo información. Cada acción cuenta.',
+      'Apoya con una donación, un patrocinio en especie o compartiendo un reporte. Las donaciones cubren el proyecto: personas, servidores y casos urgentes.',
     icon: FavouriteIcon,
   },
   {

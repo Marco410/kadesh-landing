@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next';
-
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kadesh.com.mx';
+import { SITE_URL } from 'kadesh/core/site';
 
 const AI_AGENTS = [
   'GPTBot',
@@ -32,7 +31,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/perfil', '/perfil/'],
       })),
     ],
-    sitemap: `${SITE}/sitemap.xml`,
-    host: SITE,
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }

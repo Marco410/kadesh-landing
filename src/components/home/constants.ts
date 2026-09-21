@@ -1,6 +1,6 @@
 import { DEFAULT_RADIUS_VETERINARIES } from 'kadesh/constants/constans';
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kadesh.com.mx';
+export { SITE_URL } from 'kadesh/core/site';
 
 export const HOME_DEFINITION =
   'KADESH es una plataforma digital de bienestar animal en México que conecta a personas que buscan adoptar, rescatar o reunirse con mascotas perdidas, con rescatistas, veterinarias y refugios de su zona. Reúne reportes, directorio veterinario, historias y donaciones en un solo santuario digital.';
@@ -23,6 +23,11 @@ export const HOME_FAQS = [
     question: '¿Hay que pagar para reportar o buscar animales?',
     answer:
       'Reportar animales, consultar el directorio y leer el blog forman parte de la plataforma pública. Las donaciones y los planes para negocios son opcionales y no bloquean el uso comunitario de KADESH.',
+  },
+  {
+    question: '¿A qué se destina una donación a KADESH?',
+    answer:
+      'Las donaciones cubren los gastos del proyecto: personas que lo operan, servidores, dominios y herramientas. También van a difusión y a apoyo de casos urgentes. El recuento está en Donaciones. Donar es opcional.',
   },
   {
     question: '¿Quién creó KADESH?',

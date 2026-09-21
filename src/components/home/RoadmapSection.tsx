@@ -60,9 +60,9 @@ const ROADMAP_ITEMS = [
   {
     id: 9,
     title: "Donaciones",
-    status: "in-progress",
+    status: "completed",
     description:
-      "Ya puedes apoyar el proyecto. Falta un recuento claro de a qué se destina cada aportación.",
+      "Puedes apoyar el proyecto y ver a qué se destina: personas, servidores, dominios, difusión y casos urgentes. También buscamos patrocinios en especie.",
   },
   {
     id: 10,

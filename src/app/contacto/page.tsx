@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Navigation, Footer } from 'kadesh/components/layout';
 import { ContactForm } from 'kadesh/components/contact';
+import { SITE_URL } from 'kadesh/core/site';
 
 export default function ContactPage() {
   const fadeInUp = {
@@ -17,11 +18,11 @@ export default function ContactPage() {
     '@type': 'ContactPage',
     name: 'Contacto KADESH',
     description: 'Página de contacto de KADESH - Plataforma para el bienestar animal en México',
-    url: 'https://www.kadesh.com.mx/contacto',
+    url: `${SITE_URL}/contacto`,
     mainEntity: {
       '@type': 'Organization',
       name: 'KADESH',
-      url: 'https://www.kadesh.com.mx',
+      url: SITE_URL,
       description: 'Plataforma digital para conectar adoptantes, rescatistas, veterinarias y tiendas para el bienestar animal en México',
       contactPoint: {
         '@type': 'ContactPoint',

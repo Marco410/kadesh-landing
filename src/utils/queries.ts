@@ -315,6 +315,7 @@ export const CREATE_BLOG_SUBSCRIPTION_MUTATION = gql`
 export interface CreateBlogSubscriptionVariables {
   data: {
     email: string;
+    product: 'pet' | 'saas';
     active?: boolean;
     user?: {
       connect?: {

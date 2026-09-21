@@ -1,4 +1,5 @@
 import type { BlogPost, BlogPostDetail } from './types';
+import { BLOG_PRODUCT_FILTER } from './constants';
 
 const REVALIDATE_SECONDS = 60;
 const SITEMAP_PAGE_SIZE = 100;
@@ -44,7 +45,11 @@ const POST_CARD_FIELDS = `
 const POST_BY_URL_QUERY = `
   query GetPublishedPostByUrl($url: String!) {
     posts(
-      where: { url: { equals: $url }, published: { equals: true } }
+      where: {
+        url: { equals: $url }
+        published: { equals: true }
+        product: { in: ["pet", "all"] }
+      }
       take: 1
     ) {
       ${POST_CARD_FIELDS}
@@ -179,6 +184,7 @@ export async function fetchPublishedPosts(options?: {
 }): Promise<{ posts: BlogPost[]; postsCount: number }> {
   const where: Record<string, unknown> = {
     published: PUBLISHED_EQUALS,
+    product: BLOG_PRODUCT_FILTER,
   };
 
   if (options?.categoryUrl) {
@@ -201,7 +207,7 @@ export async function fetchPublishedPosts(options?: {
 }
 
 export async function fetchPublishedPostsForSitemap(): Promise<SitemapPost[]> {
-  const where = { published: PUBLISHED_EQUALS };
+  const where = { published: PUBLISHED_EQUALS, product: BLOG_PRODUCT_FILTER };
   const orderBy = [{ publishedAt: 'desc' as const }];
   const posts: SitemapPost[] = [];
   let skip = 0;

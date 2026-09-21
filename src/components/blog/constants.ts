@@ -1,3 +1,6 @@
+// El backend es compartido con Kadesh Negocios: este blog solo muestra contenido de Pet (o de ambos).
+export const BLOG_PRODUCT_FILTER = { in: ['pet', 'all'] } as const;
+
 // Mapeo de valores de categorías a sus etiquetas
 export const POST_CATEGORIES_MAP: Record<string, string> = {
   'care_health': 'Cuidado y Salud',

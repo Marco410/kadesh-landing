@@ -42,7 +42,7 @@ export type GetPostsQueryVariables = PostsQueryVariables;
 
 export const GET_CATEGORIES_QUERY = gql`
   query GetCategories {
-    categories {
+    categories(where: { product: { in: ["pet", "all"] } }) {
       id
       url
       image {
@@ -58,7 +58,7 @@ export type GetCategoriesQueryResult = CategoriesQueryResponse;
 
 export const GET_POST_BY_URL_QUERY = gql`
   query GetPostByUrl($url: String!) {
-    posts(where: { url: { equals: $url }, published: { equals: true } }, take: 1) {
+    posts(where: { url: { equals: $url }, published: { equals: true }, product: { in: ["pet", "all"] } }, take: 1) {
       id
       title
       url

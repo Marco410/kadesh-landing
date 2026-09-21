@@ -55,6 +55,7 @@ export const Routes = {
     index: '/animales',
     new: '/animales/nuevo',
     detail: (slug: string): string => `/animales/${slug}`,
+    image: (slug: string): string => `/animales/${slug}/og`,
   },
 
   // Veterinaries (pet places)

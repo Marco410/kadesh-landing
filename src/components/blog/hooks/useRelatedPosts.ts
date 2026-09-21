@@ -3,6 +3,7 @@
 import { useQuery } from '@apollo/client';
 import { GET_POSTS_QUERY, GetPostsQueryResult, GetPostsQueryVariables } from '../queries';
 import { PostWhereInput } from '../types';
+import { BLOG_PRODUCT_FILTER } from '../constants';
 
 interface UseRelatedPostsProps {
   currentPostId: string;
@@ -18,6 +19,8 @@ export function useRelatedPosts({
   limit = 6 
 }: UseRelatedPostsProps) {
   const where: PostWhereInput = {
+    published: { equals: true },
+    product: BLOG_PRODUCT_FILTER,
     id: {
       not: {
         equals: currentPostId,

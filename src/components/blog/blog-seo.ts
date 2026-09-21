@@ -18,12 +18,6 @@ const DESCRIPTION_MAX = 160;
 
 type JsonLd = Record<string, unknown>;
 
-function isSignedObjectUrl(url: string): boolean {
-  return /[?&](X-Amz-Signature|X-Amz-Expires|X-Amz-Credential|Signature=)/i.test(
-    url,
-  );
-}
-
 export function absoluteUrl(pathOrUrl: string): string {
   if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) {
     return pathOrUrl;
@@ -32,15 +26,14 @@ export function absoluteUrl(pathOrUrl: string): string {
   return `${SITE_URL}${path}`;
 }
 
-export function getShareImageUrl(imageUrl?: string | null): string {
-  const fallback = absoluteUrl(BLOG_OG_IMAGE);
-
+/**
+ * Resuelve la URL real (posiblemente firmada y con caducidad) de la portada del
+ * CMS. Solo debe usarse en servidor para descargar la imagen; nunca se expone
+ * en las etiquetas de compartir.
+ */
+export function resolvePostImageSource(imageUrl?: string | null): string | null {
   if (!imageUrl) {
-    return fallback;
-  }
-
-  if (isSignedObjectUrl(imageUrl)) {
-    return fallback;
+    return null;
   }
 
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
@@ -57,7 +50,22 @@ export function getShareImageUrl(imageUrl?: string | null): string {
     return `${apiBase}/${imageUrl}`;
   }
 
-  return fallback;
+  return null;
+}
+
+/**
+ * URL de compartir de un post. La portada del CMS es una URL firmada que
+ * caduca, así que se sirve mediante `/blog/<url>/og`, una URL estable de este
+ * sitio que siempre entrega la portada vigente. Sin portada, imagen genérica.
+ */
+export function getShareImageUrl(post: {
+  url: string;
+  image?: { url?: string | null } | null;
+}): string {
+  if (!post.image?.url) {
+    return absoluteUrl(BLOG_OG_IMAGE);
+  }
+  return `${SITE_URL}${Routes.blog.postImage(post.url)}`;
 }
 
 export function documentToPlainText(
@@ -215,7 +223,7 @@ export function buildBlogPostingJsonLd(post: BlogPostDetail): JsonLd {
   const url = postCanonicalUrl(post.url);
   const description = postDescription(post);
   const { published, modified } = postDates(post);
-  const image = getShareImageUrl(post.image?.url);
+  const image = getShareImageUrl(post);
   const authorName = authorDisplayName(post.author);
   const keywords = (post.tags ?? [])
     .map((tag) => tag.name)
@@ -351,7 +359,7 @@ export function buildMissingPostMetadata(): Metadata {
 export function buildPostMetadata(post: BlogPostDetail): Metadata {
   const url = postCanonicalUrl(post.url);
   const description = postDescription(post);
-  const imageUrl = getShareImageUrl(post.image?.url);
+  const imageUrl = getShareImageUrl(post);
   const { published, modified } = postDates(post);
   const authorName = authorDisplayName(post.author);
   const tags = (post.tags ?? []).map((tag) => tag.name).filter(Boolean);
@@ -366,8 +374,6 @@ export function buildPostMetadata(post: BlogPostDetail): Metadata {
     images: [
       {
         url: imageUrl,
-        width: 1200,
-        height: 630,
         alt: post.title,
       },
     ],

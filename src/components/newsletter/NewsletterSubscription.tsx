@@ -68,6 +68,7 @@ export default function NewsletterSubscription({
         variables: {
           data: {
             email: email.trim(),
+            product: 'pet',
             active: true,
             ...(user?.id && {
               user: {

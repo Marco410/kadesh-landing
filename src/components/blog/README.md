@@ -8,6 +8,10 @@ Listado de artículos publicados y detalle de cada post. La promesa es la misma 
 - **Detalle (`/blog/<url>`)**: artículo completo, autor, fechas, etiquetas, comentarios y relacionados. Si el post no existe o no está publicado, es **404** con `noindex` (no la pantalla genérica de “en construcción”, ni un 200 con “no encontrado”).
 - La paginación es de cliente (`take`/`skip`). Solo la **página 1** se hidrata con el HTML del servidor; cambiar de página no reutiliza esos cards. El total sale de `postsCount` con el mismo filtro de publicados (y categoría, si hay). Cambiar `?category=` vuelve a la página 1.
 
+## Contenido compartido con Kadesh Negocios
+
+El backend es el mismo que usa el blog del SaaS (`kadesh.com.mx/blog`). `Post`, `Category` y `BlogSubscription` tienen `product`. Este blog **solo muestra `pet` y `all`** (`BLOG_PRODUCT_FILTER` en `constants.ts`); el filtro va en **toda** lectura (índice, detalle, sitemap, relacionados, categorías). Si se agrega una consulta nueva de posts sin el filtro, se cuelan artículos del SaaS. Un post de otro producto en `/blog/<url>` es 404. La suscripción al newsletter se guarda con `product: 'pet'`.
+
 ## SEO y descubrimiento
 
 - El sitemap incluye cada post **publicado**, con `lastmod` de `updatedAt` o `publishedAt`. No se listan borradores.

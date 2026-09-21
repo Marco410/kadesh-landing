@@ -4,6 +4,7 @@ import { useQuery } from '@apollo/client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GET_POSTS_QUERY, GetPostsQueryResult, GetPostsQueryVariables } from '../queries';
 import { BlogPost, PostOrderByInput, PostWhereInput } from '../types';
+import { BLOG_PRODUCT_FILTER } from '../constants';
 
 const DEFAULT_POSTS_PER_PAGE = 12;
 const DEFAULT_ORDER_BY: PostOrderByInput[] = [{ publishedAt: 'desc' }];
@@ -14,6 +15,7 @@ function buildWhereClause(baseWhere: PostWhereInput | null): PostWhereInput {
     published: {
       equals: true,
     },
+    product: BLOG_PRODUCT_FILTER,
   };
 }
 

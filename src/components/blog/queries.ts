@@ -33,7 +33,7 @@ export const GET_POSTS_QUERY = gql`
       title
       url
     }
-    postsCount
+    postsCount(where: $where)
   }
 `;
 
@@ -58,7 +58,7 @@ export type GetCategoriesQueryResult = CategoriesQueryResponse;
 
 export const GET_POST_BY_URL_QUERY = gql`
   query GetPostByUrl($url: String!) {
-    posts(where: { url: { equals: $url } }, take: 1) {
+    posts(where: { url: { equals: $url }, published: { equals: true } }, take: 1) {
       id
       title
       url

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { useAnimalComments } from './hooks/useAnimalComments';
 import { Avatar, ConfirmModal } from '../../shared';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -11,6 +12,7 @@ import { Routes } from 'kadesh/core/routes';
 import { formatDateWithDay } from 'kadesh/utils/format-date';
 import { AnimalDetail } from './hooks/useAnimalDetail';
 import Link from 'next/link';
+import { useUiMotion } from 'kadesh/components/shared/motion';
 
 interface AnimalCommentsSectionProps {
   animal: AnimalDetail;
@@ -30,6 +32,7 @@ export default function AnimalCommentsSection({ animal }: AnimalCommentsSectionP
   } = useAnimalComments(animal.id);
 
   const { user } = useUser();
+  const motionPrefs = useUiMotion();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
 
@@ -71,13 +74,18 @@ export default function AnimalCommentsSection({ animal }: AnimalCommentsSectionP
               disabled={isSubmitting || isCreatingComment}
             />
             <div className="mt-3 flex justify-end">
-              <button
+              <motion.button
                 type="submit"
                 disabled={!comment.trim() || isSubmitting || isCreatingComment}
+                whileTap={
+                  !comment.trim() || isSubmitting || isCreatingComment
+                    ? undefined
+                    : motionPrefs.tap
+                }
                 className="inline-flex min-h-11 items-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting || isCreatingComment ? 'Publicando…' : 'Publicar'}
-              </button>
+              </motion.button>
             </div>
           </form>
         ) : (
@@ -99,9 +107,18 @@ export default function AnimalCommentsSection({ animal }: AnimalCommentsSectionP
             Nadie ha comentado todavía.
           </p>
         ) : (
-          <ul className="divide-y divide-[#ececec] dark:divide-white/10">
+          <motion.ul
+            className="divide-y divide-[#ececec] dark:divide-white/10"
+            variants={motionPrefs.list}
+            initial={motionPrefs.list ? 'hidden' : false}
+            animate="show"
+          >
             {comments.map((commentItem) => (
-              <li key={commentItem.id} className="py-4 first:pt-0">
+              <motion.li
+                key={commentItem.id}
+                variants={motionPrefs.item}
+                className="py-4 first:pt-0"
+              >
                 <div className="flex items-start gap-3">
                   <Avatar
                     author={
@@ -163,9 +180,9 @@ export default function AnimalCommentsSection({ animal }: AnimalCommentsSectionP
                     </div>
                   </div>
                 </div>
-              </li>
+              </motion.li>
             ))}
-          </ul>
+          </motion.ul>
         )}
       </div>
 

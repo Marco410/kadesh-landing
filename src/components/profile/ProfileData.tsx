@@ -17,6 +17,7 @@ import {
 import { useUser } from "kadesh/utils/UserContext";
 import { Routes } from "kadesh/core/routes";
 import type { AuthenticatedItem } from "kadesh/utils/types";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   fieldErrorFromGraphQL,
   normalizePhone,
@@ -24,6 +25,7 @@ import {
   type ProfileFieldErrors,
   type ProfileFieldKey,
 } from "./validateProfile";
+import { useProfileMotion } from "./motion";
 
 const INPUT_CLASS =
   "w-full rounded-xl border border-[#d8dee8] bg-white px-4 py-3 text-sm text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh dark:border-white/18 dark:bg-night dark:text-[#eef1f6] dark:placeholder:text-[#9aa3b2] disabled:cursor-not-allowed disabled:opacity-60";
@@ -58,23 +60,32 @@ function SaveChangesButton({
   onSave,
   className = "hidden sm:inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto lg:min-h-9",
 }: SaveChangesButtonProps) {
-  if (!isDirty) return null;
+  const motionPrefs = useProfileMotion();
   return (
-    <button
-      type="button"
-      onClick={onSave}
-      disabled={saving}
-      className={className}
-    >
-      {saving ? (
-        <>
-          <span className="animate-spin size-4 border-2 border-white border-t-transparent rounded-full" />
-          Guardando...
-        </>
-      ) : (
-        "Guardar cambios"
-      )}
-    </button>
+    <AnimatePresence>
+      {isDirty ? (
+        <motion.button
+          type="button"
+          onClick={onSave}
+          disabled={saving}
+          className={className}
+          initial={motionPrefs.reduce ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 8 }}
+          transition={motionPrefs.transition}
+          whileTap={motionPrefs.tap}
+        >
+          {saving ? (
+            <>
+              <span className="animate-spin size-4 border-2 border-white border-t-transparent rounded-full" />
+              Guardando...
+            </>
+          ) : (
+            "Guardar cambios"
+          )}
+        </motion.button>
+      ) : null}
+    </AnimatePresence>
   );
 }
 
@@ -84,6 +95,7 @@ interface ProfileDataProps {
 
 export default function ProfileData({ user: userProp }: ProfileDataProps) {
   const { refreshUser } = useUser();
+  const motionPrefs = useProfileMotion();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -244,7 +256,12 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6">
+    <motion.div
+      className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6"
+      variants={motionPrefs.item}
+      initial={motionPrefs.reduce ? false : "hidden"}
+      animate="show"
+    >
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-4">
           <div className="flex flex-col items-start gap-1">
@@ -256,10 +273,11 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
               aria-label="Subir nueva foto de perfil"
               onChange={handleImageChange}
             />
-            <button
+            <motion.button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={imageUploading}
+              whileTap={motionPrefs.tap}
               className="group relative flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-kadesh text-2xl font-bold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-kadesh focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 dark:focus-visible:ring-offset-night-raised"
             >
               {user.profileImage?.url ? (
@@ -288,7 +306,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
                   <span className="animate-spin size-6 border-2 border-white border-t-transparent rounded-full" />
                 </span>
               )}
-            </button>
+            </motion.button>
             {imageError && (
               <p className="text-sm text-red-600 dark:text-red-400 max-w-[24rem]">
                 {imageError}
@@ -532,16 +550,14 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
         </div>
       </div>
 
-      {isDirty ? (
-        <div className="sticky bottom-4 mt-4 sm:hidden">
-          <SaveChangesButton
-            isDirty={isDirty}
-            saving={saving}
-            onSave={handleSave}
-            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-70"
-          />
-        </div>
-      ) : null}
-    </div>
+      <div className="sticky bottom-4 mt-4 sm:hidden">
+        <SaveChangesButton
+          isDirty={isDirty}
+          saving={saving}
+          onSave={handleSave}
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-70"
+        />
+      </div>
+    </motion.div>
   );
 }

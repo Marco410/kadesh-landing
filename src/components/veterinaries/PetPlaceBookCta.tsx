@@ -10,6 +10,8 @@ import { getPetPlaceBookingMode } from "./appointments";
 import PetPlaceBookingModal from "./PetPlaceBookingModal";
 import { veterinaryBookHref, veterinaryDetailHref } from "./petPlaceSlug";
 import type { PetPlaceDetail } from "./types";
+import { motion } from "framer-motion";
+import { useUiMotion } from "kadesh/components/shared/motion";
 
 interface PetPlaceBookCtaProps {
   place: PetPlaceDetail;
@@ -21,6 +23,7 @@ export default function PetPlaceBookCta({ place }: PetPlaceBookCtaProps) {
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
   const mode = getPetPlaceBookingMode(place.types);
+  const motionPrefs = useUiMotion();
 
   const goToLogin = useCallback(() => {
     router.push(
@@ -54,9 +57,10 @@ export default function PetPlaceBookCta({ place }: PetPlaceBookCtaProps) {
 
   return (
     <>
-      <button
+      <motion.button
         type="button"
         onClick={openBooking}
+        whileTap={motionPrefs.tap}
         className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-kadesh px-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 sm:px-5 lg:w-auto"
       >
         <HugeiconsIcon
@@ -66,7 +70,7 @@ export default function PetPlaceBookCta({ place }: PetPlaceBookCtaProps) {
           aria-hidden="true"
         />
         {mode === "stay" ? "Agendar estancia" : "Reservar cita"}
-      </button>
+      </motion.button>
       <PetPlaceBookingModal
         place={place}
         isOpen={open}

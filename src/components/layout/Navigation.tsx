@@ -1,22 +1,23 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from 'next-themes';
-import { usePathname, useRouter } from 'next/navigation';
-import Image from 'next/image';
-import Logo from '../shared/Logo';
-import Link from 'next/link';
-import { Routes } from 'kadesh/core/routes';
-import { useUser } from 'kadesh/utils/UserContext';
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "next-themes";
+import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
+import Logo from "../shared/Logo";
+import Link from "next/link";
+import { Routes } from "kadesh/core/routes";
+import { useUser } from "kadesh/utils/UserContext";
+import FontSizeSlider from "./FontSizeSlider";
 
 const PRIMARY_NAV = [
-  { label: 'Inicio', href: Routes.home },
-  { label: 'Veterinarias', href: Routes.veterinaries.index },
-  { label: 'Animales', href: Routes.animals.index },
-  { label: 'Blog', href: Routes.blog.index },
-  { label: 'Conócenos', href: Routes.conocenos },
-  { label: 'Contacto', href: Routes.contact },
+  { label: "Inicio", href: Routes.home },
+  { label: "Veterinarias", href: Routes.veterinaries.index },
+  { label: "Animales", href: Routes.animals.index },
+  { label: "Blog", href: Routes.blog.index },
+  { label: "Conócenos", href: Routes.conocenos },
+  { label: "Contacto", href: Routes.contact },
 ] as const;
 
 export default function Navigation() {
@@ -32,96 +33,102 @@ export default function Navigation() {
 
   useEffect(() => {
     setMounted(true);
-    
+
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
     };
-    
-    window.addEventListener('scroll', handleScroll);
-    
+
+    window.addEventListener("scroll", handleScroll);
+
     // Si estamos en la página principal y hay un anchor en la URL, hacer scroll a esa sección
     if (pathname === Routes.home && window.location.hash) {
       const hash = window.location.hash;
       setTimeout(() => {
         const el = document.querySelector(hash);
         if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }, 100);
     }
-    
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [pathname]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (avatarDropdownRef.current && !avatarDropdownRef.current.contains(event.target as Node)) {
+      if (
+        avatarDropdownRef.current &&
+        !avatarDropdownRef.current.contains(event.target as Node)
+      ) {
         setAvatarDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const goToHomeTop = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const goToHomeTop = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
     if (href !== Routes.home) return;
     if (pathname !== Routes.home) return;
     e.preventDefault();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    window.history.replaceState(null, '', Routes.home);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.history.replaceState(null, "", Routes.home);
   };
 
   const toggleTheme = () => {
     if (!mounted) return;
-    const currentTheme = resolvedTheme || theme || 'light';
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    const currentTheme = resolvedTheme || theme || "light";
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
     setTheme(newTheme);
   };
 
   const handleLogout = async () => {
     try {
       // Limpiar token del localStorage
-      localStorage.removeItem('keystonejs-session-token');
-      
+      localStorage.removeItem("keystonejs-session-token");
+
       // Limpiar cookies de sesión
       document.cookie.split(";").forEach((c) => {
         document.cookie = c
           .replace(/^ +/, "")
           .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
       });
-      
+
       // Limpiar el usuario del contexto
       setUser(undefined);
-      
+
       // Redirigir a home
       router.push(Routes.home);
       setAvatarDropdownOpen(false);
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      console.error("Error al cerrar sesión:", error);
     }
   };
 
-  const isDark = mounted && (resolvedTheme === 'dark');
+  const isDark = mounted && resolvedTheme === "dark";
   const isHomePage = pathname === Routes.home;
   const atTopLight = !scrolled && !isDark && !isHomePage;
   const navLinkClass = atTopLight
-    ? 'text-gray-800 hover:text-orange-600 transition-colors duration-200'
-    : 'text-white hover:text-orange-100 transition-colors duration-200';
+    ? "text-gray-800 hover:text-orange-600 transition-colors duration-200"
+    : "text-white hover:text-orange-100 transition-colors duration-200";
 
   return (
     <>
-      <nav 
+      <nav
         className={`fixed top-0 left-0 right-0 w-full px-6 sm:px-10 py-4 flex items-center justify-between z-50 transition-all duration-300 ${
-          scrolled 
-            ? 'bg-kadesh/80 dark:bg-night/80 backdrop-blur-md shadow-lg' 
-            : 'bg-transparent'
+          scrolled
+            ? "bg-kadesh/80 dark:bg-night/80 backdrop-blur-md shadow-lg"
+            : "bg-transparent"
         }`}
       >
         <Link href={Routes.home} className="flex items-center">
-          <Logo size={48} className={atTopLight ? 'invert' : ''} />
+          <Logo size={48} className={atTopLight ? "invert" : ""} />
         </Link>
-        
+
         <div className="hidden lg:flex items-center gap-6">
           {PRIMARY_NAV.map((item) => (
             <Link
@@ -133,22 +140,55 @@ export default function Navigation() {
               {item.label}
             </Link>
           ))}
-          
+
+          {user?.id ? (
+            <Link
+              href={Routes.profile}
+              className={`font-semibold text-sm ${navLinkClass}`}
+            >
+              Mi perfil
+            </Link>
+          ) : null}
+
+          <FontSizeSlider tone={atTopLight ? "onLight" : "onDark"} />
+
           {/* Theme Toggle Button */}
           {mounted && (
             <button
               onClick={toggleTheme}
               type="button"
-              className={`p-2 rounded-lg transition-colors duration-200 ${atTopLight ? 'text-gray-800 hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}
+              className={`p-2 rounded-lg transition-colors duration-200 ${atTopLight ? "text-gray-800 hover:bg-gray-100" : "text-white hover:bg-white/10"}`}
               aria-label="Toggle theme"
             >
-              {(resolvedTheme || theme) === 'dark' ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              {(resolvedTheme || theme) === "dark" ? (
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
                 </svg>
               ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                  />
                 </svg>
               )}
             </button>
@@ -159,19 +199,21 @@ export default function Navigation() {
             <div className="relative" ref={avatarDropdownRef}>
               <button
                 onClick={() => setAvatarDropdownOpen(!avatarDropdownOpen)}
-                className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors overflow-hidden ${atTopLight ? 'bg-gray-200 hover:bg-gray-300 text-gray-800' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors overflow-hidden ${atTopLight ? "bg-gray-200 hover:bg-gray-300 text-gray-800" : "bg-white/10 hover:bg-white/20 text-white"}`}
               >
                 {user.profileImage?.url ? (
                   <Image
                     src={user.profileImage.url}
-                    alt={user.name || 'Usuario'}
+                    alt={user.name || "Usuario"}
                     width={40}
                     height={40}
                     className="object-cover"
                   />
                 ) : (
-                  <span className={`font-semibold text-sm ${atTopLight ? 'text-gray-800' : 'text-white'}`}>
-                    {user.name?.charAt(0) || 'U'}
+                  <span
+                    className={`font-semibold text-sm ${atTopLight ? "text-gray-800" : "text-white"}`}
+                  >
+                    {user.name?.charAt(0) || "U"}
                   </span>
                 )}
               </button>
@@ -211,7 +253,9 @@ export default function Navigation() {
             <Link
               href={Routes.auth.login}
               className={`px-4 py-2 font-semibold text-sm rounded-lg transition-colors duration-200 ${
-                atTopLight ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-white/10 hover:bg-white/20 text-white'
+                atTopLight
+                  ? "bg-gray-800 text-white hover:bg-gray-700"
+                  : "bg-white/10 hover:bg-white/20 text-white"
               }`}
             >
               Iniciar Sesión
@@ -223,25 +267,41 @@ export default function Navigation() {
         <button
           onClick={() => setOpened(!opened)}
           className={`lg:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1.5 z-50 ${
-            atTopLight ? 'text-gray-800' : scrolled ? 'text-gray-700 dark:text-gray-300' : 'text-white'
+            atTopLight
+              ? "text-gray-800"
+              : scrolled
+                ? "text-gray-700 dark:text-gray-300"
+                : "text-white"
           }`}
           aria-label="Toggle menu"
         >
           <motion.span
             className={`w-6 h-0.5 rounded transition-all ${
-              atTopLight ? 'bg-gray-800' : scrolled ? 'bg-gray-700 dark:bg-gray-300' : 'bg-white'
+              atTopLight
+                ? "bg-gray-800"
+                : scrolled
+                  ? "bg-gray-700 dark:bg-gray-300"
+                  : "bg-white"
             }`}
             animate={opened ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
           />
           <motion.span
             className={`w-6 h-0.5 rounded transition-all ${
-              atTopLight ? 'bg-gray-800' : scrolled ? 'bg-gray-700 dark:bg-gray-300' : 'bg-white'
+              atTopLight
+                ? "bg-gray-800"
+                : scrolled
+                  ? "bg-gray-700 dark:bg-gray-300"
+                  : "bg-white"
             }`}
             animate={opened ? { opacity: 0 } : { opacity: 1 }}
           />
           <motion.span
             className={`w-6 h-0.5 rounded transition-all ${
-              atTopLight ? 'bg-gray-800' : scrolled ? 'bg-gray-700 dark:bg-gray-300' : 'bg-white'
+              atTopLight
+                ? "bg-gray-800"
+                : scrolled
+                  ? "bg-gray-700 dark:bg-gray-300"
+                  : "bg-white"
             }`}
             animate={opened ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
           />
@@ -260,16 +320,19 @@ export default function Navigation() {
               onClick={() => setOpened(false)}
             />
             <motion.div
-              initial={{ x: '100%' }}
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed top-0 right-0 h-full w-90 bg-kadesh dark:bg-night-raised z-50 lg:hidden overflow-y-auto shadow-2xl"
             >
               <div className="p-8">
                 <div className="flex justify-between items-center mb-12">
-                  <h2 className="text-white dark:text-white text-2xl font-bold">KADESH</h2>
+                  <h2 className="text-white dark:text-white text-2xl font-bold">
+                    KADESH
+                  </h2>
                   <div className="flex items-center gap-4">
+                    <FontSizeSlider tone="onDark" />
                     {/* Theme Toggle Button Mobile */}
                     {mounted && (
                       <button
@@ -278,13 +341,35 @@ export default function Navigation() {
                         className="text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
                         aria-label="Toggle theme"
                       >
-                        {(resolvedTheme || theme) === 'dark' ? (
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        {(resolvedTheme || theme) === "dark" ? (
+                          <svg
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                            />
                           </svg>
                         ) : (
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                          <svg
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                            />
                           </svg>
                         )}
                       </button>
@@ -312,6 +397,16 @@ export default function Navigation() {
                     </Link>
                   ))}
 
+                  {user?.id ? (
+                    <Link
+                      href={Routes.profile}
+                      onClick={() => setOpened(false)}
+                      className="text-white font-semibold text-lg no-underline opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
+                    >
+                      Mi perfil
+                    </Link>
+                  ) : null}
+
                   {/* User Avatar or Login Button Mobile */}
                   {user?.id ? (
                     <div className="pt-4 border-t border-white/20">
@@ -320,19 +415,21 @@ export default function Navigation() {
                           {user.profileImage?.url ? (
                             <Image
                               src={user.profileImage.url}
-                              alt={user.name || 'Usuario'}
+                              alt={user.name || "Usuario"}
                               width={48}
                               height={48}
                               className="object-cover"
                             />
                           ) : (
                             <span className="text-white font-semibold text-lg">
-                              {user.name?.charAt(0) || 'U'}
+                              {user.name?.charAt(0) || "U"}
                             </span>
                           )}
                         </div>
                         <div>
-                          <p className="text-white font-semibold">{user.name || 'Usuario'}</p>
+                          <p className="text-white font-semibold">
+                            {user.name || "Usuario"}
+                          </p>
                           <p className="text-white/70 text-sm">{user.email}</p>
                         </div>
                       </div>
@@ -378,4 +475,3 @@ export default function Navigation() {
     </>
   );
 }
-

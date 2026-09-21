@@ -285,6 +285,9 @@ export interface UpdateMyPetPlaceVariables {
     parking?: boolean;
     appointmentRequired?: boolean;
     socialMedia?: Array<{ social_media: string; link: string }>;
+    types?: string[];
+    serviceIds?: string[];
+    schedules?: Array<{ day: string; timeIni: number; timeEnd: number }>;
   };
 }
 
@@ -323,6 +326,37 @@ export const GET_MY_PET_PLACES_QUERY = gql`
       claimStatus
       claimPhone
       claimedAt
+      types {
+        id
+        label
+        value
+      }
+      services {
+        id
+        name
+        slug
+        description
+        active
+      }
+      requested_services {
+        id
+        name
+        description
+        status
+      }
+      patients {
+        id
+        name
+        lastName
+        phone
+        email
+      }
+      pet_place_schedules {
+        id
+        day
+        timeIni
+        timeEnd
+      }
       pet_place_social_media {
         id
         link
@@ -354,11 +388,44 @@ export interface MyPetPlace {
   claimStatus: string | null;
   claimPhone: string | null;
   claimedAt: string | null;
+  types?: Array<{
+    id: string;
+    label: string | null;
+    value: string | null;
+  }> | null;
+  services?: Array<{
+    id: string;
+    name: string | null;
+    slug: string | null;
+    description: string | null;
+    active: boolean | null;
+  }> | null;
+  requested_services?: Array<{
+    id: string;
+    name: string | null;
+    description: string | null;
+    status: string | null;
+  }> | null;
+  patients?: Array<ClinicPatient> | null;
+  pet_place_schedules?: Array<{
+    id: string;
+    day: string;
+    timeIni: number | string | null;
+    timeEnd: number | string | null;
+  }> | null;
   pet_place_social_media: Array<{
     id: string;
     link: string | null;
     social_media: string | null;
   }>;
+}
+
+export interface ClinicPatient {
+  id: string;
+  name: string | null;
+  lastName: string | null;
+  phone: string | null;
+  email: string | null;
 }
 
 export interface GetMyPetPlacesResponse {
@@ -545,4 +612,216 @@ export interface CancelPetPlaceAppointmentResponse {
     id: string;
     status: string | null;
   } | null;
+}
+
+export const GET_PET_PLACE_SERVICES_QUERY = gql`
+  query PetPlaceServicesCatalog {
+    petPlaceServices(orderBy: [{ name: asc }]) {
+      id
+      name
+      slug
+      description
+      active
+      status
+    }
+  }
+`;
+
+export interface PetPlaceServiceCatalogItem {
+  id: string;
+  name: string | null;
+  slug: string | null;
+  description: string | null;
+  active: boolean | null;
+  status: string | null;
+}
+
+export interface GetPetPlaceServicesResponse {
+  petPlaceServices: PetPlaceServiceCatalogItem[];
+}
+
+export const GET_CLINIC_APPOINTMENTS_QUERY = gql`
+  query ClinicAppointments(
+    $where: PetPlaceAppointmentWhereInput!
+    $orderBy: [PetPlaceAppointmentOrderByInput!]!
+  ) {
+    petPlaceAppointments(where: $where, orderBy: $orderBy) {
+      id
+      startsAt
+      endsAt
+      status
+      petName
+      petSpecies
+      notes
+      ownerNotes
+      cancelReason
+      service {
+        id
+        name
+      }
+      customer {
+        id
+        name
+        lastName
+        email
+        phone
+      }
+    }
+  }
+`;
+
+export interface ClinicAppointment {
+  id: string;
+  startsAt: string;
+  endsAt: string;
+  status: string | null;
+  petName: string | null;
+  petSpecies: string | null;
+  notes: string | null;
+  ownerNotes: string | null;
+  cancelReason: string | null;
+  service: { id: string; name: string | null } | null;
+  customer: {
+    id: string;
+    name: string | null;
+    lastName: string | null;
+    email: string | null;
+    phone: string | null;
+  } | null;
+}
+
+export interface GetClinicAppointmentsResponse {
+  petPlaceAppointments: ClinicAppointment[];
+}
+
+export interface GetClinicAppointmentsVariables {
+  where: Record<string, unknown>;
+  orderBy: Array<{ startsAt?: "asc" | "desc" }>;
+}
+
+export const UPDATE_PET_PLACE_APPOINTMENT_MUTATION = gql`
+  mutation UpdateClinicAppointment(
+    $id: ID!
+    $data: PetPlaceAppointmentUpdateInput!
+  ) {
+    updatePetPlaceAppointment(where: { id: $id }, data: $data) {
+      id
+      status
+      ownerNotes
+      cancelReason
+    }
+  }
+`;
+
+export interface UpdatePetPlaceAppointmentVariables {
+  id: string;
+  data: {
+    status?: string;
+    cancelReason?: string;
+    ownerNotes?: string;
+  };
+}
+
+export interface UpdatePetPlaceAppointmentResponse {
+  updatePetPlaceAppointment: {
+    id: string;
+    status: string | null;
+    ownerNotes: string | null;
+    cancelReason: string | null;
+  } | null;
+}
+
+export const REQUEST_PET_PLACE_SERVICE_MUTATION = gql`
+  mutation RequestPetPlaceService($input: RequestPetPlaceServiceInput!) {
+    requestPetPlaceService(input: $input) {
+      success
+      message
+      serviceId
+      status
+    }
+  }
+`;
+
+export interface RequestPetPlaceServiceVariables {
+  input: {
+    petPlaceId: string;
+    name: string;
+    description?: string;
+  };
+}
+
+export interface RequestPetPlaceServiceResponse {
+  requestPetPlaceService: {
+    success: boolean;
+    message: string;
+    serviceId: string | null;
+    status: string | null;
+  };
+}
+
+export const CREATE_PET_PLACE_PATIENT_MUTATION = gql`
+  mutation CreatePetPlacePatient($input: CreatePetPlacePatientInput!) {
+    createPetPlacePatient(input: $input) {
+      success
+      message
+      created
+      patient {
+        id
+        name
+        lastName
+        phone
+        email
+      }
+    }
+  }
+`;
+
+export interface CreatePetPlacePatientVariables {
+  input: {
+    petPlaceId: string;
+    name: string;
+    lastName?: string;
+    phone?: string;
+    email?: string;
+  };
+}
+
+export interface CreatePetPlacePatientResponse {
+  createPetPlacePatient: {
+    success: boolean;
+    message: string;
+    created: boolean;
+    patient: ClinicPatient | null;
+  };
+}
+
+export const CREATE_CLINIC_APPOINTMENT_MUTATION = gql`
+  mutation CreateClinicAppointment($input: CreateClinicAppointmentInput!) {
+    createClinicAppointment(input: $input) {
+      success
+      message
+      appointmentId
+    }
+  }
+`;
+
+export interface CreateClinicAppointmentVariables {
+  input: {
+    petPlaceId: string;
+    customerId: string;
+    startsAt: string;
+    endsAt: string;
+    serviceId?: string;
+    petName?: string;
+    petSpecies?: string;
+    notes?: string;
+  };
+}
+
+export interface CreateClinicAppointmentResponse {
+  createClinicAppointment: {
+    success: boolean;
+    message: string;
+    appointmentId: string | null;
+  };
 }

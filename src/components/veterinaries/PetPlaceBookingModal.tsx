@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { getPetPlaceBookingMode } from "./appointments";
 import PetPlaceBookingForm from "./PetPlaceBookingForm";
 import type { PetPlaceDetail } from "./types";
+import { useUiMotion } from "kadesh/components/shared/motion";
 
 interface PetPlaceBookingModalProps {
   place: PetPlaceDetail;
@@ -19,6 +21,7 @@ export default function PetPlaceBookingModal({
   onClose,
 }: PetPlaceBookingModalProps) {
   const mode = getPetPlaceBookingMode(place.types);
+  const motionPrefs = useUiMotion();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -34,49 +37,62 @@ export default function PetPlaceBookingModal({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen || !mode) return null;
+  if (!mode) return null;
 
   const title = mode === "stay" ? "Agendar estancia" : "Reservar cita";
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 sm:items-center sm:p-4"
-      onClick={onClose}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="booking-modal-title"
-        className="flex max-h-[100dvh] w-full flex-col rounded-t-2xl border border-[#ececec] bg-white shadow-2xl dark:border-white/10 dark:bg-night-raised sm:max-h-[90dvh] sm:max-w-xl sm:rounded-2xl"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <header className="flex shrink-0 items-start justify-between gap-3 border-b border-[#ececec] px-4 py-3 dark:border-white/10 sm:px-5">
-          <div className="min-w-0">
-            <h2
-              id="booking-modal-title"
-              className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-white"
-            >
-              {title}
-            </h2>
-            {place.name ? (
-              <p className="mt-0.5 break-words text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
-                {place.name}
-              </p>
-            ) : null}
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-[#5a5a5a] hover:bg-[#f5f5f5] dark:text-[#b0b0b0] dark:hover:bg-white/10"
+    <AnimatePresence>
+      {isOpen ? (
+        <motion.div
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 sm:items-center sm:p-4"
+          onClick={onClose}
+          variants={motionPrefs.overlay}
+          initial={motionPrefs.overlay ? "hidden" : false}
+          animate="show"
+          exit="exit"
+        >
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="booking-modal-title"
+            className="flex max-h-[100dvh] w-full flex-col rounded-t-2xl border border-[#ececec] bg-white shadow-2xl dark:border-white/10 dark:bg-night-raised sm:max-h-[90dvh] sm:max-w-xl sm:rounded-2xl"
+            onClick={(event) => event.stopPropagation()}
+            variants={motionPrefs.sheet}
+            initial={motionPrefs.sheet ? "hidden" : false}
+            animate="show"
+            exit="exit"
           >
-            <HugeiconsIcon icon={Cancel01Icon} size={20} strokeWidth={1.5} />
-          </button>
-        </header>
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
-          <PetPlaceBookingForm place={place} onClose={onClose} />
-        </div>
-      </div>
-    </div>
+            <header className="flex shrink-0 items-start justify-between gap-3 border-b border-[#ececec] px-4 py-3 dark:border-white/10 sm:px-5">
+              <div className="min-w-0">
+                <h2
+                  id="booking-modal-title"
+                  className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-white"
+                >
+                  {title}
+                </h2>
+                {place.name ? (
+                  <p className="mt-0.5 break-words text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+                    {place.name}
+                  </p>
+                ) : null}
+              </div>
+              <motion.button
+                type="button"
+                onClick={onClose}
+                aria-label="Cerrar"
+                whileTap={motionPrefs.tap}
+                className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-[#5a5a5a] hover:bg-[#f5f5f5] dark:text-[#b0b0b0] dark:hover:bg-white/10"
+              >
+                <HugeiconsIcon icon={Cancel01Icon} size={20} strokeWidth={1.5} />
+              </motion.button>
+            </header>
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+              <PetPlaceBookingForm place={place} onClose={onClose} />
+            </div>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }

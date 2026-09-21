@@ -2,7 +2,9 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { Navigation } from "kadesh/components/layout";
+import { useUiMotion } from "kadesh/components/shared/motion";
 import {
   VeterinaryCard,
   VeterinariesMap,
@@ -38,6 +40,7 @@ function replaceQueryParam(
 function VeterinariesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const motionPrefs = useUiMotion();
   const [userLocation, setUserLocation] = useState<
     { lat: number; lng: number } | { lat: null; lng: null } | undefined
   >(undefined);
@@ -147,17 +150,27 @@ function VeterinariesPageContent() {
       <Navigation />
 
       <div className="flex flex-col md:h-[calc(100dvh-72px)] md:flex-row md:overflow-hidden">
-        <div className="relative h-[42dvh] min-h-[280px] w-full min-w-0 flex-shrink-0 md:order-2 md:h-full md:min-h-0 md:flex-1">
+        <motion.div
+          className="relative h-[42dvh] min-h-[280px] w-full min-w-0 flex-shrink-0 md:order-2 md:h-full md:min-h-0 md:flex-1"
+          initial={motionPrefs.reduce ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={motionPrefs.transition}
+        >
           <VeterinariesMap
             places={allPlaces}
             selectedPlace={selectedPlace}
             onPlaceClick={handlePlaceClick}
             height="100%"
           />
-        </div>
+        </motion.div>
 
         <aside className="flex w-full flex-col border-t border-[#ececec] bg-white md:order-1 md:h-full md:w-[400px] md:flex-shrink-0 md:border-t-0 md:border-r xl:w-[440px] dark:border-white/10 dark:bg-night-raised">
-          <header className="flex-shrink-0 border-b border-[#ececec] px-5 py-5 dark:border-white/10">
+          <motion.header
+            className="flex-shrink-0 border-b border-[#ececec] px-5 py-5 dark:border-white/10"
+            variants={motionPrefs.panel}
+            initial={motionPrefs.panel ? "hidden" : false}
+            animate="show"
+          >
             <h1 className="text-2xl font-black tracking-[-0.03em] text-[#121212] dark:text-white">
               Veterinarias
             </h1>
@@ -199,11 +212,19 @@ function VeterinariesPageContent() {
                 />
               </>
             )}
-          </header>
+          </motion.header>
 
           <div className="flex-1 overflow-y-auto p-4" aria-busy={locationLoading || placesLoading}>
+            <AnimatePresence mode="wait">
             {(locationLoading || placesLoading) && places.length === 0 ? (
-              <div className="space-y-3">
+              <motion.div
+                key="loading"
+                className="space-y-3"
+                variants={motionPrefs.panel}
+                initial={motionPrefs.panel ? "hidden" : false}
+                animate="show"
+                exit="exit"
+              >
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
@@ -219,9 +240,16 @@ function VeterinariesPageContent() {
                     <div className="mt-3 h-11 rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]" />
                   </div>
                 ))}
-              </div>
+              </motion.div>
             ) : places.length === 0 ? (
-              <div className="flex flex-col items-center px-4 py-12 text-center">
+              <motion.div
+                key="empty"
+                className="flex flex-col items-center px-4 py-12 text-center"
+                variants={motionPrefs.panel}
+                initial={motionPrefs.panel ? "hidden" : false}
+                animate="show"
+                exit="exit"
+              >
                 <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
                   <HugeiconsIcon
                     icon={HospitalLocationIcon}
@@ -249,18 +277,20 @@ function VeterinariesPageContent() {
                 {(noOpenNow || (hasLocation && nextRadius)) && (
                   <div className="mt-5 flex flex-col items-center gap-2">
                     {noOpenNow && (
-                      <button
+                      <motion.button
                         type="button"
                         onClick={handleOpenNowToggle}
+                        whileTap={motionPrefs.tap}
                         className="inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
                       >
                         Ver todas
-                      </button>
+                      </motion.button>
                     )}
                     {hasLocation && nextRadius && (
-                      <button
+                      <motion.button
                         type="button"
                         onClick={() => handleRadiusChange(nextRadius)}
+                        whileTap={motionPrefs.tap}
                         className={`inline-flex min-h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold transition-colors ${
                           noOpenNow
                             ? "border-2 border-kadesh text-kadesh hover:bg-kadesh hover:text-white"
@@ -268,14 +298,25 @@ function VeterinariesPageContent() {
                         }`}
                       >
                         Buscar en {nextRadius} km
-                      </button>
+                      </motion.button>
                     )}
                   </div>
                 )}
-              </div>
+              </motion.div>
             ) : (
-              <>
-                <div className="space-y-3">
+              <motion.div
+                key={`${radiusKm}-${openNow}-${currentPage}`}
+                initial={motionPrefs.panel ? "hidden" : false}
+                animate="show"
+                exit="exit"
+                variants={motionPrefs.panel}
+              >
+                <motion.div
+                  className="space-y-3"
+                  variants={motionPrefs.list}
+                  initial={motionPrefs.list ? "hidden" : false}
+                  animate="show"
+                >
                   {places.map((place) => (
                     <VeterinaryCard
                       key={place.id}
@@ -284,7 +325,7 @@ function VeterinariesPageContent() {
                       onClick={() => handlePlaceClick(place)}
                     />
                   ))}
-                </div>
+                </motion.div>
                 <DirectoryPagination
                   currentPage={currentPage}
                   totalPages={totalPages}
@@ -294,8 +335,9 @@ function VeterinariesPageContent() {
                   hasPreviousPage={hasPreviousPage}
                   hasNextPage={hasNextPage}
                 />
-              </>
+              </motion.div>
             )}
+            </AnimatePresence>
           </div>
         </aside>
       </div>

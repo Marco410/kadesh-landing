@@ -47,3 +47,59 @@ export const SOCIAL_MEDIA_OPTIONS = [
 ] as const;
 
 export type SocialMediaNetwork = (typeof SOCIAL_MEDIA_OPTIONS)[number];
+
+export const TYPES_PET_PLACE = [
+  { label: "Veterinaria", plural: "Veterinarias", value: "veterinary" },
+  { label: "Refugio", plural: "Refugios", value: "pet_shelter" },
+  { label: "Tienda", plural: "Tiendas", value: "pet_store" },
+  {
+    label: "Hotel/Guardería",
+    plural: "Hoteles/Guarderías",
+    value: "pet_boarding",
+  },
+  { label: "Parque", plural: "Parques", value: "pet_park" },
+  { label: "Otro", plural: "Otros", value: "other" },
+] as const;
+
+export type PetPlaceTypeValue = (typeof TYPES_PET_PLACE)[number]["value"];
+
+export function isPetPlaceTypeValue(value: string): value is PetPlaceTypeValue {
+  return TYPES_PET_PLACE.some((type) => type.value === value);
+}
+
+export function petPlaceTypeLabel(type: {
+  label?: string | null;
+  value?: string | null;
+}): string {
+  const fromCatalog = TYPES_PET_PLACE.find(
+    (option) => option.value === type.value,
+  )?.label;
+  return type.label?.trim() || fromCatalog || "";
+}
+
+export function formatPetPlaceTypeLabels(
+  types:
+    | Array<{ label?: string | null; value?: string | null }>
+    | null
+    | undefined,
+): string {
+  return (types ?? [])
+    .map(petPlaceTypeLabel)
+    .filter(Boolean)
+    .join(" · ");
+}
+
+export const PET_PLACE_WEEKDAYS = [
+  { label: "Lunes", value: "Lunes" },
+  { label: "Martes", value: "Martes" },
+  { label: "Miércoles", value: "Miércoles" },
+  { label: "Jueves", value: "Jueves" },
+  { label: "Viernes", value: "Viernes" },
+  { label: "Sábado", value: "Sábado" },
+  { label: "Domingo", value: "Domingo" },
+] as const;
+
+export const PET_PLACE_HOUR_OPTIONS = Array.from({ length: 24 }, (_, hour) => ({
+  value: hour,
+  label: `${String(hour).padStart(2, "0")}:00`,
+}));

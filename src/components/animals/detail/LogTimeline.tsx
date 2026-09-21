@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { formatDate } from "kadesh/utils/format-date";
 import { getStatusLabel, getStatusColor } from "../constants";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -15,6 +16,7 @@ import ConfirmModal from "kadesh/components/shared/ConfirmModal";
 import { useUser } from "kadesh/utils/UserContext";
 import { AnimalDetail } from "./hooks/useAnimalDetail";
 import { useDeleteLog } from "./hooks/useDeleteLog";
+import { useUiMotion } from "kadesh/components/shared/motion";
 
 interface Log {
   id: string;
@@ -86,6 +88,7 @@ export default function LogTimeline({
   const [pendingSelectAfterDelete, setPendingSelectAfterDelete] =
     useState(false);
   const { user } = useUser();
+  const motionPrefs = useUiMotion();
 
   const { deleteLog, isDeleting } = useDeleteLog({
     onSuccess: () => {
@@ -159,14 +162,15 @@ export default function LogTimeline({
               Historial
             </h2>
             {animal && onLogCreated && isOwner && (
-              <button
+              <motion.button
                 type="button"
                 onClick={() => setAddLogModalOpen(true)}
+                whileTap={motionPrefs.tap}
                 className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 lg:min-h-9"
               >
                 <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
                 Agregar registro
-              </button>
+              </motion.button>
             )}
           </div>
 
@@ -176,7 +180,12 @@ export default function LogTimeline({
               primera.
             </p>
           ) : (
-            <ol className="relative min-h-0 flex-1 overflow-y-auto ml-3 border-s border-[#ececec] dark:border-white/10">
+            <motion.ol
+              className="relative min-h-0 flex-1 overflow-y-auto ml-3 border-s border-[#ececec] dark:border-white/10"
+              variants={motionPrefs.list}
+              initial={motionPrefs.list ? "hidden" : false}
+              animate="show"
+            >
               {logs.map((log, index) => {
                 const isSelected = selectedLogId === log.id;
                 const isLatest = index === 0;
@@ -188,7 +197,11 @@ export default function LogTimeline({
                 const place = placeLabel(log);
 
                 return (
-                  <li key={log.id} className="mb-2 ml-5 last:mb-0">
+                  <motion.li
+                    key={log.id}
+                    variants={motionPrefs.item}
+                    className="mb-2 ml-5 last:mb-0"
+                  >
                     <span
                       className="absolute -left-[7px] mt-1.5 h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-night-raised"
                       style={{ backgroundColor: statusColor }}
@@ -259,16 +272,24 @@ export default function LogTimeline({
                         )}
                       </div>
                     </div>
-                  </li>
+                  </motion.li>
                 );
               })}
-            </ol>
+            </motion.ol>
           )}
         </section>
 
         <section className="flex min-h-0 flex-col rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+          <AnimatePresence mode="wait" initial={false}>
           {selectedLogWithCoords ? (
-            <>
+            <motion.div
+              key="map"
+              className="flex min-h-0 flex-1 flex-col"
+              variants={motionPrefs.panel}
+              initial={motionPrefs.panel ? "hidden" : false}
+              animate="show"
+              exit="exit"
+            >
               <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
                 <div className="min-w-0">
                   <h2 className="text-base font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
@@ -282,13 +303,14 @@ export default function LogTimeline({
                     )}
                   </p>
                 </div>
-                <a
+                <motion.a
                   href={directionsUrl(
                     selectedLogWithCoords.lat as number,
                     selectedLogWithCoords.lng as number,
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
+                  whileTap={motionPrefs.tap}
                   className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white lg:min-h-9"
                 >
                   <HugeiconsIcon
@@ -297,7 +319,7 @@ export default function LogTimeline({
                     strokeWidth={1.5}
                   />
                   Cómo llegar
-                </a>
+                </motion.a>
               </div>
               <div className="min-h-[13.5rem] flex-1 overflow-hidden rounded-xl lg:min-h-0">
                 <LogMap
@@ -312,9 +334,16 @@ export default function LogTimeline({
                   {placeLabel(selectedLogWithCoords)}
                 </p>
               ) : null}
-            </>
+            </motion.div>
           ) : (
-            <div className="flex flex-1 flex-col items-center justify-center gap-2 py-8 text-center">
+            <motion.div
+              key="empty-map"
+              className="flex flex-1 flex-col items-center justify-center gap-2 py-8 text-center"
+              variants={motionPrefs.panel}
+              initial={motionPrefs.panel ? "hidden" : false}
+              animate="show"
+              exit="exit"
+            >
               <HugeiconsIcon
                 icon={Location01Icon}
                 size={32}
@@ -327,8 +356,9 @@ export default function LogTimeline({
               <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
                 Toca uno del historial para verlo en el mapa.
               </p>
-            </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </section>
       </div>
 

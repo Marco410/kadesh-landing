@@ -1,150 +1,210 @@
 "use client";
 
-import { Suspense, useEffect, useMemo } from 'react';
+import { Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ErrorState } from "../shared";
 import BlogCard from "./BlogCard";
 import BlogCardSkeleton from "./BlogCardSkeleton";
 import EmptyBlogState from "./EmptyBlogState";
 import { useBlogPosts } from "./hooks/useBlogPosts";
-import { PostWhereInput } from "./types";
+import { BlogPost, PostWhereInput } from "./types";
 
 interface BlogSectionProps {
   postsPerPage?: number;
   showPagination?: boolean;
+  initialPosts?: BlogPost[];
+  initialCount?: number;
+  initialCategory?: string | null;
 }
 
-function BlogSectionContent({ 
+function PaginationButton({
+  children,
+  onClick,
+  disabled,
+  isActive = false,
+  ariaLabel,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  isActive?: boolean;
+  ariaLabel?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      aria-current={isActive ? 'page' : undefined}
+      className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 font-semibold transition-colors ${
+        isActive
+          ? 'bg-orange-500 text-white'
+          : 'bg-[#f5f5f5] text-[#212121] hover:bg-orange-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#1e1e1e] dark:text-[#ffffff] dark:hover:bg-orange-500'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function BlogSectionContent({
   postsPerPage = 12,
   showPagination = true,
+  initialPosts = [],
+  initialCount = 0,
+  initialCategory = null,
 }: BlogSectionProps) {
-    const searchParams = useSearchParams();
-    const categoryUrl = searchParams.get('category');
-    
-    const where: PostWhereInput | null = useMemo(() => {
-      return categoryUrl 
-        ? {
-            category: {
-              url: {
-                equals: categoryUrl
-              }
-            }
-          }
-        : null;
-    }, [categoryUrl]);
-    
-    const {
-        posts,
-        loading,
-        error,
-        currentPage,
-        totalPages,
-        nextPage,
-        previousPage,
-        goToPage,
-        hasNextPage,
-        hasPreviousPage,
-        updateFilters,
-    } = useBlogPosts(where, undefined, postsPerPage);
+  const searchParams = useSearchParams();
+  const categoryUrl = searchParams.get('category');
+  const matchesInitialCategory =
+    (categoryUrl || null) === (initialCategory || null);
 
-    useEffect(() => {
-        updateFilters(where, null);
-    }, [where, updateFilters]);
+  const where: PostWhereInput | null = useMemo(() => {
+    return categoryUrl
+      ? {
+          category: {
+            url: {
+              equals: categoryUrl,
+            },
+          },
+        }
+      : null;
+  }, [categoryUrl]);
 
-    if (loading) {
+  const {
+    posts,
+    loading,
+    isPageLoading,
+    error,
+    currentPage,
+    totalPages,
+    nextPage,
+    previousPage,
+    goToPage,
+    hasNextPage,
+    hasPreviousPage,
+  } = useBlogPosts({
+    where,
+    postsPerPage,
+    initialPosts: matchesInitialCategory ? initialPosts : [],
+    initialCount: matchesInitialCategory ? initialCount : 0,
+  });
+
+  const pageNumbers = useMemo(() => {
+    const count = Math.min(totalPages, 5);
+    return Array.from({ length: count }, (_, i) => {
+      if (totalPages <= 5) {
+        return i + 1;
+      }
+      if (currentPage <= 3) {
+        return i + 1;
+      }
+      if (currentPage >= totalPages - 2) {
+        return totalPages - 4 + i;
+      }
+      return currentPage - 2 + i;
+    });
+  }, [currentPage, totalPages]);
+
+  if (loading) {
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: postsPerPage || 8 }).map((_, index) => (
-            <BlogCardSkeleton key={index} />
+          <BlogCardSkeleton key={index} />
         ))}
-        </div>
+      </div>
     );
-    }
+  }
 
-    if (error) {
-        return (
-        <ErrorState 
-            message={error?.message || 'Error desconocido al cargar los posts'}
-            title="Error al cargar los posts"
-        />
-        );
-    }
+  if (error && posts.length === 0) {
+    return (
+      <ErrorState
+        message={error?.message || 'Error desconocido al cargar los posts'}
+        title="Error al cargar los posts"
+      />
+    );
+  }
 
-    if (posts.length === 0) {
-        return <EmptyBlogState />;
-    }
-    
+  if (posts.length === 0) {
+    return <EmptyBlogState />;
+  }
+
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div
+        id="blog-posts"
+        className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 ${
+          isPageLoading ? 'opacity-60' : ''
+        }`}
+      >
         {posts.map((post, index) => (
           <BlogCard key={post.id} post={post} index={index} />
         ))}
       </div>
 
       {showPagination && totalPages > 1 && (
-        <div className="mt-12 flex justify-center gap-2">
-          <button
+        <nav
+          aria-label="Paginación del blog"
+          className="mt-12 flex flex-wrap items-center justify-center gap-2"
+        >
+          <PaginationButton
             onClick={previousPage}
-            disabled={!hasPreviousPage}
-            className="px-4 py-2 rounded-lg bg-[#f5f5f5] dark:bg-[#1e1e1e] text-[#212121] dark:text-[#ffffff] font-semibold hover:bg-orange-500 hover:text-white dark:hover:bg-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!hasPreviousPage || isPageLoading}
+            ariaLabel="Página anterior"
           >
             Anterior
-          </button>
-          
-          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-            let page;
-            if (totalPages <= 5) {
-              page = i + 1;
-            } else if (currentPage <= 3) {
-              page = i + 1;
-            } else if (currentPage >= totalPages - 2) {
-              page = totalPages - 4 + i;
-            } else {
-              page = currentPage - 2 + i;
-            }
-            return (
-              <button
-                key={page}
-                onClick={() => goToPage(page)}
-                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                  currentPage === page
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-[#f5f5f5] dark:bg-[#1e1e1e] text-[#212121] dark:text-[#ffffff] hover:bg-orange-500 hover:text-white dark:hover:bg-orange-500'
-                }`}
-              >
-                {page}
-              </button>
-            );
-          })}
-          
-          <button
+          </PaginationButton>
+
+          {pageNumbers.map((page) => (
+            <PaginationButton
+              key={page}
+              onClick={() => goToPage(page)}
+              disabled={isPageLoading}
+              isActive={currentPage === page}
+              ariaLabel={`Ir a la página ${page}`}
+            >
+              {page}
+            </PaginationButton>
+          ))}
+
+          <PaginationButton
             onClick={nextPage}
-            disabled={!hasNextPage}
-            className="px-4 py-2 rounded-lg bg-[#f5f5f5] dark:bg-[#1e1e1e] text-[#212121] dark:text-[#ffffff] font-semibold hover:bg-orange-500 hover:text-white dark:hover:bg-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!hasNextPage || isPageLoading}
+            ariaLabel="Página siguiente"
           >
             Siguiente
-          </button>
-        </div>
+          </PaginationButton>
+        </nav>
       )}
     </>
   );
 }
 
-export default function BlogSection({ 
+export default function BlogSection({
   postsPerPage = 12,
   showPagination = true,
+  initialPosts = [],
+  initialCount = 0,
+  initialCategory = null,
 }: BlogSectionProps) {
   return (
-    <Suspense fallback={
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {Array.from({ length: postsPerPage || 8 }).map((_, index) => (
-          <BlogCardSkeleton key={index} />
-        ))}
-      </div>
-    }>
-      <BlogSectionContent postsPerPage={postsPerPage} showPagination={showPagination} />
+    <Suspense
+      fallback={
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: postsPerPage || 8 }).map((_, index) => (
+            <BlogCardSkeleton key={index} />
+          ))}
+        </div>
+      }
+    >
+      <BlogSectionContent
+        postsPerPage={postsPerPage}
+        showPagination={showPagination}
+        initialPosts={initialPosts}
+        initialCount={initialCount}
+        initialCategory={initialCategory}
+      />
     </Suspense>
   );
 }
-

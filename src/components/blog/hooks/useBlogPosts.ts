@@ -1,104 +1,107 @@
 "use client";
 
 import { useQuery } from '@apollo/client';
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GET_POSTS_QUERY, GetPostsQueryResult, GetPostsQueryVariables } from '../queries';
-import { PostOrderByInput, PostWhereInput } from '../types';
+import { BlogPost, PostOrderByInput, PostWhereInput } from '../types';
 
 const DEFAULT_POSTS_PER_PAGE = 12;
+const DEFAULT_ORDER_BY: PostOrderByInput[] = [{ publishedAt: 'desc' }];
 
-export function useBlogPosts(
-  initialWhere?: PostWhereInput | null,
-  initialOrderBy?: PostOrderByInput[] | null,
-  postsPerPage?: number
-) {
-  const POSTS_PER_PAGE = postsPerPage || DEFAULT_POSTS_PER_PAGE;
+function buildWhereClause(baseWhere: PostWhereInput | null): PostWhereInput {
+  return {
+    ...(baseWhere || {}),
+    published: {
+      equals: true,
+    },
+  };
+}
+
+type UseBlogPostsOptions = {
+  where?: PostWhereInput | null;
+  orderBy?: PostOrderByInput[] | null;
+  postsPerPage?: number;
+  initialPosts?: BlogPost[];
+  initialCount?: number;
+};
+
+export function useBlogPosts({
+  where = null,
+  orderBy = DEFAULT_ORDER_BY,
+  postsPerPage = DEFAULT_POSTS_PER_PAGE,
+  initialPosts = [],
+  initialCount = 0,
+}: UseBlogPostsOptions = {}) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [where, setWhere] = useState<PostWhereInput | null>(initialWhere || null);
-  const [orderBy, setOrderBy] = useState<PostOrderByInput[] | null>(
-    initialOrderBy || [{ publishedAt: 'desc' }]
-  );
+  const resolvedOrderBy = orderBy ?? DEFAULT_ORDER_BY;
+  const whereClause = useMemo(() => buildWhereClause(where), [where]);
+  const skip = (currentPage - 1) * postsPerPage;
 
-  const skip = (currentPage - 1) * POSTS_PER_PAGE;
+  const filterKey = JSON.stringify({ where: whereClause, orderBy: resolvedOrderBy });
+  const previousFilterKey = useRef(filterKey);
 
-  // Always include published: { equals: true } in the where clause
-  const buildWhereClause = (baseWhere: PostWhereInput | null): PostWhereInput => {
-    return {
-      ...(baseWhere || {}),
-      published: {
-        equals: true,
-      },
-    };
-  };
-
-  const { data, loading, error, refetch } = useQuery<GetPostsQueryResult, GetPostsQueryVariables>(
-    GET_POSTS_QUERY,
-    {
-      variables: {
-        take: POSTS_PER_PAGE,
-        skip,
-        where: buildWhereClause(where),
-        orderBy: orderBy || ([{ publishedAt: 'desc' }] as any),
-      },
-      fetchPolicy: 'cache-and-network',
+  useEffect(() => {
+    if (previousFilterKey.current === filterKey) {
+      return;
     }
-  );
-
-  const posts = data?.posts || [];
-  const totalPosts = data?.postsCount || 0;
-  const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
-
-  const goToPage = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-  const nextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
-
-  const previousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
-
-  const updateFilters = (newWhere: PostWhereInput | null, newOrderBy: PostOrderByInput[] | null) => {
-    setWhere(newWhere);
-    setOrderBy(newOrderBy);
+    previousFilterKey.current = filterKey;
     setCurrentPage(1);
-    
-    // Build where clause with published filter
-    const whereClause = {
-      ...(newWhere || {}),
-      published: {
-        equals: true,
-      },
-    };
-    
-    refetch({
+  }, [filterKey]);
+
+  const { data, loading, error } = useQuery<
+    GetPostsQueryResult,
+    GetPostsQueryVariables
+  >(GET_POSTS_QUERY, {
+    variables: {
+      take: postsPerPage,
+      skip,
       where: whereClause,
-      orderBy: newOrderBy || [{ publishedAt: 'desc' }],
-      skip: 0,
-      take: POSTS_PER_PAGE,
+      orderBy: resolvedOrderBy,
+    },
+    notifyOnNetworkStatusChange: true,
+  });
+
+  const canUseInitial = currentPage === 1 && initialPosts.length > 0;
+  const posts = data?.posts ?? (canUseInitial ? initialPosts : []);
+  const totalPosts = data?.postsCount ?? initialCount;
+  const totalPages = Math.ceil(totalPosts / postsPerPage);
+  const isLoading = loading && posts.length === 0;
+
+  const goToPage = useCallback(
+    (page: number) => {
+      if (page < 1 || (totalPages > 0 && page > totalPages) || page === currentPage) {
+        return;
+      }
+      setCurrentPage(page);
+    },
+    [currentPage, totalPages],
+  );
+
+  const nextPage = useCallback(() => {
+    setCurrentPage((page) => {
+      if (totalPages > 0 && page >= totalPages) {
+        return page;
+      }
+      return page + 1;
     });
-  };
+  }, [totalPages]);
+
+  const previousPage = useCallback(() => {
+    setCurrentPage((page) => (page > 1 ? page - 1 : page));
+  }, []);
 
   return {
     posts,
-    loading,
+    loading: isLoading,
+    isPageLoading: loading && !isLoading,
     error,
     currentPage,
     totalPages,
+    totalPosts,
     goToPage,
     nextPage,
     previousPage,
-    updateFilters,
     hasNextPage: currentPage < totalPages,
     hasPreviousPage: currentPage > 1,
   };
 }
-

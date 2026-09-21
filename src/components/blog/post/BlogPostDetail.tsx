@@ -29,6 +29,29 @@ export default function BlogPostDetailComponent({ post }: BlogPostDetailProps) {
 
   return (
     <article className="min-h-screen bg-[#ffffff] dark:bg-[#121212]">
+      <nav
+        aria-label="Miga de pan"
+        className="border-b border-[#e0e0e0] px-4 py-3 sm:px-6 lg:px-8 dark:border-[#3a3a3a]"
+      >
+        <ol className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[#616161] dark:text-[#b0b0b0]">
+          <li>
+            <Link href={Routes.home} className="min-h-11 inline-flex items-center hover:text-orange-500">
+              Inicio
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <Link href={Routes.blog.index} className="min-h-11 inline-flex items-center hover:text-orange-500">
+              Blog
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li className="break-words font-medium text-[#212121] dark:text-[#ffffff]" aria-current="page">
+            {post.title}
+          </li>
+        </ol>
+      </nav>
+
       {/* Header con imagen */}
       <header className="relative w-full h-150 overflow-hidden">
         {post.image?.url ? (
@@ -61,12 +84,16 @@ export default function BlogPostDetailComponent({ post }: BlogPostDetailProps) {
                 {categoryLabel}
               </Link>
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4">
+            <h1 className="mb-4 break-words text-4xl font-bold sm:text-5xl lg:text-6xl">
               {post.title}
             </h1>
             <p className="text-sm">
               <span className="font-medium">Publicado el: </span>
-              <span className="font-bold">{post.publishedAt
+              <time
+                className="font-bold"
+                dateTime={post.publishedAt || post.createdAt}
+              >
+                {post.publishedAt
                 ? new Date(post.publishedAt).toLocaleDateString('es-MX', {
                     year: 'numeric',
                     month: 'long',
@@ -76,14 +103,29 @@ export default function BlogPostDetailComponent({ post }: BlogPostDetailProps) {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
-                  })}</span>
+                  })}
+              </time>
+              {post.updatedAt &&
+                (post.updatedAt.slice(0, 10) !==
+                  (post.publishedAt || post.createdAt).slice(0, 10)) && (
+                  <>
+                    <span className="font-medium"> · Actualizado el: </span>
+                    <time className="font-bold" dateTime={post.updatedAt}>
+                      {new Date(post.updatedAt).toLocaleDateString('es-MX', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </time>
+                  </>
+                )}
             </p>
           </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex items-center justify-end mb-8">
+        <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
           <PostActions 
               postId={post.id}
               viewsCount={post.post_viewsCount}
@@ -100,7 +142,7 @@ export default function BlogPostDetailComponent({ post }: BlogPostDetailProps) {
           <DocumentRenderer document={post.content?.document ?? []} renderers={renderers} />
         </motion.div>
 
-        <div className="flex items-center gap-4 mb-8 pb-8 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">
+        <div className="mb-8 flex flex-col gap-4 border-b border-[#e0e0e0] pb-8 lg:flex-row lg:items-center dark:border-[#3a3a3a]">
           <AuthorCard author={post.author} />
           <PostActions 
             postId={post.id}

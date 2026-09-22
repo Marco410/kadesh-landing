@@ -28,6 +28,7 @@ export const Routes = {
     index: '/blog',
     post: (url: string): string => `/blog/${url}`,
     postImage: (url: string): string => `/blog/${url}/og`,
+    unsubscribe: '/blog/desuscribirse',
   },
 
   novedades: '/novedades',

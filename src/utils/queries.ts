@@ -334,3 +334,24 @@ export interface CreateBlogSubscriptionResponse {
     } | null;
   };
 }
+
+export const UNSUBSCRIBE_BLOG_MUTATION = gql`
+  mutation UnsubscribeBlog($email: String!, $product: String!) {
+    unsubscribeBlog(email: $email, product: $product) {
+      success
+      message
+    }
+  }
+`;
+
+export interface UnsubscribeBlogVariables {
+  email: string;
+  product: 'pet' | 'saas';
+}
+
+export interface UnsubscribeBlogResponse {
+  unsubscribeBlog: {
+    success: boolean;
+    message: string;
+  };
+}

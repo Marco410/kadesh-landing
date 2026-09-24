@@ -99,8 +99,8 @@ export const AUTHENTICATE_USER_MUTATION = gql`
 
 /** Backend must implement this mutation (e.g. custom resolver or Keystone auth plugin). */
 export const AUTHENTICATE_USER_WITH_GOOGLE_MUTATION = gql`
-  mutation AuthenticateUserWithGoogle($idToken: String!) {
-    authenticateUserWithGoogle(idToken: $idToken) {
+  mutation AuthenticateUserWithGoogle($idToken: String!, $product: String) {
+    authenticateUserWithGoogle(idToken: $idToken, product: $product) {
       ... on UserAuthenticationWithGoogleSuccess {
         sessionToken
         item {
@@ -214,6 +214,7 @@ export interface AuthenticateUserResponse {
 
 export interface AuthenticateUserWithGoogleVariables {
   idToken: string;
+  product?: "pet" | "saas";
 }
 
 export interface AuthenticateUserWithGoogleResponse {
@@ -253,6 +254,7 @@ export interface CreateUserVariables {
     email: string;
     password: string;
     phone?: string;
+    product?: "pet" | "saas";
   };
 }
 

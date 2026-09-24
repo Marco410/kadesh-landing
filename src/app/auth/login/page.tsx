@@ -1,17 +1,13 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Tabs, Tab } from "@heroui/tabs";
 import Logo from "kadesh/components/shared/Logo";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { EyeIcon, ViewOffIcon } from "@hugeicons/core-free-icons";
-import {
-  useLogin,
-  useRegister,
-  useGoogleLogin,
-} from "../../../components/auth/hooks";
+import { useLogin, useRegister } from "../../../components/auth/hooks";
 
 function LoginPageContent() {
   const searchParams = useSearchParams();
@@ -49,29 +45,14 @@ function LoginPageContent() {
     loading: registerLoading,
     handleSubmit: handleRegister,
   } = useRegister({
-    onSuccess: () => {
-      if (redirectPath) {
-        // If there's a redirect, automatically login and redirect
-        setSuccessMessage("Registro exitoso. Iniciando sesión...");
-        // Auto-login will be handled by useRegister
-      } else {
-        // Switch to login tab after successful registration
-        setSelectedTab("login");
-        // Show success message
-        setSuccessMessage(
-          "Registro exitoso, ya puedes iniciar sesión con tus credenciales",
-        );
-      }
-    },
     redirectTo: redirectPath,
+    onAutoLoginFailed: () => {
+      setSelectedTab("login");
+      setSuccessMessage(
+        "Cuenta creada. Inicia sesión con tu correo y contraseña.",
+      );
+    },
   });
-
-  const {
-    googleButtonRef,
-    loading: googleLoading,
-    error: googleError,
-    setError: setGoogleError,
-  } = useGoogleLogin({ redirectTo: redirectPath });
 
   return (
     <div className="min-h-screen flex bg-[#f5f5f5] dark:bg-[#0a0a0a] relative">
@@ -115,7 +96,6 @@ function LoginPageContent() {
               onSelectionChange={(key) => {
                 setSelectedTab(key as string);
                 setSuccessMessage("");
-                setGoogleError("");
               }}
               className="w-full"
               classNames={{
@@ -131,7 +111,6 @@ function LoginPageContent() {
                 <form
                   onSubmit={(e) => {
                     setSuccessMessage("");
-                    setGoogleError("");
                     handleLogin(e, loginEmail, loginPassword);
                   }}
                   className="space-y-5"
@@ -144,11 +123,6 @@ function LoginPageContent() {
                   {loginError && (
                     <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm font-medium">
                       {loginError}
-                    </div>
-                  )}
-                  {googleError && (
-                    <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm font-medium">
-                      {googleError}
                     </div>
                   )}
 
@@ -240,28 +214,6 @@ function LoginPageContent() {
                       "Iniciar Sesión"
                     )}
                   </button>
-
-                  <div className="relative my-6">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-[#e0e0e0] dark:border-[#3a3a3a]"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white dark:bg-[#1e1e1e] text-[#616161] dark:text-[#b0b0b0]">
-                        O continúa con
-                      </span>
-                    </div>
-                  </div>
-
-                  <div
-                    ref={googleButtonRef}
-                    className="w-full min-h-[48px] flex items-center justify-center rounded-xl overflow-hidden [&>div]:!w-full [&>div]:!justify-center [&>div]:!min-h-[48px]"
-                    aria-label="Continuar con Google"
-                  />
-                  {googleLoading && (
-                    <p className="text-center text-sm text-[#616161] dark:text-[#b0b0b0]">
-                      Conectando con Google...
-                    </p>
-                  )}
                 </form>
               </Tab>
 
@@ -420,33 +372,6 @@ function LoginPageContent() {
                       "Registrarse"
                     )}
                   </button>
-
-                 <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-[#e0e0e0] dark:border-[#3a3a3a]"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-3  text-[#616161] dark:text-[#b0b0b0] font-medium">
-                      O continúa con
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                    ref={googleButtonRef}
-                    className="w-full min-h-[48px] flex items-center justify-center rounded-xl overflow-hidden [&>div]:!w-full [&>div]:!justify-center [&>div]:!min-h-[48px]"
-                    aria-label="Continuar con Google"
-                  />
-                  {googleLoading && (
-                    <p className="text-center text-sm text-[#616161] dark:text-[#b0b0b0]">
-                      Conectando con Google...
-                    </p>
-                  )}
-                  {googleError && (
-                    <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm font-medium">
-                      {googleError}
-                    </div>
-                  )}
                 </form>
               </Tab>
             </Tabs>

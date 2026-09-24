@@ -31,9 +31,9 @@ export default function BlogPostDetailComponent({ post }: BlogPostDetailProps) {
     <article className="min-h-screen bg-[#ffffff] dark:bg-[#121212]">
       <nav
         aria-label="Miga de pan"
-        className="border-b border-[#e0e0e0] px-4 py-3 sm:px-6 lg:px-8 dark:border-[#3a3a3a]"
+        className="border-b border-[#e0e0e0] px-4 pb-1 pt-[calc(72px+0.25rem)] sm:px-6 lg:px-8 dark:border-[#3a3a3a]"
       >
-        <ol className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[#616161] dark:text-[#b0b0b0]">
+        <ol className="mx-auto flex max-w-4xl items-center gap-x-2 text-sm text-[#616161] dark:text-[#b0b0b0]">
           <li>
             <Link href={Routes.home} className="min-h-11 inline-flex items-center hover:text-orange-500">
               Inicio
@@ -46,7 +46,7 @@ export default function BlogPostDetailComponent({ post }: BlogPostDetailProps) {
             </Link>
           </li>
           <li aria-hidden="true">/</li>
-          <li className="break-words font-medium text-[#212121] dark:text-[#ffffff]" aria-current="page">
+          <li className="min-w-0 truncate font-medium text-[#212121] dark:text-[#ffffff]" aria-current="page">
             {post.title}
           </li>
         </ol>

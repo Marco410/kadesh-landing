@@ -63,6 +63,7 @@ export const Routes = {
   // Veterinaries (pet places)
   veterinaries: {
     index: '/veterinarias',
+    register: '/veterinarias/registro',
     detail: (slug: string): string => `/veterinarias/${slug}`,
     book: (slug: string): string => `/veterinarias/${slug}?reservar=1`,
   },

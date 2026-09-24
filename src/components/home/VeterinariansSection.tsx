@@ -133,7 +133,7 @@ export default function VeterinariansSection() {
 
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Link
-            href="/veterinarias/registro"
+            href={Routes.veterinaries.register}
             className="inline-flex min-h-14 items-center justify-center rounded-xl bg-kadesh px-8 py-4 text-lg font-bold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
           >
             Registra tu veterinaria

@@ -1,6 +1,7 @@
 export { default as VeterinaryCard } from './VeterinaryCard';
 export { default as VeterinariesMap } from './VeterinariesMap';
 export { default as PetPlaceReviewsSection } from './PetPlaceReviewsSection';
+export { default as VeterinarySearchInput } from './VeterinarySearchInput';
 export { default as OpenNowChip } from './OpenNowChip';
 export { default as ClaimPetPlaceSection } from './ClaimPetPlaceSection';
 export { default as PetPlaceContactCard } from './PetPlaceContactCard';

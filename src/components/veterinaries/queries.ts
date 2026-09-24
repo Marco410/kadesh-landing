@@ -825,3 +825,20 @@ export interface CreateClinicAppointmentResponse {
     appointmentId: string | null;
   };
 }
+
+export const GET_VETERINARY_PET_PLACE_TYPE = gql`
+  query GetVeterinaryPetPlaceType {
+    petPlaceTypes(where: { value: { equals: "veterinary" } }, take: 1) {
+      id
+    }
+  }
+`;
+
+export const CREATE_PET_PLACE_MUTATION = gql`
+  mutation CreatePetPlace($data: PetPlaceCreateInput!) {
+    createPetPlace(data: $data) {
+      id
+      slug
+    }
+  }
+`;

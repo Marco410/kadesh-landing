@@ -14,12 +14,14 @@ import {
   Hospital01Icon,
   Location01Icon,
   MedicalFileIcon,
+  PencilEdit02Icon,
   Medicine02Icon,
   StarIcon,
   Stethoscope02Icon,
 } from "@hugeicons/core-free-icons";
 import { Navigation } from "kadesh/components/layout";
 import { Routes } from "kadesh/core/routes";
+import { useUser } from "kadesh/utils/UserContext";
 import { GET_PET_PLACE } from "kadesh/components/veterinaries/queries";
 import { motion } from "framer-motion";
 import { useUiMotion } from "kadesh/components/shared/motion";
@@ -316,6 +318,7 @@ function DetailShell({ children }: { children: ReactNode }) {
 export default function VeterinaryDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useUser();
   const motionPrefs = useUiMotion();
   const placeKey = typeof params?.slug === "string" ? params.slug : undefined;
 
@@ -333,6 +336,7 @@ export default function VeterinaryDetailPage() {
   });
 
   const place = data?.petPlace ?? null;
+  const isOwnPlace = Boolean(user?.id && place?.user?.id === user.id);
 
   useEffect(() => {
     if (!place?.slug || !placeKey || place.slug === placeKey) return;
@@ -477,6 +481,15 @@ export default function VeterinaryDetailPage() {
           </div>
 
           <div className="flex w-full flex-col gap-2 lg:w-auto lg:shrink-0 lg:flex-row lg:flex-wrap lg:justify-end">
+            {isOwnPlace && (
+              <Link
+                href={`${Routes.profile}?tab=clinics&clinic=${place.id}`}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-kadesh px-4 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white"
+              >
+                <HugeiconsIcon icon={PencilEdit02Icon} size={18} strokeWidth={1.5} />
+                Editar mi ficha
+              </Link>
+            )}
             <PetPlaceBookCta place={place} />
             <div className="flex w-full gap-2 sm:w-auto">
               {howToGetHref && (

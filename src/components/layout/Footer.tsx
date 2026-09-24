@@ -12,7 +12,7 @@ const FOOTER_LINKS = {
   ],
   servicios: [
     { label: "Donaciones", href: Routes.donations },
-    { label: "Registro de veterinarias", href: "/veterinarias/registro" },
+    { label: "Registro de veterinarias", href: Routes.veterinaries.register },
     { label: "Directorio", href: "/veterinarias" },
   ],
   legal: [

@@ -9,9 +9,11 @@ import {
   ArrowLeft01Icon,
   Call02Icon,
   Location01Icon,
+  PencilEdit02Icon,
 } from "@hugeicons/core-free-icons";
 import { Navigation } from "kadesh/components/layout";
 import { Routes } from "kadesh/core/routes";
+import { useUser } from "kadesh/utils/UserContext";
 import { motion } from "framer-motion";
 import { useUiMotion } from "kadesh/components/shared/motion";
 import {
@@ -48,6 +50,7 @@ export default function AnimalDetailPage() {
   const params = useParams();
   const router = useRouter();
   const motionPrefs = useUiMotion();
+  const { user } = useUser();
   const animalKey = (params?.slug || params?.id) as string;
   const { animal, logs, loading, error, refetch } = useAnimalDetail(
     animalKey || "",
@@ -96,6 +99,7 @@ export default function AnimalDetailPage() {
     );
   }
 
+  const isOwner = Boolean(user?.id && animal.user?.id === user.id);
   const lastLog = logs?.[0];
   const status = lastLog?.status || "register";
   const statusColor = getStatusColor(status);
@@ -130,11 +134,20 @@ export default function AnimalDetailPage() {
               <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2} />
               Animales
             </Link>
+            {isOwner && (
+              <Link
+                href={Routes.animals.edit(animal.slug || animalKey)}
+                className="order-2 ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white lg:order-3 lg:ml-0 lg:min-h-9 lg:shrink-0"
+              >
+                <HugeiconsIcon icon={PencilEdit02Icon} size={16} strokeWidth={1.5} />
+                Editar
+              </Link>
+            )}
             <ShareAnimalButton
               animal={animal}
               statusLabel={statusLabel}
               city={lastLog?.city}
-              className="order-2 ml-auto lg:order-3 lg:ml-0 lg:shrink-0"
+              className={`order-2 lg:order-3 lg:shrink-0 ${isOwner ? "" : "ml-auto lg:ml-0"}`}
             />
             <div className="order-3 flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-1 lg:order-2 lg:w-auto lg:flex-1 lg:flex-nowrap">
               <h1 className="min-w-0 break-words text-2xl font-black leading-tight tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6] lg:truncate lg:text-xl">

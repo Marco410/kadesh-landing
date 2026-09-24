@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Location01Icon } from '@hugeicons/core-free-icons';
+import { Cancel01Icon, Location01Icon, Search01Icon } from '@hugeicons/core-free-icons';
 import { sileo } from 'sileo';
 import {
   applyFreeMapThemeClass,
@@ -142,6 +142,8 @@ export default function LocationPicker({
   const [localCountry, setLocalCountry] = useState(country);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapFrameRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const markerRef = useRef<LeafletMarker | null>(null);
   const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -319,6 +321,8 @@ export default function LocationPicker({
       mapRef.current?.setView([hit.lat, hit.lng], PIN_ZOOM);
       setLocationQuery(hit.label);
       setShowSuggestions(false);
+      searchInputRef.current?.blur();
+      mapFrameRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     },
     [applyAddress, updateMarker]
   );
@@ -366,39 +370,48 @@ export default function LocationPicker({
   }, [doReverseGeocode, updateMarker]);
 
   const inputClassName =
-    'w-full rounded-xl border border-[#d8dee8] bg-white px-3 py-2 text-sm text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh dark:border-white/18 dark:bg-night dark:text-[#eef1f6] dark:placeholder:text-[#9aa3b2]';
+    'w-full min-h-12 rounded-xl border border-[#d8dee8] bg-white px-3 py-2 text-base sm:min-h-11 sm:text-sm text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh dark:border-white/18 dark:bg-night dark:text-[#eef1f6] dark:placeholder:text-[#9aa3b2]';
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <label className="block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
-            Ubicación <span className="text-red-600">*</span>
-          </label>
-          <p className="mt-1 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
-            Toca el mapa o usa tu posición.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={handleUseCurrentLocation}
-          disabled={isLoadingLocation || !ready}
-          className="inline-flex items-center gap-2 rounded-full bg-kadesh px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <HugeiconsIcon
-            icon={Location01Icon}
-            size={16}
-            className={isLoadingLocation ? 'animate-pulse text-white' : 'text-white'}
-            strokeWidth={1.5}
-          />
-          {isLoadingLocation ? 'Buscando…' : 'Estoy aquí'}
-        </button>
+      <div>
+        <label htmlFor="location-search" className="block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+          Ubicación <span className="text-red-600">*</span>
+        </label>
+        <p className="mt-1 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+          Usa tu posición, busca una calle o toca el mapa.
+        </p>
       </div>
 
+      <button
+        type="button"
+        onClick={handleUseCurrentLocation}
+        disabled={isLoadingLocation || !ready}
+        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-kadesh px-4 text-base font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-11 sm:w-auto sm:rounded-full sm:text-sm"
+      >
+        <HugeiconsIcon
+          icon={Location01Icon}
+          size={18}
+          className={isLoadingLocation ? 'animate-pulse text-white' : 'text-white'}
+          strokeWidth={1.5}
+        />
+        {isLoadingLocation ? 'Buscando…' : 'Usar mi ubicación actual'}
+      </button>
+
       <div className="relative">
+        <HugeiconsIcon
+          icon={Search01Icon}
+          size={18}
+          strokeWidth={1.5}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#5a5a5a] dark:text-[#9aa3b2]"
+        />
         <input
+          ref={searchInputRef}
           id="location-search"
           type="search"
+          inputMode="search"
+          enterKeyHint="search"
+          autoComplete="off"
           value={locationQuery}
           onChange={(e) => setLocationQuery(e.target.value)}
           onFocus={() => {
@@ -415,17 +428,36 @@ export default function LocationPicker({
               void handleSearchLocation();
             }
           }}
-          className={inputClassName}
-          placeholder="Colonia, parque o calle"
+          className={`${inputClassName} pl-10 pr-11 [&::-webkit-search-cancel-button]:appearance-none`}
+          placeholder="Busca colonia, parque o calle"
         />
+        {locationQuery && (
+          <button
+            type="button"
+            aria-label="Borrar búsqueda"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              setLocationQuery('');
+              setSuggestions([]);
+              setShowSuggestions(false);
+              searchInputRef.current?.focus();
+            }}
+            className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-[#5a5a5a] hover:bg-kadesh-50 dark:text-[#9aa3b2] dark:hover:bg-kadesh/15"
+          >
+            <HugeiconsIcon icon={Cancel01Icon} size={18} strokeWidth={1.5} />
+          </button>
+        )}
         {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-[#d8dee8] bg-white shadow-[0_12px_28px_rgba(15,35,80,0.14)] dark:border-white/12 dark:bg-night-raised">
+          <div className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto overscroll-contain rounded-xl border border-[#d8dee8] bg-white shadow-[0_12px_28px_rgba(15,35,80,0.14)] dark:border-white/12 dark:bg-night-raised">
             {suggestions.map((hit) => (
               <button
                 key={hit.id}
                 type="button"
-                onMouseDown={() => applyHit(hit)}
-                className="w-full px-3 py-2 text-left text-sm text-[#121212] transition-colors hover:bg-kadesh-50 dark:text-[#eef1f6] dark:hover:bg-kadesh/15"
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  applyHit(hit);
+                }}
+                className="block min-h-12 w-full border-b border-[#eef1f6] px-3 py-3 text-left text-sm leading-snug text-[#121212] transition-colors last:border-b-0 hover:bg-kadesh-50 dark:border-white/8 dark:text-[#eef1f6] dark:hover:bg-kadesh/15"
               >
                 {hit.label}
               </button>
@@ -435,8 +467,9 @@ export default function LocationPicker({
       </div>
 
       <div
+        ref={mapFrameRef}
         className={`relative overflow-hidden rounded-xl border border-[#d8dee8] shadow-[0_10px_24px_rgba(15,35,80,0.1)] dark:border-white/12 ${
-          compact ? 'h-[280px] sm:h-[360px]' : 'h-[360px]'
+          compact ? 'h-[320px] sm:h-[360px]' : 'h-[360px]'
         }`}
       >
         <div
@@ -459,13 +492,14 @@ export default function LocationPicker({
         <input
           id="lp-address"
           type="text"
+          autoComplete="street-address"
           value={localAddress}
           onChange={(e) => {
             setLocalAddress(e.target.value);
             onAddressChange?.(e.target.value, localCity, localState, localCountry);
           }}
           className={inputClassName}
-          placeholder="Se completa al fijar el pin"
+          placeholder="Se completa al fijar el pin, o escríbela"
         />
       </div>
 
@@ -528,7 +562,7 @@ export default function LocationPicker({
         </p>
       ) : (
         <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
-          Sin pin todavía. Estoy aquí o un toque en el mapa.
+          Sin pin todavía. Usa tu ubicación, busca una calle o toca el mapa.
         </p>
       )}
     </div>

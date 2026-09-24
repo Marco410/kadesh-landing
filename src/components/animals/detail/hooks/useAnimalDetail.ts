@@ -17,12 +17,15 @@ export interface AnimalDetail {
   createdAt: string;
   contactNumber?: string | null;
   animal_breed: {
+    id?: string;
     breed: string;
     animal_type: {
+      id?: string;
       name: string;
     };
   };
   multimedia: Array<{
+    id?: string;
     order?: number | null;
     image: {
       url: string;

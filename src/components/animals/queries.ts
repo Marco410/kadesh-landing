@@ -254,13 +254,49 @@ export const CREATE_ANIMAL_MULTIMEDIA_MUTATION = gql`
   }
 `;
 
+export const UPDATE_ANIMAL_MUTATION = gql`
+  mutation UpdateAnimal($where: AnimalWhereUniqueInput!, $data: AnimalUpdateInput!) {
+    updateAnimal(where: $where, data: $data) {
+      id
+      slug
+    }
+  }
+`;
+
+export const UPDATE_ANIMAL_LOG_MUTATION = gql`
+  mutation UpdateAnimalLog($where: AnimalLogWhereUniqueInput!, $data: AnimalLogUpdateInput!) {
+    updateAnimalLog(where: $where, data: $data) {
+      id
+    }
+  }
+`;
+
+export const UPDATE_ANIMAL_MULTIMEDIAS_MUTATION = gql`
+  mutation UpdateAnimalMultimedias($data: [AnimalMultimediaUpdateArgs!]!) {
+    updateAnimalMultimedias(data: $data) {
+      id
+      order
+    }
+  }
+`;
+
+export const DELETE_ANIMAL_MULTIMEDIAS_MUTATION = gql`
+  mutation DeleteAnimalMultimedias($where: [AnimalMultimediaWhereUniqueInput!]!) {
+    deleteAnimalMultimedias(where: $where) {
+      id
+    }
+  }
+`;
+
 export const GET_ANIMAL_QUERY = gql`
   query GetAnimal($where: AnimalWhereUniqueInput!, $orderBy: [AnimalLogOrderByInput!]!) {
     animal(where: $where) {
       slug
       animal_breed {
+        id
         breed
         animal_type {
+          id
           name
         }
       }
@@ -282,6 +318,7 @@ export const GET_ANIMAL_QUERY = gql`
         date_status
       }
       multimedia(orderBy: [{ order: asc }]) {
+        id
         order
         image {
           url

@@ -18,6 +18,14 @@ const WHERE_VETERINARY: PetPlaceWhereInput = {
   types: { some: { value: { equals: "veterinary" } } },
 };
 
+function normalizeText(value: string | null | undefined): string {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 export interface GetNearbyPetPlacesQueryResult {
   getNearbyPetPlaces?: {
     message?: string | null;
@@ -36,9 +44,11 @@ export function useNearbyPetPlaces(
   userLocation?: { lat: number | null; lng: number | null },
   limit?: number,
   radiusKm?: number,
-  options?: { openNow?: boolean },
+  options?: { openNow?: boolean; query?: string; verifiedOnly?: boolean },
 ) {
   const openNow = Boolean(options?.openNow);
+  const verifiedOnly = Boolean(options?.verifiedOnly);
+  const query = normalizeText(options?.query);
   const [currentPage, setCurrentPage] = useState(1);
 
   const input = useMemo<NearbyPetPlacesInput | null>(() => {
@@ -70,14 +80,25 @@ export function useNearbyPetPlaces(
     [nearbyPlaces],
   );
 
+  const verifiedCount = useMemo(
+    () => nearbyPlaces.filter((place) => Boolean(place.verified)).length,
+    [nearbyPlaces],
+  );
+
   const filteredPlaces = useMemo(() => {
-    if (!openNow) return nearbyPlaces;
-    return nearbyPlaces.filter((place) => place.isOpen === true);
-  }, [nearbyPlaces, openNow]);
+    const terms = query.split(/\s+/).filter(Boolean);
+    return nearbyPlaces.filter((place) => {
+      if (openNow && place.isOpen !== true) return false;
+      if (verifiedOnly && !place.verified) return false;
+      if (!terms.length) return true;
+      const haystack = normalizeText(place.name);
+      return terms.every((term) => haystack.includes(term));
+    });
+  }, [nearbyPlaces, openNow, verifiedOnly, query]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [openNow, radiusKm]);
+  }, [openNow, radiusKm, verifiedOnly, query]);
 
   const totalPlaces = filteredPlaces.length;
   const nearbyCount = nearbyPlaces.length;
@@ -109,6 +130,7 @@ export function useNearbyPetPlaces(
     allPlaces: filteredPlaces,
     nearbyCount,
     openCount,
+    verifiedCount,
     loading,
     currentPage: safePage,
     totalPages,

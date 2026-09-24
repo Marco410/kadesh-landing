@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@apollo/client";
 import { AnimatePresence, motion } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -42,7 +43,10 @@ export default function UserVeterinariesSection({
 }: {
   userId: string;
 }) {
-  const [openId, setOpenId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const [openId, setOpenId] = useState<string | null>(
+    searchParams.get("clinic"),
+  );
   const motionPrefs = useProfileMotion();
   const { data, loading, refetch } = useQuery<
     GetMyPetPlacesResponse,

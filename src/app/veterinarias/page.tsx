@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Navigation } from "kadesh/components/layout";
@@ -9,6 +10,7 @@ import {
   VeterinaryCard,
   VeterinariesMap,
   OpenNowChip,
+  VeterinarySearchInput,
   useNearbyPetPlaces,
 } from "kadesh/components/veterinaries";
 import type { PetPlace } from "kadesh/components/veterinaries";
@@ -53,6 +55,8 @@ function VeterinariesPageContent() {
     DEFAULT_RADIUS_VETERINARIES,
   );
   const openNow = searchParams.get("open") === "1";
+  const verifiedOnly = searchParams.get("verified") === "1";
+  const nameQuery = searchParams.get("q") ?? "";
 
   useEffect(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
@@ -89,6 +93,7 @@ function VeterinariesPageContent() {
     allPlaces,
     nearbyCount,
     openCount,
+    verifiedCount,
     loading: placesLoading,
     currentPage,
     totalPages,
@@ -99,7 +104,11 @@ function VeterinariesPageContent() {
     hasNextPage,
     hasPreviousPage,
     hasLocation,
-  } = useNearbyPetPlaces(userLocation, undefined, radiusKm, { openNow });
+  } = useNearbyPetPlaces(userLocation, undefined, radiusKm, {
+    openNow,
+    verifiedOnly,
+    query: nameQuery,
+  });
 
   const nextRadius = RADIUS_OPTIONS_VETERINARIES.find((km) => km > radiusKm);
 
@@ -140,10 +149,41 @@ function VeterinariesPageContent() {
     setSelectedPlace(null);
   };
 
-  const nearbyCountLabel = openNow
-    ? `${totalPlaces} abierta${totalPlaces === 1 ? "" : "s"} cerca de ti`
-    : `${totalPlaces} cerca de ti`;
-  const noOpenNow = openNow && nearbyCount > 0 && totalPlaces === 0;
+  const handleVerifiedToggle = () => {
+    const href = replaceQueryParam(
+      searchParams.toString(),
+      "verified",
+      verifiedOnly ? null : "1",
+    );
+    router.replace(`${Routes.veterinaries.index}${href}`, { scroll: false });
+    setSelectedPlace(null);
+  };
+
+  const handleNameChange = (value: string) => {
+    const href = replaceQueryParam(
+      searchParams.toString(),
+      "q",
+      value.trim() || null,
+    );
+    router.replace(`${Routes.veterinaries.index}${href}`, { scroll: false });
+    setSelectedPlace(null);
+  };
+
+  const clearFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    ["open", "verified", "q"].forEach((key) => params.delete(key));
+    const next = params.toString();
+    router.replace(`${Routes.veterinaries.index}${next ? `?${next}` : ""}`, {
+      scroll: false,
+    });
+    setSelectedPlace(null);
+  };
+
+  const hasActiveFilters = openNow || verifiedOnly || Boolean(nameQuery.trim());
+  const nearbyCountLabel = `${totalPlaces} ${
+    hasActiveFilters ? `resultado${totalPlaces === 1 ? "" : "s"}` : "cerca de ti"
+  }`;
+  const noFilterMatch = hasActiveFilters && nearbyCount > 0 && totalPlaces === 0;
 
   return (
     <main className="min-h-dvh bg-white pt-[72px] dark:bg-night">
@@ -174,7 +214,13 @@ function VeterinariesPageContent() {
             <h1 className="text-2xl font-black tracking-[-0.03em] text-[#121212] dark:text-white">
               Veterinarias
             </h1>
-            <p className="mt-1 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+            <Link
+              href={Routes.veterinaries.register}
+              className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-kadesh px-4 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
+            >
+              Registra tu veterinaria
+            </Link>
+            <p className="mt-3 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
               {hasLocation
                 ? nearbyCountLabel
                 : "Encuentra clínicas según tu ubicación"}
@@ -205,10 +251,17 @@ function VeterinariesPageContent() {
                   value={radiusKm}
                   onChange={handleRadiusChange}
                 />
+                <VeterinarySearchInput
+                  value={nameQuery}
+                  onChange={handleNameChange}
+                />
                 <OpenNowChip
                   pressed={openNow}
                   onToggle={handleOpenNowToggle}
                   count={placesLoading ? undefined : openCount}
+                  verifiedPressed={verifiedOnly}
+                  onToggleVerified={handleVerifiedToggle}
+                  verifiedCount={placesLoading ? undefined : verifiedCount}
                 />
               </>
             )}
@@ -261,29 +314,29 @@ function VeterinariesPageContent() {
                 <p className="text-base font-semibold text-[#121212] dark:text-white">
                   {locationError
                     ? "Sin ubicación no podemos ordenar por distancia"
-                    : noOpenNow
-                      ? `Ninguna abierta ahora en ${radiusKm} km`
+                    : noFilterMatch
+                      ? "Ninguna veterinaria coincide"
                       : `No hay clínicas en ${radiusKm} km`}
                 </p>
                 <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#5a5a5a] dark:text-[#b0b0b0]">
                   {locationError
                     ? "Activa la ubicación en el navegador para ver veterinarias cerca de ti."
-                    : noOpenNow
-                      ? "Hay clínicas en este radio, pero ahora mismo están cerradas. Quita el filtro o amplía la búsqueda."
+                    : noFilterMatch
+                      ? `Hay ${nearbyCount} clínica${nearbyCount === 1 ? "" : "s"} en ${radiusKm} km, pero ninguna cumple con tu búsqueda o filtros.`
                       : nextRadius
                         ? "Amplía el radio: en esta zona las clínicas suelen aparecer a partir de un rango mayor."
                         : "No encontramos veterinarias en el radio máximo. Vuelve más tarde o registra la tuya."}
                 </p>
-                {(noOpenNow || (hasLocation && nextRadius)) && (
+                {(noFilterMatch || (hasLocation && nextRadius)) && (
                   <div className="mt-5 flex flex-col items-center gap-2">
-                    {noOpenNow && (
+                    {noFilterMatch && (
                       <motion.button
                         type="button"
-                        onClick={handleOpenNowToggle}
+                        onClick={clearFilters}
                         whileTap={motionPrefs.tap}
                         className="inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
                       >
-                        Ver todas
+                        Quitar filtros
                       </motion.button>
                     )}
                     {hasLocation && nextRadius && (
@@ -292,7 +345,7 @@ function VeterinariesPageContent() {
                         onClick={() => handleRadiusChange(nextRadius)}
                         whileTap={motionPrefs.tap}
                         className={`inline-flex min-h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold transition-colors ${
-                          noOpenNow
+                          noFilterMatch
                             ? "border-2 border-kadesh text-kadesh hover:bg-kadesh hover:text-white"
                             : "bg-kadesh text-white hover:bg-kadesh-600"
                         }`}
@@ -305,7 +358,7 @@ function VeterinariesPageContent() {
               </motion.div>
             ) : (
               <motion.div
-                key={`${radiusKm}-${openNow}-${currentPage}`}
+                key={`${radiusKm}-${openNow}-${verifiedOnly}-${nameQuery}-${currentPage}`}
                 initial={motionPrefs.panel ? "hidden" : false}
                 animate="show"
                 exit="exit"

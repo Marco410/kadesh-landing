@@ -132,6 +132,7 @@ export function useRegister(options?: UseRegisterOptions) {
           email,
           password,
           phone: phone || undefined,
+          product: 'pet',
         },
       },
     });

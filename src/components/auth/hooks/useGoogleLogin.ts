@@ -137,7 +137,7 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
       setError("");
       setLoading(true);
       authenticateWithGoogle({
-        variables: { idToken: response.credential },
+        variables: { idToken: response.credential, product: "pet" },
       });
     },
     [authenticateWithGoogle],

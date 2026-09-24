@@ -22,6 +22,8 @@ interface AnimalTypeSelectorProps {
   variant?: 'default' | 'compact';
   selectedValue?: string;
   error?: string;
+  /** Show every type at once, without the Más / Menos toggle. */
+  alwaysExpanded?: boolean;
 }
 
 function TypeChip({
@@ -77,6 +79,7 @@ export default function AnimalTypeSelector({
   variant = 'default',
   selectedValue,
   error,
+  alwaysExpanded = false,
 }: AnimalTypeSelectorProps) {
   const { data: animalTypesData, loading: loadingTypes } = useQuery(GET_ANIMAL_TYPES_QUERY, {
     variables: { orderBy: [{ order: 'asc' }] },
@@ -105,7 +108,7 @@ export default function AnimalTypeSelector({
   const selectedIsSecondary = types.some(
     (type) => isSelected(type) && !isPrimaryDirectoryType(type.name || '')
   );
-  const [showMoreTypes, setShowMoreTypes] = useState(selectedIsSecondary);
+  const [showMoreTypes, setShowMoreTypes] = useState(alwaysExpanded || selectedIsSecondary);
   const typeRowRef = useRevealChips(showMoreTypes);
   const { ref: moreToggleRef, pulse: pulseMoreToggle } = useChipPulse();
 
@@ -139,7 +142,7 @@ export default function AnimalTypeSelector({
     <div ref={typeRowRef} className="flex flex-wrap gap-1.5">
       {shownPrimary.map((type) => renderChip(type))}
       {extra.map((type) => renderChip(type, true))}
-      {extra.length > 0 && (
+      {extra.length > 0 && !alwaysExpanded && (
         <button
           ref={moreToggleRef}
           type="button"

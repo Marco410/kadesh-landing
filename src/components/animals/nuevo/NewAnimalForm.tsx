@@ -22,7 +22,7 @@ import StatusChips from 'kadesh/components/animals/StatusChips';
 import { sileo } from 'sileo';
 import { Routes } from 'kadesh/core/routes';
 import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
-import { useChipPulse } from 'kadesh/components/animals/useChipMotion';
+import ChoiceChip from 'kadesh/components/animals/nuevo/ChoiceChip';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useUiMotion } from 'kadesh/components/shared/motion';
 import {
@@ -75,37 +75,6 @@ function formatDateTimeLocal(date: Date): string {
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   return `${year}-${month}-${day}T${hours}:${minutes}`;
-}
-
-function ChoiceChip({
-  label,
-  selected,
-  onSelect,
-}: {
-  label: string;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  const { ref, pulse } = useChipPulse();
-
-  return (
-    <button
-      ref={ref}
-      type="button"
-      aria-pressed={selected}
-      onClick={() => {
-        pulse();
-        onSelect();
-      }}
-      className={`inline-flex min-h-10 origin-center items-center rounded-full border px-4 text-sm font-semibold transition-[background-color,border-color,color] duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
-        selected
-          ? 'border-kadesh bg-kadesh text-white'
-          : 'border-[#d8dee8] bg-transparent text-[#3a3a3a] hover:border-kadesh/50 hover:bg-kadesh-50 dark:border-white/18 dark:text-[#e8edf4] dark:hover:bg-kadesh/15'
-      }`}
-    >
-      {label}
-    </button>
-  );
 }
 
 function isValidName(name: string) {
@@ -625,6 +594,7 @@ export default function NewAnimalForm({
               </div>
 
               <AnimalTypeSelector
+                alwaysExpanded
                 selectedTypeId={animalTypeId}
                 onTypeChange={(typeId) => {
                   setAnimalTypeId(typeId);

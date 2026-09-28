@@ -6,15 +6,15 @@ KADESH (Kadesh Pet) conecta adoptantes, rescatistas, veterinarias y refugios. Fu
 
 ## Páginas
 
-- [Inicio](https://www.kadesh.com.mx/): Qué es KADESH, animales, veterinarias, donaciones y FAQ
-- [Animales](https://www.kadesh.com.mx/animales): Reportes de animales perdidos y en adopción
-- [Veterinarias](https://www.kadesh.com.mx/veterinarias): Directorio de veterinarias cercanas
-- [Blog](https://www.kadesh.com.mx/blog): Historias y notas de la comunidad
-- [Conócenos](https://www.kadesh.com.mx/conocenos): Misión y equipo
-- [Contacto](https://www.kadesh.com.mx/contacto): Soporte
-- [Términos](https://www.kadesh.com.mx/terminos)
-- [Privacidad](https://www.kadesh.com.mx/privacidad)
+- [Inicio](https://pet.kadesh.com.mx/): Qué es KADESH, animales, veterinarias, donaciones y FAQ
+- [Animales](https://pet.kadesh.com.mx/animales): Reportes de animales perdidos y en adopción
+- [Veterinarias](https://pet.kadesh.com.mx/veterinarias): Directorio de veterinarias cercanas
+- [Blog](https://pet.kadesh.com.mx/blog): Historias y notas de la comunidad
+- [Conócenos](https://pet.kadesh.com.mx/conocenos): Misión y equipo
+- [Contacto](https://pet.kadesh.com.mx/contacto): Soporte
+- [Términos](https://pet.kadesh.com.mx/terminos)
+- [Privacidad](https://pet.kadesh.com.mx/privacidad)
 
 ## Optional
 
-- [llms.txt](https://www.kadesh.com.mx/llms.txt)
+- [llms.txt](https://pet.kadesh.com.mx/llms.txt)

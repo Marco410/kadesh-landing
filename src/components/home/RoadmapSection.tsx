@@ -170,7 +170,7 @@ export default function RoadmapSection() {
           ¿Quieres el historial de versiones ya publicadas?{" "}
           <Link
             href={Routes.novedades}
-            className="font-semibold text-kadesh hover:underline"
+            className="font-semibold text-kadesh-700 hover:underline dark:text-kadesh-300"
           >
             Ver novedades →
           </Link>

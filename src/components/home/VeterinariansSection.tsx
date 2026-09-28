@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useNearbyPetPlaces } from "kadesh/components/veterinaries/hooks/useNearbyPetPlaces";
 import HomeVeterinaryCard from "kadesh/components/home/HomeVeterinaryCard";
 import { DEFAULT_RADIUS_VETERINARIES } from "kadesh/constants/constans";
 import { Routes } from "kadesh/core/routes";
+import {
+  GEO_OPTIONS_CACHED,
+  isGeolocationAvailable,
+  requestCurrentPosition,
+} from "kadesh/utils/geolocation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { HospitalLocationIcon, Location01Icon } from "@hugeicons/core-free-icons";
 import { gsap, useGSAP, HOME_EASE } from "kadesh/components/home/gsap-register";
@@ -17,18 +22,15 @@ export default function VeterinariansSection() {
   const [userLocation, setUserLocation] = useState<
     { lat: number; lng: number } | undefined
   >(undefined);
+  const [isLocating, setIsLocating] = useState(false);
 
-  useEffect(() => {
-    if (typeof window === "undefined" || !navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) =>
-        setUserLocation({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        }),
-      () => {},
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
-    );
+  const handleUseLocation = useCallback(() => {
+    if (!isGeolocationAvailable()) return;
+    setIsLocating(true);
+    requestCurrentPosition(GEO_OPTIONS_CACHED)
+      .then(setUserLocation)
+      .catch(() => {})
+      .finally(() => setIsLocating(false));
   }, []);
 
   const { allPlaces, loading, hasLocation } = useNearbyPetPlaces(
@@ -104,8 +106,17 @@ export default function VeterinariansSection() {
               <HugeiconsIcon icon={Location01Icon} size={28} strokeWidth={1.5} aria-hidden="true" />
             </span>
             <p className="max-w-md text-[#5a5a5a] dark:text-[#b0b0b0]">
-              Activa tu ubicación para ver veterinarias cercanas a ti, o abre el directorio y busca por radio.
+              Usa tu ubicación para ver veterinarias cercanas a ti, o abre el directorio y busca por radio.
             </p>
+            <button
+              type="button"
+              onClick={handleUseLocation}
+              disabled={isLocating || !isGeolocationAvailable()}
+              className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
+            >
+              <HugeiconsIcon icon={Location01Icon} size={18} strokeWidth={1.5} aria-hidden="true" />
+              {isLocating ? "Obteniendo ubicación…" : "Usar mi ubicación"}
+            </button>
           </div>
         )}
 

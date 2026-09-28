@@ -45,6 +45,7 @@ export interface AnimalDetail {
     status: string;
     date_status?: string;
   }>;
+  /** Keystone puede devolver null si el visitante no tiene permiso de leer User. */
   user: {
     id: string;
     createdAt: string;
@@ -58,7 +59,7 @@ export interface AnimalDetail {
     profileImage?: {
       url: string;
     } | null;
-  };
+  } | null;
 }
 
 interface GetAnimalQueryResponse {

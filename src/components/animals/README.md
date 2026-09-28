@@ -38,6 +38,8 @@ Misma familia que la ficha de veterinaria: `pt-[72px]`, `night` / `night-raised`
 
 El trabajo es reconocer y actuar **sin recorrer la página**. En escritorio la ficha es un workspace de viewport: foto a la izquierda (llena la altura), datos compactos arriba a la derecha, historial y mapa abajo a la derecha. Encabezado: volver, nombre, chip de estatus, **Cómo llegar** y **Llamar**. La foto es el héroe de reconocimiento, sin halo de 5px; las miniaturas van encima de la foto. No se muestran coordenadas ni notas placeholder (`Sin información adicional`). Cómo llegar en el mapa sigue el pin seleccionado; el del encabezado va al último registro. Comentarios quedan debajo; no empujan el mapa fuera de pantalla.
 
+El dueño del reporte (`animal.user`) puede venir `null` para visitantes sin sesión: Keystone filtra el User. La ficha **no debe crashear** — muestra «Usuario de KADESH» y oculta Editar / acciones de dueño. No asumas `user` en el render.
+
 ## Mapa
 
 No usamos la API de Google Maps. El mapa es **Leaflet + MapLibre GL** con el estilo Liberty de **OpenFreeMap** (`src/components/shared/free-map.ts`), empaquetado en la app (no se carga desde unpkg). El modo oscuro es un filtro CSS (`.kadesh-free-map--night`), no un segundo estilo. Pins de usuario y controles usan `--color-kadesh`.

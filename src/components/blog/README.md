@@ -19,6 +19,11 @@ El backend es el mismo que usa el blog del SaaS (`kadesh.com.mx/blog`). `Post`, 
 - Schema: `Blog` + `ItemList` en el índice; `BlogPosting` + `BreadcrumbList` en el detalle. El publisher apunta a la Organization de KADESH (`/#organization`).
 - Canonical del índice: `/blog` (también con `?category=`). Canonical del post: `/blog/<url>` en `pet.kadesh.com.mx`.
 - Open Graph tipo `article` (fechas, autor, imagen). La portada del CMS es una URL firmada (caduca), así que el share apunta a `/blog/<url>/og` (route handler que descarga la portada vigente y la sirve con caché). Sin portada o si falla la descarga, redirige a `/og-image.png`.
+- `public/llms.txt` debe enlazar **solo** `https://pet.kadesh.com.mx/...`. Nunca `www.kadesh.com.mx` ni el apex B2B (ese host es Negocios).
+
+### Search Console
+
+Propiedad en `pet.kadesh.com.mx`: enviar `https://pet.kadesh.com.mx/sitemap.xml`, inspeccionar 2–3 posts de `/blog/...` y solicitar indexación. AI Overviews / GEO solo después de que Google indexe.
 
 ## Copy
 

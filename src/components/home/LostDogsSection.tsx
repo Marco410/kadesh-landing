@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLostAnimals } from '../animals';
@@ -8,6 +8,11 @@ import { getStatusLabel, getStatusColor, getTypeLabel } from '../animals/constan
 import { formatDate } from 'kadesh/utils/format-date';
 import { animalDetailHref } from 'kadesh/components/animals/animalSlug';
 import { Routes } from 'kadesh/core/routes';
+import {
+  GEO_OPTIONS_CACHED,
+  isGeolocationAvailable,
+  requestCurrentPosition,
+} from 'kadesh/utils/geolocation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowRight01Icon,
@@ -25,32 +30,25 @@ export default function LostDogsSection() {
     undefined
   );
   const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !navigator.geolocation) {
+  const handleUseLocation = useCallback(() => {
+    if (!isGeolocationAvailable()) {
       setLocationPermissionDenied(true);
       return;
     }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
+    setIsLocating(true);
+    requestCurrentPosition(GEO_OPTIONS_CACHED)
+      .then((coords) => {
+        setUserLocation(coords);
         setLocationPermissionDenied(false);
-      },
-      (error) => {
-        if (error.code === error.PERMISSION_DENIED) {
+      })
+      .catch((error: GeolocationPositionError | Error) => {
+        if ('code' in error && error.code === error.PERMISSION_DENIED) {
           setLocationPermissionDenied(true);
         }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      }
-    );
+      })
+      .finally(() => setIsLocating(false));
   }, []);
 
   const { animals, loading } = useLostAnimals(undefined, undefined, userLocation);
@@ -96,6 +94,17 @@ export default function LostDogsSection() {
             KADESH muestra reportes reales cerca de ti para que puedas ayudar a
             reunir o reubicar a un animal.
           </p>
+          {!userLocation && !locationPermissionDenied && (
+            <button
+              type="button"
+              onClick={handleUseLocation}
+              disabled={isLocating}
+              className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
+            >
+              <HugeiconsIcon icon={Location01Icon} size={18} strokeWidth={1.5} aria-hidden="true" />
+              {isLocating ? 'Obteniendo ubicación…' : 'Usar mi ubicación'}
+            </button>
+          )}
           {locationPermissionDenied && (
             <p className="mt-6 inline-flex items-start gap-2 rounded-xl bg-amber-50 px-4 py-2.5 text-left text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
               <HugeiconsIcon

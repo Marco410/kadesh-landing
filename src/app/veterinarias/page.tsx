@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -19,6 +19,12 @@ import {
   DirectoryRadiusChips,
 } from "kadesh/components/shared";
 import { Routes } from "kadesh/core/routes";
+import {
+  GEO_OPTIONS_FRESH,
+  geolocationErrorMessage,
+  isGeolocationAvailable,
+  requestCurrentPosition,
+} from "kadesh/utils/geolocation";
 import {
   DEFAULT_RADIUS_VETERINARIES,
   RADIUS_OPTIONS_VETERINARIES,
@@ -43,11 +49,12 @@ function VeterinariesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const motionPrefs = useUiMotion();
+  // Idle until the user asks for location (Best Practices / Lighthouse).
   const [userLocation, setUserLocation] = useState<
     { lat: number; lng: number } | { lat: null; lng: null } | undefined
   >(undefined);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [locationLoading, setLocationLoading] = useState(true);
+  const [locationLoading, setLocationLoading] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<PetPlace | null>(null);
   const radiusKm = parseRadiusOption(
     searchParams.get("radius"),
@@ -58,34 +65,28 @@ function VeterinariesPageContent() {
   const verifiedOnly = searchParams.get("verified") === "1";
   const nameQuery = searchParams.get("q") ?? "";
 
-  useEffect(() => {
-    if (typeof window === "undefined" || !navigator.geolocation) {
+  const requestLocation = useCallback(() => {
+    if (!isGeolocationAvailable()) {
       setLocationError("La geolocalización no está disponible");
       setUserLocation({ lat: null, lng: null });
-      setLocationLoading(false);
       return;
     }
     setLocationLoading(true);
     setLocationError(null);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
+    requestCurrentPosition(GEO_OPTIONS_FRESH)
+      .then((coords) => {
+        setUserLocation(coords);
         setLocationLoading(false);
-      },
-      (error) => {
+      })
+      .catch((error: GeolocationPositionError | Error) => {
         const message =
-          error.code === error.PERMISSION_DENIED
-            ? "Permiso de ubicación denegado. Activa la ubicación para ver veterinarias cercanas."
-            : "No se pudo obtener tu ubicación";
+          "code" in error
+            ? geolocationErrorMessage(error)
+            : error.message || "No se pudo obtener tu ubicación";
         setLocationError(message);
         setUserLocation({ lat: null, lng: null });
         setLocationLoading(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
-    );
+      });
   }, []);
 
   const {
@@ -231,17 +232,39 @@ function VeterinariesPageContent() {
                 Obteniendo tu ubicación…
               </p>
             )}
+            {!hasLocation && !locationLoading && !locationError && (
+              <motion.button
+                type="button"
+                onClick={requestLocation}
+                whileTap={motionPrefs.tap}
+                className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh sm:w-auto"
+              >
+                <HugeiconsIcon icon={Location01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
+                Usar mi ubicación
+              </motion.button>
+            )}
             {locationError && (
-              <p className="mt-3 flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
-                <HugeiconsIcon
-                  icon={Location01Icon}
-                  size={16}
-                  className="mt-0.5 flex-shrink-0"
-                  strokeWidth={1.5}
-                  aria-hidden="true"
-                />
-                <span>{locationError}</span>
-              </p>
+              <div className="mt-3 space-y-2">
+                <p className="flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
+                  <HugeiconsIcon
+                    icon={Location01Icon}
+                    size={16}
+                    className="mt-0.5 flex-shrink-0"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                  <span>{locationError}</span>
+                </p>
+                <motion.button
+                  type="button"
+                  onClick={requestLocation}
+                  whileTap={motionPrefs.tap}
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-kadesh px-4 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white"
+                >
+                  <HugeiconsIcon icon={Location01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
+                  Reintentar ubicación
+                </motion.button>
+              </div>
             )}
 
             {hasLocation && !locationError && (
@@ -314,18 +337,22 @@ function VeterinariesPageContent() {
                 <p className="text-base font-semibold text-[#121212] dark:text-white">
                   {locationError
                     ? "Sin ubicación no podemos ordenar por distancia"
-                    : noFilterMatch
-                      ? "Ninguna veterinaria coincide"
-                      : `No hay clínicas en ${radiusKm} km`}
+                    : !hasLocation
+                      ? "¿Dónde buscamos clínicas?"
+                      : noFilterMatch
+                        ? "Ninguna veterinaria coincide"
+                        : `No hay clínicas en ${radiusKm} km`}
                 </p>
                 <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#5a5a5a] dark:text-[#b0b0b0]">
                   {locationError
                     ? "Activa la ubicación en el navegador para ver veterinarias cerca de ti."
-                    : noFilterMatch
-                      ? `Hay ${nearbyCount} clínica${nearbyCount === 1 ? "" : "s"} en ${radiusKm} km, pero ninguna cumple con tu búsqueda o filtros.`
-                      : nextRadius
-                        ? "Amplía el radio: en esta zona las clínicas suelen aparecer a partir de un rango mayor."
-                        : "No encontramos veterinarias en el radio máximo. Vuelve más tarde o registra la tuya."}
+                    : !hasLocation
+                      ? "Pulsa «Usar mi ubicación» arriba para ver clínicas cerca de ti."
+                      : noFilterMatch
+                        ? `Hay ${nearbyCount} clínica${nearbyCount === 1 ? "" : "s"} en ${radiusKm} km, pero ninguna cumple con tu búsqueda o filtros.`
+                        : nextRadius
+                          ? "Amplía el radio: en esta zona las clínicas suelen aparecer a partir de un rango mayor."
+                          : "No encontramos veterinarias en el radio máximo. Vuelve más tarde o registra la tuya."}
                 </p>
                 {(noFilterMatch || (hasLocation && nextRadius)) && (
                   <div className="mt-5 flex flex-col items-center gap-2">

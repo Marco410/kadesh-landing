@@ -37,7 +37,7 @@ export default function Footer() {
 
           {/* Recursos */}
           <div>
-            <h4 className="text-white font-bold mb-4">Recursos</h4>
+            <p className="text-white font-bold mb-4">Recursos</p>
             <ul className="space-y-2">
               {FOOTER_LINKS.recursos.map((link) => (
                 <li key={link.href}>
@@ -54,7 +54,7 @@ export default function Footer() {
 
           {/* Servicios */}
           <div>
-            <h4 className="text-white font-bold mb-4">Servicios</h4>
+            <p className="text-white font-bold mb-4">Servicios</p>
             <ul className="space-y-2">
               {FOOTER_LINKS.servicios.map((link) => (
                 <li key={link.href}>
@@ -71,7 +71,7 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="text-white font-bold mb-4">Legal</h4>
+            <p className="text-white font-bold mb-4">Legal</p>
             <ul className="space-y-2">
               {FOOTER_LINKS.legal.map((link) => (
                 <li key={link.href}>
@@ -92,7 +92,7 @@ export default function Footer() {
             <p className="text-gray-400 text-sm text-center md:text-left">
               © {new Date().getFullYear()} KADESH. Todos los derechos reservados.
             </p>
-            <p className="text-gray-500 text-sm text-center md:text-right">
+            <p className="text-gray-400 text-sm text-center md:text-right">
               Hecho con ❤️ para el bienestar animal
             </p>
           </div>

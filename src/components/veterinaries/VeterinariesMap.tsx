@@ -7,7 +7,6 @@ import {
   applyFreeMapThemeClass,
   attachFreeMapBaseLayer,
   createMarkerGroup,
-  createUserLocationIcon,
   createVeterinaryPinIcon,
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_ZOOM,
@@ -17,7 +16,6 @@ import {
   loadLeafletCluster,
   resetLeafletContainer,
   type LeafletMap,
-  type LeafletMarker,
   type LeafletMarkerClusterGroup,
   type LeafletPopup,
 } from 'kadesh/components/shared/free-map';
@@ -53,14 +51,10 @@ export default function VeterinariesMap({
   const { resolvedTheme } = useTheme();
   const [ready, setReady] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(
-    null
-  );
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const clusterRef = useRef<LeafletMarkerClusterGroup | null>(null);
-  const userMarkerRef = useRef<LeafletMarker | null>(null);
   const popupRef = useRef<LeafletPopup | null>(null);
   const onPlaceClickRef = useRef(onPlaceClick);
   const selectedRef = useRef(selectedPlace);
@@ -187,7 +181,6 @@ export default function VeterinariesMap({
       map.remove();
       mapRef.current = null;
       clusterRef.current = null;
-      userMarkerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
@@ -196,16 +189,6 @@ export default function VeterinariesMap({
     if (!mounted || !ready) return;
     applyFreeMapThemeClass(containerRef.current, resolvedTheme);
   }, [mounted, ready, resolvedTheme]);
-
-  useEffect(() => {
-    if (!mounted || typeof window === 'undefined' || !navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) =>
-        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => {},
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
-    );
-  }, [mounted]);
 
   useEffect(() => {
     const L = getLeaflet();
@@ -227,20 +210,8 @@ export default function VeterinariesMap({
       points.push(coords);
     });
 
-    if (userLocation) {
-      if (userMarkerRef.current) {
-        userMarkerRef.current.setLatLng([userLocation.lat, userLocation.lng]);
-      } else {
-        userMarkerRef.current = L.marker([userLocation.lat, userLocation.lng], {
-          icon: createUserLocationIcon(L),
-          zIndexOffset: 1000,
-        }).addTo(map);
-      }
-      points.push(userLocation);
-    }
-
     fitMapToPoints(map, points);
-  }, [places, userLocation, ready]);
+  }, [places, ready]);
 
   useEffect(() => {
     if (!ready || !mapRef.current) return;

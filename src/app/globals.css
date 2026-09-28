@@ -61,8 +61,8 @@
   --color-brown-800: #170A06;
   --color-brown-900: #0A0603;
 
-  /* Font Family */
-  --font-family-sans: 'Poppins', 'Inter', sans-serif;
+  /* Font Family — variables from next/font in layout.tsx */
+  --font-family-sans: var(--font-poppins), var(--font-inter), sans-serif;
 
   --color-night: #161b24;
   --color-night-raised: #1c2433;
@@ -85,7 +85,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Poppins', 'Inter', sans-serif;
+    font-family: var(--font-family-sans);
     caret-color: var(--color-kadesh);
   }
 

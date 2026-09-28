@@ -45,6 +45,8 @@ Debajo del lienzo mapa + horarios: **¿Es tu clínica?** El mapa no cede altura.
 
 Nunca decimos «Google Maps», «Leaflet» ni el nombre del tile server. Si el usuario niega la ubicación, pedimos activarla en el navegador — sin emojis.
 
+La geolocalización **no** se pide al cargar el directorio. Hasta que el usuario pulse **Usar mi ubicación**, el panel explica que hace falta ubicación y el mapa muestra el área por defecto sin pin de usuario.
+
 ## Acceso
 
 Público. El radio filtra el listado GraphQL. **Abiertas ahora** se aplica en cliente sobre `isOpen`. Reclamar exige sesión; editar la ficha, además, que un admin la haya verificado. Reservar cita exige sesión.

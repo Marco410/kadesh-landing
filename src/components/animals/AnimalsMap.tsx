@@ -26,6 +26,11 @@ import {
   type LeafletMarkerClusterGroup,
   type LeafletPopup,
 } from 'kadesh/components/shared/free-map';
+import {
+  GEO_OPTIONS_FRESH,
+  isGeolocationAvailable,
+  requestCurrentPosition,
+} from 'kadesh/utils/geolocation';
 
 interface AnimalsMapProps {
   animals: LostAnimal[];
@@ -168,20 +173,6 @@ export default function AnimalsMap({
   }, [mounted, ready, resolvedTheme]);
 
   useEffect(() => {
-    if (!mounted || typeof window === 'undefined' || !navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-      },
-      () => {},
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
-    );
-  }, [mounted]);
-
-  useEffect(() => {
     const L = getLeaflet();
     const map = mapRef.current;
     const cluster = clusterRef.current;
@@ -233,26 +224,19 @@ export default function AnimalsMap({
   }, [selectedAnimal, ready, openAnimalPopup, closePopup]);
 
   const handleCenterOnUser = useCallback(() => {
-    if (!navigator.geolocation) return;
+    if (!isGeolocationAvailable()) return;
     setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const location = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
+    requestCurrentPosition(GEO_OPTIONS_FRESH)
+      .then((location) => {
         setUserLocation(location);
         mapRef.current?.setView([location.lat, location.lng], 14);
-        setIsLocating(false);
-      },
-      () => {
-        setIsLocating(false);
+      })
+      .catch(() => {
         alert(
           'No se pudo obtener tu ubicación. Verifica los permisos del navegador.'
         );
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
+      })
+      .finally(() => setIsLocating(false));
   }, []);
 
   return (

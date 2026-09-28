@@ -2,6 +2,17 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@maplibre/maplibre-gl-leaflet"],
+  experimental: {
+    optimizePackageImports: [
+      "@heroui/react",
+      "@heroui/system",
+      "@heroui/theme",
+      "@hugeicons/react",
+      "@hugeicons/core-free-icons",
+      "framer-motion",
+      "gsap",
+    ],
+  },
   async redirects() {
     return [
       {
@@ -13,6 +24,11 @@ const nextConfig: NextConfig = {
         source: "/perfil/ventas/:path*",
         destination: "/perfil",
         permanent: false,
+      },
+      {
+        source: "/comunidad",
+        destination: "/conocenos",
+        permanent: true,
       },
     ];
   },

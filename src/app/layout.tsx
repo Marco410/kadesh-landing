@@ -1,11 +1,5 @@
 import "./globals.css";
-import '@fontsource/poppins/400.css';
-import '@fontsource/poppins/600.css';
-import '@fontsource/poppins/700.css';
-import '@fontsource/poppins/800.css';
-import '@fontsource/poppins/900.css';
-import '@fontsource/inter/400.css';
-import '@fontsource/inter/700.css';
+import { Poppins, Inter } from 'next/font/google';
 import ClientProviders from './ClientProviders';
 import { Metadata } from 'next';
 import { SITE_URL } from 'kadesh/core/site';
@@ -15,6 +9,20 @@ import {
   FONT_SCALE_MIN,
   FONT_SCALE_STORAGE_KEY,
 } from 'kadesh/components/layout/font-scale';
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '800', '900'],
+  variable: '--font-poppins',
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -86,7 +94,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning className={`${poppins.variable} ${inter.variable}`}>
       <head>
         <script
           id="kadesh-font-scale"

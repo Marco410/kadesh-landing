@@ -13,11 +13,11 @@ export default function DonationsSection() {
           ¿Cómo apoyo a KADESH con una donación?
         </h2>
 
-        <p className="mb-4 text-lg leading-relaxed text-white/90 sm:text-xl">
+        <p className="mb-4 text-lg leading-relaxed text-white sm:text-xl">
           {DONATIONS_LEAD}
         </p>
 
-        <p className="mb-10 text-base text-white/80">
+        <p className="mb-10 text-base text-white">
           El recuento completo está en la página de donaciones. También
           puedes apoyar en especie si tienes una marca o una tienda.
         </p>

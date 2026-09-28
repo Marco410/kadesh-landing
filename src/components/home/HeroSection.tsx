@@ -130,8 +130,8 @@ export default function HeroSection() {
           </div>
 
           <Link
-            href="/comunidad"
-            className="kadesh-hero-in kadesh-hero-in-delay-3 text-sm font-medium text-white/80 underline decoration-white/40 underline-offset-4 transition-colors hover:text-white hover:decoration-white"
+            href={Routes.conocenos}
+            className="kadesh-hero-in kadesh-hero-in-delay-3 text-sm font-medium text-white underline decoration-white/50 underline-offset-4 transition-colors hover:decoration-white"
           >
             Únete a la comunidad KADESH →
           </Link>

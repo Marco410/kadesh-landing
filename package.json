@@ -11,7 +11,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "ci": "pnpm lint && pnpm build"
   },
   "dependencies": {
     "@apollo/client": "^3.13.8",

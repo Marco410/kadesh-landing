@@ -23,6 +23,19 @@ interface VeterinaryCardProps {
   onClick?: () => void;
 }
 
+/** Opens the place listing in Google Maps (place_id when available). */
+function googleMapsPlaceUrl(place: PetPlace): string | null {
+  const placeId = place.google_place_id?.trim();
+  const name = place.name?.trim() || 'Veterinaria';
+  if (placeId) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${encodeURIComponent(placeId)}`;
+  }
+  const lat = parseFloat(place.lat);
+  const lng = parseFloat(place.lng);
+  if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lat},${lng}`)}`;
+}
+
 function formatDistance(distance: number | null | undefined): string | null {
   if (distance == null || Number.isNaN(distance)) return null;
   return distance < 1
@@ -80,6 +93,7 @@ export default function VeterinaryCard({
   const likesCount = petPlaceLikesCount(place);
   const detailHref = veterinaryDetailHref(place);
   const phoneHref = place.phone ? `tel:${place.phone.replace(/\s/g, '')}` : null;
+  const mapsHref = googleMapsPlaceUrl(place);
   const motionPrefs = useUiMotion();
 
   return (
@@ -174,27 +188,44 @@ export default function VeterinaryCard({
         </div>
       </div>
 
-      <div className={`mt-3 grid gap-2 ${phoneHref ? 'grid-cols-[auto_1fr]' : 'grid-cols-1'}`}>
-        {phoneHref && (
-          <motion.a
-            href={phoneHref}
+      <div className="mt-3 flex flex-col gap-2">
+        <div
+          className={`grid gap-2 ${phoneHref ? 'grid-cols-[auto_1fr]' : 'grid-cols-1'}`}
+        >
+          {phoneHref && (
+            <motion.a
+              href={phoneHref}
+              onClick={(event) => event.stopPropagation()}
+              aria-label={`Llamar a ${displayName}`}
+              whileTap={motionPrefs.tap}
+              className="inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-kadesh px-3 text-kadesh transition-colors hover:bg-kadesh hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
+            >
+              <HugeiconsIcon icon={Call02Icon} size={18} strokeWidth={1.5} />
+            </motion.a>
+          )}
+          <MotionLink
+            href={detailHref}
             onClick={(event) => event.stopPropagation()}
-            aria-label={`Llamar a ${displayName}`}
             whileTap={motionPrefs.tap}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-kadesh px-3 text-kadesh transition-colors hover:bg-kadesh hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
+            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
           >
-            <HugeiconsIcon icon={Call02Icon} size={18} strokeWidth={1.5} />
+            Ver ficha
+            <HugeiconsIcon icon={ArrowRight01Icon} size={14} strokeWidth={2} />
+          </MotionLink>
+        </div>
+        {mapsHref && (
+          <motion.a
+            href={mapsHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(event) => event.stopPropagation()}
+            whileTap={motionPrefs.tap}
+            className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border-2 border-kadesh px-4 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
+          >
+            <HugeiconsIcon icon={MapPinIcon} size={16} strokeWidth={1.5} />
+            Ver en el mapa
           </motion.a>
         )}
-        <MotionLink
-          href={detailHref}
-          onClick={(event) => event.stopPropagation()}
-          whileTap={motionPrefs.tap}
-          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
-        >
-          Ver ficha
-          <HugeiconsIcon icon={ArrowRight01Icon} size={14} strokeWidth={2} />
-        </MotionLink>
       </div>
     </motion.article>
   );

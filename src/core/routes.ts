@@ -66,6 +66,7 @@ export const Routes = {
     register: '/veterinarias/registro',
     detail: (slug: string): string => `/veterinarias/${slug}`,
     book: (slug: string): string => `/veterinarias/${slug}?reservar=1`,
+    image: (slug: string): string => `/veterinarias/${slug}/og`,
   },
   
   // About

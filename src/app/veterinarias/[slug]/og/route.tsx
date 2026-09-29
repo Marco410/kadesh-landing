@@ -21,13 +21,9 @@ function fallbackResponse() {
 
 async function loadFonts() {
   try {
-    const fontsDir = new URL(
-      '../../../animales/[slug]/og/',
-      import.meta.url,
-    );
     const [bold, black] = await Promise.all([
-      readFile(new URL('poppins-700.woff', fontsDir)),
-      readFile(new URL('poppins-800.woff', fontsDir)),
+      readFile(new URL('./poppins-700.woff', import.meta.url)),
+      readFile(new URL('./poppins-800.woff', import.meta.url)),
     ]);
     return [
       {

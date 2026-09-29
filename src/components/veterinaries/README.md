@@ -11,7 +11,7 @@ Encontrar una veterinaria cercana con distancia, horario y contacto. El mapa y l
 - Sin franja azul de héroe. El H1 vive en el panel. Sin pie del sitio: el split lista + mapa ocupa `100dvh` menos la barra.
 - Radio en chips (`5–30 km`) con `aria-pressed`. Vive también en `?radius=` para compartir la búsqueda. Si el radio actual no tiene resultados, el vacío propone el siguiente (`Buscar en 10 km`, etc.).
 - Chip **Abiertas ahora** debajo del radio. Filtra lista y mapa a `isOpen === true` (las que no tienen horario no entran). Vive en `?open=1`. El chip muestra cuántas están abiertas en el radio actual. Si ninguna lo está, el vacío ofrece **Ver todas**.
-- Ficha de lista: pin de marca (el mismo del mapa), abierto/cerrado, distancia, llamar, ver ficha. Si está verificada, un check va junto al nombre. Si tiene me gusta, el corazón y el conteo van junto a las reseñas; si va en cero, no se muestra. No es el recuadro-mapa de la portada: aquí la densidad importa.
+- Ficha de lista: pin de marca (el mismo del mapa), abierto/cerrado, distancia, llamar, ver ficha y **Ver en el mapa** (abre la ficha del lugar en el mapa externo con `google_place_id`, o las coordenadas si no hay id). Si está verificada, un check va junto al nombre. Si tiene me gusta, el corazón y el conteo van junto a las reseñas; si va en cero, no se muestra. No es el recuadro-mapa de la portada: aquí la densidad importa.
 - Motion (Framer, mismos tokens que perfil en `shared/motion`): las fichas entran en cascada; radio activo desliza el fondo kadesh; vacío y lista se intercambian; toque `scale` 0.97. El modal de reserva sube con overlay. Si el sistema pide menos movimiento, no hay animación.
 - Oscuro: `night` / `night-raised`, no OLED.
 
@@ -22,6 +22,8 @@ Mismo stack gratuito que animales: **Leaflet + MapLibre GL + OpenFreeMap Liberty
 El mapa pinta `allPlaces` del listado visible (incluye el filtro de abiertas); la lista pagina de a 10.
 
 ## Ficha (`/veterinarias/{slug}`)
+
+Al compartir el link (WhatsApp, etc.) la tarjeta muestra el **nombre de la clínica**, tipo y ciudad — no el título genérico del sitio. Eso vive en el `layout` del slug (`generateMetadata` + imagen `/veterinarias/{slug}/og`). WhatsApp cachea previews: si ya mandaste el link, puede tardar en refrescar.
 
 Mientras carga, un skeleton copia encabezado, mapa, contacto, horarios, servicios y reseñas (mismo grid) para que la página no salte. En oscuro los bloques contrastan con `night`; no es un solo recuadro. Si ya hay ficha en caché, se muestra esa y no el skeleton.
 

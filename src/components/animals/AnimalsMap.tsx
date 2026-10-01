@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useTheme } from 'next-themes';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -29,6 +29,7 @@ import {
 import {
   GEO_OPTIONS_FRESH,
   isGeolocationAvailable,
+  readGrantedLocation,
   requestCurrentPosition,
 } from 'kadesh/utils/geolocation';
 
@@ -52,6 +53,11 @@ export default function AnimalsMap({
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(
     null
   );
+
+  useLayoutEffect(() => {
+    const stored = readGrantedLocation();
+    if (stored) setUserLocation(stored);
+  }, []);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);

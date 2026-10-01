@@ -40,6 +40,7 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
   const [state, setState] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [country, setCountry] = useState('');
+  const [isResolvingPlace, setIsResolvingPlace] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { createLog, isCreating: isSubmitting } = useCreateLog({
@@ -107,9 +108,11 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
     const lngN = parseFloat(lng);
     if (lat === '' || lng === '' || isNaN(latN) || isNaN(lngN)) {
       e.location = 'Fija el pin en el mapa o usa «Estoy aquí».';
+    } else if (isResolvingPlace) {
+      e.location = 'Estamos ubicando la ciudad. Espera un momento.';
     }
     if (!address?.trim()) e.address = 'La dirección es requerida';
-    if (!city?.trim()) e.city = 'La ciudad es requerida';
+    if (!isResolvingPlace && !city?.trim()) e.city = 'La ciudad es requerida';
     if (!state?.trim()) e.state = 'El estado/provincia es requerido';
     if (!country?.trim()) e.country = 'El país es requerido';
     setErrors(e);
@@ -285,6 +288,7 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
                 compact
                 onLocationChange={handleLocationChange}
                 onAddressChange={handleAddressChange}
+                onResolvingChange={setIsResolvingPlace}
               />
             </div>
 

@@ -88,6 +88,7 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
   const [city, setCity] = useState(log?.city ?? '');
   const [state, setState] = useState(log?.state ?? '');
   const [country, setCountry] = useState(log?.country ?? '');
+  const [isResolvingPlace, setIsResolvingPlace] = useState(false);
   const [photos, setPhotos] = useState<PhotoItem[]>(() =>
     animal.multimedia.map((item) => ({ id: item.id, preview: item.image.url }))
   );
@@ -158,6 +159,12 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
     if (!lat.trim() || !lng.trim()) {
       next.location = 'Fija el pin en el mapa.';
       missing.push('Ubicación');
+    } else if (isResolvingPlace) {
+      next.location = 'Estamos ubicando la ciudad. Espera un momento.';
+      missing.push('Ciudad');
+    } else if (!city.trim()) {
+      next.location = 'Escribe la ciudad para guardar.';
+      missing.push('Ciudad');
     }
     if (!contactNumber.trim()) {
       next.contactNumber = 'Un teléfono para que te contacten.';
@@ -204,7 +211,7 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
               lat,
               lng,
               address: address.trim() || null,
-              city: city.trim() || null,
+              city: city.trim(),
               state: state.trim() || null,
               country: country.trim() || null,
               last_seen: status !== 'in_adoption',
@@ -399,6 +406,7 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
                   setState(s);
                   setCountry(co);
                 }}
+                onResolvingChange={setIsResolvingPlace}
               />
               {errors.location ? <p className="mt-2 text-xs text-red-600">{errors.location}</p> : null}
             </div>

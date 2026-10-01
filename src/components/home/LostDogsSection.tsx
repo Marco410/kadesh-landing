@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLostAnimals } from '../animals';
@@ -8,11 +8,7 @@ import { getStatusLabel, getStatusColor, getTypeLabel } from '../animals/constan
 import { formatDate } from 'kadesh/utils/format-date';
 import { animalDetailHref } from 'kadesh/components/animals/animalSlug';
 import { Routes } from 'kadesh/core/routes';
-import {
-  GEO_OPTIONS_CACHED,
-  isGeolocationAvailable,
-  requestCurrentPosition,
-} from 'kadesh/utils/geolocation';
+import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowRight01Icon,
@@ -26,32 +22,18 @@ import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 
 export default function LostDogsSection() {
   const rootRef = useRef<HTMLElement>(null);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(
-    undefined
+  const {
+    coords: userLocation,
+    permissionDenied: locationPermissionDenied,
+    isLocating,
+    request: handleUseLocation,
+  } = useRememberedLocation();
+
+  const { animals, loading } = useLostAnimals(
+    undefined,
+    undefined,
+    userLocation ?? undefined,
   );
-  const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
-  const [isLocating, setIsLocating] = useState(false);
-
-  const handleUseLocation = useCallback(() => {
-    if (!isGeolocationAvailable()) {
-      setLocationPermissionDenied(true);
-      return;
-    }
-    setIsLocating(true);
-    requestCurrentPosition(GEO_OPTIONS_CACHED)
-      .then((coords) => {
-        setUserLocation(coords);
-        setLocationPermissionDenied(false);
-      })
-      .catch((error: GeolocationPositionError | Error) => {
-        if ('code' in error && error.code === error.PERMISSION_DENIED) {
-          setLocationPermissionDenied(true);
-        }
-      })
-      .finally(() => setIsLocating(false));
-  }, []);
-
-  const { animals, loading } = useLostAnimals(undefined, undefined, userLocation);
   const displayedAnimals = animals.slice(0, 4);
 
   useGSAP(

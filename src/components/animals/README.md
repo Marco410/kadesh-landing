@@ -15,7 +15,7 @@ Ayudar a encontrar o adoptar. El mapa y las tarjetas muestran el mismo conjunto;
 - Si no hay resultados, el vacío nombra la búsqueda (`No hay reptiles rescatados en 10 km`) y ofrece ampliar radio o quitar filtros.
 - Ficha de lista: foto, estatus de color semántico, distancia, Ver ficha. Oscuro: `night` / `night-raised`.
 - **Reportar** está en el encabezado del panel (y sobre el mapa en móvil). Si no hay sesión, abre el modal de registro.
-- La ubicación **no** se solicita al entrar. El listado arranca sin coords (todos los reportes) y el panel ofrece **Usar mi ubicación** / **Reintentar**. El mapa solo pide geolocalización al tocar el botón de centrar.
+- La ubicación **no** se solicita sola la primera vez. El listado arranca sin coords (todos los reportes) y el panel ofrece **Usar mi ubicación** / **Reintentar**. Si ya la aprobaron, al recargar se reutiliza y el mapa muestra el pin. Centrar el mapa también guarda esa aprobación.
 
 ## Alta (`/animales/nuevo`)
 
@@ -23,7 +23,7 @@ Es una **herramienta de tres pasos**, no un formulario largo ni una landing. Qui
 
 1. **Foto y tipo** — fotos primero (es lo que reconoce a alguien): se arrastran o se eligen varias a la vez, hasta 3. Se reordenan arrastrando: la primera es la **portada** (`order: 1`) y es la que se ve en el listado y en la ficha. Tipo en chips, nombre. «No tiene nombre» va marcado si el estatus es encontrado / abandonado / rescatado.
 2. **Cómo reconocerlo** — tamaño y edad en chips, color, sexo, raza y **señas particulares** (obligatorias). **No sé** busca mestizo/sin raza; si no existe, pide la más cercana. Tipo, nombre y raza (con **No sé**) se reutilizan en el modal de reservar cita; el copy y el control deben coincidir.
-3. **Dónde** — estatus (prellenado con `?status=`): Perdido, Encontrado, En adopción, Abandonado y Rescatado siempre visibles, sin Más. Hoy / otra fecha, mapa, teléfono (prellenado del perfil). Lat/lng y ciudad/estado/país no se muestran; el pin y la dirección bastan. Nota detrás de un enlace.
+3. **Dónde** — estatus (prellenado con `?status=`): Perdido, Encontrado, En adopción, Abandonado y Rescatado siempre visibles, sin Más. Hoy / otra fecha, mapa, teléfono (prellenado del perfil). Lat/lng, estado y país no se muestran; el pin y la dirección bastan cuando el mapa resuelve la ciudad. Si no la resuelve, aparece **Ciudad** y hay que escribirla: sin ciudad el registro no se publica. Nota detrás de un enlace.
 
 Barra de **tres círculos** (1 · 2 · 3). El paso listo muestra un check y la línea se llena con GSAP. El pie queda fijo: Atrás / Continuar, y en el último paso **Publicar reporte**. El H1 cambia con el trabajo (`Reportar perdido`, `Dar en adopción`…). Sin franja azul, sin footer del sitio. Al publicar, va a la ficha (`/animales/luna-perdido-roma-a1b2c3`). El slug lo genera Keystone (nombre o tipo, estatus, ciudad y un sufijo del id) y no cambia si editan el nombre.
 

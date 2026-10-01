@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -19,12 +19,8 @@ import {
   DirectoryRadiusChips,
 } from "kadesh/components/shared";
 import { Routes } from "kadesh/core/routes";
-import {
-  GEO_OPTIONS_FRESH,
-  geolocationErrorMessage,
-  isGeolocationAvailable,
-  requestCurrentPosition,
-} from "kadesh/utils/geolocation";
+import { GEO_OPTIONS_FRESH } from "kadesh/utils/geolocation";
+import { useRememberedLocation } from "kadesh/utils/useRememberedLocation";
 import {
   DEFAULT_RADIUS_VETERINARIES,
   RADIUS_OPTIONS_VETERINARIES,
@@ -49,12 +45,13 @@ function VeterinariesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const motionPrefs = useUiMotion();
-  // Idle until the user asks for location (Best Practices / Lighthouse).
-  const [userLocation, setUserLocation] = useState<
-    { lat: number; lng: number } | { lat: null; lng: null } | undefined
-  >(undefined);
-  const [locationError, setLocationError] = useState<string | null>(null);
-  const [locationLoading, setLocationLoading] = useState(false);
+  const {
+    coords,
+    error: locationError,
+    isLocating: locationLoading,
+    request: requestLocation,
+  } = useRememberedLocation(GEO_OPTIONS_FRESH);
+  const userLocation = coords ?? (locationError ? { lat: null, lng: null } : undefined);
   const [selectedPlace, setSelectedPlace] = useState<PetPlace | null>(null);
   const radiusKm = parseRadiusOption(
     searchParams.get("radius"),
@@ -64,30 +61,6 @@ function VeterinariesPageContent() {
   const openNow = searchParams.get("open") === "1";
   const verifiedOnly = searchParams.get("verified") === "1";
   const nameQuery = searchParams.get("q") ?? "";
-
-  const requestLocation = useCallback(() => {
-    if (!isGeolocationAvailable()) {
-      setLocationError("La geolocalización no está disponible");
-      setUserLocation({ lat: null, lng: null });
-      return;
-    }
-    setLocationLoading(true);
-    setLocationError(null);
-    requestCurrentPosition(GEO_OPTIONS_FRESH)
-      .then((coords) => {
-        setUserLocation(coords);
-        setLocationLoading(false);
-      })
-      .catch((error: GeolocationPositionError | Error) => {
-        const message =
-          "code" in error
-            ? geolocationErrorMessage(error)
-            : error.message || "No se pudo obtener tu ubicación";
-        setLocationError(message);
-        setUserLocation({ lat: null, lng: null });
-        setLocationLoading(false);
-      });
-  }, []);
 
   const {
     places,

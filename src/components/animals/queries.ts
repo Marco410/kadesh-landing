@@ -302,10 +302,14 @@ export const GET_ANIMAL_QUERY = gql`
       }
       createdAt
       contactNumber
+      contactNumber2
+      sourceUrl
+      reportedBy
       id
       logs (orderBy: $orderBy)  {
         address
         city
+        placeLabel
         country
         createdAt
         id
@@ -562,3 +566,24 @@ export interface DeleteAnimalCommentResponse {
     createdAt: string;
   };
 }
+
+export const FIND_ANIMAL_REPORT_DUPLICATES = gql`
+  query FindAnimalReportDuplicates(
+    $phone: String
+    $animalTypeId: ID
+    $name: String
+    $sourceUrl: String
+  ) {
+    findAnimalReportDuplicates(
+      phone: $phone
+      animalTypeId: $animalTypeId
+      name: $name
+      sourceUrl: $sourceUrl
+    ) {
+      id
+      name
+      slug
+      url
+    }
+  }
+`;

@@ -14,7 +14,6 @@ import {
   applyFreeMapThemeClass,
   attachFreeMapBaseLayer,
   createBrandPinIcon,
-  DEFAULT_MAP_CENTER,
   getLeaflet,
   isDarkMapTheme,
   loadLeafletStack,
@@ -22,6 +21,13 @@ import {
   type LeafletMap,
   type LeafletMarker,
 } from 'kadesh/components/shared/free-map';
+import {
+  MORELIA_CENTER,
+  reverseGeocodeNominatim,
+  searchNominatim,
+  type ParsedPlace,
+  type SearchHit,
+} from 'kadesh/components/animals/nuevo/nominatimPlace';
 
 interface LocationPickerProps {
   lat: string;
@@ -37,138 +43,19 @@ interface LocationPickerProps {
     state: string,
     country: string
   ) => void;
+  onPlaceDetails?: (details: { neighborhood: string; postalCode: string }) => void;
+  onAddressEdited?: (edited: boolean) => void;
   onResolvingChange?: (isResolving: boolean) => void;
+  mapCenter?: { lat: number; lng: number };
   className?: string;
   isVisible?: boolean;
   compact?: boolean;
 }
 
-interface NominatimAddress {
-  road?: string;
-  house_number?: string;
-  neighbourhood?: string;
-  city?: string;
-  town?: string;
-  village?: string;
-  municipality?: string;
-  county?: string;
-  city_district?: string;
-  district?: string;
-  borough?: string;
-  suburb?: string;
-  hamlet?: string;
-  state?: string;
-  country?: string;
-}
-
-const LOCALITY_KEYS = [
-  'city',
-  'town',
-  'village',
-  'municipality',
-  'county',
-  'city_district',
-  'district',
-  'borough',
-  'suburb',
-  'hamlet',
-  'neighbourhood',
-] as const;
-
-const STREET_LABEL = /^(calle|av\.?|avenida|blvd\.?|boulevard|carr\.?|carretera|camino|privada|cerrada|andador)\b/i;
-
-function cleanLocality(value: string) {
-  return value.trim().replace(/^municipio de\s+/i, '').trim();
-}
-
-function cityFromDisplayName(displayName: string, state?: string, country?: string) {
-  const skip = new Set(
-    [state, country]
-      .filter((part): part is string => Boolean(part?.trim()))
-      .map((part) => part.trim().toLowerCase())
-  );
-  const parts = displayName
-    .split(',')
-    .map((part) => part.trim())
-    .filter((part) => part && !skip.has(part.toLowerCase()) && !/^\d{4,6}$/.test(part));
-  const locality = parts[parts.length - 1] ?? '';
-  if (!locality) return '';
-  if (parts.length === 1 && (STREET_LABEL.test(locality) || /\d/.test(locality))) return '';
-  return cleanLocality(locality);
-}
-
-interface NominatimResult {
-  lat: string;
-  lon: string;
-  display_name: string;
-  address: NominatimAddress;
-}
-
-interface SearchHit {
-  id: string;
-  label: string;
-  lat: number;
-  lng: number;
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-}
-
 const PIN_ZOOM = 15;
 const DEFAULT_ZOOM = 12;
-
-function parseNominatimAddress(data: NominatimResult) {
-  const a = data.address ?? {};
-  const streetAddress =
-    [a.road, a.house_number].filter(Boolean).join(' ') ||
-    a.neighbourhood ||
-    data.display_name.split(',')[0]?.trim() ||
-    data.display_name;
-  const fromFields = LOCALITY_KEYS.map((key) => a[key]).find((value) => value?.trim());
-  const city = cleanLocality(
-    fromFields || cityFromDisplayName(data.display_name, a.state, a.country)
-  );
-  return {
-    address: streetAddress,
-    city,
-    state: a.state || '',
-    country: a.country || '',
-  };
-}
-
-async function reverseGeocodeNominatim(latitude: number, longitude: number) {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
-      { headers: { 'Accept-Language': 'es' } }
-    );
-    if (!res.ok) return null;
-    const data: NominatimResult = await res.json();
-    return parseNominatimAddress(data);
-  } catch {
-    return null;
-  }
-}
-
-async function searchNominatim(query: string): Promise<SearchHit[]> {
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=mx`,
-    { headers: { 'Accept-Language': 'es' } }
-  );
-  if (!res.ok) return [];
-  const data: NominatimResult[] = await res.json();
-  return data.map((item, index) => {
-    const parsed = parseNominatimAddress(item);
-    return {
-      id: `${item.lat}-${item.lon}-${index}`,
-      label: item.display_name,
-      lat: parseFloat(item.lat),
-      lng: parseFloat(item.lon),
-      ...parsed,
-    };
-  });
-}
+const EMPTY_SEARCH =
+  'No encontramos esa colonia. Busca una calle cercana o toca el mapa para poner el pin.';
 
 export default function LocationPicker({
   lat,
@@ -179,7 +66,10 @@ export default function LocationPicker({
   country = '',
   onLocationChange,
   onAddressChange,
+  onPlaceDetails,
+  onAddressEdited,
   onResolvingChange,
+  mapCenter,
   className = '',
   isVisible = true,
   compact = false,
@@ -192,6 +82,7 @@ export default function LocationPicker({
   const [locationQuery, setLocationQuery] = useState('');
   const [suggestions, setSuggestions] = useState<SearchHit[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchMiss, setSearchMiss] = useState(false);
   const [localAddress, setLocalAddress] = useState(address);
   const [localCity, setLocalCity] = useState(city);
   const [localState, setLocalState] = useState(state);
@@ -207,11 +98,20 @@ export default function LocationPicker({
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onLocationChangeRef = useRef(onLocationChange);
   const onAddressChangeRef = useRef(onAddressChange);
+  const onPlaceDetailsRef = useRef(onPlaceDetails);
+  const onAddressEditedRef = useRef(onAddressEdited);
   const onResolvingChangeRef = useRef(onResolvingChange);
+  const addressEditedRef = useRef(false);
+  const localAddressRef = useRef(address);
+  const biasRef = useRef(mapCenter ?? MORELIA_CENTER);
 
   onLocationChangeRef.current = onLocationChange;
   onAddressChangeRef.current = onAddressChange;
+  onPlaceDetailsRef.current = onPlaceDetails;
+  onAddressEditedRef.current = onAddressEdited;
   onResolvingChangeRef.current = onResolvingChange;
+  localAddressRef.current = localAddress;
+  biasRef.current = mapCenter ?? MORELIA_CENTER;
 
   const hasValidCoordinates = Boolean(lat && lng && !Number.isNaN(parseFloat(lat)) && !Number.isNaN(parseFloat(lng)));
   const isDarkMode = mounted && isDarkMapTheme(resolvedTheme);
@@ -250,23 +150,29 @@ export default function LocationPicker({
     };
   }, [isVisible]);
 
-  const applyAddress = useCallback(
-    (next: { address: string; city: string; state: string; country: string }) => {
-      setLocalAddress(next.address);
-      setLocalCity(next.city);
-      setLocalState(next.state);
-      setLocalCountry(next.country);
-      onAddressChangeRef.current?.(next.address, next.city, next.state, next.country);
-    },
-    []
-  );
+  const applyAddress = useCallback((next: ParsedPlace, keepAddress = false) => {
+    const nextAddress = keepAddress ? localAddressRef.current : next.address;
+    if (!keepAddress) {
+      addressEditedRef.current = false;
+      onAddressEditedRef.current?.(false);
+      setLocalAddress(nextAddress);
+    }
+    setLocalCity(next.city);
+    setLocalState(next.state);
+    setLocalCountry(next.country);
+    onAddressChangeRef.current?.(nextAddress, next.city, next.state, next.country);
+    onPlaceDetailsRef.current?.({
+      neighborhood: next.neighborhood,
+      postalCode: next.postalCode,
+    });
+  }, []);
 
   const doReverseGeocode = useCallback(
     async (latitude: number, longitude: number) => {
       setIsGeocoding(true);
       const result = await reverseGeocodeNominatim(latitude, longitude);
       setIsGeocoding(false);
-      if (result) applyAddress(result);
+      if (result) applyAddress(result, addressEditedRef.current);
     },
     [applyAddress]
   );
@@ -314,7 +220,7 @@ export default function LocationPicker({
     const hasCoords = !Number.isNaN(latNum) && !Number.isNaN(lngNum);
     const center: [number, number] = hasCoords
       ? [latNum, lngNum]
-      : [DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng];
+      : [biasRef.current.lat, biasRef.current.lng];
     const zoom = hasCoords ? PIN_ZOOM : DEFAULT_ZOOM;
 
     const map = L.map(container, { zoomControl: true }).setView(center, zoom);
@@ -328,8 +234,12 @@ export default function LocationPicker({
     }
 
     requestAnimationFrame(() => map.invalidateSize());
+    const later = window.setTimeout(() => map.invalidateSize(), 250);
+    const again = window.setTimeout(() => map.invalidateSize(), 600);
 
     return () => {
+      window.clearTimeout(later);
+      window.clearTimeout(again);
       map.remove();
       mapRef.current = null;
       markerRef.current = null;
@@ -345,13 +255,20 @@ export default function LocationPicker({
   useEffect(() => {
     if (!isVisible || !mapRef.current) return;
     const map = mapRef.current;
-    const frame = requestAnimationFrame(() => map.invalidateSize());
-    const later = window.setTimeout(() => map.invalidateSize(), 180);
+    const kick = () => map.invalidateSize();
+    const frame = requestAnimationFrame(kick);
+    const later = window.setTimeout(kick, 180);
+    const again = window.setTimeout(kick, 500);
+    const node = mapContainerRef.current;
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(kick);
+    if (node && observer) observer.observe(node);
     return () => {
       cancelAnimationFrame(frame);
       window.clearTimeout(later);
+      window.clearTimeout(again);
+      observer?.disconnect();
     };
-  }, [isVisible]);
+  }, [isVisible, ready]);
 
   useEffect(() => {
     const latNum = parseFloat(lat);
@@ -363,19 +280,30 @@ export default function LocationPicker({
   }, [lat, lng, updateMarker]);
 
   useEffect(() => {
+    if (!mapRef.current || hasValidCoordinates) return;
+    const center = mapCenter ?? MORELIA_CENTER;
+    mapRef.current.setView([center.lat, center.lng], DEFAULT_ZOOM);
+  }, [mapCenter, hasValidCoordinates]);
+
+  useEffect(() => {
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     const query = locationQuery.trim();
     if (query.length < 3) {
       setSuggestions([]);
+      setSearchMiss(false);
       return;
     }
     searchTimerRef.current = setTimeout(() => {
-      void searchNominatim(query)
+      void searchNominatim(query, biasRef.current)
         .then((hits) => {
           setSuggestions(hits);
+          setSearchMiss(hits.length === 0);
           setShowSuggestions(hits.length > 0);
         })
-        .catch(() => setSuggestions([]));
+        .catch(() => {
+          setSuggestions([]);
+          setSearchMiss(true);
+        });
     }, 350);
     return () => {
       if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
@@ -400,12 +328,11 @@ export default function LocationPicker({
     const query = locationQuery.trim();
     if (!query) return;
     try {
-      const hits = await searchNominatim(query);
+      const hits = await searchNominatim(query, biasRef.current);
       setSuggestions(hits);
+      setSearchMiss(hits.length === 0);
       if (hits[0]) {
         applyHit(hits[0]);
-      } else {
-        sileo.error({ title: 'No se encontró esa ubicación' });
       }
     } catch {
       sileo.error({ title: 'No se pudo buscar la ubicación' });
@@ -477,7 +404,10 @@ export default function LocationPicker({
           enterKeyHint="search"
           autoComplete="off"
           value={locationQuery}
-          onChange={(e) => setLocationQuery(e.target.value)}
+          onChange={(e) => {
+            setLocationQuery(e.target.value);
+            setSearchMiss(false);
+          }}
           onFocus={() => {
             if (suggestions.length > 0) setShowSuggestions(true);
           }}
@@ -528,6 +458,9 @@ export default function LocationPicker({
             ))}
           </div>
         )}
+        {searchMiss && locationQuery.trim().length >= 3 && (
+          <p className="mt-2 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">{EMPTY_SEARCH}</p>
+        )}
       </div>
 
       <div
@@ -559,6 +492,9 @@ export default function LocationPicker({
           autoComplete="street-address"
           value={localAddress}
           onChange={(e) => {
+            addressEditedRef.current = true;
+            onAddressEditedRef.current?.(true);
+            localAddressRef.current = e.target.value;
             setLocalAddress(e.target.value);
             onAddressChange?.(e.target.value, localCity, localState, localCountry);
           }}

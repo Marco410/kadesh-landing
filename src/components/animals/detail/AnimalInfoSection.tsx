@@ -29,12 +29,39 @@ function sexLabel(sex?: string | null) {
   return null;
 }
 
+function publicSourceUrl(value?: string | null) {
+  try {
+    const url = new URL(value || "");
+    if (url.protocol !== "https:" && url.protocol !== "http:") return "";
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
+
 export default function AnimalInfoSection({ animal }: AnimalInfoSectionProps) {
   const typeName = animal.animal_breed?.animal_type?.name || "";
   const typeLabel = ANIMAL_TYPE_LABELS[typeName] || typeName;
 
   return (
     <div className="flex flex-col gap-3">
+      {animal.reportedBy === "volunteer" ? (
+        <p className="rounded-xl bg-kadesh-50 px-3 py-2 text-sm text-[#121212] dark:bg-kadesh/15 dark:text-[#eef1f6]">
+          Reportado por la comunidad. Contacta directamente al dueño.
+        </p>
+      ) : null}
+
+      {publicSourceUrl(animal.sourceUrl) ? (
+        <a
+          href={publicSourceUrl(animal.sourceUrl)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-kadesh hover:underline"
+        >
+          Ver publicación original
+        </a>
+      ) : null}
+
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
         {typeLabel ? (
           <div className="flex items-start gap-2">

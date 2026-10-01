@@ -146,7 +146,7 @@ export default function AnimalDetailPage() {
             <ShareAnimalButton
               animal={animal}
               statusLabel={statusLabel}
-              city={lastLog?.city}
+              city={lastLog?.placeLabel || lastLog?.city}
               className={`order-2 lg:order-3 lg:shrink-0 ${isOwner ? "" : "ml-auto lg:ml-0"}`}
             />
             <div className="order-3 flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-1 lg:order-2 lg:w-auto lg:flex-1 lg:flex-nowrap">

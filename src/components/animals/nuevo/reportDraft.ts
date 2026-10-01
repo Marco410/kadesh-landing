@@ -23,8 +23,17 @@ export type AnimalReportDraftV1 = {
   country: string;
   notes: string;
   contactNumber: string;
+  contactNumber2?: string;
   dateStatus: string;
   isToday: boolean;
+  dateMode?: 'today' | 'yesterday' | 'other';
+  otherDate?: string;
+  otherTime?: string;
+  isOwnPet?: boolean;
+  sourceUrl?: string;
+  addressEdited?: boolean;
+  neighborhood?: string;
+  postalCode?: string;
   images: { name: string; type: string; dataUrl: string }[];
 };
 

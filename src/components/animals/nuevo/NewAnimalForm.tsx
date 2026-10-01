@@ -128,6 +128,7 @@ export default function NewAnimalForm({
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [country, setCountry] = useState('');
+  const [isResolvingPlace, setIsResolvingPlace] = useState(false);
   const [notes, setNotes] = useState('');
   const [contactNumber, setContactNumber] = useState(user?.phone ?? '');
   const [dateStatus, setDateStatus] = useState(formatDateTimeLocal(new Date()));
@@ -415,6 +416,10 @@ export default function NewAnimalForm({
       if (!status) nextErrors.status = 'Elige qué estás reportando.';
       if (!lat.trim() || !lng.trim()) {
         nextErrors.location = 'Fija el pin en el mapa o pulsa Estoy aquí.';
+      } else if (isResolvingPlace) {
+        nextErrors.location = 'Estamos ubicando la ciudad. Espera un momento.';
+      } else if (!city.trim()) {
+        nextErrors.location = 'Escribe la ciudad. Hace falta para publicar.';
       }
       if (!contactNumber.trim()) {
         nextErrors.contactNumber = 'Un teléfono para que te contacten.';
@@ -480,7 +485,7 @@ export default function NewAnimalForm({
             lat,
             lng,
             address: address.trim() || null,
-            city: city.trim() || null,
+            city: city.trim(),
             state: state.trim() || null,
             country: country.trim() || null,
             last_seen: lastSeen,
@@ -790,6 +795,7 @@ export default function NewAnimalForm({
                     setState(newState);
                     setCountry(newCountry);
                   }}
+                  onResolvingChange={setIsResolvingPlace}
                 />
                 {errors.location ? (
                   <p className="mt-2 text-xs text-red-600">{errors.location}</p>
@@ -877,15 +883,17 @@ export default function NewAnimalForm({
           </motion.button>
           <motion.button
             type="submit"
-            disabled={loading}
-            whileTap={loading ? undefined : motionPrefs.tap}
+            disabled={loading || (step === STEPS.length - 1 && isResolvingPlace)}
+            whileTap={loading || isResolvingPlace ? undefined : motionPrefs.tap}
             className="flex-1 rounded-xl bg-kadesh px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading
               ? 'Publicando…'
-              : step < STEPS.length - 1
-                ? 'Continuar'
-                : copy.submit}
+              : step === STEPS.length - 1 && isResolvingPlace
+                ? 'Ubicando…'
+                : step < STEPS.length - 1
+                  ? 'Continuar'
+                  : copy.submit}
           </motion.button>
         </div>
       </div>

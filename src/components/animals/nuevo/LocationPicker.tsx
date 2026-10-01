@@ -37,6 +37,7 @@ interface LocationPickerProps {
     state: string,
     country: string
   ) => void;
+  onResolvingChange?: (isResolving: boolean) => void;
   className?: string;
   isVisible?: boolean;
   compact?: boolean;
@@ -45,12 +46,55 @@ interface LocationPickerProps {
 interface NominatimAddress {
   road?: string;
   house_number?: string;
+  neighbourhood?: string;
   city?: string;
   town?: string;
   village?: string;
   municipality?: string;
+  county?: string;
+  city_district?: string;
+  district?: string;
+  borough?: string;
+  suburb?: string;
+  hamlet?: string;
   state?: string;
   country?: string;
+}
+
+const LOCALITY_KEYS = [
+  'city',
+  'town',
+  'village',
+  'municipality',
+  'county',
+  'city_district',
+  'district',
+  'borough',
+  'suburb',
+  'hamlet',
+  'neighbourhood',
+] as const;
+
+const STREET_LABEL = /^(calle|av\.?|avenida|blvd\.?|boulevard|carr\.?|carretera|camino|privada|cerrada|andador)\b/i;
+
+function cleanLocality(value: string) {
+  return value.trim().replace(/^municipio de\s+/i, '').trim();
+}
+
+function cityFromDisplayName(displayName: string, state?: string, country?: string) {
+  const skip = new Set(
+    [state, country]
+      .filter((part): part is string => Boolean(part?.trim()))
+      .map((part) => part.trim().toLowerCase())
+  );
+  const parts = displayName
+    .split(',')
+    .map((part) => part.trim())
+    .filter((part) => part && !skip.has(part.toLowerCase()) && !/^\d{4,6}$/.test(part));
+  const locality = parts[parts.length - 1] ?? '';
+  if (!locality) return '';
+  if (parts.length === 1 && (STREET_LABEL.test(locality) || /\d/.test(locality))) return '';
+  return cleanLocality(locality);
 }
 
 interface NominatimResult {
@@ -77,8 +121,14 @@ const DEFAULT_ZOOM = 12;
 function parseNominatimAddress(data: NominatimResult) {
   const a = data.address ?? {};
   const streetAddress =
-    [a.road, a.house_number].filter(Boolean).join(' ') || data.display_name;
-  const city = a.city || a.town || a.village || a.municipality || '';
+    [a.road, a.house_number].filter(Boolean).join(' ') ||
+    a.neighbourhood ||
+    data.display_name.split(',')[0]?.trim() ||
+    data.display_name;
+  const fromFields = LOCALITY_KEYS.map((key) => a[key]).find((value) => value?.trim());
+  const city = cleanLocality(
+    fromFields || cityFromDisplayName(data.display_name, a.state, a.country)
+  );
   return {
     address: streetAddress,
     city,
@@ -129,6 +179,7 @@ export default function LocationPicker({
   country = '',
   onLocationChange,
   onAddressChange,
+  onResolvingChange,
   className = '',
   isVisible = true,
   compact = false,
@@ -145,6 +196,7 @@ export default function LocationPicker({
   const [localCity, setLocalCity] = useState(city);
   const [localState, setLocalState] = useState(state);
   const [localCountry, setLocalCountry] = useState(country);
+  const [askForCity, setAskForCity] = useState(false);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapFrameRef = useRef<HTMLDivElement>(null);
@@ -155,9 +207,11 @@ export default function LocationPicker({
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onLocationChangeRef = useRef(onLocationChange);
   const onAddressChangeRef = useRef(onAddressChange);
+  const onResolvingChangeRef = useRef(onResolvingChange);
 
   onLocationChangeRef.current = onLocationChange;
   onAddressChangeRef.current = onAddressChange;
+  onResolvingChangeRef.current = onResolvingChange;
 
   const hasValidCoordinates = Boolean(lat && lng && !Number.isNaN(parseFloat(lat)) && !Number.isNaN(parseFloat(lng)));
   const isDarkMode = mounted && isDarkMapTheme(resolvedTheme);
@@ -172,6 +226,16 @@ export default function LocationPicker({
     setLocalState(state);
     setLocalCountry(country);
   }, [address, city, state, country]);
+
+  useEffect(() => {
+    onResolvingChangeRef.current?.(isGeocoding);
+    return () => onResolvingChangeRef.current?.(false);
+  }, [isGeocoding]);
+
+  useEffect(() => {
+    if (!compact || isGeocoding) return;
+    if (hasValidCoordinates && !city.trim()) setAskForCity(true);
+  }, [compact, isGeocoding, hasValidCoordinates, city]);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -502,6 +566,26 @@ export default function LocationPicker({
           placeholder="Se completa al fijar el pin, o escríbela"
         />
       </div>
+
+      {compact && askForCity && (
+        <div>
+          <label htmlFor="lp-city" className="mb-1 block text-xs font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
+            Ciudad <span className="text-red-600">*</span>
+          </label>
+          <input
+            id="lp-city"
+            type="text"
+            autoComplete="address-level2"
+            value={localCity}
+            onChange={(e) => {
+              setLocalCity(e.target.value);
+              onAddressChange?.(localAddress, e.target.value, localState, localCountry);
+            }}
+            className={inputClassName}
+            placeholder="Ciudad o municipio"
+          />
+        </div>
+      )}
 
       {!compact && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

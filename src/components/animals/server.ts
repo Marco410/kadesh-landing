@@ -28,6 +28,7 @@ const ANIMAL_SHARE_QUERY = `
       logs(orderBy: [{ date_status: desc }], take: 1) {
         status
         city
+        placeLabel
         state
         date_status
         createdAt
@@ -52,6 +53,7 @@ export type AnimalShareData = {
   logs?: Array<{
     status: string;
     city?: string | null;
+    placeLabel?: string | null;
     state?: string | null;
     date_status?: string | null;
     createdAt?: string | null;

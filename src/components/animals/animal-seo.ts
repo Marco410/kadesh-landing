@@ -64,7 +64,7 @@ export function animalShareFacts(animal: AnimalShareData): AnimalShareFacts {
       animal.color?.trim() || '',
       animal.size?.trim() || '',
     ].filter(Boolean),
-    location: [log?.city, log?.state].filter(Boolean).join(', '),
+    location: [log?.placeLabel, log?.city, log?.state].filter(Boolean).join(', '),
     seenAt: formatSeenAt(log?.date_status || log?.createdAt),
   };
 }

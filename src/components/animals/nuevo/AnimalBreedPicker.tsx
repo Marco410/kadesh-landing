@@ -67,6 +67,7 @@ export default function AnimalBreedPicker({
           searchKey="breed"
           displayKey="breed"
           error={error}
+          selectExactOnBlur
         />
       </div>
       <button

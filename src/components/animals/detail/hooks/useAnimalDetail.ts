@@ -16,6 +16,9 @@ export interface AnimalDetail {
   size?: string | null;
   createdAt: string;
   contactNumber?: string | null;
+  contactNumber2?: string | null;
+  sourceUrl?: string | null;
+  reportedBy?: string | null;
   animal_breed: {
     id?: string;
     breed: string;
@@ -35,6 +38,7 @@ export interface AnimalDetail {
     id: string;
     address?: string | null;
     city?: string | null;
+    placeLabel?: string | null;
     country?: string | null;
     state?: string | null;
     createdAt: string;

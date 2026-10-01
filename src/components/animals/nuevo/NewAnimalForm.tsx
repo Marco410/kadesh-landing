@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMutation } from '@apollo/client';
+import { useMutation, useLazyQuery } from '@apollo/client';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
 import {
   CREATE_ANIMAL_MUTATION,
   CREATE_ANIMAL_LOG_MUTATION,
   CREATE_ANIMAL_MULTIMEDIA_MUTATION,
+  FIND_ANIMAL_REPORT_DUPLICATES,
 } from 'kadesh/components/animals/queries';
 import { useUser } from 'kadesh/utils/UserContext';
 import LocationPicker from 'kadesh/components/animals/nuevo/LocationPicker';
@@ -42,6 +43,9 @@ import {
   loadAnimalReportDraft,
   saveAnimalReportDraft,
 } from 'kadesh/components/animals/nuevo/reportDraft';
+import { MORELIA_CENTER, placeLabelFromAddress } from 'kadesh/components/animals/nuevo/nominatimPlace';
+import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
+import { normalizeMxPhone } from 'kadesh/utils/phone';
 
 const STEPS = ['Foto y tipo', 'Cómo reconocerlo', 'Dónde'] as const;
 const MAX_IMAGES = 3;
@@ -62,33 +66,90 @@ interface FieldErrors {
   status?: string;
   location?: string;
   contactNumber?: string;
+  contactNumber2?: string;
+  date?: string;
   age?: string;
   color?: string;
   size?: string;
   physicalDescription?: string;
 }
 
-function formatDateTimeLocal(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-}
-
 function isValidName(name: string) {
   return name === 'Sin nombre' || name.trim() !== '';
 }
 
-function publishErrorMessage(error: unknown): string {
-  if (error && typeof error === 'object' && 'graphQLErrors' in error) {
-    const first = (error as { graphQLErrors?: { message?: string }[] })
-      .graphQLErrors?.[0]?.message;
-    if (first) return first.split('\n')[0];
+function todayKey(date = new Date()) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+type DateMode = 'today' | 'yesterday' | 'other';
+
+function buildLostDate(mode: DateMode, otherDate: string, otherTime: string) {
+  const now = new Date();
+  if (mode === 'today') return { ok: true as const, iso: now.toISOString() };
+  if (mode === 'yesterday') {
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(12, 0, 0, 0);
+    return { ok: true as const, iso: yesterday.toISOString() };
   }
-  if (error instanceof Error && error.message) return error.message;
-  return 'Ocurrió un error inesperado.';
+  if (!otherDate) return { ok: false as const, reason: 'Elige el día.' };
+  const [year, month, day] = otherDate.split('-').map(Number);
+  let hours = 12;
+  let minutes = 0;
+  if (otherTime) {
+    const [hh, mm] = otherTime.split(':').map(Number);
+    if (Number.isNaN(hh) || Number.isNaN(mm)) {
+      return { ok: false as const, reason: 'La hora no es válida.' };
+    }
+    hours = hh;
+    minutes = mm;
+  } else if (otherDate === todayKey(now)) {
+    hours = now.getHours();
+    minutes = now.getMinutes();
+  }
+  const chosen = new Date(year, (month || 1) - 1, day || 1, hours, minutes, 0, 0);
+  if (Number.isNaN(chosen.getTime())) {
+    return { ok: false as const, reason: 'La fecha no es válida.' };
+  }
+  if (chosen.getTime() > Date.now()) {
+    return { ok: false as const, reason: 'La fecha no puede ser posterior a hoy.' };
+  }
+  return { ok: true as const, iso: chosen.toISOString() };
+}
+
+function publishErrorMessage(error: unknown): { text: string; step: number; field?: keyof FieldErrors } {
+  let raw = '';
+  if (error && typeof error === 'object' && 'graphQLErrors' in error) {
+    raw =
+      (error as { graphQLErrors?: { message?: string }[] }).graphQLErrors?.[0]?.message ||
+      '';
+  } else if (error instanceof Error) {
+    raw = error.message;
+  }
+  const text = raw.split('\n')[0]?.trim() || '';
+  if (/10 dígitos|teléfono/i.test(text)) {
+    return { text: 'El teléfono debe tener 10 dígitos.', step: 2, field: 'contactNumber' };
+  }
+  if (/ciudad|ubicación|mapa|invalid data/i.test(text)) {
+    return {
+      text: 'Elige una ubicación de la lista o toca el mapa.',
+      step: 2,
+      field: 'location',
+    };
+  }
+  if (/fecha/i.test(text)) {
+    return { text: 'La fecha no puede ser posterior a hoy.', step: 2, field: 'date' };
+  }
+  if (/raza/i.test(text)) {
+    return { text: 'Elige una raza o pulsa No sé.', step: 1, field: 'animalBreedId' };
+  }
+  if (text && !/you provided invalid data/i.test(text)) {
+    return { text, step: 2 };
+  }
+  return { text: 'Revisa los datos marcados e inténtalo de nuevo.', step: 2 };
 }
 
 export default function NewAnimalForm({
@@ -125,14 +186,25 @@ export default function NewAnimalForm({
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
   const [address, setAddress] = useState('');
+  const { coords: rememberedLocation } = useRememberedLocation();
+  const mapCenter = rememberedLocation ?? MORELIA_CENTER;
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [country, setCountry] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [addressEdited, setAddressEdited] = useState(false);
   const [isResolvingPlace, setIsResolvingPlace] = useState(false);
-  const [notes, setNotes] = useState('');
+  const [isOwnPet, setIsOwnPet] = useState(true);
   const [contactNumber, setContactNumber] = useState(user?.phone ?? '');
-  const [dateStatus, setDateStatus] = useState(formatDateTimeLocal(new Date()));
-  const [isToday, setIsToday] = useState(true);
+  const [contactNumber2, setContactNumber2] = useState('');
+  const [sourceUrl, setSourceUrl] = useState('');
+  const [notes, setNotes] = useState('');
+  const [dateMode, setDateMode] = useState<DateMode>('today');
+  const [otherDate, setOtherDate] = useState('');
+  const [otherTime, setOtherTime] = useState('');
+  const [duplicates, setDuplicates] = useState<Array<{ id: string; name: string; url: string }>>([]);
+  const skipDuplicateCheck = useRef(false);
   const [images, setImages] = useState<ImagePreview[]>([]);
   const [errors, setErrors] = useState<FieldErrors>({});
 
@@ -193,10 +265,26 @@ export default function NewAnimalForm({
         setCity(draft.city);
         setState(draft.state);
         setCountry(draft.country);
+        setNeighborhood(draft.neighborhood || '');
+        setPostalCode(draft.postalCode || '');
+        setAddressEdited(Boolean(draft.addressEdited));
         setNotes(draft.notes);
+        setIsOwnPet(draft.isOwnPet !== false);
         if (draft.contactNumber) setContactNumber(draft.contactNumber);
-        setDateStatus(draft.dateStatus || formatDateTimeLocal(new Date()));
-        setIsToday(draft.isToday);
+        setContactNumber2(draft.contactNumber2 || '');
+        setSourceUrl(draft.sourceUrl || '');
+        if (draft.dateMode) {
+          setDateMode(draft.dateMode);
+          setOtherDate(draft.otherDate || '');
+          setOtherTime(draft.otherTime || '');
+        } else if (draft.isToday) {
+          setDateMode('today');
+        } else {
+          setDateMode('other');
+          const [datePart, timePart] = (draft.dateStatus || '').split('T');
+          setOtherDate(datePart || '');
+          setOtherTime(timePart?.slice(0, 5) || '');
+        }
         const restored = draft.images
           .slice(0, MAX_IMAGES)
           .map((image) => {
@@ -250,10 +338,19 @@ export default function NewAnimalForm({
           city,
           state,
           country,
+          neighborhood,
+          postalCode,
+          addressEdited,
           notes,
+          isOwnPet,
           contactNumber,
-          dateStatus,
-          isToday,
+          contactNumber2,
+          sourceUrl,
+          dateStatus: '',
+          isToday: dateMode === 'today',
+          dateMode,
+          otherDate,
+          otherTime,
           images: storedImages,
         });
       })();
@@ -280,25 +377,26 @@ export default function NewAnimalForm({
     city,
     state,
     country,
+    neighborhood,
+    postalCode,
+    addressEdited,
     notes,
+    isOwnPet,
     contactNumber,
-    dateStatus,
-    isToday,
+    contactNumber2,
+    sourceUrl,
+    dateMode,
+    otherDate,
+    otherTime,
     images,
   ]);
-
-  useEffect(() => {
-    if (!hydrated || !isToday) return;
-    setDateStatus(formatDateTimeLocal(new Date()));
-    const interval = window.setInterval(() => {
-      setDateStatus(formatDateTimeLocal(new Date()));
-    }, 60000);
-    return () => window.clearInterval(interval);
-  }, [hydrated, isToday]);
 
   const [createAnimal] = useMutation(CREATE_ANIMAL_MUTATION);
   const [createAnimalLog] = useMutation(CREATE_ANIMAL_LOG_MUTATION);
   const [createAnimalMultimedias] = useMutation(CREATE_ANIMAL_MULTIMEDIA_MUTATION);
+  const [findDuplicates] = useLazyQuery<
+    { findAnimalReportDuplicates: Array<{ id: string; name: string; url: string }> }
+  >(FIND_ANIMAL_REPORT_DUPLICATES, { fetchPolicy: 'network-only' });
 
   const addImages = (files: File[]) => {
     const incoming = Array.from(files);
@@ -415,14 +513,23 @@ export default function NewAnimalForm({
     if (target >= 2) {
       if (!status) nextErrors.status = 'Elige qué estás reportando.';
       if (!lat.trim() || !lng.trim()) {
-        nextErrors.location = 'Fija el pin en el mapa o pulsa Estoy aquí.';
+        nextErrors.location = 'Elige una ubicación de la lista o toca el mapa.';
       } else if (isResolvingPlace) {
         nextErrors.location = 'Estamos ubicando la ciudad. Espera un momento.';
-      } else if (!city.trim()) {
-        nextErrors.location = 'Escribe la ciudad. Hace falta para publicar.';
       }
+      const lostDate = buildLostDate(dateMode, otherDate, otherTime);
+      if (!lostDate.ok) nextErrors.date = lostDate.reason;
+      const phone = normalizeMxPhone(contactNumber);
       if (!contactNumber.trim()) {
-        nextErrors.contactNumber = 'Un teléfono para que te contacten.';
+        nextErrors.contactNumber = isOwnPet
+          ? 'Un teléfono para que te contacten.'
+          : 'Escribe el teléfono del dueño.';
+      } else if (!phone.ok) {
+        nextErrors.contactNumber = phone.reason;
+      }
+      if (contactNumber2.trim()) {
+        const second = normalizeMxPhone(contactNumber2);
+        if (!second.ok) nextErrors.contactNumber2 = second.reason;
       }
     }
 
@@ -448,6 +555,12 @@ export default function NewAnimalForm({
     if (!validateStep(2) || !user?.id) {
       if (!user?.id) {
         sileo.error({ title: 'Inicia sesión para publicar' });
+      } else if (!isValidName(name) || !animalTypeId) {
+        setStep(0);
+      } else if (!animalBreedId || !age.trim() || !color.trim() || !size.trim() || !physicalDescription.trim()) {
+        setStep(1);
+      } else {
+        setStep(2);
       }
       return;
     }
@@ -455,16 +568,56 @@ export default function NewAnimalForm({
     setLoading(true);
 
     try {
+      const lostDate = buildLostDate(dateMode, otherDate, otherTime);
+      if (!lostDate.ok) {
+        setErrors({ date: lostDate.reason });
+        setStep(2);
+        return;
+      }
+      const phone = normalizeMxPhone(contactNumber);
+      if (!phone.ok) {
+        setErrors({ contactNumber: phone.reason });
+        setStep(2);
+        return;
+      }
+      const second = contactNumber2.trim() ? normalizeMxPhone(contactNumber2) : { ok: true as const, digits: '' };
+      if (!second.ok) {
+        setErrors({ contactNumber2: second.reason });
+        setStep(2);
+        return;
+      }
+
+      if (!skipDuplicateCheck.current) {
+        const { data: duplicateData } = await findDuplicates({
+          variables: {
+            phone: phone.digits,
+            animalTypeId,
+            name: name.trim() || 'Sin nombre',
+            sourceUrl: sourceUrl.trim() || null,
+          },
+        });
+        const matches = duplicateData?.findAnimalReportDuplicates ?? [];
+        if (matches.length) {
+          setDuplicates(matches);
+          setLoading(false);
+          return;
+        }
+      }
+      skipDuplicateCheck.current = false;
+
       const { data: animalData } = await createAnimal({
         variables: {
           data: {
             name: name.trim() || 'Sin nombre',
-            contactNumber: contactNumber.trim(),
+            contactNumber: phone.digits,
+            contactNumber2: second.digits,
             sex,
             physical_description: physicalDescription.trim(),
             age: age.trim() || null,
             color: color.trim() || null,
             size: size.trim() || null,
+            sourceUrl: sourceUrl.trim(),
+            reportedBy: isOwnPet ? 'owner' : 'volunteer',
             animal_type: { connect: { id: animalTypeId } },
             animal_breed: { connect: { id: animalBreedId } },
             user: { connect: { id: user.id } },
@@ -488,8 +641,11 @@ export default function NewAnimalForm({
             city: city.trim(),
             state: state.trim() || null,
             country: country.trim() || null,
+            neighborhood: neighborhood.trim(),
+            postalCode: postalCode.trim(),
+            placeLabel: addressEdited ? placeLabelFromAddress(address) : '',
             last_seen: lastSeen,
-            date_status: dateStatus ? new Date(dateStatus).toISOString() : null,
+            date_status: lostDate.iso,
           },
         },
       });
@@ -513,9 +669,12 @@ export default function NewAnimalForm({
         animalId;
       router.push(Routes.animals.detail(slug));
     } catch (error: unknown) {
+      const parsed = publishErrorMessage(error);
+      if (parsed.field) setErrors({ [parsed.field]: parsed.text });
+      setStep(parsed.step);
       sileo.error({
         title: 'No se pudo publicar',
-        description: publishErrorMessage(error),
+        description: parsed.text,
       });
     } finally {
       setLoading(false);
@@ -746,33 +905,53 @@ export default function NewAnimalForm({
                   {whenLabel}
                 </p>
                 <div className="mb-3 flex flex-wrap gap-1.5">
+                  <ChoiceChip label="Hoy" selected={dateMode === 'today'} onSelect={() => setDateMode('today')} />
                   <ChoiceChip
-                    label="Hoy"
-                    selected={isToday}
-                    onSelect={() => setIsToday(true)}
+                    label="Ayer"
+                    selected={dateMode === 'yesterday'}
+                    onSelect={() => setDateMode('yesterday')}
                   />
                   <ChoiceChip
                     label="Otra fecha"
-                    selected={!isToday}
-                    onSelect={() => setIsToday(false)}
+                    selected={dateMode === 'other'}
+                    onSelect={() => setDateMode('other')}
                   />
                 </div>
-                {!isToday && (
+                {dateMode === 'other' && (
                   <motion.div
                     variants={motionPrefs.expand}
                     initial={motionPrefs.expand ? 'hidden' : false}
                     animate="show"
-                    className="overflow-hidden"
+                    className="grid gap-3 sm:grid-cols-2"
                   >
-                  <input
-                    id="dateStatus"
-                    type="datetime-local"
-                    value={dateStatus}
-                    onChange={(e) => setDateStatus(e.target.value)}
-                    className={fieldClass}
-                  />
+                    <div>
+                      <label htmlFor="otherDate" className="mb-1 block text-xs font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
+                        Día
+                      </label>
+                      <input
+                        id="otherDate"
+                        type="date"
+                        max={todayKey()}
+                        value={otherDate}
+                        onChange={(e) => setOtherDate(e.target.value)}
+                        className={fieldClass}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="otherTime" className="mb-1 block text-xs font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
+                        Hora, si la sabes
+                      </label>
+                      <input
+                        id="otherTime"
+                        type="time"
+                        value={otherTime}
+                        onChange={(e) => setOtherTime(e.target.value)}
+                        className={fieldClass}
+                      />
+                    </div>
                   </motion.div>
                 )}
+                {errors.date ? <p className="mt-2 text-xs text-red-600">{errors.date}</p> : null}
               </div>
 
               <div className={errors.location ? 'rounded-xl ring-1 ring-red-500 ring-offset-2 dark:ring-offset-night' : ''}>
@@ -795,7 +974,13 @@ export default function NewAnimalForm({
                     setState(newState);
                     setCountry(newCountry);
                   }}
+                  onPlaceDetails={({ neighborhood: nextNeighborhood, postalCode: nextPostal }) => {
+                    setNeighborhood(nextNeighborhood);
+                    setPostalCode(nextPostal);
+                  }}
+                  onAddressEdited={setAddressEdited}
                   onResolvingChange={setIsResolvingPlace}
+                  mapCenter={mapCenter}
                 />
                 {errors.location ? (
                   <p className="mt-2 text-xs text-red-600">{errors.location}</p>
@@ -803,11 +988,32 @@ export default function NewAnimalForm({
               </div>
 
               <div>
+                <p className="mb-2 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+                  ¿Es tu mascota?
+                </p>
+                <div className="mb-4 flex flex-wrap gap-1.5">
+                  <ChoiceChip
+                    label="Sí"
+                    selected={isOwnPet}
+                    onSelect={() => {
+                      setIsOwnPet(true);
+                      if (!contactNumber.trim() && user?.phone) setContactNumber(user.phone);
+                    }}
+                  />
+                  <ChoiceChip
+                    label="No, la reporto por alguien más"
+                    selected={!isOwnPet}
+                    onSelect={() => {
+                      setIsOwnPet(false);
+                      setContactNumber('');
+                    }}
+                  />
+                </div>
                 <label
                   htmlFor="contactNumber"
                   className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
                 >
-                  Teléfono <span className="text-red-600">*</span>
+                  {isOwnPet ? 'Teléfono' : 'Teléfono del dueño'} <span className="text-red-600">*</span>
                 </label>
                 <input
                   id="contactNumber"
@@ -816,13 +1022,51 @@ export default function NewAnimalForm({
                   maxLength={18}
                   value={contactNumber}
                   onChange={(e) => setContactNumber(e.target.value)}
-                  className={fieldClass}
-                  placeholder="55 1234 5678"
+                  className={`${fieldClass} ${errors.contactNumber ? 'ring-1 ring-red-500' : ''}`}
+                  placeholder="443 521 5638"
                   autoComplete="tel"
                 />
                 {errors.contactNumber ? (
                   <p className="mt-2 text-xs text-red-600">{errors.contactNumber}</p>
                 ) : null}
+                <label
+                  htmlFor="contactNumber2"
+                  className="mb-2 mt-4 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
+                >
+                  Segundo teléfono
+                </label>
+                <input
+                  id="contactNumber2"
+                  type="tel"
+                  inputMode="tel"
+                  maxLength={18}
+                  value={contactNumber2}
+                  onChange={(e) => setContactNumber2(e.target.value)}
+                  className={`${fieldClass} ${errors.contactNumber2 ? 'ring-1 ring-red-500' : ''}`}
+                  placeholder="Opcional"
+                  autoComplete="tel"
+                />
+                {errors.contactNumber2 ? (
+                  <p className="mt-2 text-xs text-red-600">{errors.contactNumber2}</p>
+                ) : null}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="sourceUrl"
+                  className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
+                >
+                  Enlace de la publicación original
+                </label>
+                <input
+                  id="sourceUrl"
+                  type="url"
+                  inputMode="url"
+                  value={sourceUrl}
+                  onChange={(e) => setSourceUrl(e.target.value)}
+                  className={fieldClass}
+                  placeholder="https://www.facebook.com/…"
+                />
               </div>
 
               <AnimatePresence initial={false} mode="wait">
@@ -872,6 +1116,31 @@ export default function NewAnimalForm({
       </div>
 
       <div className="shrink-0 border-t border-[#e6e9ef] bg-white px-4 py-3 dark:border-white/10 dark:bg-night-raised sm:px-6">
+        {duplicates.length > 0 && (
+          <div className="mx-auto mb-3 max-w-2xl rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-[#121212] dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-[#eef1f6]">
+            <p className="font-semibold">Parece que este reporte ya existe</p>
+            <ul className="mt-2 space-y-1">
+              {duplicates.map((item) => (
+                <li key={item.id}>
+                  <a href={item.url} className="font-semibold text-kadesh underline" target="_blank" rel="noopener noreferrer">
+                    {item.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              onClick={() => {
+                skipDuplicateCheck.current = true;
+                setDuplicates([]);
+                void handleSubmit();
+              }}
+              className="mt-3 inline-flex min-h-11 items-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white"
+            >
+              Publicar de todos modos
+            </button>
+          </div>
+        )}
         <div className="mx-auto flex max-w-2xl gap-3">
           <motion.button
             type="button"

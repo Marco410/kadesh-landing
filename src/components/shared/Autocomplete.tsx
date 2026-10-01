@@ -22,7 +22,17 @@ interface AutocompleteProps {
   error?: string;
   searchKey?: string; // Key to use for search (default: 'label')
   displayKey?: string; // Key to display (default: 'label')
+  /** Si el texto coincide exacto con una opción, la elige al salir del campo. */
+  selectExactOnBlur?: boolean;
   className?: string;
+}
+
+function foldMatch(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
 }
 
 export default function Autocomplete({
@@ -39,6 +49,7 @@ export default function Autocomplete({
   error,
   searchKey = 'label',
   displayKey = 'label',
+  selectExactOnBlur = false,
   className = '',
 }: AutocompleteProps) {
   const [search, setSearch] = useState('');
@@ -111,8 +122,14 @@ export default function Autocomplete({
   };
 
   const handleBlur = () => {
-    // Delay to allow click on dropdown items
-    setTimeout(() => setShowDropdown(false), 200);
+    window.setTimeout(() => {
+      setShowDropdown(false);
+      if (!selectExactOnBlur) return;
+      const typed = foldMatch(search);
+      if (!typed) return;
+      const match = options.find((option) => foldMatch(String(option[displayKey] ?? '')) === typed);
+      if (match && match.id !== value) handleSelect(match);
+    }, 200);
   };
 
   return (

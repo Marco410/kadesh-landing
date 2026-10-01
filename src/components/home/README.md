@@ -40,9 +40,9 @@ El **roadmap** es kanban de producto (completado / en progreso / pendiente), no 
 
 No reutiliza `VeterinaryCard` del directorio (esa ficha es una fila para el mapa). En home, cada clínica es una tarjeta con recuadro-mapa (el mismo pin de marca del hero), abierto/cerrado, distancia y llamada. Las 4 fichas de la fila tienen la misma altura: nombre a 2 líneas, dirección a 1, servicios en una sola fila; likes y chips extra no estiran la tarjeta. Si está verificada, un check va junto al nombre. Si tiene me gusta, el corazón y el conteo van junto a las reseñas; si no tiene, no se pinta. Va a `/veterinarias/{slug}`, no al índice. CTA de directorio: **Ver directorio completo**. No se exporta del barrel: solo la usa esta sección.
 
-La geolocalización **no** se pide al cargar: hay un botón **Usar mi ubicación**. Sin gesto del usuario no aparece el prompt del navegador (Best Practices / Lighthouse).
+La geolocalización **no** se pide sola la primera vez: hay un botón **Usar mi ubicación**. Sin ese gesto no aparece el prompt del navegador. Cuando la persona aprueba, la coordenada se guarda en el navegador y al recargar la portada (y los directorios) la vuelven a usar. Si el permiso sigue concedido, el punto se actualiza en silencio. Si lo bloquea, se borra lo guardado.
 
-En **Animales perdidos y en adopción**, la ficha usa **Ver ficha** (el mismo verbo que el directorio). El vacío nombra que no hay reportes cerca y ofrece publicar. Misma regla: ubicación solo tras el botón.
+En **Animales perdidos y en adopción**, la ficha usa **Ver ficha** (el mismo verbo que el directorio). El vacío nombra que no hay reportes cerca y ofrece publicar. Misma regla de ubicación.
 
 ## Accesibilidad en portada
 

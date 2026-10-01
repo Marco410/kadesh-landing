@@ -47,7 +47,7 @@ Debajo del lienzo mapa + horarios: **¿Es tu clínica?** El mapa no cede altura.
 
 Nunca decimos «Google Maps», «Leaflet» ni el nombre del tile server. Si el usuario niega la ubicación, pedimos activarla en el navegador — sin emojis.
 
-La geolocalización **no** se pide al cargar el directorio. Hasta que el usuario pulse **Usar mi ubicación**, el panel explica que hace falta ubicación y el mapa muestra el área por defecto sin pin de usuario.
+La geolocalización **no** se pide sola la primera vez. Hasta que el usuario pulse **Usar mi ubicación**, el panel explica que hace falta ubicación y el mapa muestra el área por defecto. Si ya la aprobaron, al recargar el directorio usa esa ubicación sin volver a preguntar.
 
 ## Acceso
 

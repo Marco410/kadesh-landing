@@ -6,6 +6,11 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { Cancel01Icon, Location01Icon, Search01Icon } from '@hugeicons/core-free-icons';
 import { sileo } from 'sileo';
 import {
+  GEO_OPTIONS_FRESH,
+  isGeolocationAvailable,
+  requestCurrentPosition,
+} from 'kadesh/utils/geolocation';
+import {
   applyFreeMapThemeClass,
   attachFreeMapBaseLayer,
   createBrandPinIcon,
@@ -344,29 +349,24 @@ export default function LocationPicker({
   }, [applyHit, locationQuery]);
 
   const handleUseCurrentLocation = useCallback(() => {
-    if (!navigator.geolocation) {
+    if (!isGeolocationAvailable()) {
       sileo.error({ title: 'Tu navegador no soporta geolocalización' });
       return;
     }
     setIsLoadingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const newLat = position.coords.latitude;
-        const newLng = position.coords.longitude;
-        onLocationChangeRef.current(newLat.toString(), newLng.toString());
-        updateMarker(newLat, newLng);
-        mapRef.current?.setView([newLat, newLng], PIN_ZOOM);
-        void doReverseGeocode(newLat, newLng);
-        setIsLoadingLocation(false);
-      },
-      () => {
-        setIsLoadingLocation(false);
+    requestCurrentPosition(GEO_OPTIONS_FRESH)
+      .then(({ lat, lng }) => {
+        onLocationChangeRef.current(lat.toString(), lng.toString());
+        updateMarker(lat, lng);
+        mapRef.current?.setView([lat, lng], PIN_ZOOM);
+        void doReverseGeocode(lat, lng);
+      })
+      .catch(() => {
         sileo.error({
           title: 'No se pudo obtener tu ubicación. Verifica los permisos del navegador.',
         });
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+      })
+      .finally(() => setIsLoadingLocation(false));
   }, [doReverseGeocode, updateMarker]);
 
   const inputClassName =

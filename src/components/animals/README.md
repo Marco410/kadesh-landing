@@ -15,7 +15,7 @@ Ayudar a encontrar o adoptar. El mapa y las tarjetas muestran el mismo conjunto;
 - Si no hay resultados, el vacío nombra la búsqueda (`No hay reptiles rescatados en 10 km`) y ofrece ampliar radio o quitar filtros.
 - Ficha de lista: foto, estatus de color semántico, distancia, Ver ficha. Oscuro: `night` / `night-raised`.
 - **Reportar** está en el encabezado del panel (y sobre el mapa en móvil). Si no hay sesión, abre el modal de registro.
-- La ubicación **no** se solicita al entrar. El listado arranca sin coords (todos los reportes) y el panel ofrece **Usar mi ubicación** / **Reintentar**. El mapa solo pide geolocalización al tocar el botón de centrar.
+- La ubicación **no** se solicita sola la primera vez. El listado arranca sin coords (todos los reportes) y el panel ofrece **Usar mi ubicación** / **Reintentar**. Si ya la aprobaron, al recargar se reutiliza y el mapa muestra el pin. Centrar el mapa también guarda esa aprobación.
 
 ## Alta (`/animales/nuevo`)
 

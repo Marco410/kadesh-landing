@@ -1,16 +1,12 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useRef } from "react";
 import Link from "next/link";
 import { useNearbyPetPlaces } from "kadesh/components/veterinaries/hooks/useNearbyPetPlaces";
 import HomeVeterinaryCard from "kadesh/components/home/HomeVeterinaryCard";
 import { DEFAULT_RADIUS_VETERINARIES } from "kadesh/constants/constans";
 import { Routes } from "kadesh/core/routes";
-import {
-  GEO_OPTIONS_CACHED,
-  isGeolocationAvailable,
-  requestCurrentPosition,
-} from "kadesh/utils/geolocation";
+import { useRememberedLocation } from "kadesh/utils/useRememberedLocation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { HospitalLocationIcon, Location01Icon } from "@hugeicons/core-free-icons";
 import { gsap, useGSAP, HOME_EASE } from "kadesh/components/home/gsap-register";
@@ -19,22 +15,14 @@ const NEARBY_LIMIT = 4;
 
 export default function VeterinariansSection() {
   const rootRef = useRef<HTMLElement>(null);
-  const [userLocation, setUserLocation] = useState<
-    { lat: number; lng: number } | undefined
-  >(undefined);
-  const [isLocating, setIsLocating] = useState(false);
-
-  const handleUseLocation = useCallback(() => {
-    if (!isGeolocationAvailable()) return;
-    setIsLocating(true);
-    requestCurrentPosition(GEO_OPTIONS_CACHED)
-      .then(setUserLocation)
-      .catch(() => {})
-      .finally(() => setIsLocating(false));
-  }, []);
+  const {
+    coords: userLocation,
+    isLocating,
+    request: handleUseLocation,
+  } = useRememberedLocation();
 
   const { allPlaces, loading, hasLocation } = useNearbyPetPlaces(
-    userLocation,
+    userLocation ?? undefined,
     NEARBY_LIMIT,
   );
   const nearbyVets = allPlaces;
@@ -111,7 +99,7 @@ export default function VeterinariansSection() {
             <button
               type="button"
               onClick={handleUseLocation}
-              disabled={isLocating || !isGeolocationAvailable()}
+              disabled={isLocating}
               className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
             >
               <HugeiconsIcon icon={Location01Icon} size={18} strokeWidth={1.5} aria-hidden="true" />

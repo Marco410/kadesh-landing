@@ -199,6 +199,7 @@ export default function NewAnimalForm({
   const [contactNumber, setContactNumber] = useState(user?.phone ?? '');
   const [contactNumber2, setContactNumber2] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
+  const [fromSocial, setFromSocial] = useState(false);
   const [notes, setNotes] = useState('');
   const [dateMode, setDateMode] = useState<DateMode>('today');
   const [otherDate, setOtherDate] = useState('');
@@ -273,6 +274,7 @@ export default function NewAnimalForm({
         if (draft.contactNumber) setContactNumber(draft.contactNumber);
         setContactNumber2(draft.contactNumber2 || '');
         setSourceUrl(draft.sourceUrl || '');
+        setFromSocial(Boolean(draft.fromSocial || draft.sourceUrl));
         if (draft.dateMode) {
           setDateMode(draft.dateMode);
           setOtherDate(draft.otherDate || '');
@@ -346,6 +348,7 @@ export default function NewAnimalForm({
           contactNumber,
           contactNumber2,
           sourceUrl,
+          fromSocial,
           dateStatus: '',
           isToday: dateMode === 'today',
           dateMode,
@@ -385,6 +388,7 @@ export default function NewAnimalForm({
     contactNumber,
     contactNumber2,
     sourceUrl,
+    fromSocial,
     dateMode,
     otherDate,
     otherTime,
@@ -593,7 +597,7 @@ export default function NewAnimalForm({
             phone: phone.digits,
             animalTypeId,
             name: name.trim() || 'Sin nombre',
-            sourceUrl: sourceUrl.trim() || null,
+            sourceUrl: fromSocial ? sourceUrl.trim() || null : null,
           },
         });
         const matches = duplicateData?.findAnimalReportDuplicates ?? [];
@@ -616,7 +620,7 @@ export default function NewAnimalForm({
             age: age.trim() || null,
             color: color.trim() || null,
             size: size.trim() || null,
-            sourceUrl: sourceUrl.trim(),
+            sourceUrl: fromSocial ? sourceUrl.trim() : '',
             reportedBy: isOwnPet ? 'owner' : 'volunteer',
             animal_type: { connect: { id: animalTypeId } },
             animal_breed: { connect: { id: animalBreedId } },
@@ -1052,21 +1056,38 @@ export default function NewAnimalForm({
               </div>
 
               <div>
-                <label
-                  htmlFor="sourceUrl"
-                  className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
-                >
-                  Enlace de la publicación original
+                <label className="flex min-h-11 items-center gap-3 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+                  <input
+                    type="checkbox"
+                    checked={fromSocial}
+                    onChange={(event) => {
+                      const checked = event.target.checked;
+                      setFromSocial(checked);
+                      if (!checked) setSourceUrl('');
+                    }}
+                    className="h-5 w-5 shrink-0 accent-orange-500"
+                  />
+                  ¿Este registro viene de redes sociales?
                 </label>
-                <input
-                  id="sourceUrl"
-                  type="url"
-                  inputMode="url"
-                  value={sourceUrl}
-                  onChange={(e) => setSourceUrl(e.target.value)}
-                  className={fieldClass}
-                  placeholder="https://www.facebook.com/…"
-                />
+                {fromSocial ? (
+                  <div className="mt-3">
+                    <label
+                      htmlFor="sourceUrl"
+                      className="mb-2 block text-sm text-[#5a5a5a] dark:text-[#9aa3b2]"
+                    >
+                      Pega el enlace de la publicación original
+                    </label>
+                    <input
+                      id="sourceUrl"
+                      type="url"
+                      inputMode="url"
+                      value={sourceUrl}
+                      onChange={(e) => setSourceUrl(e.target.value)}
+                      className={fieldClass}
+                      placeholder="https://www.facebook.com/…"
+                    />
+                  </div>
+                ) : null}
               </div>
 
               <AnimatePresence initial={false} mode="wait">

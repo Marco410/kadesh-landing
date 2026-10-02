@@ -5,10 +5,19 @@ const CITY_KEYS = ['city', 'town', 'municipality', 'county'] as const;
 const NEIGHBORHOOD_KEYS = [
   'suburb',
   'neighbourhood',
-  'city_district',
   'quarter',
   'hamlet',
   'village',
+] as const;
+const PLACE_KEYS = [
+  'city',
+  'town',
+  'municipality',
+  'county',
+  'city_district',
+  'borough',
+  'suburb',
+  'state',
 ] as const;
 
 const STREET_LABEL =
@@ -25,6 +34,7 @@ export interface NominatimAddress {
   municipality?: string;
   county?: string;
   city_district?: string;
+  borough?: string;
   quarter?: string;
   suburb?: string;
   hamlet?: string;
@@ -47,6 +57,8 @@ export interface SearchHit extends ParsedPlace {
   label: string;
   lat: number;
   lng: number;
+  /** Ciudad, alcaldía o municipio. Iztapalapa no viene como city. */
+  places: string[];
 }
 
 interface NominatimResult {
@@ -113,13 +125,11 @@ function fold(value: string) {
     .toLowerCase();
 }
 
-export function hitMatchesHint(
-  hit: Pick<SearchHit, 'city' | 'state' | 'neighborhood'>,
-  hint: string,
-) {
+export function hitMatchesHint(hit: Pick<SearchHit, 'places' | 'city' | 'state'>, hint: string) {
   const needle = fold(hint);
   if (!needle) return true;
-  return [hit.city, hit.state, hit.neighborhood].some((part) => fold(part).includes(needle));
+  const places = hit.places?.length ? hit.places : [hit.city, hit.state];
+  return places.some((part) => fold(part).includes(needle));
 }
 
 function tokenScore(label: string, query: string) {
@@ -157,32 +167,55 @@ function viewbox(bias: { lat: number; lng: number }) {
   return `${bias.lng - delta},${bias.lat + delta},${bias.lng + delta},${bias.lat - delta}`;
 }
 
-const NOMINATIM_HEADERS = {
-  'Accept-Language': 'es',
-  'User-Agent': 'KadeshPet/1.0 (https://pet.kadesh.com.mx)',
-};
+function placeNames(address: NominatimAddress) {
+  return PLACE_KEYS.map((key) => address[key]).filter((value): value is string => Boolean(value?.trim()));
+}
 
-export async function searchNominatim(
-  query: string,
-  bias: { lat: number; lng: number } = MORELIA_CENTER,
-): Promise<SearchHit[]> {
-  const url =
-    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}` +
-    `&format=json&addressdetails=1&limit=10&countrycodes=mx&viewbox=${viewbox(bias)}&bounded=0`;
-  const res = await fetch(url, { headers: NOMINATIM_HEADERS });
-  if (!res.ok) return [];
-  const data: NominatimResult[] = await res.json();
-  const hits = data.map((item, index) => {
+function toHits(data: NominatimResult[]): SearchHit[] {
+  return data.map((item, index) => {
     const parsed = parseNominatimPlace(item);
     return {
       id: `${item.lat}-${item.lon}-${index}`,
       label: item.display_name,
       lat: parseFloat(item.lat),
       lng: parseFloat(item.lon),
+      places: placeNames(item.address ?? {}),
       ...parsed,
     };
   });
-  return rankSearchHits(hits, query, bias);
+}
+
+/** La zona prioritaria no aportó nada que coincida con lo escrito. */
+export function hitsMatchQuery(hits: SearchHit[], query: string) {
+  if (!hits.length) return false;
+  const hint = cityHint(query);
+  if (hint) return hits.some((hit) => hitMatchesHint(hit, hint));
+  return hits.some((hit) => tokenScore(hit.label, query) > 0);
+}
+
+const NOMINATIM_HEADERS = {
+  'Accept-Language': 'es',
+  'User-Agent': 'KadeshPet/1.0 (https://pet.kadesh.com.mx)',
+};
+
+async function fetchNominatim(query: string, bias?: { lat: number; lng: number }) {
+  const bounded = bias ? `&viewbox=${viewbox(bias)}&bounded=0` : '';
+  const url =
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}` +
+    `&format=json&addressdetails=1&limit=10&countrycodes=mx${bounded}`;
+  const res = await fetch(url, { headers: NOMINATIM_HEADERS });
+  if (!res.ok) return [];
+  const data: NominatimResult[] = await res.json();
+  return toHits(data);
+}
+
+export async function searchNominatim(
+  query: string,
+  bias: { lat: number; lng: number } = MORELIA_CENTER,
+): Promise<SearchHit[]> {
+  const nearby = rankSearchHits(await fetchNominatim(query, bias), query, bias);
+  if (hitsMatchQuery(nearby, query)) return nearby;
+  return rankSearchHits(await fetchNominatim(query), query, bias);
 }
 
 export async function reverseGeocodeNominatim(

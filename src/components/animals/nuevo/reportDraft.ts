@@ -31,6 +31,7 @@ export type AnimalReportDraftV1 = {
   otherTime?: string;
   isOwnPet?: boolean;
   sourceUrl?: string;
+  fromSocial?: boolean;
   addressEdited?: boolean;
   neighborhood?: string;
   postalCode?: string;

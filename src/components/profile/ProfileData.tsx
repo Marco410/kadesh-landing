@@ -15,6 +15,7 @@ import {
   type UserQueryVariables,
 } from "kadesh/utils/queries";
 import { useUser } from "kadesh/utils/UserContext";
+import { toUploadableImage } from "kadesh/utils/uploadable-image";
 import { Routes } from "kadesh/core/routes";
 import type { AuthenticatedItem } from "kadesh/utils/types";
 import { AnimatePresence, motion } from "framer-motion";
@@ -200,9 +201,12 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
   };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !file.type.startsWith("image/") || !user.id) {
-      if (file && !file.type.startsWith("image/")) {
+    const picked = e.target.files?.[0];
+    const isImage =
+      !!picked &&
+      (picked.type.startsWith("image/") || /\.(heic|heif)$/i.test(picked.name));
+    if (!picked || !isImage || !user.id) {
+      if (picked && !isImage) {
         setImageError("Selecciona un archivo de imagen (JPG, PNG, etc.).");
       }
       e.target.value = "";
@@ -211,6 +215,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
     setImageError("");
     setImageUploading(true);
     try {
+      const file = await toUploadableImage(picked);
       await updateUser({
         variables: {
           where: { id: user.id },

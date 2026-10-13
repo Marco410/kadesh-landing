@@ -83,6 +83,9 @@ importers:
       gsap:
         specifier: ^3.15.0
         version: 3.15.0
+      heic-to:
+        specifier: 1.5.2
+        version: 1.5.2
       leaflet:
         specifier: 1.9.4
         version: 1.9.4
@@ -2172,6 +2175,9 @@ packages:
 
   gsap@3.15.0:
     resolution: {integrity: sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A==}
+
+  heic-to@1.5.2:
+    resolution: {integrity: sha512-8Fns+lZHAWmz5U5IUxDeXKwIf3foBoKNPLxxFY4B0MkLjNuomEIHCoDbDE+x/llFK3NCEO1cu4+n3iUKY+Svmw==}
 
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
@@ -5457,6 +5463,8 @@ snapshots:
   graphql@16.14.2: {}
 
   gsap@3.15.0: {}
+
+  heic-to@1.5.2: {}
 
   hoist-non-react-statics@3.3.2:
     dependencies:

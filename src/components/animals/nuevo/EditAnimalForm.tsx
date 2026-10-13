@@ -22,6 +22,7 @@ import PhotoPicker from 'kadesh/components/animals/nuevo/PhotoPicker';
 import ChoiceChip from 'kadesh/components/animals/nuevo/ChoiceChip';
 import StatusChips from 'kadesh/components/animals/StatusChips';
 import { Routes } from 'kadesh/core/routes';
+import { toUploadableImage } from 'kadesh/utils/uploadable-image';
 import {
   ANIMAL_AGE_OPTIONS,
   ANIMAL_SEX_OPTIONS,
@@ -110,19 +111,28 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
   const [deleteMultimedias] = useMutation(DELETE_ANIMAL_MULTIMEDIAS_MUTATION);
   const [createMultimedias] = useMutation(CREATE_ANIMAL_MULTIMEDIA_MUTATION);
 
-  const addImages = (files: File[]) => {
+  const addImages = async (files: File[]) => {
     const room = MAX_IMAGES - photos.length;
     if (room <= 0) {
       sileo.error({ title: 'Ya hay 3 fotos', description: 'Quita una para agregar otra.' });
       return;
     }
-    const valid = files.filter(
-      (f) => (f.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|heic|heif|avif)$/i.test(f.name)) && f.size <= MAX_IMAGE_BYTES
+    const images = files
+      .filter((f) => f.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|heic|heif|avif)$/i.test(f.name))
+      .slice(0, room);
+    const converted = await Promise.all(
+      images.map((f) =>
+        toUploadableImage(f).catch((error) => {
+          console.error('[animal] no se pudo convertir la foto', f.name, error);
+          return null;
+        })
+      )
     );
-    if (valid.length < files.length) {
+    const valid = converted.filter((f): f is File => f !== null && f.size <= MAX_IMAGE_BYTES);
+    if (valid.length < Math.min(files.length, room)) {
       sileo.error({ title: 'Foto no válida', description: 'Usa imágenes de 5 MB o menos.' });
     }
-    const take = valid.slice(0, room).map((file) => ({ file, preview: URL.createObjectURL(file) }));
+    const take = valid.map((file) => ({ file, preview: URL.createObjectURL(file) }));
     if (take.length) setPhotos((cur) => [...cur, ...take]);
   };
 

@@ -46,6 +46,7 @@ import {
 import { MORELIA_CENTER, placeLabelFromAddress } from 'kadesh/components/animals/nuevo/nominatimPlace';
 import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
 import { normalizeMxPhone } from 'kadesh/utils/phone';
+import { toUploadableImage } from 'kadesh/utils/uploadable-image';
 
 const STEPS = ['Foto y tipo', 'Cómo reconocerlo', 'Dónde'] as const;
 const MAX_IMAGES = 3;
@@ -402,7 +403,7 @@ export default function NewAnimalForm({
     { findAnimalReportDuplicates: Array<{ id: string; name: string; url: string }> }
   >(FIND_ANIMAL_REPORT_DUPLICATES, { fetchPolicy: 'network-only' });
 
-  const addImages = (files: File[]) => {
+  const addImages = async (files: File[]) => {
     const incoming = Array.from(files);
     if (!incoming.length) return;
 
@@ -419,27 +420,41 @@ export default function NewAnimalForm({
     let skippedType = 0;
     let skippedSize = 0;
     let skippedCap = 0;
+    let skippedConvert = 0;
 
-    for (const file of incoming) {
+    for (const raw of incoming) {
       const isImage =
-        file.type.startsWith('image/') ||
-        /\.(jpe?g|png|webp|gif|heic|heif|avif)$/i.test(file.name);
+        raw.type.startsWith('image/') ||
+        /\.(jpe?g|png|webp|gif|heic|heif|avif)$/i.test(raw.name);
       if (!isImage) {
         skippedType += 1;
-        continue;
-      }
-      if (file.size > MAX_IMAGE_BYTES) {
-        skippedSize += 1;
         continue;
       }
       if (accepted.length >= remaining) {
         skippedCap += 1;
         continue;
       }
+      let file: File;
+      try {
+        file = await toUploadableImage(raw);
+      } catch (error) {
+        console.error('[animal] no se pudo convertir la foto', raw.name, error);
+        skippedConvert += 1;
+        continue;
+      }
+      if (file.size > MAX_IMAGE_BYTES) {
+        skippedSize += 1;
+        continue;
+      }
       accepted.push(file);
     }
 
-    if (skippedSize) {
+    if (skippedConvert) {
+      sileo.error({
+        title: 'No pudimos leer una foto',
+        description: 'Intenta con otra o guárdala como JPG.',
+      });
+    } else if (skippedSize) {
       sileo.error({
         title: 'Foto demasiado pesada',
         description: 'Cada imagen debe pesar 5 MB o menos.',

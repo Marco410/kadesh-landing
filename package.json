@@ -39,6 +39,7 @@
     "framer-motion": "^12.19.1",
     "graphql": "^16.11.0",
     "gsap": "^3.15.0",
+    "heic-to": "1.5.2",
     "leaflet": "1.9.4",
     "maplibre-gl": "5",
     "next": "15.5.25",

@@ -10,6 +10,7 @@ import {
   Call02Icon,
   Location01Icon,
   PencilEdit02Icon,
+  ViewIcon,
 } from "@hugeicons/core-free-icons";
 import { Navigation } from "kadesh/components/layout";
 import { Routes } from "kadesh/core/routes";
@@ -18,6 +19,7 @@ import { motion } from "framer-motion";
 import { useUiMotion } from "kadesh/components/shared/motion";
 import {
   useAnimalDetail,
+  useAnimalView,
   AnimalImageGrid,
   AnimalInfoSection,
   LogTimeline,
@@ -55,6 +57,7 @@ export default function AnimalDetailPage() {
   const { animal, logs, loading, error, refetch } = useAnimalDetail(
     animalKey || "",
   );
+  useAnimalView(animal?.id || "");
 
   useEffect(() => {
     if (!animal?.slug || animal.slug === animalKey) return;
@@ -158,6 +161,14 @@ export default function AnimalDetailPage() {
                 style={{ backgroundColor: statusColor }}
               >
                 {statusLabel}
+              </span>
+              <span
+                className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-[#5a5a5a] dark:text-[#9aa3b2]"
+                title="Visitas"
+              >
+                <HugeiconsIcon icon={ViewIcon} size={14} strokeWidth={2} />
+                {animal.animal_viewsCount ?? 0}
+                <span className="sr-only">visitas</span>
               </span>
             </div>
             {(howToGetHref || phoneHref) && (

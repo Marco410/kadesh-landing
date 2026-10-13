@@ -306,6 +306,7 @@ export const GET_ANIMAL_QUERY = gql`
       sourceUrl
       reportedBy
       id
+      animal_viewsCount
       logs (orderBy: $orderBy)  {
         address
         city
@@ -587,3 +588,44 @@ export const FIND_ANIMAL_REPORT_DUPLICATES = gql`
     }
   }
 `;
+
+export const CREATE_ANIMAL_VIEW_MUTATION = gql`
+  mutation CreateAnimalView($data: AnimalViewCreateInput!) {
+    createAnimalView(data: $data) {
+      id
+      animal {
+        id
+      }
+      user {
+        id
+      }
+    }
+  }
+`;
+
+export interface CreateAnimalViewVariables {
+  data: {
+    animal: {
+      connect: {
+        id: string;
+      };
+    };
+    user: {
+      connect: {
+        id: string;
+      };
+    } | null;
+  };
+}
+
+export interface CreateAnimalViewResponse {
+  createAnimalView: {
+    id: string;
+    animal: {
+      id: string;
+    };
+    user: {
+      id: string;
+    } | null;
+  };
+}

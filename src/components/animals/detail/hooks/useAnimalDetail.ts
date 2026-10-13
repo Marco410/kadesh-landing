@@ -19,6 +19,7 @@ export interface AnimalDetail {
   contactNumber2?: string | null;
   sourceUrl?: string | null;
   reportedBy?: string | null;
+  animal_viewsCount?: number | null;
   animal_breed: {
     id?: string;
     breed: string;

@@ -1,6 +1,7 @@
 export { useAnimalDetail } from './hooks/useAnimalDetail';
 export type { AnimalDetail } from './hooks/useAnimalDetail';
 export { useAnimalComments } from './hooks/useAnimalComments';
+export { useAnimalView } from './hooks/useAnimalView';
 export { default as AnimalImageGrid } from './AnimalImageGrid';
 export { default as FullscreenCarousel } from './FullscreenCarousel';
 export type { FullscreenCarouselProps } from './FullscreenCarousel';

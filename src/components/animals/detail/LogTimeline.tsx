@@ -14,6 +14,7 @@ import LogMap from "./LogMap";
 import AddLogModal from "./AddLogModal";
 import ConfirmModal from "kadesh/components/shared/ConfirmModal";
 import { useUser } from "kadesh/utils/UserContext";
+import { canEditAnimal } from "kadesh/components/animals/canEditAnimal";
 import { AnimalDetail } from "./hooks/useAnimalDetail";
 import { useDeleteLog } from "./hooks/useDeleteLog";
 import { useUiMotion } from "kadesh/components/shared/motion";
@@ -140,7 +141,7 @@ export default function LogTimeline({
   const selectedLog = logs.find((log) => log.id === selectedLogId);
   const selectedLogWithCoords =
     selectedLog && hasCoords(selectedLog) ? selectedLog : null;
-  const isOwner = user?.id === animal?.user?.id;
+  const isOwner = canEditAnimal(user, animal);
 
   const handleDeleteClick = (logId: string, e: React.MouseEvent) => {
     e.stopPropagation();

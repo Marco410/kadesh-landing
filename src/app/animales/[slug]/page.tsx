@@ -20,6 +20,7 @@ import {
   AD_SIDE_MEDIA,
 } from "kadesh/components/shared";
 import { Routes } from "kadesh/core/routes";
+import { canEditAnimal } from "kadesh/components/animals/canEditAnimal";
 import { useUser } from "kadesh/utils/UserContext";
 import { motion } from "framer-motion";
 import { useUiMotion } from "kadesh/components/shared/motion";
@@ -111,7 +112,7 @@ export default function AnimalDetailPage() {
     );
   }
 
-  const isOwner = Boolean(user?.id && animal.user?.id === user.id);
+  const isOwner = canEditAnimal(user, animal);
   const lastLog = logs?.[0];
   const status = lastLog?.status || "register";
   const statusColor = getStatusColor(status);

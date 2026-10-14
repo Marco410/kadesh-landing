@@ -20,6 +20,12 @@ import {
   Stethoscope02Icon,
 } from "@hugeicons/core-free-icons";
 import { Navigation } from "kadesh/components/layout";
+import {
+  AdSlot,
+  AD_INLINE_MEDIA,
+  AD_SIDE_CLASS,
+  AD_SIDE_MEDIA,
+} from "kadesh/components/shared";
 import { Routes } from "kadesh/core/routes";
 import { useUser } from "kadesh/utils/UserContext";
 import { GET_PET_PLACE } from "kadesh/components/veterinaries/queries";
@@ -72,6 +78,11 @@ function getServiceIcon(
   if (/\b(analisis|laboratorio|archivo)\b/.test(text)) return MedicalFileIcon;
   return SERVICE_ICONS[index % SERVICE_ICONS.length];
 }
+
+// Si no hay un bloque propio para veterinarias, se reutiliza el del detalle del animal.
+const VETERINARY_DETAIL_AD_SLOT =
+  process.env.NEXT_PUBLIC_ADSENSE_SLOT_VETERINARY_DETAIL ||
+  process.env.NEXT_PUBLIC_ADSENSE_SLOT_ANIMAL_DETAIL;
 
 function detailToMapPlace(place: PetPlaceDetail): PetPlace {
   return {
@@ -555,57 +566,66 @@ export default function VeterinaryDetailPage() {
           </div>
 
           <div className="flex min-h-0 flex-col gap-3">
-            <div className="shrink-0 rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
-              <h2 className="mb-2 text-sm font-bold text-[#121212] dark:text-white">
-                Horarios
-              </h2>
-              {hasSchedules ? (
-                <ScheduleList schedules={place.pet_place_schedules} />
-              ) : (
-                <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
-                  Sin horarios registrados.
-                </p>
-              )}
-            </div>
+            <div className="flex shrink-0 gap-3">
+              <div className="flex min-w-0 flex-1 flex-col gap-3">
+                <div className="flex-1 rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+                  <h2 className="mb-2 text-sm font-bold text-[#121212] dark:text-white">
+                    Horarios
+                  </h2>
+                  {hasSchedules ? (
+                    <ScheduleList schedules={place.pet_place_schedules} />
+                  ) : (
+                    <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+                      Sin horarios registrados.
+                    </p>
+                  )}
+                </div>
 
-            <div className="shrink-0 rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
-              <h2 className="mb-2 text-sm font-bold text-[#121212] dark:text-white">
-                Servicios
-              </h2>
-              {services.length > 0 ? (
-                <motion.ul
-                  className="flex flex-wrap gap-1.5"
-                  variants={motionPrefs.list}
-                  initial={motionPrefs.list ? "hidden" : false}
-                  animate="show"
-                >
-                  {services.map((service, index) => {
-                    const IconComponent = getServiceIcon(
-                      service.name,
-                      service.slug,
-                      index,
-                    );
-                    return (
-                      <motion.li
-                        key={service.id}
-                        variants={motionPrefs.item}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-kadesh-50 px-2.5 py-1.5 text-xs font-medium text-kadesh-700 dark:bg-kadesh/15 dark:text-kadesh-300"
-                      >
-                        <HugeiconsIcon
-                          icon={IconComponent}
-                          size={14}
-                          strokeWidth={1.5}
-                        />
-                        {service.name}
-                      </motion.li>
-                    );
-                  })}
-                </motion.ul>
-              ) : (
-                <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
-                  Sin servicios registrados.
-                </p>
-              )}
+                <div className="flex-1 rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+                  <h2 className="mb-2 text-sm font-bold text-[#121212] dark:text-white">
+                    Servicios
+                  </h2>
+                  {services.length > 0 ? (
+                    <motion.ul
+                      className="flex flex-wrap gap-1.5"
+                      variants={motionPrefs.list}
+                      initial={motionPrefs.list ? "hidden" : false}
+                      animate="show"
+                    >
+                      {services.map((service, index) => {
+                        const IconComponent = getServiceIcon(
+                          service.name,
+                          service.slug,
+                          index,
+                        );
+                        return (
+                          <motion.li
+                            key={service.id}
+                            variants={motionPrefs.item}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-kadesh-50 px-2.5 py-1.5 text-xs font-medium text-kadesh-700 dark:bg-kadesh/15 dark:text-kadesh-300"
+                          >
+                            <HugeiconsIcon
+                              icon={IconComponent}
+                              size={14}
+                              strokeWidth={1.5}
+                            />
+                            {service.name}
+                          </motion.li>
+                        );
+                      })}
+                    </motion.ul>
+                  ) : (
+                    <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+                      Sin servicios registrados.
+                    </p>
+                  )}
+                </div>
+              </div>
+              <AdSlot
+                slot={VETERINARY_DETAIL_AD_SLOT}
+                media={AD_SIDE_MEDIA}
+                className={AD_SIDE_CLASS}
+              />
             </div>
 
             <div className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-hidden">
@@ -613,6 +633,12 @@ export default function VeterinaryDetailPage() {
             </div>
           </div>
         </div>
+
+        <AdSlot
+          slot={VETERINARY_DETAIL_AD_SLOT}
+          media={AD_INLINE_MEDIA}
+          className="mt-3"
+        />
 
         <ClaimPetPlaceSection place={place} onClaimed={() => refetch()} />
       </motion.div>

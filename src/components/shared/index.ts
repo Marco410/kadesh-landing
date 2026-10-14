@@ -11,4 +11,4 @@ export { default as DirectoryPagination } from './DirectoryPagination';
 export { default as StatusDatePicker } from './StatusDatePicker';
 export type { StatusDatePickerProps } from './StatusDatePicker';
 export { dateToCalendarDateTime, calendarDateTimeToStr } from './StatusDatePicker';
-export { default as AdSlot } from './AdSlot';
+export { default as AdSlot, AD_SIDE_CLASS, AD_SIDE_MEDIA, AD_INLINE_MEDIA } from './AdSlot';

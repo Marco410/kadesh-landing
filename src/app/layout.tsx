@@ -3,6 +3,7 @@ import { Poppins, Inter } from 'next/font/google';
 import ClientProviders from './ClientProviders';
 import { Metadata } from 'next';
 import { SITE_URL } from 'kadesh/core/site';
+import { ADSENSE_SCRIPT_SRC } from 'kadesh/core/ads';
 import {
   FONT_SCALE_DEFAULT,
   FONT_SCALE_MAX,
@@ -102,6 +103,8 @@ export default function RootLayout({
             __html: `(function(){try{var n=parseFloat(localStorage.getItem("${FONT_SCALE_STORAGE_KEY}")||"");if(isNaN(n))n=${FONT_SCALE_DEFAULT};if(n<${FONT_SCALE_MIN})n=${FONT_SCALE_MIN};if(n>${FONT_SCALE_MAX})n=${FONT_SCALE_MAX};document.documentElement.style.setProperty("--kadesh-font-scale",String(n));}catch(e){}})();`,
           }}
         />
+        {/* AdSense: en el <head> de cada página para verificar el sitio y servir anuncios. */}
+        <script async src={ADSENSE_SCRIPT_SRC} crossOrigin="anonymous" />
       </head>
       <body className="font-sans bg-white dark:bg-night text-[#212121] dark:text-[#eef1f6] transition-colors duration-200">
         {/*

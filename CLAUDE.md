@@ -29,6 +29,8 @@ Required in `.env.local` (all client-exposed, hence `NEXT_PUBLIC_` prefix):
 - `NEXT_PUBLIC_GOOGLE_CLIENT_ID` — Google OAuth login.
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — Stripe subscriptions (sales plans).
 - `NEXT_PUBLIC_IMAGE_DOMAIN` — allowed remote image host for `next/image` (see `next.config.ts`).
+- `NEXT_PUBLIC_ADSENSE_CLIENT` — optional override of the AdSense publisher ID; the default lives in `src/core/ads.ts`. The AdSense script is loaded in the root layout `<head>`, and `/ads.txt` is served from `app/ads.txt/route.ts`.
+- `NEXT_PUBLIC_ADSENSE_SLOT_ANIMAL_DETAIL` — AdSense ad unit ID for the animal detail page. Optional: without it the ad box doesn't render.
 
 Note: the README references `NEXT_PUBLIC_GRAPHQL_ENDPOINT`, but the code actually reads `NEXT_PUBLIC_API_URL` — trust the code.
 

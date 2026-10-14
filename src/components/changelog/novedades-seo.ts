@@ -35,7 +35,7 @@ export const NOVEDADES_FAQ = [
   {
     question: '¿El roadmap y las novedades son lo mismo?',
     answer:
-      'No. El roadmap de la portada muestra qué ya opera, qué se construye y qué sigue. Novedades es el historial de versiones ya publicadas, con fecha y notas. El roadmap apunta aquí para quien quiere el detalle de cada entrega.',
+      'No. El roadmap muestra qué ya opera, qué se construye y qué sigue. Novedades es el historial de versiones ya publicadas, con fecha y notas. Los dos viven en esta página: primero el historial y después el roadmap.',
   },
 ] as const;
 

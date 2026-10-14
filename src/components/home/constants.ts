@@ -5,33 +5,40 @@ export { SITE_URL } from 'kadesh/core/site';
 export const HOME_DEFINITION =
   'KADESH es una plataforma digital de bienestar animal en México que conecta a personas que buscan adoptar, rescatar o reunirse con mascotas perdidas, con rescatistas, veterinarias y refugios de su zona. Reúne reportes, directorio veterinario, historias y donaciones en un solo santuario digital.';
 
+/** Empieza por lo que frena a quien quiere reportar. */
 export const HOME_FAQS = [
   {
-    question: '¿Qué es KADESH?',
-    answer: HOME_DEFINITION,
+    question: '¿Cuánto cuesta reportar?',
+    answer:
+      'Nada. Reportar, buscar animales y consultar veterinarias es gratis, siempre. Las donaciones y los anuncios son opcionales y no bloquean nada.',
   },
   {
-    question: '¿Cómo reporto un animal perdido en KADESH?',
+    question: '¿Por qué tengo que crear una cuenta?',
     answer:
-      'Entra a Animales, pulsa Reportar animal y elige si está perdido, encontrado, rescatado o en adopción. Describe tipo, ubicación y una foto. El reporte queda visible para la comunidad y para rescatistas de la zona, de modo que la búsqueda, el cuidado o la adopción puedan empezar de inmediato.',
+      'Para que solo tú puedas editar o cerrar el reporte de tu mascota, y para que quien la encuentre pueda contactarte. Toma 1 minuto.',
+  },
+  {
+    question: '¿Quién ve mi reporte?',
+    answer:
+      'Cualquier persona que entre al mapa: vecinos, rescatistas y veterinarias de tu zona. También lo compartimos en la página de Facebook de Kadesh Pet.',
+  },
+  {
+    question: '¿Se muestra mi teléfono?',
+    answer:
+      'Sí. El teléfono que pongas en el reporte aparece en la ficha de tu mascota con un botón para llamarte, para que quien la vea te avise de inmediato. Puedes usar un número distinto al de tu cuenta.',
   },
   {
     question: '¿Cómo encuentro veterinarias cercanas?',
-    answer: `Abre el directorio de veterinarias y permite la ubicación. KADESH muestra establecimientos en un radio de ${DEFAULT_RADIUS_VETERINARIES} km para que puedas ver datos de contacto y llegar con quien pueda atender al animal.`,
+    answer: `Permite tu ubicación en el directorio y verás las que están a menos de ${DEFAULT_RADIUS_VETERINARIES} km, con su contacto.`,
   },
   {
-    question: '¿Hay que pagar para reportar o buscar animales?',
+    question: '¿A qué se destina una donación?',
     answer:
-      'Reportar animales, consultar el directorio y leer el blog forman parte de la plataforma pública. Las donaciones y los planes para negocios son opcionales y no bloquean el uso comunitario de KADESH.',
+      'A servidores, dominios, herramientas, difusión, casos urgentes y a las personas que operan el proyecto. El recuento está en la página de donaciones.',
   },
   {
-    question: '¿A qué se destina una donación a KADESH?',
+    question: '¿Quién creó Kadesh Pet?',
     answer:
-      'Las donaciones cubren los gastos del proyecto: personas que lo operan, servidores, dominios y herramientas. También van a difusión y a apoyo de casos urgentes. El recuento está en Donaciones. Donar es opcional.',
-  },
-  {
-    question: '¿Quién creó KADESH?',
-    answer:
-      'KADESH fue fundada en México por el ingeniero Marco Castañeda. La misión es unir tecnología y comunidad para el bienestar animal real: encontrar, atender y reubicar, no solo visibilidad en redes.',
+      'El ingeniero Marco Castañeda, en México. La misión es unir tecnología y comunidad para encontrar, atender y reubicar animales, no solo darles visibilidad en redes.',
   },
 ] as const;

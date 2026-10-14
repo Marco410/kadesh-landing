@@ -26,4 +26,4 @@ Tono directo, español de México. Nunca decimos «release notes» al visitante;
 
 ## Acceso
 
-Público. La barra y el pie del sitio van aquí (es página de lectura, no herramienta). El pie enlaza Novedades en Recursos. El roadmap de la portada apunta a esta ruta.
+Público. La barra y el pie del sitio van aquí (es página de lectura, no herramienta). El pie enlaza «Novedades y roadmap» en Recursos. El roadmap (kanban completado / en progreso / pendiente) vive debajo del historial, en `#roadmap` (`Routes.roadmap`); ya no está en la portada.

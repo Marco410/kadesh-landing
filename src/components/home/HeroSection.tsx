@@ -3,13 +3,7 @@
 import { useRef } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
-import {
-  ArrowRightIcon,
-  FavouriteIcon,
-  Home01Icon,
-  HospitalLocationIcon,
-  Location01Icon,
-} from '@hugeicons/core-free-icons';
+import { ArrowRightIcon, HospitalLocationIcon } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
 import { getStatusColor } from 'kadesh/components/animals/constants';
 import { useChipPulse } from 'kadesh/components/animals/useChipMotion';
@@ -18,65 +12,54 @@ import HeroMap from 'kadesh/components/home/HeroMap';
 import type { PetLandingStats } from 'kadesh/components/home/server';
 import StatsCounter from 'kadesh/components/home/StatsCounter';
 
-const ANIMAL_JOBS = [
-  {
-    href: `${Routes.animals.new}?status=lost`,
-    label: 'Perdí una mascota',
-    status: 'lost',
-  },
-  {
-    href: `${Routes.animals.new}?status=found`,
-    label: 'Encontré una mascota',
-    status: 'found',
-  },
-  {
-    href: `${Routes.animals.new}?status=in_adoption`,
-    label: 'Quiero dar en adopción',
-    status: 'in_adoption',
-  },
-  {
-    href: `${Routes.animals.index}?status=in_adoption`,
-    label: 'Quiero adoptar',
-    status: 'in_adoption',
-  },
+const REPORT_LOST_HREF = `${Routes.animals.new}?status=lost`;
+
+const SECONDARY_ACCESSES = [
+  { href: `${Routes.animals.new}?status=found`, label: 'Encontré una mascota', status: 'found' },
+  { href: `${Routes.animals.index}?status=in_adoption`, label: 'Quiero adoptar', status: 'in_adoption' },
+  { href: `${Routes.animals.new}?status=in_adoption`, label: 'Dar en adopción', status: 'in_adoption' },
+  { href: Routes.veterinaries.index, label: 'Veterinarias cerca de mí', status: null },
 ] as const;
 
-function VetCta() {
+function ReportLostCta() {
   const { ref, pulse } = useChipPulse<HTMLAnchorElement>();
   return (
     <Link
       ref={ref}
-      href={Routes.veterinaries.index}
+      href={REPORT_LOST_HREF}
       onPointerDown={pulse}
-      className="inline-flex min-h-14 w-full origin-center items-center justify-center gap-3 rounded-2xl bg-white px-6 py-4 text-base font-semibold text-kadesh shadow-[0_8px_24px_rgba(15,35,80,0.18)] transition-[transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(15,35,80,0.22)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-lg"
+      className="inline-flex min-h-14 w-full origin-center items-center justify-center gap-3 rounded-2xl bg-red-600 px-6 py-4 text-base font-bold text-white shadow-[0_10px_28px_rgba(127,29,29,0.35)] transition-[transform,box-shadow,background-color] duration-150 ease-out hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-[0_14px_32px_rgba(127,29,29,0.4)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-lg"
     >
-      <HugeiconsIcon className="h-6 w-6 flex-shrink-0" icon={HospitalLocationIcon} />
-      <span>Ver veterinarias cercanas</span>
+      <span>Reportar mascota perdida</span>
       <HugeiconsIcon className="h-5 w-5 flex-shrink-0" icon={ArrowRightIcon} />
     </Link>
   );
 }
 
-function AnimalJobChip({ job }: { job: (typeof ANIMAL_JOBS)[number] }) {
+function AccessChip({ access }: { access: (typeof SECONDARY_ACCESSES)[number] }) {
   const { ref, pulse } = useChipPulse<HTMLAnchorElement>();
   return (
     <Link
       ref={ref}
-      href={job.href}
+      href={access.href}
       onPointerDown={pulse}
-      className="flex min-h-12 origin-center items-center gap-3 rounded-xl border border-white/40 bg-white/5 px-4 py-3 text-left text-sm font-semibold text-white transition-[transform,background-color] duration-150 ease-out hover:-translate-y-0.5 hover:bg-white/12 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      className="flex min-h-12 h-full origin-center items-center gap-3 rounded-xl border border-white/40 bg-white/5 px-4 py-3 text-left text-sm font-semibold text-white transition-[transform,background-color] duration-150 ease-out hover:-translate-y-0.5 hover:bg-white/12 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
     >
-      <span
-        className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-        style={{ backgroundColor: getStatusColor(job.status) }}
-        aria-hidden
-      />
-      <span>{job.label}</span>
+      {access.status ? (
+        <span
+          className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+          style={{ backgroundColor: getStatusColor(access.status) }}
+          aria-hidden
+        />
+      ) : (
+        <HugeiconsIcon className="h-4 w-4 flex-shrink-0" icon={HospitalLocationIcon} aria-hidden />
+      )}
+      <span>{access.label}</span>
     </Link>
   );
 }
 
-function AnimalJobsNav() {
+function SecondaryAccessNav() {
   const scope = useRef<HTMLUListElement>(null);
 
   useGSAP(
@@ -98,14 +81,11 @@ function AnimalJobsNav() {
   );
 
   return (
-    <nav aria-label="Dar de alta o buscar un animal">
-      <p className="mb-3 text-left text-sm font-semibold text-white">
-        Da de alta o busca un animal
-      </p>
-      <ul ref={scope} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {ANIMAL_JOBS.map((job) => (
-          <li key={job.label}>
-            <AnimalJobChip job={job} />
+    <nav aria-label="Otros accesos">
+      <ul ref={scope} className="grid grid-cols-2 gap-2">
+        {SECONDARY_ACCESSES.map((access) => (
+          <li key={access.label}>
+            <AccessChip access={access} />
           </li>
         ))}
       </ul>
@@ -124,34 +104,32 @@ function roundDownForDisplay(value: number): number {
   return value;
 }
 
-/** Cifras agregadas de la plataforma, redondeadas hacia abajo; se omiten las muy bajas. */
-function HeroStats({ stats }: { stats: PetLandingStats }) {
-  const items = [
-    { icon: FavouriteIcon, value: stats.animals, label: 'animales registrados' },
-    { icon: Home01Icon, value: stats.animalsHome, label: 'ya están en casa' },
-    { icon: HospitalLocationIcon, value: stats.veterinaries, label: 'veterinarias' },
-    { icon: Location01Icon, value: stats.cities, label: 'ciudades' },
-  ].filter((item) => item.value >= MIN_STAT_TO_SHOW);
-
-  if (!items.length) return null;
+/**
+ * Prueba social: veterinarias y ciudades. No se muestran animales registrados ni reencuentros
+ * hasta que exista una cifra real de reencuentros que se vea bien.
+ */
+function HeroProof({ stats }: { stats: PetLandingStats }) {
+  const showVets = stats.veterinaries >= MIN_STAT_TO_SHOW;
+  const showCities = stats.cities >= MIN_STAT_TO_SHOW;
+  if (!showVets) return null;
 
   return (
-    <dl className="kadesh-hero-in kadesh-hero-in-delay-3 mx-auto mt-10 grid max-w-lg grid-cols-2 gap-x-6 gap-y-6 border-t border-white/15 pt-6 sm:flex sm:flex-wrap sm:gap-x-10 lg:mx-0">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="flex flex-col items-center text-center lg:items-start lg:text-left"
-        >
-          <dt className="order-2 mt-1 flex items-center gap-1.5 text-xs text-white/75 sm:text-sm">
-            <HugeiconsIcon icon={item.icon} size={14} strokeWidth={2} />
-            {item.label}
-          </dt>
-          <dd className="order-1 text-3xl font-black tracking-[-0.03em] text-white sm:text-4xl">
-            <StatsCounter value={roundDownForDisplay(item.value)} suffix="+" />
-          </dd>
-        </div>
-      ))}
-    </dl>
+    <p className="kadesh-hero-in kadesh-hero-in-delay-3 mx-auto mt-10 flex max-w-lg flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-white/15 pt-6 text-base text-white/90 lg:mx-0 lg:justify-start">
+      <HugeiconsIcon icon={HospitalLocationIcon} size={18} strokeWidth={2} aria-hidden />
+      <strong className="font-black text-white">
+        <StatsCounter value={roundDownForDisplay(stats.veterinaries)} suffix="+" />
+      </strong>
+      <span>veterinarias</span>
+      {showCities && (
+        <>
+          <span>en</span>
+          <strong className="font-black text-white">
+            <StatsCounter value={roundDownForDisplay(stats.cities)} suffix="+" />
+          </strong>
+          <span>ciudades de México</span>
+        </>
+      )}
+    </p>
   );
 }
 
@@ -167,30 +145,30 @@ export default function HeroSection({
     >
       <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-14 px-4 py-28 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,30rem)] lg:gap-20 xl:gap-28 lg:px-8 lg:py-32">
         <div className="max-w-2xl text-center lg:text-left">
-          <h1 className="kadesh-hero-in mb-6 text-5xl font-black leading-[0.95] tracking-[-0.03em] text-white sm:text-6xl lg:text-7xl">
-            Conectando vidas.
-            <br />
-            Rescatando almas.
-          </h1>
-
-          <p className="kadesh-hero-in kadesh-hero-in-delay-1 mx-auto mb-10 max-w-xl text-lg leading-relaxed text-white/90 sm:text-xl lg:mx-0">
-            Encuentra veterinarias cerca de ti. Da de alta una mascota que
-            perdiste, encontraste, quieres dar en adopción o adoptar.
+          <p className="kadesh-hero-in mb-4 text-sm font-semibold uppercase tracking-[0.14em] text-white/80">
+            Conectando vidas. Rescatando almas.
           </p>
 
-          <div className="kadesh-hero-in kadesh-hero-in-delay-2 mx-auto mb-8 flex w-full max-w-lg flex-col gap-5 lg:mx-0">
-            <VetCta />
-            <AnimalJobsNav />
+          <h1 className="kadesh-hero-in mb-6 text-4xl font-black leading-[1.02] tracking-[-0.03em] text-white sm:text-5xl lg:text-6xl">
+            ¿Se perdió tu mascota? Repórtala gratis y que tu colonia la busque contigo
+          </h1>
+
+          <p className="kadesh-hero-in kadesh-hero-in-delay-1 mx-auto mb-8 max-w-xl text-lg leading-relaxed text-white/90 sm:text-xl lg:mx-0">
+            Sube su foto y el último lugar donde la viste. La ponemos en el mapa
+            de tu zona y la compartimos en la página de Facebook de Kadesh Pet.
+          </p>
+
+          <div className="kadesh-hero-in kadesh-hero-in-delay-2 mx-auto flex w-full max-w-lg flex-col gap-5 lg:mx-0">
+            <div>
+              <ReportLostCta />
+              <p className="mt-3 text-sm text-white/85">
+                Gratis siempre · Crear tu cuenta toma 1 minuto · Listo en 2 minutos
+              </p>
+            </div>
+            <SecondaryAccessNav />
           </div>
 
-          <Link
-            href={Routes.conocenos}
-            className="kadesh-hero-in kadesh-hero-in-delay-3 text-sm font-medium text-white underline decoration-white/50 underline-offset-4 transition-colors hover:decoration-white"
-          >
-            Únete a la comunidad KADESH →
-          </Link>
-
-          {stats && <HeroStats stats={stats} />}
+          {stats && <HeroProof stats={stats} />}
         </div>
 
         <HeroMap />

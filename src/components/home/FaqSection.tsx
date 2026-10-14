@@ -4,7 +4,7 @@ export default function FaqSection() {
   return (
     <section
       id="preguntas-frecuentes"
-      className="w-full bg-white py-24 dark:bg-night"
+      className="w-full scroll-mt-20 bg-[#f7f8fa] py-24 dark:bg-night-raised"
     >
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <h2 className="mb-12 text-4xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-5xl">
@@ -25,7 +25,7 @@ export default function FaqSection() {
         </div>
 
         <p className="mt-12 text-sm text-[#6a6a6a] dark:text-[#9a9a9a]">
-          Actualizado en septiembre de 2026. KADESH, México.
+          Actualizado en octubre de 2026. KADESH, México.
         </p>
       </div>
     </section>

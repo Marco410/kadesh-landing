@@ -1,14 +1,13 @@
 import {
   HeroSection,
-  WhatIsKadesh,
-  LostDogsSection,
-  VeterinariansSection,
-  StoriesSection,
-  DonationsSection,
+  RecentReportsSection,
   HowItWorksSection,
-  RoadmapSection,
-  KadeshFamilySection,
-  AdvertiseSection,
+  FirstHoursSection,
+  StoriesSection,
+  VeterinariansSection,
+  DonationsSection,
+  BusinessStrip,
+  ClosingSection,
 } from "kadesh/components/home";
 import FaqSection from "kadesh/components/home/FaqSection";
 import HomeJsonLd from "kadesh/components/home/HomeJsonLd";
@@ -34,17 +33,16 @@ export default async function HomePage() {
       <main className="min-h-screen">
         <Navigation />
         <HeroSection stats={stats} />
-        <WhatIsKadesh />
-        <LostDogsSection />
-        <VeterinariansSection />
-        <StoriesSection />
-        <DonationsSection />
+        <RecentReportsSection />
         <HowItWorksSection />
-        <RoadmapSection />
+        <FirstHoursSection />
+        <StoriesSection />
+        <VeterinariansSection />
+        <DonationsSection />
+        <BusinessStrip />
         <FaqSection />
-        <AdvertiseSection />
-        <KadeshFamilySection />
-        <NewsletterSubscription />
+        <ClosingSection />
+        <NewsletterSubscription description="Recibe consejos y reencuentros de la comunidad, una vez por semana." />
         <Footer />
       </main>
     </>

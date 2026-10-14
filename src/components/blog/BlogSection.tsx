@@ -15,7 +15,11 @@ interface BlogSectionProps {
   initialPosts?: BlogPost[];
   initialCount?: number;
   initialCategory?: string | null;
+  /** Clases de la rejilla; la portada usa 3 columnas. */
+  gridClassName?: string;
 }
+
+const DEFAULT_GRID = 'grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4';
 
 function PaginationButton({
   children,
@@ -54,6 +58,7 @@ function BlogSectionContent({
   initialPosts = [],
   initialCount = 0,
   initialCategory = null,
+  gridClassName = DEFAULT_GRID,
 }: BlogSectionProps) {
   const searchParams = useSearchParams();
   const categoryUrl = searchParams.get('category');
@@ -109,7 +114,7 @@ function BlogSectionContent({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className={gridClassName}>
         {Array.from({ length: postsPerPage || 8 }).map((_, index) => (
           <BlogCardSkeleton key={index} />
         ))}
@@ -134,7 +139,7 @@ function BlogSectionContent({
     <>
       <div
         id="blog-posts"
-        className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 ${
+        className={`${gridClassName} ${
           isPageLoading ? 'opacity-60' : ''
         }`}
       >
@@ -187,11 +192,12 @@ export default function BlogSection({
   initialPosts = [],
   initialCount = 0,
   initialCategory = null,
+  gridClassName = DEFAULT_GRID,
 }: BlogSectionProps) {
   return (
     <Suspense
       fallback={
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={gridClassName}>
           {Array.from({ length: postsPerPage || 8 }).map((_, index) => (
             <BlogCardSkeleton key={index} />
           ))}
@@ -204,6 +210,7 @@ export default function BlogSection({
         initialPosts={initialPosts}
         initialCount={initialCount}
         initialCategory={initialCategory}
+        gridClassName={gridClassName}
       />
     </Suspense>
   );

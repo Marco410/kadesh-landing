@@ -25,6 +25,7 @@ import {
   LogTimeline,
   AnimalCommentsSection,
   ShareAnimalButton,
+  NearbyVeterinariesRow,
 } from "kadesh/components/animals/detail";
 import {
   getStatusColor,
@@ -224,15 +225,25 @@ export default function AnimalDetailPage() {
             <div className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
               <AnimalInfoSection animal={animal} />
             </div>
-            <div className="min-h-0">
-              <LogTimeline
-                logs={logs ?? []}
-                animal={animal}
-                animalName={animal.name}
-                onLogCreated={async () => {
-                  await refetch();
-                }}
-              />
+            <div className="flex min-h-0 min-w-0 flex-col gap-3">
+              <div className="min-h-0 flex-1">
+                <LogTimeline
+                  logs={logs ?? []}
+                  animal={animal}
+                  animalName={animal.name}
+                  onLogCreated={async () => {
+                    await refetch();
+                  }}
+                />
+              </div>
+              {hasCoords && (
+                <div className="min-w-0 shrink-0">
+                  <NearbyVeterinariesRow
+                    lat={Number(lastLog.lat)}
+                    lng={Number(lastLog.lng)}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

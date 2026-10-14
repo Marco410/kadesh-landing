@@ -30,6 +30,12 @@ const nextConfig: NextConfig = {
         destination: "/conocenos",
         permanent: true,
       },
+      {
+        // Un solo Aviso de Privacidad para kadesh.com.mx y pet (incluye la sección de publicidad de AdSense).
+        source: "/privacidad",
+        destination: "https://kadesh.com.mx/privacidad",
+        permanent: false,
+      },
     ];
   },
   images: {

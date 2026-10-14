@@ -22,6 +22,7 @@ export const Routes = {
     howItWorks: '#como-funciona',
     roadmap: '#roadmap',
     faq: '#preguntas-frecuentes',
+    advertise: '#anunciate',
   },
 
   blog: {

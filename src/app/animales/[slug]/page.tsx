@@ -13,8 +13,14 @@ import {
   ViewIcon,
 } from "@hugeicons/core-free-icons";
 import { Navigation } from "kadesh/components/layout";
-import { AdSlot } from "kadesh/components/shared";
+import {
+  AdSlot,
+  AD_INLINE_MEDIA,
+  AD_SIDE_CLASS,
+  AD_SIDE_MEDIA,
+} from "kadesh/components/shared";
 import { Routes } from "kadesh/core/routes";
+import { canEditAnimal } from "kadesh/components/animals/canEditAnimal";
 import { useUser } from "kadesh/utils/UserContext";
 import { motion } from "framer-motion";
 import { useUiMotion } from "kadesh/components/shared/motion";
@@ -106,7 +112,7 @@ export default function AnimalDetailPage() {
     );
   }
 
-  const isOwner = Boolean(user?.id && animal.user?.id === user.id);
+  const isOwner = canEditAnimal(user, animal);
   const lastLog = logs?.[0];
   const status = lastLog?.status || "register";
   const statusColor = getStatusColor(status);
@@ -231,8 +237,8 @@ export default function AnimalDetailPage() {
               </div>
               <AdSlot
                 slot={ANIMAL_DETAIL_AD_SLOT}
-                media="(min-width: 1024px)"
-                className="w-[calc(25%-0.1875rem)] shrink-0"
+                media={AD_SIDE_MEDIA}
+                className={AD_SIDE_CLASS}
               />
             </div>
             <div className="flex min-h-0 min-w-0 flex-col gap-3">
@@ -260,7 +266,7 @@ export default function AnimalDetailPage() {
 
         <AdSlot
           slot={ANIMAL_DETAIL_AD_SLOT}
-          media="(max-width: 1023px)"
+          media={AD_INLINE_MEDIA}
           className="mb-3"
         />
 

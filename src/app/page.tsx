@@ -7,9 +7,12 @@ import {
   DonationsSection,
   HowItWorksSection,
   RoadmapSection,
+  KadeshFamilySection,
+  AdvertiseSection,
 } from "kadesh/components/home";
 import FaqSection from "kadesh/components/home/FaqSection";
 import HomeJsonLd from "kadesh/components/home/HomeJsonLd";
+import { fetchPetLandingStats } from "kadesh/components/home/server";
 import { HOME_DEFINITION } from "kadesh/components/home/constants";
 import { Footer, Navigation } from "kadesh/components/layout";
 import { NewsletterSubscription } from "kadesh/components/newsletter";
@@ -22,13 +25,15 @@ export const metadata: Metadata = {
   openGraph: { url: '/' },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const stats = await fetchPetLandingStats();
+
   return (
     <>
       <HomeJsonLd />
       <main className="min-h-screen">
         <Navigation />
-        <HeroSection />
+        <HeroSection stats={stats} />
         <WhatIsKadesh />
         <LostDogsSection />
         <VeterinariansSection />
@@ -37,6 +42,8 @@ export default function HomePage() {
         <HowItWorksSection />
         <RoadmapSection />
         <FaqSection />
+        <AdvertiseSection />
+        <KadeshFamilySection />
         <NewsletterSubscription />
         <Footer />
       </main>

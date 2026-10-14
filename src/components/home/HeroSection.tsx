@@ -3,12 +3,20 @@
 import { useRef } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowRightIcon, HospitalLocationIcon } from '@hugeicons/core-free-icons';
+import {
+  ArrowRightIcon,
+  FavouriteIcon,
+  Home01Icon,
+  HospitalLocationIcon,
+  Location01Icon,
+} from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
 import { getStatusColor } from 'kadesh/components/animals/constants';
 import { useChipPulse } from 'kadesh/components/animals/useChipMotion';
 import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 import HeroMap from 'kadesh/components/home/HeroMap';
+import type { PetLandingStats } from 'kadesh/components/home/server';
+import StatsCounter from 'kadesh/components/home/StatsCounter';
 
 const ANIMAL_JOBS = [
   {
@@ -105,7 +113,53 @@ function AnimalJobsNav() {
   );
 }
 
-export default function HeroSection() {
+/** Por debajo de esto la cifra resta más de lo que suma y no se muestra (como en kadesh-business). */
+const MIN_STAT_TO_SHOW = 10;
+
+/** Redondea hacia abajo para presumir sin exagerar: 48,321 → "48,000+", 734 → "730+". */
+function roundDownForDisplay(value: number): number {
+  if (value >= 10_000) return Math.floor(value / 1_000) * 1_000;
+  if (value >= 1_000) return Math.floor(value / 100) * 100;
+  if (value >= 100) return Math.floor(value / 10) * 10;
+  return value;
+}
+
+/** Cifras agregadas de la plataforma, redondeadas hacia abajo; se omiten las muy bajas. */
+function HeroStats({ stats }: { stats: PetLandingStats }) {
+  const items = [
+    { icon: FavouriteIcon, value: stats.animals, label: 'animales registrados' },
+    { icon: Home01Icon, value: stats.animalsHome, label: 'ya están en casa' },
+    { icon: HospitalLocationIcon, value: stats.veterinaries, label: 'veterinarias' },
+    { icon: Location01Icon, value: stats.cities, label: 'ciudades' },
+  ].filter((item) => item.value >= MIN_STAT_TO_SHOW);
+
+  if (!items.length) return null;
+
+  return (
+    <dl className="kadesh-hero-in kadesh-hero-in-delay-3 mx-auto mt-10 grid max-w-lg grid-cols-2 gap-x-6 gap-y-6 border-t border-white/15 pt-6 sm:flex sm:flex-wrap sm:gap-x-10 lg:mx-0">
+      {items.map((item) => (
+        <div
+          key={item.label}
+          className="flex flex-col items-center text-center lg:items-start lg:text-left"
+        >
+          <dt className="order-2 mt-1 flex items-center gap-1.5 text-xs text-white/75 sm:text-sm">
+            <HugeiconsIcon icon={item.icon} size={14} strokeWidth={2} />
+            {item.label}
+          </dt>
+          <dd className="order-1 text-3xl font-black tracking-[-0.03em] text-white sm:text-4xl">
+            <StatsCounter value={roundDownForDisplay(item.value)} suffix="+" />
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+export default function HeroSection({
+  stats,
+}: {
+  stats?: PetLandingStats | null;
+}) {
   return (
     <section
       id="inicio"
@@ -135,6 +189,8 @@ export default function HeroSection() {
           >
             Únete a la comunidad KADESH →
           </Link>
+
+          {stats && <HeroStats stats={stats} />}
         </div>
 
         <HeroMap />

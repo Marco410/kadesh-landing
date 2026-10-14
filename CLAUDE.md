@@ -31,6 +31,8 @@ Required in `.env.local` (all client-exposed, hence `NEXT_PUBLIC_` prefix):
 - `NEXT_PUBLIC_IMAGE_DOMAIN` — allowed remote image host for `next/image` (see `next.config.ts`).
 - `NEXT_PUBLIC_ADSENSE_CLIENT` — optional override of the AdSense publisher ID; the default lives in `src/core/ads.ts`. The AdSense script is loaded in the root layout `<head>`, and `/ads.txt` is served from `app/ads.txt/route.ts`.
 - `NEXT_PUBLIC_ADSENSE_SLOT_ANIMAL_DETAIL` — AdSense ad unit ID for the animal detail page. Optional: without it the ad box doesn't render.
+- `NEXT_PUBLIC_ADSENSE_SLOT_VETERINARY_DETAIL` — AdSense ad unit ID for the veterinary detail page. Optional: falls back to the animal detail slot.
+
 
 Note: the README references `NEXT_PUBLIC_GRAPHQL_ENDPOINT`, but the code actually reads `NEXT_PUBLIC_API_URL` — trust the code.
 

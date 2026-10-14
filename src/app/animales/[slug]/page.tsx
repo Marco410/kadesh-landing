@@ -13,6 +13,7 @@ import {
   ViewIcon,
 } from "@hugeicons/core-free-icons";
 import { Navigation } from "kadesh/components/layout";
+import { AdSlot } from "kadesh/components/shared";
 import { Routes } from "kadesh/core/routes";
 import { useUser } from "kadesh/utils/UserContext";
 import { motion } from "framer-motion";
@@ -25,11 +26,14 @@ import {
   LogTimeline,
   AnimalCommentsSection,
   ShareAnimalButton,
+  NearbyVeterinariesRow,
 } from "kadesh/components/animals/detail";
 import {
   getStatusColor,
   getStatusLabel,
 } from "kadesh/components/animals/constants";
+
+const ANIMAL_DETAIL_AD_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ANIMAL_DETAIL;
 
 function directionsUrl(lat: string | number, lng: string | number) {
   const destination = `${lat},${lng}`;
@@ -221,21 +225,44 @@ export default function AnimalDetailPage() {
                 fill
               />
             </div>
-            <div className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
-              <AnimalInfoSection animal={animal} />
-            </div>
-            <div className="min-h-0">
-              <LogTimeline
-                logs={logs ?? []}
-                animal={animal}
-                animalName={animal.name}
-                onLogCreated={async () => {
-                  await refetch();
-                }}
+            <div className="flex min-w-0 gap-3">
+              <div className="min-w-0 flex-1 rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+                <AnimalInfoSection animal={animal} />
+              </div>
+              <AdSlot
+                slot={ANIMAL_DETAIL_AD_SLOT}
+                media="(min-width: 1024px)"
+                className="w-[calc(25%-0.1875rem)] shrink-0"
               />
+            </div>
+            <div className="flex min-h-0 min-w-0 flex-col gap-3">
+              <div className="min-h-0 flex-1">
+                <LogTimeline
+                  logs={logs ?? []}
+                  animal={animal}
+                  animalName={animal.name}
+                  onLogCreated={async () => {
+                    await refetch();
+                  }}
+                />
+              </div>
+              {hasCoords && (
+                <div className="min-w-0 shrink-0">
+                  <NearbyVeterinariesRow
+                    lat={Number(lastLog.lat)}
+                    lng={Number(lastLog.lng)}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
+
+        <AdSlot
+          slot={ANIMAL_DETAIL_AD_SLOT}
+          media="(max-width: 1023px)"
+          className="mb-3"
+        />
 
         <div className="pb-6">
           <AnimalCommentsSection animal={animal} />

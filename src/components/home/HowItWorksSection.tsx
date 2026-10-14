@@ -1,43 +1,49 @@
 'use client';
 
 import { useRef } from 'react';
+import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
+  Location01Icon,
+  Note01Icon,
   SentIcon,
-  UserGroupIcon,
-  FavouriteIcon,
-  CheckmarkCircle02Icon,
+  Share08Icon,
 } from '@hugeicons/core-free-icons';
+import { Routes } from 'kadesh/core/routes';
 import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 
+/**
+ * El paso 4 usa la versión «Ayuda a otros» mientras no exista el estado «Reencontrado».
+ * Cuando exista, cámbialo por «Márcalo como reencontrado».
+ */
 const STEPS = [
   {
     number: '1',
-    title: 'Reporta',
+    title: 'Repórtalo',
     description:
-      'Reporta un animal perdido o en situación vulnerable. Tu información puede salvar una vida.',
+      'Sube una foto, el tipo de animal y el último lugar donde lo viste. Toma 2 minutos.',
     icon: SentIcon,
   },
   {
     number: '2',
-    title: 'Conecta',
+    title: 'Aparece en el mapa',
     description:
-      'Conecta con rescatistas, veterinarias y refugios en tu área. La red se fortalece con cada conexión.',
-    icon: UserGroupIcon,
+      'Vecinos, rescatistas y veterinarias de tu zona pueden verlo y escribirte.',
+    icon: Location01Icon,
   },
   {
     number: '3',
-    title: 'Ayuda',
+    title: 'Sigue el caso',
     description:
-      'Apoya con una donación, un patrocinio en especie o compartiendo un reporte. Las donaciones cubren el proyecto: personas, servidores y casos urgentes.',
-    icon: FavouriteIcon,
+      'Agrega actualizaciones, fotos y comentarios en la bitácora de su ficha para que la comunidad sepa cómo va.',
+    icon: Note01Icon,
   },
   {
     number: '4',
-    title: 'Adopta',
+    title: 'Ayuda a otros',
     description:
-      'Encuentra el compañero perfecto o ayuda a encontrar un hogar. Cada adopción es una historia de esperanza.',
-    icon: CheckmarkCircle02Icon,
+      'Comparte reportes de tu zona: un mensaje puede ser el que lo traiga de vuelta.',
+    icon: Share08Icon,
   },
 ] as const;
 
@@ -88,13 +94,10 @@ export default function HowItWorksSection() {
       className="w-full bg-white py-24 dark:bg-night"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-16 max-w-2xl text-center">
+        <div className="mx-auto mb-16 max-w-3xl text-center">
           <h2 className="mb-4 text-4xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-5xl">
-            Cómo funciona KADESH
+            De perdido a reencontrado en 4 pasos
           </h2>
-          <p className="text-lg text-[#5a5a5a] dark:text-[#b0b0b0]">
-            Cuatro pasos para reportar, conectar, ayudar y adoptar en México.
-          </p>
         </div>
 
         <ol className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
@@ -128,6 +131,31 @@ export default function HowItWorksSection() {
             </li>
           ))}
         </ol>
+
+        <div className="mt-14 flex flex-col items-center gap-5 text-center">
+          <Link
+            href={`${Routes.animals.new}?status=lost`}
+            className="inline-flex min-h-14 items-center justify-center rounded-2xl bg-red-600 px-8 py-4 text-lg font-bold text-white transition-colors hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+          >
+            Reportar mascota perdida
+          </Link>
+          <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+            ¿Quieres adoptar?{' '}
+            <Link
+              href={`${Routes.animals.index}?status=in_adoption`}
+              className="font-semibold text-kadesh-700 underline-offset-4 hover:underline dark:text-kadesh-300"
+            >
+              Ver animales en adopción
+            </Link>
+            {' · '}¿Eres rescatista?{' '}
+            <Link
+              href={`${Routes.animals.new}?status=rescued`}
+              className="font-semibold text-kadesh-700 underline-offset-4 hover:underline dark:text-kadesh-300"
+            >
+              Publica tus casos
+            </Link>
+          </p>
+        </div>
       </div>
     </section>
   );

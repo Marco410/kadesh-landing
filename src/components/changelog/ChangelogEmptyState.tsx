@@ -14,11 +14,11 @@ export default function ChangelogEmptyState() {
       </h2>
       <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[#5a5a5a] dark:text-[#b0b0b0]">
         Cuando publiquemos una nueva versión de KADESH, aparecerá aquí con el
-        detalle de mejoras y correcciones. El roadmap de la portada sigue
-        mostrando qué ya opera y qué viene.
+        detalle de mejoras y correcciones. Mientras tanto, el roadmap muestra
+        qué ya opera y qué viene.
       </p>
       <Link
-        href={`${Routes.home}${Routes.navigation.roadmap}`}
+        href={Routes.roadmap}
         className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white hover:bg-kadesh-600"
       >
         Ver el roadmap

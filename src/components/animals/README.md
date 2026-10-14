@@ -60,3 +60,7 @@ Tono directo, español de México. No nombramos Leaflet, MapLibre, Nominatim ni 
 `/animales` es público. `?status=` (p. ej. `in_adoption`) prefiltra el listado; el hero de portada usa eso para «Quiero adoptar».
 
 Reportar (`/animales/nuevo`) exige sesión. Si no hay usuario, el CTA del listado abre el modal de registro; los enlaces del hero van a login/registro con `redirect` y conservan `?status=` (perdido, encontrado, en adopción). El formulario acepta también abandonado y rescatado.
+
+## Quién edita un animal (2026-10-14)
+
+Editar la ficha, las fotos y las etapas lo puede hacer **el dueño o un admin de plataforma** (`canEditAnimal`). Esa regla aplica en tres lugares: la página `/animales/[slug]/editar`, el botón "Editar" de la ficha y el agregar o borrar etapas en `LogTimeline`. El admin llega desde Operaciones de Kadesh (Kadesh Pet → Animales → Editar en Kadesh Pet) y necesita tener sesión aquí con su cuenta de admin. kadesh-back aplica la misma regla en `Animal.access.ts`; este front solo decide qué mostrar.

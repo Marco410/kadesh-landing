@@ -1,6 +1,3 @@
-import Link from "next/link";
-import { Routes } from "kadesh/core/routes";
-
 const ROADMAP_ITEMS = [
   {
     id: 1,
@@ -122,17 +119,16 @@ export default function RoadmapSection() {
   return (
     <section
       id="roadmap"
-      className="w-full bg-[#f7f8fa] py-24 dark:bg-night-raised"
+      className="w-full scroll-mt-20 border-t border-[#ececec] bg-white py-16 dark:border-white/10 dark:bg-night-raised"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-16 max-w-2xl text-center">
-          <h2 className="mb-4 text-4xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-5xl">
+        <div className="mx-auto mb-12 max-w-2xl text-center">
+          <h2 className="mb-4 text-3xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-4xl">
             Roadmap público
           </h2>
           <p className="text-lg text-[#5a5a5a] dark:text-[#b0b0b0]">
             Lo que ya opera, lo que estamos construyendo y lo que sigue. Sin
-            métricas inventadas: solo el estado que el equipo publica aquí. El
-            detalle de cada versión está en Novedades.
+            métricas inventadas: solo el estado que el equipo publica aquí.
           </p>
         </div>
 
@@ -165,16 +161,6 @@ export default function RoadmapSection() {
             </div>
           ))}
         </div>
-
-        <p className="mt-12 text-center text-[#5a5a5a] dark:text-[#b0b0b0]">
-          ¿Quieres el historial de versiones ya publicadas?{" "}
-          <Link
-            href={Routes.novedades}
-            className="font-semibold text-kadesh-700 hover:underline dark:text-kadesh-300"
-          >
-            Ver novedades →
-          </Link>
-        </p>
       </div>
     </section>
   );

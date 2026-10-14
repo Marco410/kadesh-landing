@@ -11,6 +11,7 @@ import { Routes } from 'kadesh/core/routes';
 import ChangelogTimeline from './ChangelogTimeline';
 import ChangelogEmptyState from './ChangelogEmptyState';
 import ChangelogLoadingSkeleton from './ChangelogLoadingSkeleton';
+import RoadmapSection from './RoadmapSection';
 import { CHANGELOG_PAGE_SIZE } from './constants';
 import { PET_CHANGELOG_LIST_QUERY } from './queries';
 import type {
@@ -139,6 +140,8 @@ export default function NovedadesPage() {
           </>
         )}
       </section>
+
+      <RoadmapSection />
 
       <section
         aria-labelledby="novedades-faq-heading"

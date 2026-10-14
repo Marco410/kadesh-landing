@@ -128,12 +128,13 @@ export function useLostAnimals(
       skip: 0,
     };
 
-    // Location: send lat/lng (null = show all; numbers = nearby with radius)
+    // Location: only send lat/lng when both exist. Omitting them makes the backend
+    // return every report, newest first; sending null filters everything out.
     const lat = userLocation?.lat ?? null;
     const lng = userLocation?.lng ?? null;
-    input.lat = lat;
-    input.lng = lng;
     if (lat != null && lng != null) {
+      input.lat = lat;
+      input.lng = lng;
       input.radius = radiusKm ?? DEFAULT_RADIUS;
     }
 

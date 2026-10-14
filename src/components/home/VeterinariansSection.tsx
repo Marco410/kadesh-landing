@@ -56,18 +56,33 @@ export default function VeterinariansSection() {
     <section
       ref={rootRef}
       id="veterinarias"
-      className="w-full bg-white py-24 dark:bg-night"
+      className="w-full scroll-mt-20 bg-[#f7f8fa] py-24 dark:bg-night-raised"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-14 max-w-3xl text-center">
-          <h2 className="mb-4 text-4xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-5xl">
+          <p className="mb-3 text-sm font-semibold text-kadesh-700 dark:text-kadesh-300">
             ¿Dónde encuentro veterinarias cerca de mí?
+          </p>
+          <h2 className="mb-4 text-4xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-5xl">
+            Veterinarias a menos de {DEFAULT_RADIUS_VETERINARIES} km de ti, con
+            teléfono y cómo llegar
           </h2>
           <p className="text-lg text-[#5a5a5a] dark:text-[#b0b0b0]">
-            KADESH lista veterinarias y establecimientos de mascotas en un radio
-            de {DEFAULT_RADIUS_VETERINARIES} km según tu ubicación, para que
-            contactes atención profesional cuando un animal la necesita.
+            Si encontraste un animal herido o tu mascota necesita atención, aquí
+            ves las más cercanas. Muchas muestran su horario y si están abiertas
+            ahora, y en algunas puedes reservar cita en línea.
           </p>
+          {!hasLocation && (
+            <button
+              type="button"
+              onClick={handleUseLocation}
+              disabled={isLocating}
+              className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-kadesh px-6 font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
+            >
+              <HugeiconsIcon icon={Location01Icon} size={18} strokeWidth={1.5} aria-hidden="true" />
+              {isLocating ? "Obteniendo ubicación…" : "Ver veterinarias cerca de mí"}
+            </button>
+          )}
         </div>
 
         {loading && (
@@ -85,26 +100,6 @@ export default function VeterinariansSection() {
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {!loading && !hasLocation && (
-          <div className="mb-12 flex flex-col items-center px-4 text-center">
-            <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
-              <HugeiconsIcon icon={Location01Icon} size={28} strokeWidth={1.5} aria-hidden="true" />
-            </span>
-            <p className="max-w-md text-[#5a5a5a] dark:text-[#b0b0b0]">
-              Usa tu ubicación para ver veterinarias cercanas a ti, o abre el directorio y busca por radio.
-            </p>
-            <button
-              type="button"
-              onClick={handleUseLocation}
-              disabled={isLocating}
-              className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
-            >
-              <HugeiconsIcon icon={Location01Icon} size={18} strokeWidth={1.5} aria-hidden="true" />
-              {isLocating ? "Obteniendo ubicación…" : "Usar mi ubicación"}
-            </button>
           </div>
         )}
 
@@ -130,18 +125,25 @@ export default function VeterinariansSection() {
           </div>
         )}
 
-        <div className="flex flex-col justify-center gap-4 sm:flex-row">
-          <Link
-            href={Routes.veterinaries.register}
-            className="inline-flex min-h-14 items-center justify-center rounded-xl bg-kadesh px-8 py-4 text-lg font-bold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
-          >
-            Registra tu veterinaria
-          </Link>
+        <div className="text-center">
           <Link
             href={Routes.veterinaries.index}
-            className="inline-flex min-h-14 items-center justify-center rounded-xl border-2 border-kadesh px-8 py-4 text-lg font-bold text-kadesh transition-colors hover:bg-kadesh hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:text-kadesh-300"
+            className="inline-flex min-h-11 items-center font-semibold text-kadesh-700 hover:underline dark:text-kadesh-300"
           >
-            Ver directorio completo
+            Ver directorio completo →
+          </Link>
+        </div>
+
+        <div className="mx-auto mt-12 flex max-w-3xl flex-col items-center gap-4 rounded-2xl border border-[#ececec] bg-white p-6 text-center dark:border-white/10 dark:bg-night sm:flex-row sm:justify-between sm:text-left">
+          <p className="text-[#3a3a3a] dark:text-[#d0d0d0]">
+            <strong className="font-bold text-[#121212] dark:text-white">¿Tienes una veterinaria?</strong>{" "}
+            Aparece gratis en el directorio y recibe citas en línea.
+          </p>
+          <Link
+            href={Routes.veterinaries.register}
+            className="inline-flex min-h-11 flex-shrink-0 items-center justify-center rounded-xl border-2 border-kadesh px-5 font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:text-kadesh-300"
+          >
+            Registra tu veterinaria
           </Link>
         </div>
       </div>

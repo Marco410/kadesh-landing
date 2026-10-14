@@ -14,15 +14,13 @@ export const Routes = {
   
   // Navigation sections (anchors on home page)
   navigation: {
-    whatIsKadesh: '#que-es-kadesh',
     lostAnimals: '#animales',
-    veterinarians: '#veterinarias',
-    stories: '#historias',
-    donations: '#donaciones',
     howItWorks: '#como-funciona',
-    roadmap: '#roadmap',
+    firstHours: '#primeras-24-horas',
+    stories: '#historias',
+    veterinarians: '#veterinarias',
+    donations: '#donaciones',
     faq: '#preguntas-frecuentes',
-    advertise: '#anunciate',
   },
 
   blog: {
@@ -33,6 +31,8 @@ export const Routes = {
   },
 
   novedades: '/novedades',
+  roadmap: '/novedades#roadmap',
+  advertise: '/anunciate',
   donations: '/donaciones',
   
   // Landing

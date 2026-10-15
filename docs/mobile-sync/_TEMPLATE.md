@@ -5,13 +5,13 @@ origen: kadesh-landing@<rama> (<commit, si existe>)
 feature: animals | veterinaries | blog | profile | auth | notifications | shared
 ---
 
-# Prompt para kadesh-mobile: <título>
+# Prompt para kadesh-pet-mobile: <título>
 
 ## Contexto
 Qué cambió en la web y por qué (1–3 frases). Qué ve o puede hacer ahora el usuario.
 
 ## Qué implementar en la app
-Pasos concretos usando la estructura de `kadesh-mobile`:
+Pasos concretos usando la estructura de `kadesh-pet-mobile`:
 - Pantallas en `app/…` (Expo Router) y componentes en `kadesh/components/<feature>/…`.
 - Equivalencias nativas cuando la web usa APIs del navegador: SecureStore (en vez de localStorage), `expo-location`, `expo-image-picker` + `expo-image-manipulator`, MapLibre RN, `Share`/`Linking`, `sonner-native`.
 - Estilos con NativeWind y la paleta orange/green/brown. Íconos solo de `@hugeicons/react-native`. Validación con Zod.

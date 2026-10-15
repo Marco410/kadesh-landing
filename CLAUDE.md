@@ -77,7 +77,7 @@ GraphQL via Apollo Client against a KeystoneJS backend. Keep queries/mutations c
 
 ## Registro de cambios y sincronización con móvil
 
-Existe (o existirá) una app móvil en un repo separado, `kadesh-mobile` (Expo + Expo Router + NativeWind + Apollo, mismo backend Keystone). Para que no se quede atrás de la web, **todo cambio en este repo se registra**, y los que apliquen a móvil se registran además como un prompt listo para implementarlo allá.
+Existe (o existirá) una app móvil en un repo separado, `kadesh-pet-mobile` (Expo + Expo Router + NativeWind + Apollo, mismo backend Keystone). Para que no se quede atrás de la web, **todo cambio en este repo se registra**, y los que apliquen a móvil se registran además como un prompt listo para implementarlo allá.
 
 Al terminar **cualquier** cambio, antes de mostrar la lista de archivos modificados:
 
@@ -85,6 +85,6 @@ Al terminar **cualquier** cambio, antes de mostrar la lista de archivos modifica
 2. Decide si el cambio aplica a móvil:
    - **Aplica**: lógica de negocio, queries/mutaciones GraphQL, validaciones, flujos de usuario, textos/copy de features, constantes o reglas (radios, roles, estados), y UI de pantallas que existen en la app (mascotas, veterinarias, blog, perfil/clínicas, auth, notificaciones).
    - **No aplica**: SEO, metadata, OG images, sitemap/robots, AdSense, Vercel, páginas de marketing (la app las abre en el navegador), estilos exclusivos de desktop, ventas/CRM (`/perfil/ventas`, fuera del MVP móvil).
-3. Si aplica, crea `docs/mobile-sync/YYYY-MM-DD-<slug>.md` a partir de `docs/mobile-sync/_TEMPLATE.md`, con `estado: pendiente`, y añádelo a la tabla de `docs/mobile-sync/README.md`. El prompt debe ser **autocontenido**: quien lo ejecute trabaja en `kadesh-mobile` sin acceso a este repo, así que incluye el GraphQL completo, los tipos y las reglas, no solo rutas de archivos.
+3. Si aplica, crea `docs/mobile-sync/YYYY-MM-DD-<slug>.md` a partir de `docs/mobile-sync/_TEMPLATE.md`, con `estado: pendiente`, y añádelo a la tabla de `docs/mobile-sync/README.md`. El prompt debe ser **autocontenido**: quien lo ejecute trabaja en `kadesh-pet-mobile` sin acceso a este repo, así que incluye el GraphQL completo, los tipos y las reglas, no solo rutas de archivos.
 4. Si no aplica, deja el motivo en la línea `Móvil:` de la entrada del changelog.
 5. Incluye estos archivos en la lista de cambios que muestras al final. La regla global de no hacer push se mantiene.

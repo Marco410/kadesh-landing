@@ -17,7 +17,7 @@ Formato:
 
 ## 2026-10-15 · docs: regla de registro de cambios y sincronización con móvil
 - Rama: develop
-- Qué cambió y por qué: se añade la regla de registrar cada cambio y generar prompts para la futura app `kadesh-mobile` (Expo), para que la app no se quede atrás de la web.
+- Qué cambió y por qué: se añade la regla de registrar cada cambio y generar prompts para la futura app `kadesh-pet-mobile` (Expo), para que la app no se quede atrás de la web.
 - Archivos: CLAUDE.md, docs/changes/CHANGELOG.md, docs/mobile-sync/README.md, docs/mobile-sync/_TEMPLATE.md
 - GraphQL: ninguna
 - Móvil: no aplica (es documentación del proceso, no una funcionalidad)

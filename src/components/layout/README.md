@@ -10,6 +10,10 @@ El logo también va a `/`.
 
 Con sesión, **Mi perfil** aparece junto a Contacto (escritorio y menú móvil) además del menú del avatar. Sin sesión no se muestra: `/perfil` pide login.
 
+## Barra sobre un hero oscuro
+
+La home renderiza `<Navigation overDarkHero />`. Con esa prop, la barra va en blanco desde el primer render: logo sin invertir y enlaces blancos. Antes se decidía con `usePathname() === "/"`, pero cuando Vercel regenera la home en segundo plano (ISR, porque la home pide las cifras con `revalidate`) la ruta no llegaba como `/`. El servidor pintaba la barra como página clara y React no corrige clases distintas al hidratar, así que en modo oscuro el logo y los enlaces se perdían. Una página nueva con hero oscuro debe pasar la prop, no depender de la ruta.
+
 ## Tamaño de fuente
 
 A la izquierda del toggle de tema hay un botón **Aa**. Abre un panel fijo (portal, medidas en **px**) con el slider. No va inline en el nav: si el slider estuviera en `rem`, al arrastrarlo el menú se reacomoda y el control se mueve bajo el cursor.

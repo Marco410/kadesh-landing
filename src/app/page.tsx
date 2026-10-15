@@ -31,7 +31,7 @@ export default async function HomePage() {
     <>
       <HomeJsonLd />
       <main className="min-h-screen">
-        <Navigation />
+        <Navigation overDarkHero />
         <HeroSection stats={stats} />
         <RecentReportsSection />
         <HowItWorksSection />

@@ -88,3 +88,12 @@ Al terminar **cualquier** cambio, antes de mostrar la lista de archivos modifica
 3. Si aplica, crea `docs/mobile-sync/YYYY-MM-DD-<slug>.md` a partir de `docs/mobile-sync/_TEMPLATE.md`, con `estado: pendiente`, y añádelo a la tabla de `docs/mobile-sync/README.md`. El prompt debe ser **autocontenido**: quien lo ejecute trabaja en `kadesh-pet-mobile` sin acceso a este repo, así que incluye el GraphQL completo, los tipos y las reglas, no solo rutas de archivos.
 4. Si no aplica, deja el motivo en la línea `Móvil:` de la entrada del changelog.
 5. Incluye estos archivos en la lista de cambios que muestras al final. La regla global de no hacer push se mantiene.
+
+### Dirección inversa: prompts de móvil → web
+
+`kadesh-pet-mobile` registra sus cambios igual y deja en `../kadesh-pet-mobile/docs/web-sync/` los que pueden llevarse a la web. Revisa los `pendiente` de su `README.md` cuando trabajes en una feature relacionada. Al implementar uno:
+
+1. Márcalo `estado: implementado` en el archivo y en la tabla de `../kadesh-pet-mobile/docs/web-sync/README.md` (o `descartado` con el motivo; los `evaluar: sí` son ideas que quizá no apliquen).
+2. Registra el cambio en `docs/changes/CHANGELOG.md` con `Móvil: no aplica (viene de móvil)`, para no generar un prompt de vuelta.
+
+La app usa Clean Architecture (`src/modules/<módulo>/<feature>/{domain,application,data,presentation}`) y GraphQL con operaciones `.graphql` + codegen, no `queries.ts` con hooks de Apollo. Al escribir un prompt de `mobile-sync`, describe el comportamiento, el GraphQL y las reglas; no prescribas la estructura de archivos de la app.

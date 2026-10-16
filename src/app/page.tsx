@@ -15,6 +15,7 @@ import { fetchPetLandingStats } from "kadesh/components/home/server";
 import { HOME_DEFINITION } from "kadesh/components/home/constants";
 import { Footer, Navigation } from "kadesh/components/layout";
 import { NewsletterSubscription } from "kadesh/components/newsletter";
+import { ZoneAlertsInvite } from "kadesh/components/notifications";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default async function HomePage() {
       <main className="min-h-screen">
         <Navigation overDarkHero />
         <HeroSection stats={stats} />
+        <ZoneAlertsInvite />
         <RecentReportsSection />
         <HowItWorksSection />
         <FirstHoursSection />

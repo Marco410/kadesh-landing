@@ -212,8 +212,8 @@ export interface CreatePetPlaceReviewResponse {
 }
 
 export const DELETE_PET_PLACE_REVIEW_MUTATION = gql`
-  mutation DeletePetPlaceReview($where: PetPlaceReviewWhereUniqueInput!) {
-    deletePetPlaceReview(where: $where) {
+  mutation DeletePetPlaceReview($where: ReviewWhereUniqueInput!) {
+    deleteReview(where: $where) {
       id
     }
   }
@@ -224,7 +224,7 @@ export interface DeletePetPlaceReviewVariables {
 }
 
 export interface DeletePetPlaceReviewResponse {
-  deletePetPlaceReview: { id: string };
+  deleteReview: { id: string } | null;
 }
 
 export const CLAIM_PET_PLACE_MUTATION = gql`

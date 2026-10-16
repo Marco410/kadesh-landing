@@ -70,7 +70,9 @@ export function useRecentReports(coords: GeoCoords | null, status: RecentReportS
     errorPolicy: 'all',
   });
 
-  const nearbyReports = (nearby.data?.getNearbyAnimals?.animals ?? []).map(toReport);
+  // Al cambiar el filtro se quedan los reportes anteriores (atenuados) hasta que llegan los nuevos.
+  const nearbyData = nearby.data ?? nearby.previousData;
+  const nearbyReports = (nearbyData?.getNearbyAnimals?.animals ?? []).map(toReport);
   const needsNational = !coords || (!nearby.loading && nearbyReports.length === 0);
 
   const national = useQuery<NearbyAnimalsResponse>(GET_NEARBY_ANIMALS_QUERY, {
@@ -80,12 +82,16 @@ export function useRecentReports(coords: GeoCoords | null, status: RecentReportS
     errorPolicy: 'all',
   });
 
-  const nationalReports = (national.data?.getNearbyAnimals?.animals ?? []).map(toReport);
+  const nationalData = national.data ?? national.previousData;
+  const nationalReports = (nationalData?.getNearbyAnimals?.animals ?? []).map(toReport);
   const isNearby = !!coords && nearbyReports.length > 0;
 
   return {
     reports: isNearby ? nearbyReports : nationalReports,
     isNearby,
-    loading: (!!coords && nearby.loading && !nearby.data) || (needsNational && national.loading && !national.data),
+    loading: (!!coords && nearby.loading && !nearbyData) || (needsNational && national.loading && !nationalData),
+    refreshing:
+      (!!coords && nearby.loading && !nearby.data && !!nearby.previousData) ||
+      (needsNational && national.loading && !national.data && !!national.previousData),
   };
 }

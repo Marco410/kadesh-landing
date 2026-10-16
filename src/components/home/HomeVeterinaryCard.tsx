@@ -14,6 +14,7 @@ import PetPlaceLikesMeta, {
   petPlaceLikesCount,
 } from "kadesh/components/veterinaries/PetPlaceLikesMeta";
 import type { PetPlace } from "kadesh/components/veterinaries/types";
+import { Bone, boneWidth } from "kadesh/components/ui/skeleton";
 
 function formatDistance(distance: number | null | undefined): string | null {
   if (distance == null || Number.isNaN(distance)) return null;
@@ -273,5 +274,34 @@ export default function HomeVeterinaryCard({ place }: { place: PetPlace }) {
         </Link>
       </div>
     </article>
+  );
+}
+
+const SKELETON_TITLE_WIDTHS = ["78%", "64%", "84%", "58%"] as const;
+const SKELETON_PLACE_WIDTHS = ["70%", "56%", "64%", "76%"] as const;
+
+/** Silueta de `HomeVeterinaryCard`, con sus mismas medidas. */
+export function HomeVeterinaryCardSkeleton({ index = 0 }: { index?: number }) {
+  return (
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-white/10 dark:bg-night-raised">
+      <Bone kind="box" height={144} radius={0} />
+      <div className="flex flex-1 flex-col p-5 pb-4">
+        <div className="mb-3 flex min-h-[3.5rem] flex-col">
+          <Bone kind="figure" slot={28} width={boneWidth(SKELETON_TITLE_WIDTHS, index)} />
+        </div>
+        <div className="flex flex-1 flex-col gap-2">
+          <Bone kind="line" slot={20} width={140} />
+          <Bone kind="line" slot={20} width={boneWidth(SKELETON_PLACE_WIDTHS, index)} />
+          <div className="mt-auto flex h-6 gap-1.5">
+            <Bone kind="box" width={72} height={24} radius={6} />
+            <Bone kind="box" width={56} height={24} radius={6} />
+          </div>
+        </div>
+      </div>
+      <div className="mt-auto grid grid-cols-[auto_1fr] gap-2 px-5 pb-5">
+        <Bone kind="box" width={52} height={48} />
+        <Bone kind="box" height={48} />
+      </div>
+    </div>
   );
 }

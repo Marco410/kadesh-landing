@@ -38,7 +38,6 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
   const [country, setCountry] = useState('');
   const [isResolvingPlace, setIsResolvingPlace] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -84,7 +83,6 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
     setIsToday(true);
     setLastSeen(false);
     setNotes('');
-    setContactNumber('');
     setLat('');
     setLng('');
     setAddress('');
@@ -103,7 +101,6 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
       if (chosen > Date.now()) e.dateStatus = 'La fecha no puede ser posterior a hoy';
     }
     if (!notes?.trim()) e.notes = 'Las notas son requeridas';
-    if (!contactNumber?.trim()) e.contactNumber = 'El teléfono de contacto es requerido';
     const latN = parseFloat(lat);
     const lngN = parseFloat(lng);
     if (lat === '' || lng === '' || isNaN(latN) || isNaN(lngN)) {
@@ -130,7 +127,6 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
         animalId,
         status,
         notes,
-        contactNumber,
         lat,
         lng,
         address,
@@ -251,24 +247,6 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
                 errorMessage={errors.dateStatus}
                 popoverScopeClass="add-log-date-picker-popover"
               />
-            </div>
-
-            <div>
-              <label
-                htmlFor="add-log-contactNumber"
-                className="mb-2 block text-sm font-medium text-[#121212] dark:text-[#eef1f6]"
-              >
-                Teléfono <span className="text-red-600">*</span>
-              </label>
-              <input
-                id="add-log-contactNumber"
-                type="tel"
-                value={contactNumber}
-                onChange={(e) => setContactNumber(e.target.value)}
-                className="w-full rounded-xl border border-[#d8dee8] bg-[#f7f8fa] px-3 py-2 text-[#121212] placeholder:text-[#5a5a5a] focus:border-kadesh focus:outline-none focus:ring-2 focus:ring-kadesh/30 dark:border-white/12 dark:bg-night dark:text-[#eef1f6]"
-                placeholder="55 1234 5678"
-              />
-              {errors.contactNumber && <p className="mt-1 text-xs text-red-600">{errors.contactNumber}</p>}
             </div>
 
             <div>

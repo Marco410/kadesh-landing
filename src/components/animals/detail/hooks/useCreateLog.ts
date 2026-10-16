@@ -7,7 +7,6 @@ interface CreateLogData {
   animalId: string;
   status: string;
   notes: string;
-  contactNumber: string;
   lat: string;
   lng: string;
   address: string;
@@ -46,7 +45,6 @@ export function useCreateLog(options?: UseCreateLogOptions) {
             animal: { connect: { id: data.animalId } },
             status: data.status,
             notes: data.notes.trim(),
-            contactNumber: data.contactNumber.trim(),
             lat: data.lat.trim(),
             lng: data.lng.trim(),
             address: data.address.trim(),

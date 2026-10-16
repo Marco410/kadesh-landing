@@ -9,6 +9,9 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { Image01Icon } from '@hugeicons/core-free-icons';
 import { getCategoryLabel, getCategoryColors } from './constants';
 import { Routes } from 'kadesh/core/routes';
+import { Bone, SkeletonRegion } from 'kadesh/components/ui/skeleton';
+
+const CATEGORY_SKELETON_WIDTHS = [88, 72, 96, 64, 80] as const;
 
 export default function CategorySection() {
   const { categories, loading, error } = useCategories();
@@ -17,14 +20,19 @@ export default function CategorySection() {
     return (
       <section className="bg-[#ffffff] dark:bg-[#121212] py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex gap-6 overflow-x-auto pb-4">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="flex flex-col items-center gap-4 min-w-[140px] animate-pulse">
-                <div className="w-32 h-32 rounded-full bg-gray-300 dark:bg-gray-700"></div>
-                <div className="h-4 w-20 bg-gray-300 dark:bg-gray-700 rounded"></div>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#212121] dark:text-[#ffffff]">
+              Explora por categoría
+            </h2>
+          </div>
+          <SkeletonRegion label="Cargando categorías" className="flex gap-6 overflow-hidden pb-4">
+            {CATEGORY_SKELETON_WIDTHS.map((width, index) => (
+              <div key={index} className="flex flex-col items-center gap-4 min-w-[140px]">
+                <Bone kind="circle" width={128} />
+                <Bone kind="line" slot={24} width={width} />
               </div>
             ))}
-          </div>
+          </SkeletonRegion>
         </div>
       </section>
     );

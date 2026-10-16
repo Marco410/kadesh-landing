@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Navigation } from 'kadesh/components/layout';
 import {
   AnimalCard,
+  AnimalCardSkeleton,
   AnimalFilters,
   AnimalsMap,
   useLostAnimals,
@@ -33,6 +34,7 @@ import {
   parseRadiusOption,
 } from 'kadesh/constants/constans';
 import { useUiMotion } from 'kadesh/components/shared/motion';
+import { Bone, LoadingBar, SkeletonRegion } from 'kadesh/components/ui/skeleton';
 
 function LostAnimalsPageContent() {
   const router = useRouter();
@@ -85,6 +87,8 @@ function LostAnimalsPageContent() {
     userLocation != null && userLocation.lat != null && userLocation.lng != null;
   const nextRadius = RADIUS_OPTIONS_ANIMALS.find((km) => km > radiusKm);
   const hasActiveFilters = Boolean(filters.type || filters.status);
+  const isFirstLoad = (locationLoading || animalsLoading) && animals.length === 0;
+  const isRefreshing = animalsLoading && animals.length > 0;
 
   useEffect(() => {
     if (selectedAnimal && !allAnimals.some((animal) => animal.id === selectedAnimal.id)) {
@@ -200,7 +204,9 @@ function LostAnimalsPageContent() {
                 </h1>
                 <p className="mt-1 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
                   {hasLocation
-                    ? `${totalAnimals} cerca de ti`
+                    ? isFirstLoad
+                      ? <Bone kind="line" slot={20} width={150} />
+                      : `${totalAnimals} cerca de ti`
                     : 'Perdidos, encontrados y en adopción'}
                 </p>
               </div>
@@ -271,35 +277,24 @@ function LostAnimalsPageContent() {
                 onClearFilters={handleClearFilters}
               />
             </div>
+            <LoadingBar active={isRefreshing} className="mt-3" />
           </motion.header>
 
           <div className="flex-1 overflow-y-auto p-4" aria-busy={locationLoading || animalsLoading}>
             <AnimatePresence mode="wait">
-            {(locationLoading || animalsLoading) && animals.length === 0 ? (
+            {isFirstLoad ? (
               <motion.div
                 key="loading"
-                className="space-y-3"
                 variants={motionPrefs.panel}
                 initial={motionPrefs.panel ? "hidden" : false}
                 animate="show"
                 exit="exit"
               >
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="animate-pulse rounded-2xl border border-[#ececec] p-4 dark:border-white/10"
-                  >
-                    <div className="flex gap-3">
-                      <div className="h-20 w-20 rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]" />
-                      <div className="flex-1 space-y-2">
-                        <div className="h-4 w-3/4 rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
-                        <div className="h-3 w-1/2 rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
-                        <div className="h-3 w-2/3 rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
-                      </div>
-                    </div>
-                    <div className="mt-3 h-11 rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]" />
-                  </div>
-                ))}
+                <SkeletonRegion label="Cargando reportes" className="space-y-3">
+                  {[0, 1, 2, 3].map((i) => (
+                    <AnimalCardSkeleton key={i} index={i} />
+                  ))}
+                </SkeletonRegion>
               </motion.div>
             ) : animals.length === 0 ? (
               <motion.div
@@ -410,7 +405,7 @@ function LostAnimalsPageContent() {
                 exit="exit"
               >
                 <motion.div
-                  className="space-y-3"
+                  className={`space-y-3 transition-opacity duration-200 ${isRefreshing ? 'opacity-50' : ''}`}
                   variants={motionPrefs.list}
                   initial={motionPrefs.list ? "hidden" : false}
                   animate="show"

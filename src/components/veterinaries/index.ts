@@ -1,4 +1,4 @@
-export { default as VeterinaryCard } from './VeterinaryCard';
+export { default as VeterinaryCard, VeterinaryCardSkeleton } from './VeterinaryCard';
 export { default as VeterinariesMap } from './VeterinariesMap';
 export { default as PetPlaceReviewsSection } from './PetPlaceReviewsSection';
 export { default as VeterinarySearchInput } from './VeterinarySearchInput';

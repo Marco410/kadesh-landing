@@ -173,13 +173,15 @@ export function useLostAnimals(
   }, [filters, userLocation, radiusKm, animalTypesData, ANIMALS_PER_PAGE]);
 
   // Query animals using getNearbyAnimals
-  const { data, loading, error } = useQuery(GET_NEARBY_ANIMALS_QUERY, {
+  const { data: currentData, previousData, loading, error } = useQuery(GET_NEARBY_ANIMALS_QUERY, {
     variables: {
       input: queryInput,
     },
     fetchPolicy: 'cache-and-network',
     errorPolicy: 'all', // Return partial data even if there are errors
   });
+  // Al cambiar filtros o radio se queda lo anterior (atenuado en la UI) hasta que llega lo nuevo.
+  const data = currentData ?? previousData;
 
   // Transform and filter animals
   const transformedAnimals = useMemo(() => {

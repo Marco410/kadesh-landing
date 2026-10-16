@@ -15,6 +15,51 @@ Formato:
 
 ---
 
+## 2026-10-16 · feat: campana de notificaciones y alertas de zona
+- Rama: develop
+- Qué cambió y por qué: viene del prompt `kadesh-pet-mobile/docs/web-sync/2026-10-16-campana-y-alertas.md`.
+  - Con sesión, el header muestra una campana con el contador de no leídas de Pet (se refresca cada minuto). En desktop abre un panel; en móvil lleva a `/notificaciones`.
+  - La bandeja muestra 20 por página, agrupadas en Hoy / Ayer / Esta semana / Antes. Se puede marcar una o todas como leídas. Cada notificación tiene ícono verde si es de un animal encontrado y rojo si es otra alerta de zona.
+  - `/notificaciones/alertas` permite configurar el interruptor, el centro (mapa con pin fijo y círculo) y el radio (1–50 km). No deja activarlas sin centro.
+  - En la portada aparece la invitación «Alertas de tu zona» para quien tiene sesión y aún no las activó.
+  - Depende de que `kadesh-back@feat/pet-push-alerts` esté desplegado: antes de eso la página de alertas falla y la invitación no aparece.
+- Archivos: src/components/notifications/* (nuevo), src/app/notificaciones/{layout,page}.tsx, src/app/notificaciones/alertas/page.tsx, src/components/layout/Navigation.tsx, src/app/page.tsx, src/core/routes.ts, src/components/shared/free-map.ts
+- GraphQL: nuevas `NotificationInbox`, `NotificationUnreadCount`, `MarkNotificationRead`, `MarkAllNotificationsRead`, `PetAlertSettings` y `UpdatePetAlertSettings` (en `src/components/notifications/queries.ts`)
+- Móvil: no aplica (viene de móvil)
+
+## 2026-10-16 · feat: esqueletos de carga con la forma del contenido
+- Rama: develop
+- Qué cambió y por qué: viene del prompt `kadesh-pet-mobile/docs/web-sync/2026-10-16-skeletons-con-forma.md`.
+  - Nuevo kit `src/components/ui/skeleton` (`Bone`, `SkeletonRegion`, `LoadingBar`) con barrido de 1.4s, latido con reduce-motion y aviso de lentitud a los 10s.
+  - Cada tarjeta exporta su esqueleto con sus mismas medidas: `AnimalCardSkeleton`, `VeterinaryCardSkeleton`, `HomeVeterinaryCardSkeleton`, `BlogCardSkeleton` y el de reportes de la portada.
+  - Aplicado en Inicio (reportes y veterinarias), en los directorios de mascotas y veterinarias, y en el blog (categorías y artículos).
+  - Al cambiar filtro, radio, categoría o página, lo anterior se queda atenuado al 50% con la barra de espera (`previousData` en los hooks).
+  - Las cifras del Inicio no cambian: se renderizan en el servidor y no tienen estado de carga.
+- Archivos: src/components/ui/skeleton/*, src/app/globals.css, src/app/animales/page.tsx, src/app/veterinarias/page.tsx, src/components/animals/{AnimalCard.tsx,index.ts,hooks/useLostAnimals.ts}, src/components/veterinaries/{VeterinaryCard.tsx,index.ts,hooks/useNearbyPetPlaces.ts}, src/components/home/{RecentReportsSection.tsx,VeterinariansSection.tsx,HomeVeterinaryCard.tsx,hooks/useRecentReports.ts}, src/components/blog/{BlogCardSkeleton.tsx,BlogSection.tsx,CategorySection.tsx,hooks/useBlogPosts.ts}
+- GraphQL: ninguna
+- Móvil: no aplica (viene de móvil)
+
+## 2026-10-16 · fix: relacionados del blog con solo etiquetas o solo categoría
+- Rama: develop
+- Qué cambió y por qué: viene del prompt `kadesh-pet-mobile/docs/web-sync/2026-10-16-related-posts-filter.md`. `useRelatedPosts` solo filtraba si el post tenía etiquetas **y** categoría; ahora arma el `OR` con lo que exista.
+- Archivos: src/components/blog/hooks/useRelatedPosts.ts
+- GraphQL: ninguna (solo cambia el `where`)
+- Móvil: no aplica (viene de móvil)
+
+## 2026-10-16 · fix: borrar reseña de veterinaria usaba una mutación inexistente
+- Rama: develop
+- Qué cambió y por qué: viene del prompt `kadesh-pet-mobile/docs/web-sync/2026-10-15-delete-review-mutation.md`. `DELETE_PET_PLACE_REVIEW_MUTATION` llamaba `deletePetPlaceReview`, que no existe en el schema; ahora usa `deleteReview(where: ReviewWhereUniqueInput!)`.
+- Archivos: src/components/veterinaries/queries.ts
+- GraphQL: `DeletePetPlaceReview` usa `deleteReview`
+- Móvil: no aplica (viene de móvil)
+
+## 2026-10-16 · fix: cerrar sesión también en el backend (`endSession`)
+- Rama: develop
+- Qué cambió y por qué: viene del prompt `kadesh-pet-mobile/docs/web-sync/2026-10-15-logout-end-session.md`. Nuevo hook `useLogout`, que hace lo siguiente en orden: `endSession` → borrar token y cookies → `clearStore()` → `setUser(undefined)` → ir a home. Si `endSession` falla, el cierre local sigue igual. `Navigation` lo usa en desktop y en móvil.
+- Archivos: src/components/auth/hooks/useLogout.ts (nuevo), src/components/auth/hooks/index.ts, src/utils/queries.ts, src/components/layout/Navigation.tsx
+- GraphQL: nueva `EndSession`
+- Móvil: no aplica (viene de móvil)
+
 ## 2026-10-16 · fix: agregar registro a un animal fallaba por el teléfono
 - Rama: develop
 - Qué cambió y por qué: el modal "Registro de …" mandaba `contactNumber` en `createAnimalLog`, pero `AnimalLogCreateInput` no tiene ese campo (el teléfono vive en `Animal`), así que guardar fallaba con "Field contactNumber is not defined". Se quita el campo Teléfono del modal y de la mutación.

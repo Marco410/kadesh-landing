@@ -1,37 +1,36 @@
-"use client";
+import { Bone, boneWidth } from 'kadesh/components/ui/skeleton';
 
-export default function BlogCardSkeleton() {
+const TITLE_WIDTHS = ['72%', '56%', '64%', '48%'] as const;
+const EXCERPT_WIDTHS = ['84%', '68%', '76%', '60%'] as const;
+
+/** Silueta de `BlogCard`, con sus mismas medidas. */
+export default function BlogCardSkeleton({ index = 0 }: { index?: number }) {
   return (
-    <div className="bg-[#f5f5f5] dark:bg-[#1e1e1e] rounded-xl overflow-hidden animate-pulse flex flex-col">
-      {/* Imagen skeleton */}
-      <div className="relative w-full h-48 bg-gray-300 dark:bg-neutral-700"></div>
-      
-      {/* Contenido skeleton */}
-      <div className="p-4 flex flex-col flex-1">
-        {/* Autor y fecha skeleton */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-neutral-700"></div>
-          <div className="flex items-center gap-1.5">
-            <div className="h-3 w-20 bg-gray-300 dark:bg-neutral-700 rounded"></div>
-            <div className="h-3 w-1 bg-gray-300 dark:bg-neutral-700 rounded"></div>
-            <div className="h-3 w-16 bg-gray-300 dark:bg-neutral-700 rounded"></div>
-          </div>
+    <div className="flex flex-col overflow-hidden rounded-xl bg-[#f5f5f5] dark:bg-[#1e1e1e]">
+      <Bone kind="box" height={192} radius={0} />
+
+      <div className="flex flex-1 flex-col p-4">
+        <div className="mb-3 flex items-center gap-2">
+          <Bone kind="circle" width={32} />
+          <Bone kind="line" slot={16} width={120} />
         </div>
-        
-        {/* Título skeleton */}
-        <div className="mb-3 space-y-2">
-          <div className="h-4 w-full bg-gray-300 dark:bg-neutral-700 rounded"></div>
-          <div className="h-4 w-3/4 bg-gray-300 dark:bg-neutral-700 rounded"></div>
+
+        <div className="mb-3">
+          <Bone kind="line" slot={24} width="100%" />
+          <Bone kind="line" slot={24} width={boneWidth(TITLE_WIDTHS, index)} />
         </div>
-        
-        {/* Métricas skeleton */}
-        <div className="flex items-center gap-4 mt-auto pt-3">
-          <div className="h-4 w-8 bg-gray-300 dark:bg-neutral-700 rounded"></div>
-          <div className="h-4 w-8 bg-gray-300 dark:bg-neutral-700 rounded"></div>
-          <div className="ml-auto h-4 w-4 bg-gray-300 dark:bg-neutral-700 rounded"></div>
+
+        <div className="mb-3">
+          <Bone kind="line" slot={20} width="100%" />
+          <Bone kind="line" slot={20} width={boneWidth(EXCERPT_WIDTHS, index)} />
+        </div>
+
+        <div className="mt-auto flex items-center gap-4 pt-3">
+          <Bone kind="line" slot={20} width={36} />
+          <Bone kind="line" slot={20} width={36} />
+          <Bone kind="box" width={16} height={16} radius={4} className="ml-auto" />
         </div>
       </div>
     </div>
   );
 }
-

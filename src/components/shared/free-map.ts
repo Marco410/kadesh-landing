@@ -68,6 +68,7 @@ export interface LeafletTileLayer extends LeafletLayer {}
 export interface LeafletMap {
   setView(center: [number, number], zoom: number): LeafletMap;
   getZoom(): number;
+  getCenter(): { lat: number; lng: number };
   fitBounds(
     bounds: unknown,
     options?: { padding?: [number, number]; maxZoom?: number }
@@ -97,6 +98,12 @@ export interface LeafletPopup {
   openOn(map: LeafletMap): LeafletPopup;
   remove(): void;
   on(event: string, fn: () => void): LeafletPopup;
+}
+
+export interface LeafletCircle extends LeafletLayer {
+  setLatLng(latlng: [number, number]): LeafletCircle;
+  setRadius(meters: number): LeafletCircle;
+  getBounds(): unknown;
 }
 
 export interface LeafletMarkerClusterGroup extends LeafletLayer {
@@ -136,6 +143,17 @@ export interface LeafletLib {
     minWidth?: number;
   }): LeafletPopup;
   latLngBounds(points: [number, number][]): unknown;
+  circle(
+    latlng: [number, number],
+    options: {
+      radius: number;
+      color?: string;
+      weight?: number;
+      fillColor?: string;
+      fillOpacity?: number;
+      interactive?: boolean;
+    }
+  ): LeafletCircle;
   maplibreGL?: (options: { style: string; pane?: string }) => LeafletTileLayer;
   tileLayer?(
     url: string,

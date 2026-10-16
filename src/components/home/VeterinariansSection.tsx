@@ -3,7 +3,10 @@
 import { useRef } from "react";
 import Link from "next/link";
 import { useNearbyPetPlaces } from "kadesh/components/veterinaries/hooks/useNearbyPetPlaces";
-import HomeVeterinaryCard from "kadesh/components/home/HomeVeterinaryCard";
+import HomeVeterinaryCard, {
+  HomeVeterinaryCardSkeleton,
+} from "kadesh/components/home/HomeVeterinaryCard";
+import { SkeletonRegion } from "kadesh/components/ui/skeleton";
 import { DEFAULT_RADIUS_VETERINARIES } from "kadesh/constants/constans";
 import { Routes } from "kadesh/core/routes";
 import { useRememberedLocation } from "kadesh/utils/useRememberedLocation";
@@ -86,21 +89,14 @@ export default function VeterinariansSection() {
         </div>
 
         {loading && (
-          <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <SkeletonRegion
+            label="Cargando veterinarias"
+            className="mb-12 grid auto-rows-fr grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-4"
+          >
             {Array.from({ length: NEARBY_LIMIT }).map((_, i) => (
-              <div
-                key={i}
-                className="overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-white/10 dark:bg-night-raised"
-              >
-                <div className="h-36 animate-pulse bg-[#eef3f8] dark:bg-[#1a2433]" />
-                <div className="space-y-3 p-5">
-                  <div className="h-6 w-3/4 animate-pulse rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
-                  <div className="h-4 w-1/2 animate-pulse rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
-                  <div className="h-12 animate-pulse rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]" />
-                </div>
-              </div>
+              <HomeVeterinaryCardSkeleton key={i} index={i} />
             ))}
-          </div>
+          </SkeletonRegion>
         )}
 
         {!loading && hasLocation && nearbyVets.length === 0 && (

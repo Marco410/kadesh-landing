@@ -62,13 +62,15 @@ export function useNearbyPetPlaces(
     };
   }, [userLocation, limit, radiusKm]);
 
-  const { data, loading } = useQuery<
+  const { data: currentData, previousData, loading } = useQuery<
     GetNearbyPetPlacesQueryResult,
     GetNearbyPetPlacesQueryVariables
   >(GET_NEARBY_PET_PLACES, {
     variables: input ? { input, where: WHERE_VETERINARY } : undefined,
     skip: !input,
   });
+  // Al cambiar el radio se queda lo anterior (atenuado en la UI) hasta que llega lo nuevo.
+  const data = currentData ?? previousData;
 
   const nearbyPlaces = useMemo(() => {
     const list = data?.getNearbyPetPlaces?.petPlaces ?? [];

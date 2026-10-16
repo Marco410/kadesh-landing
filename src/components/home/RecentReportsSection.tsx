@@ -18,7 +18,6 @@ import {
 } from 'kadesh/components/animals/constants';
 import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 import {
-  RECENT_REPORTS_LIMIT,
   useRecentReports,
   type RecentReport,
   type RecentReportStatus,
@@ -28,6 +27,7 @@ import { Routes } from 'kadesh/core/routes';
 import { cn } from 'kadesh/utils/cn';
 import { formatDate } from 'kadesh/utils/format-date';
 import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
+import { Bone, LoadingBar, SkeletonRegion, boneWidth } from 'kadesh/components/ui/skeleton';
 
 const FILTERS: { label: string; value: RecentReportStatus }[] = [
   { label: 'Perdidos', value: 'lost' },
@@ -104,6 +104,24 @@ function ReportCard({ report }: { report: RecentReport }) {
   );
 }
 
+const SKELETON_TITLE_WIDTHS = ['58%', '44%', '52%'] as const;
+const SKELETON_PLACE_WIDTHS = ['66%', '74%', '54%'] as const;
+
+/** Silueta de `ReportCard`, con sus mismas medidas. */
+function ReportCardSkeleton({ index = 0 }: { index?: number }) {
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-[#2a2a2a] dark:bg-[#1e1e1e]">
+      <Bone kind="box" radius={0} className="aspect-[4/3]" />
+      <div className="flex flex-1 flex-col gap-1.5 p-5">
+        <Bone kind="title" slot={28} width={boneWidth(SKELETON_TITLE_WIDTHS, index)} />
+        <Bone kind="line" slot={20} width={64} />
+        <Bone kind="line" slot={20} width={boneWidth(SKELETON_PLACE_WIDTHS, index)} />
+        <Bone kind="line" slot={20} width={150} className="mt-auto pt-2" />
+      </div>
+    </div>
+  );
+}
+
 export default function RecentReportsSection() {
   const rootRef = useRef<HTMLElement>(null);
   const [status, setStatus] = useState<RecentReportStatus | null>(null);
@@ -113,7 +131,7 @@ export default function RecentReportsSection() {
     isLocating,
     request: handleUseLocation,
   } = useRememberedLocation();
-  const { reports, isNearby, loading } = useRecentReports(coords, status);
+  const { reports, isNearby, loading, refreshing } = useRecentReports(coords, status);
 
   useGSAP(
     () => {
@@ -188,6 +206,7 @@ export default function RecentReportsSection() {
               );
             })}
           </div>
+          <LoadingBar active={refreshing} className="w-full max-w-xs" />
 
           {!coords && !permissionDenied && (
             <button
@@ -216,19 +235,22 @@ export default function RecentReportsSection() {
         </div>
 
         {loading ? (
-          <div className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: RECENT_REPORTS_LIMIT }).map((_, index) => (
-              <div key={index} className="overflow-hidden rounded-2xl bg-white dark:bg-[#1e1e1e]">
-                <div className="aspect-[4/3] animate-pulse bg-[#e8edf3] dark:bg-[#2a3548]" />
-                <div className="space-y-3 p-5">
-                  <div className="h-5 w-2/3 animate-pulse rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
-                  <div className="h-4 w-1/2 animate-pulse rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
-                </div>
-              </div>
+          <SkeletonRegion
+            label="Cargando reportes"
+            className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {[0, 1, 2].map((index) => (
+              <ReportCardSkeleton key={index} index={index} />
             ))}
-          </div>
+          </SkeletonRegion>
         ) : reports.length > 0 ? (
-          <div data-report-grid className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            data-report-grid
+            className={cn(
+              'mb-10 grid grid-cols-1 gap-6 transition-opacity duration-200 sm:grid-cols-2 lg:grid-cols-3',
+              refreshing && 'opacity-50'
+            )}
+          >
             {reports.map((report) => (
               <ReportCard key={report.id} report={report} />
             ))}

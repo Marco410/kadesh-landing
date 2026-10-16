@@ -50,7 +50,7 @@ export function useBlogPosts({
     setCurrentPage(1);
   }, [filterKey]);
 
-  const { data, loading, error } = useQuery<
+  const { data, previousData, loading, error } = useQuery<
     GetPostsQueryResult,
     GetPostsQueryVariables
   >(GET_POSTS_QUERY, {
@@ -64,8 +64,9 @@ export function useBlogPosts({
   });
 
   const canUseInitial = currentPage === 1 && initialPosts.length > 0;
-  const posts = data?.posts ?? (canUseInitial ? initialPosts : []);
-  const totalPosts = data?.postsCount ?? initialCount;
+  // Al cambiar de página o categoría se quedan los posts anteriores (atenuados) hasta que llegan los nuevos.
+  const posts = data?.posts ?? (canUseInitial ? initialPosts : previousData?.posts ?? []);
+  const totalPosts = data?.postsCount ?? previousData?.postsCount ?? initialCount;
   const totalPages = Math.ceil(totalPosts / postsPerPage);
   const isLoading = loading && posts.length === 0;
 

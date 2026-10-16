@@ -68,6 +68,16 @@ export interface UserQueryResponse {
   } | null;
 }
 
+export const END_SESSION_MUTATION = gql`
+  mutation EndSession {
+    endSession
+  }
+`;
+
+export interface EndSessionResponse {
+  endSession: boolean;
+}
+
 export const AUTHENTICATE_USER_MUTATION = gql`
   mutation AuthenticateUserWithPassword($email: String!, $password: String!) {
     authenticateUserWithPassword(email: $email, password: $password) {

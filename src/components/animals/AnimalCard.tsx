@@ -15,6 +15,7 @@ import {
   MapsLocation01Icon,
 } from '@hugeicons/core-free-icons';
 import { getStatusColor, getStatusLabel, getTypeLabel } from './constants';
+import { Bone, boneWidth } from 'kadesh/components/ui/skeleton';
 
 const MotionLink = motion.create(Link);
 
@@ -222,5 +223,30 @@ export default function AnimalCard({
         </div>
       </div>
     </motion.article>
+  );
+}
+
+const SKELETON_TITLE_WIDTHS = ['62%', '48%', '56%', '40%'] as const;
+const SKELETON_META_WIDTHS = ['44%', '36%', '52%', '40%'] as const;
+const SKELETON_PLACE_WIDTHS = ['88%', '72%', '80%', '64%'] as const;
+
+/** Silueta de la tarjeta horizontal del directorio, con sus mismas medidas. */
+export function AnimalCardSkeleton({ index = 0 }: { index?: number }) {
+  return (
+    <div className="flex flex-col rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night">
+      <div className="flex w-full gap-3">
+        <Bone kind="box" width={80} height={80} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <Bone kind="title" slot={20} width={boneWidth(SKELETON_TITLE_WIDTHS, index)} />
+            <Bone kind="box" width={64} height={20} radius={9999} />
+          </div>
+          <Bone kind="line" slot={20} width={boneWidth(SKELETON_META_WIDTHS, index)} className="mt-1" />
+          <Bone kind="line" slot={20} width={72} className="mt-1" />
+          <Bone kind="line" slot={20} width={boneWidth(SKELETON_PLACE_WIDTHS, index)} className="mt-1.5" />
+        </div>
+      </div>
+      <Bone kind="box" height={44} className="mt-3" />
+    </div>
   );
 }

@@ -18,6 +18,11 @@ export function useRelatedPosts({
   categoryUrl,
   limit = 6 
 }: UseRelatedPostsProps) {
+  const conditions: PostWhereInput[] = [
+    ...(tags.length > 0 ? [{ tags: { some: { name: { in: tags.map((tag) => tag.name) } } } }] : []),
+    ...(categoryUrl ? [{ category: { url: { equals: categoryUrl } } }] : []),
+  ];
+
   const where: PostWhereInput = {
     published: { equals: true },
     product: BLOG_PRODUCT_FILTER,
@@ -26,28 +31,7 @@ export function useRelatedPosts({
         equals: currentPostId,
       },
     },
-    ...(tags && tags.length > 0 && categoryUrl
-      ? {
-          OR: [
-            {
-              tags: {
-                some: {
-                  name: {
-                    in: tags.map((tag) => tag.name),
-                  },
-                },
-              },
-            },
-            {
-              category: {
-                url: {
-                  equals: categoryUrl,
-                },
-              },
-            },
-          ],
-        }
-      : {}),
+    ...(conditions.length > 0 ? { OR: conditions } : {}),
   };
 
   const { data, loading, error } = useQuery<GetPostsQueryResult, GetPostsQueryVariables>(

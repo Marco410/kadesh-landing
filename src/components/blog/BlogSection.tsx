@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { ErrorState } from "../shared";
 import BlogCard from "./BlogCard";
 import BlogCardSkeleton from "./BlogCardSkeleton";
+import { LoadingBar, SkeletonRegion } from "kadesh/components/ui/skeleton";
 import EmptyBlogState from "./EmptyBlogState";
 import { useBlogPosts } from "./hooks/useBlogPosts";
 import { BlogPost, PostWhereInput } from "./types";
@@ -20,6 +21,17 @@ interface BlogSectionProps {
 }
 
 const DEFAULT_GRID = 'grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4';
+const MAX_SKELETON_CARDS = 8;
+
+function BlogGridSkeleton({ count, gridClassName }: { count: number; gridClassName: string }) {
+  return (
+    <SkeletonRegion label="Cargando artículos" className={gridClassName}>
+      {Array.from({ length: Math.min(count || MAX_SKELETON_CARDS, MAX_SKELETON_CARDS) }).map((_, index) => (
+        <BlogCardSkeleton key={index} index={index} />
+      ))}
+    </SkeletonRegion>
+  );
+}
 
 function PaginationButton({
   children,
@@ -113,13 +125,7 @@ function BlogSectionContent({
   }, [currentPage, totalPages]);
 
   if (loading) {
-    return (
-      <div className={gridClassName}>
-        {Array.from({ length: postsPerPage || 8 }).map((_, index) => (
-          <BlogCardSkeleton key={index} />
-        ))}
-      </div>
-    );
+    return <BlogGridSkeleton count={postsPerPage} gridClassName={gridClassName} />;
   }
 
   if (error && posts.length === 0) {
@@ -137,10 +143,11 @@ function BlogSectionContent({
 
   return (
     <>
+      <LoadingBar active={isPageLoading} className="mb-4" />
       <div
         id="blog-posts"
-        className={`${gridClassName} ${
-          isPageLoading ? 'opacity-60' : ''
+        className={`${gridClassName} transition-opacity duration-200 ${
+          isPageLoading ? 'opacity-50' : ''
         }`}
       >
         {posts.map((post, index) => (
@@ -196,13 +203,7 @@ export default function BlogSection({
 }: BlogSectionProps) {
   return (
     <Suspense
-      fallback={
-        <div className={gridClassName}>
-          {Array.from({ length: postsPerPage || 8 }).map((_, index) => (
-            <BlogCardSkeleton key={index} />
-          ))}
-        </div>
-      }
+      fallback={<BlogGridSkeleton count={postsPerPage} gridClassName={gridClassName} />}
     >
       <BlogSectionContent
         postsPerPage={postsPerPage}

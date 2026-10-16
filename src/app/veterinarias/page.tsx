@@ -6,8 +6,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Navigation } from "kadesh/components/layout";
 import { useUiMotion } from "kadesh/components/shared/motion";
+import { Bone, LoadingBar, SkeletonRegion } from "kadesh/components/ui/skeleton";
 import {
   VeterinaryCard,
+  VeterinaryCardSkeleton,
   VeterinariesMap,
   OpenNowChip,
   VeterinarySearchInput,
@@ -158,6 +160,8 @@ function VeterinariesPageContent() {
     hasActiveFilters ? `resultado${totalPlaces === 1 ? "" : "s"}` : "cerca de ti"
   }`;
   const noFilterMatch = hasActiveFilters && nearbyCount > 0 && totalPlaces === 0;
+  const isFirstLoad = (locationLoading || placesLoading) && places.length === 0;
+  const isRefreshing = placesLoading && places.length > 0;
 
   return (
     <main className="min-h-dvh bg-white pt-[72px] dark:bg-night">
@@ -196,7 +200,9 @@ function VeterinariesPageContent() {
             </Link>
             <p className="mt-3 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
               {hasLocation
-                ? nearbyCountLabel
+                ? isFirstLoad
+                  ? <Bone kind="line" slot={20} width={150} />
+                  : nearbyCountLabel
                 : "Encuentra clínicas según tu ubicación"}
             </p>
 
@@ -259,36 +265,26 @@ function VeterinariesPageContent() {
                   onToggleVerified={handleVerifiedToggle}
                   verifiedCount={placesLoading ? undefined : verifiedCount}
                 />
+                <LoadingBar active={isRefreshing} className="mt-3" />
               </>
             )}
           </motion.header>
 
           <div className="flex-1 overflow-y-auto p-4" aria-busy={locationLoading || placesLoading}>
             <AnimatePresence mode="wait">
-            {(locationLoading || placesLoading) && places.length === 0 ? (
+            {isFirstLoad ? (
               <motion.div
                 key="loading"
-                className="space-y-3"
                 variants={motionPrefs.panel}
                 initial={motionPrefs.panel ? "hidden" : false}
                 animate="show"
                 exit="exit"
               >
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="animate-pulse rounded-2xl border border-[#ececec] p-4 dark:border-white/10"
-                  >
-                    <div className="flex gap-3">
-                      <div className="h-11 w-9 rounded-md bg-[#e8edf3] dark:bg-[#2a3548]" />
-                      <div className="flex-1 space-y-2">
-                        <div className="h-4 w-3/4 rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
-                        <div className="h-3 w-1/2 rounded bg-[#e8edf3] dark:bg-[#2a3548]" />
-                      </div>
-                    </div>
-                    <div className="mt-3 h-11 rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]" />
-                  </div>
-                ))}
+                <SkeletonRegion label="Cargando veterinarias" className="space-y-3">
+                  {[0, 1, 2, 3].map((i) => (
+                    <VeterinaryCardSkeleton key={i} index={i} />
+                  ))}
+                </SkeletonRegion>
               </motion.div>
             ) : places.length === 0 ? (
               <motion.div
@@ -365,7 +361,7 @@ function VeterinariesPageContent() {
                 variants={motionPrefs.panel}
               >
                 <motion.div
-                  className="space-y-3"
+                  className={`space-y-3 transition-opacity duration-200 ${isRefreshing ? "opacity-50" : ""}`}
                   variants={motionPrefs.list}
                   initial={motionPrefs.list ? "hidden" : false}
                   animate="show"

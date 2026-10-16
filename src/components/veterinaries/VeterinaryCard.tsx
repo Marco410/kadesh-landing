@@ -14,6 +14,7 @@ import { veterinaryDetailHref } from './petPlaceSlug';
 import VerifiedBadge from './VerifiedBadge';
 import PetPlaceLikesMeta, { petPlaceLikesCount } from './PetPlaceLikesMeta';
 import type { PetPlace } from './types';
+import { Bone, boneWidth } from 'kadesh/components/ui/skeleton';
 
 const MotionLink = motion.create(Link);
 
@@ -228,5 +229,35 @@ export default function VeterinaryCard({
         )}
       </div>
     </motion.article>
+  );
+}
+
+const SKELETON_TITLE_WIDTHS = ['70%', '54%', '64%', '48%'] as const;
+const SKELETON_PLACE_WIDTHS = ['82%', '66%', '74%', '58%'] as const;
+
+/** Silueta de la tarjeta del directorio de veterinarias, con sus mismas medidas. */
+export function VeterinaryCardSkeleton({ index = 0 }: { index?: number }) {
+  return (
+    <div className="flex flex-col rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night">
+      <div className="flex w-full gap-3">
+        <Bone kind="box" width={36} height={44} radius={10} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <Bone kind="title" slot={20} width={boneWidth(SKELETON_TITLE_WIDTHS, index)} />
+            <Bone kind="box" width={60} height={20} radius={9999} />
+          </div>
+          <Bone kind="line" slot={20} width={72} className="mt-1" />
+          <Bone kind="line" slot={20} width={120} className="mt-1" />
+          <Bone kind="line" slot={20} width={boneWidth(SKELETON_PLACE_WIDTHS, index)} className="mt-1.5" />
+        </div>
+      </div>
+      <div className="mt-3 flex flex-col gap-2">
+        <div className="grid grid-cols-[auto_1fr] gap-2">
+          <Bone kind="box" width={48} height={44} />
+          <Bone kind="box" height={44} />
+        </div>
+        <Bone kind="box" height={44} />
+      </div>
+    </div>
   );
 }

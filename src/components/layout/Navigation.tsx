@@ -3,12 +3,16 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Logo from "../shared/Logo";
 import Link from "next/link";
 import { Routes } from "kadesh/core/routes";
 import { useUser } from "kadesh/utils/UserContext";
+import { useLogout } from "kadesh/components/auth/hooks";
+// Directo (no el barrel): el barrel de notificaciones importa el layout y haría un ciclo.
+import NotificationBell from "kadesh/components/notifications/NotificationBell";
+import { useUnreadNotifications } from "kadesh/components/notifications/hooks";
 import FontSizeSlider from "./FontSizeSlider";
 
 const PRIMARY_NAV = [
@@ -33,8 +37,9 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, setUser } = useUser();
+  const { user } = useUser();
+  const logout = useLogout();
+  const unreadCount = useUnreadNotifications({ skip: !user?.id });
   const avatarDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -93,26 +98,8 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
   };
 
   const handleLogout = async () => {
-    try {
-      // Limpiar token del localStorage
-      localStorage.removeItem("keystonejs-session-token");
-
-      // Limpiar cookies de sesión
-      document.cookie.split(";").forEach((c) => {
-        document.cookie = c
-          .replace(/^ +/, "")
-          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
-
-      // Limpiar el usuario del contexto
-      setUser(undefined);
-
-      // Redirigir a home
-      router.push(Routes.home);
-      setAvatarDropdownOpen(false);
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-    }
+    setAvatarDropdownOpen(false);
+    await logout();
   };
 
   const isDark = mounted && resolvedTheme === "dark";
@@ -200,6 +187,14 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
             </button>
           )}
 
+          {user?.id ? (
+            <NotificationBell
+              variant="panel"
+              tone={atTopLight ? "onLight" : "onDark"}
+              count={unreadCount}
+            />
+          ) : null}
+
           {/* User Avatar or Login Button */}
           {user?.id ? (
             <div className="relative" ref={avatarDropdownRef}>
@@ -268,6 +263,16 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
             </Link>
           )}
         </div>
+
+        {user?.id ? (
+          <div className="ml-auto mr-3 lg:hidden">
+            <NotificationBell
+              variant="link"
+              tone={atTopLight ? "onLight" : "onDark"}
+              count={unreadCount}
+            />
+          </div>
+        ) : null}
 
         {/* Mobile Burger Menu */}
         <button

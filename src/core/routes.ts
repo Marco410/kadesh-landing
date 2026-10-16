@@ -70,6 +70,12 @@ export const Routes = {
     image: (slug: string): string => `/veterinarias/${slug}/og`,
   },
   
+  // Notifications (campana y alertas de zona)
+  notifications: {
+    index: '/notificaciones',
+    alerts: '/notificaciones/alertas',
+  },
+
   // About
   conocenos: '/conocenos',
   

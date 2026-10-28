@@ -164,6 +164,7 @@ export default function NewAnimalForm({
   const [loading, setLoading] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const prevStepRef = useRef(0);
   const skipStepMotion = useRef(true);
@@ -236,11 +237,54 @@ export default function NewAnimalForm({
           { autoAlpha: 0, x: goingForward ? 22 : -22 },
           { autoAlpha: 1, x: 0, duration: 0.28, ease: HOME_EASE, overwrite: 'auto' }
         );
+        // Los bloques del paso nuevo entran en cascada detrás del panel.
+        const fields = el.firstElementChild ? Array.from(el.firstElementChild.children) : [];
+        gsap.from(fields, {
+          autoAlpha: 0,
+          y: 10,
+          duration: 0.32,
+          stagger: 0.05,
+          delay: 0.06,
+          ease: HOME_EASE,
+          clearProps: 'transform,opacity,visibility',
+        });
       }
 
       prevStepRef.current = step;
     },
     { dependencies: [step, hydrated], scope: panelRef, revertOnUpdate: false }
+  );
+
+  // Entrada: al cambiar el esqueleto por el formulario, todo aparece en cascada (título, pasos,
+  // campos, chips y botones) en vez de golpe. Corre una vez; los cambios de paso usan la de arriba.
+  useGSAP(
+    () => {
+      const root = formRef.current;
+      const panel = panelRef.current;
+      if (!root || !panel || !hydrated) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const done = 'transform,opacity,visibility';
+      const fields = panel.firstElementChild ? Array.from(panel.firstElementChild.children) : [];
+      const chips = gsap.utils.toArray<HTMLElement>('button[aria-pressed]', panel);
+
+      gsap
+        .timeline({ defaults: { ease: HOME_EASE } })
+        .from('[data-enter="title"]', { autoAlpha: 0, y: -8, duration: 0.35, clearProps: done })
+        .from(
+          '[data-circle]',
+          { autoAlpha: 0, scale: 0.6, duration: 0.4, stagger: 0.08, clearProps: done },
+          0.05
+        )
+        .from(fields, { autoAlpha: 0, y: 16, duration: 0.45, stagger: 0.08, clearProps: done }, 0.15)
+        .from(
+          chips,
+          { autoAlpha: 0, scale: 0.9, duration: 0.3, stagger: 0.025, clearProps: done },
+          0.3
+        )
+        .from('[data-enter="actions"]', { autoAlpha: 0, y: 12, duration: 0.35, clearProps: done }, 0.25);
+    },
+    { dependencies: [hydrated], scope: formRef }
   );
 
   useEffect(() => {
@@ -713,6 +757,7 @@ export default function NewAnimalForm({
 
   return (
     <form
+      ref={formRef}
       onSubmit={(event) => {
         event.preventDefault();
         if (step < STEPS.length - 1) {
@@ -725,7 +770,7 @@ export default function NewAnimalForm({
       className="flex min-h-0 flex-1 flex-col"
     >
       <header className="shrink-0 border-b border-[#e6e9ef] bg-white px-4 py-3 dark:border-white/10 dark:bg-night-raised sm:px-6">
-        <div className="mx-auto flex max-w-2xl items-center gap-3">
+        <div data-enter="title" className="mx-auto flex max-w-2xl items-center gap-3">
           <button
             type="button"
             onClick={goBack}
@@ -1177,7 +1222,7 @@ export default function NewAnimalForm({
             </button>
           </div>
         )}
-        <div className="mx-auto flex max-w-2xl gap-3">
+        <div data-enter="actions" className="mx-auto flex max-w-2xl gap-3">
           <motion.button
             type="button"
             onClick={goBack}

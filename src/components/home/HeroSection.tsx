@@ -6,6 +6,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowRightIcon, HospitalLocationIcon } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
 import { getStatusColor } from 'kadesh/components/animals/constants';
+import ReportLink from 'kadesh/components/animals/ReportLink';
 import { useChipPulse } from 'kadesh/components/animals/useChipMotion';
 import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 import HeroMap from 'kadesh/components/home/HeroMap';
@@ -24,7 +25,7 @@ const SECONDARY_ACCESSES = [
 function ReportLostCta() {
   const { ref, pulse } = useChipPulse<HTMLAnchorElement>();
   return (
-    <Link
+    <ReportLink
       ref={ref}
       href={REPORT_LOST_HREF}
       onPointerDown={pulse}
@@ -32,14 +33,16 @@ function ReportLostCta() {
     >
       <span>Reportar mascota perdida</span>
       <HugeiconsIcon className="h-5 w-5 flex-shrink-0" icon={ArrowRightIcon} />
-    </Link>
+    </ReportLink>
   );
 }
 
 function AccessChip({ access }: { access: (typeof SECONDARY_ACCESSES)[number] }) {
   const { ref, pulse } = useChipPulse<HTMLAnchorElement>();
+  // Los que publican un reporte piden cuenta en un modal; los demás son enlaces normales.
+  const AccessLink = access.href.startsWith(Routes.animals.new) ? ReportLink : Link;
   return (
-    <Link
+    <AccessLink
       ref={ref}
       href={access.href}
       onPointerDown={pulse}
@@ -55,7 +58,7 @@ function AccessChip({ access }: { access: (typeof SECONDARY_ACCESSES)[number] })
         <HugeiconsIcon className="h-4 w-4 flex-shrink-0" icon={HospitalLocationIcon} aria-hidden />
       )}
       <span>{access.label}</span>
-    </Link>
+    </AccessLink>
   );
 }
 

@@ -10,6 +10,7 @@ import UserPostsSection from "kadesh/components/profile/UserPostsSection";
 import UserAnimalsSection from "kadesh/components/profile/UserAnimalsSection";
 import UserVeterinariesSection from "kadesh/components/profile/UserVeterinariesSection";
 import { UserAppointmentsSection } from "kadesh/components/veterinaries";
+import { MyPetsSection } from "kadesh/components/pets";
 import ProfileTabs, {
   isProfileTabKey,
   type ProfileTabKey,
@@ -96,6 +97,7 @@ function ProfilePageContent() {
               exit="exit"
             >
               {selectedTab === "profile" ? <ProfileData user={user} /> : null}
+              {selectedTab === "pets" ? <MyPetsSection userId={user.id} /> : null}
               {selectedTab === "posts" ? (
                 <UserPostsSection userId={user.id} />
               ) : null}

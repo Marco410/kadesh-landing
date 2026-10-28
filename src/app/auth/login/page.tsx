@@ -8,6 +8,7 @@ import Logo from "kadesh/components/shared/Logo";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { EyeIcon, ViewOffIcon } from "@hugeicons/core-free-icons";
 import { useLogin, useRegister } from "../../../components/auth/hooks";
+import GoogleAuthSection from "kadesh/components/auth/GoogleAuthSection";
 
 function LoginPageContent() {
   const searchParams = useSearchParams();
@@ -214,6 +215,8 @@ function LoginPageContent() {
                       "Iniciar Sesión"
                     )}
                   </button>
+
+                  <GoogleAuthSection redirectTo={redirectPath} />
                 </form>
               </Tab>
 
@@ -372,6 +375,8 @@ function LoginPageContent() {
                       "Registrarse"
                     )}
                   </button>
+
+                  <GoogleAuthSection redirectTo={redirectPath} />
                 </form>
               </Tab>
             </Tabs>

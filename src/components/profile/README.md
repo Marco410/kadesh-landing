@@ -1,6 +1,6 @@
 # Perfil
 
-Cuenta de quien ya tiene sesión: datos, publicaciones del blog, los reportes de animales que publicó, las citas que reservó y las clínicas que reclamó.
+Cuenta de quien ya tiene sesión: datos, sus mascotas con su cartilla, publicaciones del blog, los reportes de animales que publicó, las citas que reservó y las clínicas que reclamó.
 
 ## Promesa
 
@@ -9,9 +9,10 @@ Editar lo que sí se puede cambiar (nombre, teléfono, foto) y ver la actividad 
 ## UI
 
 - Sin footer del sitio. H1 **Perfil**, `pt-[72px]`, `night` / `night-raised`, chips de pestaña (contorno vs relleno de marca). Al tocar, la pestaña activa **desliza** el fondo kadesh (`layoutId`). El contenido entra y sale (`AnimatePresence`, 280ms, ease suave). Listas (reportes, clínicas, comentarios, pacientes) aparecen en cascada. **Administrar**, formularios de cita/paciente y el botón Guardar se revelan con altura. Clic: `scale` 0.97 (días del calendario 0.92). Si el sistema pide menos movimiento, no hay animación.
-- Cinco pestañas: **Datos**, **Publicaciones**, **Reportes**, **Citas**, **Clínicas**. `?tab=` (`profile` | `posts` | `animals` | `appointments` | `clinics`). Flechas del teclado recorren las pestañas.
-- Vacío con siguiente paso: Reportes invita a publicar; Publicaciones manda al blog; Citas manda al directorio para reservar; Clínicas manda al directorio para reclamar una ficha.
-- No hay pestañas de “próximamente” (donaciones, refugios, mascotas) ni **Ventas**.
+- Seis pestañas: **Datos**, **Mascotas**, **Publicaciones**, **Reportes**, **Citas**, **Clínicas**. `?tab=` (`profile` | `pets` | `posts` | `animals` | `appointments` | `clinics`). Flechas del teclado recorren las pestañas.
+- **Mascotas** es la cartilla digital; vive en `src/components/pets/` (ver su README). Con `&pet=<id>` abre la cartilla de una mascota; cambiar de pestaña lo quita.
+- Vacío con siguiente paso: Mascotas invita a registrar una; Reportes invita a publicar; Publicaciones manda al blog; Citas manda al directorio para reservar; Clínicas manda al directorio para reclamar una ficha.
+- No hay pestañas de “próximamente” (donaciones, refugios) ni **Ventas**.
 - Correo y usuario no se editan aquí: se manda a **contacto**. Edad no se muestra: sale de la fecha de nacimiento.
 - Al guardar: nombre y apellido paterno obligatorios. Teléfono obligatorio, 10 dígitos (espacios y guiones se quitan); Keystone no acepta `null` en ese campo. Fecha de nacimiento opcional, no posterior a hoy.
 

@@ -15,6 +15,52 @@ Formato:
 
 ---
 
+## 2026-10-28 · feat: animación de entrada en el formulario de reporte
+- Rama: feat/report-auth-modal
+- Qué cambió y por qué: `/animales/nuevo` aparecía de golpe al cargar.
+  - Ahora entra en cascada: título, círculos de los pasos, bloques del paso, chips (con un leve escalado) y botones.
+  - Al cambiar de paso, además del deslizamiento del panel, sus bloques entran en cascada.
+  - Sin animación si el sistema pide menos movimiento.
+- Archivos: src/components/animals/nuevo/NewAnimalForm.tsx, src/components/animals/README.md
+- GraphQL: ninguna
+- Móvil: no aplica (pulido visual de la web; la app maneja su propia animación de pantallas)
+
+## 2026-10-28 · feat: reactivar «Continuar con Google»
+- Rama: feat/report-auth-modal
+- Qué cambió y por qué: el botón de Google estaba oculto desde el 2026-09-24. Volvió a `/auth/login` (las dos pestañas) y al modal de cuenta al reportar, donde va primero porque crea la cuenta o entra en un toque.
+  - Nuevo `GoogleAuthSection` (separador + botón + carga + error).
+  - `useGoogleLogin` inicializa Google una sola vez con un despachador. Con varios modales en el home, el clic podía responder con el `redirectTo` de otro.
+  - El ancho del botón se ajusta al contenedor (200–400 px). Antes se cortaba en la tarjeta del login en teléfonos.
+  - Requiere que el cliente OAuth tenga como orígenes autorizados `https://pet.kadesh.com.mx` y `http://localhost:3000`. En local hoy Google responde "origin is not allowed".
+- Archivos: src/components/auth/GoogleAuthSection.tsx (nuevo), src/components/auth/hooks/useGoogleLogin.ts, src/app/auth/login/page.tsx, src/components/auth/AuthGateModal.tsx, src/components/auth/README.md
+- GraphQL: ninguna (usa `AuthenticateUserWithGoogle`, ya existente)
+- Móvil: se agregó al prompt [cuenta al reportar](../mobile-sync/2026-10-28-cuenta-al-reportar.md) (Google primero en la hoja, si la app lo tiene)
+
+## 2026-10-28 · feat: crear cuenta en un modal al reportar
+- Rama: feat/report-auth-modal
+- Qué cambió y por qué: sin sesión, los botones de reportar (perdida, encontrada, en adopción, rescate) mandaban a `/auth/login` y la persona perdía el contexto. Ahora se abre un modal (`AuthGateModal`) sin salir de la página.
+  - Explica por qué pedimos cuenta y 3 beneficios según el tipo de reporte.
+  - Deja **crear cuenta** o **entrar** ahí mismo y luego lleva al formulario con el mismo `?status=`.
+  - Lo usan el hero, Cómo funciona, Reportes recientes, Primeras horas y el cierre del home, y el botón Reportar de `/animales`, que antes mostraba un aviso y mandaba al login.
+  - Si alguien entra directo a `/animales/nuevo` sin sesión, ve el mismo modal sobre el formulario.
+  - El modal se monta en `<body>` con un portal, porque dentro de las secciones animadas del home el `fixed` quedaba encerrado.
+- Archivos: src/components/auth/AuthGateModal.tsx (nuevo), src/components/animals/ReportLink.tsx (nuevo), src/components/animals/reportAuthCopy.ts (nuevo), src/components/animals/index.ts, src/components/home/{HeroSection,HowItWorksSection,RecentReportsSection,FirstHoursSection,ClosingSection}.tsx, src/app/animales/page.tsx, src/app/animales/nuevo/page.tsx, src/components/auth/README.md, src/components/animals/README.md
+- GraphQL: ninguna (usa `CreateUser` y `AuthenticateUserWithPassword`, ya existentes)
+- Móvil: [prompt](../mobile-sync/2026-10-28-cuenta-al-reportar.md)
+
+## 2026-10-23 · feat: pestaña Mascotas con la cartilla digital
+- Rama: feat/pet-health-card
+- Qué cambió y por qué: el perfil tiene una pestaña nueva, **Mascotas** (`/perfil?tab=pets`), para la cartilla digital que agregó el backend.
+  - Lista de mascotas con su próximo recordatorio. **Registrar mascota** abre una hoja con fotos (hasta 3), especie, raza, sexo, fecha de nacimiento o edad aproximada, color, peso, esterilización, microchip y señas.
+  - Cartilla de cada mascota (`&pet=<id>`): datos; registros de salud con veterinaria, próxima fecha y fotos; recordatorios (los de la cartilla se crean solos); y familia (el principal agrega por correo, un familiar se puede salir).
+  - Si el correo del familiar no tiene cuenta, **Registrar a esta persona** abre un formulario donde el principal le crea la cuenta y elige su contraseña. A la persona le llega un correo avisándole que su familiar la tiene (sin la contraseña).
+  - Quedan pendientes, anotados en `src/components/auth/README.md`: **olvidé mi contraseña** en el login y **cambiar contraseña** en el perfil.
+  - **Marcar como perdida** publica el reporte con los datos y fotos de la cartilla (mapa, fecha y teléfono). **Ya regresó a casa** lo cierra como «En familia».
+  - Depende de `kadesh-back@feat/pet-health-card` desplegado y migrado; antes de eso la pestaña muestra "No pudimos cargar tus mascotas".
+- Archivos: src/components/pets/* (nuevo), src/components/profile/ProfileTabs.tsx, src/app/perfil/page.tsx, src/components/profile/README.md, src/components/auth/README.md
+- GraphQL: nuevas `MyPets`, `PetDetail`, `SearchVeterinaries`, `CreatePet`, `UpdatePet`, `DeletePet`, `CreatePetPhotos`, `DeletePetPhotos`, `CreatePetHealthRecord`, `UpdatePetHealthRecord`, `DeletePetHealthRecord`, `CreatePetHealthRecordAttachments`, `DeletePetHealthRecordAttachments`, `CreatePetReminder`, `UpdatePetReminder`, `DeletePetReminder`, `MarkPetAsLost`, `MarkPetAsFound`, `AddPetFamilyMember`, `RegisterPetFamilyMember` y `DeletePetOwner` (en `src/components/pets/queries.ts`)
+- Móvil: [prompt](../mobile-sync/2026-10-23-cartilla-mascotas.md)
+
 ## 2026-10-16 · feat: campana de notificaciones y alertas de zona
 - Rama: develop
 - Qué cambió y por qué: viene del prompt `kadesh-pet-mobile/docs/web-sync/2026-10-16-campana-y-alertas.md`.

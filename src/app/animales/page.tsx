@@ -15,10 +15,11 @@ import {
 import { ANIMAL_LOGS_OPTIONS, emptyDirectoryHeadline } from 'kadesh/components/animals/constants';
 import { useUser } from 'kadesh/utils/UserContext';
 import {
-  ConfirmModal,
   DirectoryPagination,
   DirectoryRadiusChips,
 } from 'kadesh/components/shared';
+import AuthGateModal from 'kadesh/components/auth/AuthGateModal';
+import { reportAuthCopy } from 'kadesh/components/animals/reportAuthCopy';
 import { Routes } from 'kadesh/core/routes';
 import { GEO_OPTIONS_FRESH } from 'kadesh/utils/geolocation';
 import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
@@ -154,11 +155,6 @@ function LostAnimalsPageContent() {
       return;
     }
     router.push(Routes.animals.new);
-  };
-
-  const handleConfirmLogin = () => {
-    setShowLoginModal(false);
-    router.push(`${Routes.auth.login}?redirect=${Routes.animals.new}&tab=register`);
   };
 
   return (
@@ -436,14 +432,11 @@ function LostAnimalsPageContent() {
         </aside>
       </div>
 
-      <ConfirmModal
+      <AuthGateModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        onConfirm={handleConfirmLogin}
-        title="Inicio de sesión requerido"
-        message="Debes iniciar sesión o registrarte para reportar un animal. ¿Deseas ir a la página de registro?"
-        confirmText="Ir a registro"
-        cancelText="Cancelar"
+        redirectTo={Routes.animals.new}
+        {...reportAuthCopy(null)}
       />
     </main>
   );

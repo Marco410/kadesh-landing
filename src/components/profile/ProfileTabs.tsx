@@ -5,6 +5,7 @@ import { useProfileMotion } from "./motion";
 
 export const PROFILE_TABS = [
   { key: "profile", label: "Datos" },
+  { key: "pets", label: "Mascotas" },
   { key: "posts", label: "Publicaciones" },
   { key: "animals", label: "Reportes" },
   { key: "appointments", label: "Citas" },

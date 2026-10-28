@@ -14,4 +14,4 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 
 | Fecha | Prompt | Feature | Estado |
 |---|---|---|---|
-| — | _(aún no hay prompts)_ | — | — |
+| 2026-10-23 | [Cartilla digital de la mascota](2026-10-23-cartilla-mascotas.md) | profile | pendiente |

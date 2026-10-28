@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Alert02Icon } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
+import ReportLink from 'kadesh/components/animals/ReportLink';
 
 /** Abierta a propósito (no acordeón): es lo que busca alguien en pánico y lo que indexa Google. */
 const FIRST_HOURS_STEPS = [
@@ -80,12 +80,12 @@ export default function FirstHoursSection() {
         </div>
 
         <div className="mt-10 text-center sm:text-left">
-          <Link
+          <ReportLink
             href={`${Routes.animals.new}?status=lost`}
             className="inline-flex min-h-14 w-full items-center justify-center rounded-2xl bg-red-600 px-8 py-4 text-lg font-bold text-white transition-colors hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:w-auto"
           >
             Reportar mi mascota ahora
-          </Link>
+          </ReportLink>
         </div>
       </div>
     </section>

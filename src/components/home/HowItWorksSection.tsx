@@ -10,6 +10,7 @@ import {
   Share08Icon,
 } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
+import ReportLink from 'kadesh/components/animals/ReportLink';
 import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 
 /**
@@ -133,12 +134,12 @@ export default function HowItWorksSection() {
         </ol>
 
         <div className="mt-14 flex flex-col items-center gap-5 text-center">
-          <Link
+          <ReportLink
             href={`${Routes.animals.new}?status=lost`}
             className="inline-flex min-h-14 items-center justify-center rounded-2xl bg-red-600 px-8 py-4 text-lg font-bold text-white transition-colors hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
           >
             Reportar mascota perdida
-          </Link>
+          </ReportLink>
           <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
             ¿Quieres adoptar?{' '}
             <Link
@@ -148,12 +149,12 @@ export default function HowItWorksSection() {
               Ver animales en adopción
             </Link>
             {' · '}¿Eres rescatista?{' '}
-            <Link
+            <ReportLink
               href={`${Routes.animals.new}?status=rescued`}
               className="font-semibold text-kadesh-700 underline-offset-4 hover:underline dark:text-kadesh-300"
             >
               Publica tus casos
-            </Link>
+            </ReportLink>
           </p>
         </div>
       </div>

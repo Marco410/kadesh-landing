@@ -14,12 +14,17 @@ Ayudar a encontrar o adoptar. El mapa y las tarjetas muestran el mismo conjunto;
 - Motion: chips de filtro siguen en GSAP (`useChipPulse`, Más/Menos). El directorio y las fichas usan Framer (`shared/motion`, misma curva que perfil): lista en cascada, radio con píldora que se desliza, vacío/carga se revelan, toque 0.97. El alta mantiene el desliz del paso en GSAP; Atrás/Continuar y la nota responden al toque. `prefers-reduced-motion` lo apaga.
 - Si no hay resultados, el vacío nombra la búsqueda (`No hay reptiles rescatados en 10 km`) y ofrece ampliar radio o quitar filtros.
 - Ficha de lista: foto, estatus de color semántico, distancia, Ver ficha. Oscuro: `night` / `night-raised`.
-- **Reportar** está en el encabezado del panel (y sobre el mapa en móvil). Si no hay sesión, abre el modal de registro.
+- **Reportar** está en el encabezado del panel (y sobre el mapa en móvil). Si no hay sesión, abre el modal de cuenta (`AuthGateModal`).
 - La ubicación **no** se solicita sola la primera vez. El listado arranca sin coords (todos los reportes) y el panel ofrece **Usar mi ubicación** / **Reintentar**. Si ya la aprobaron, al recargar se reutiliza y el mapa muestra el pin. Centrar el mapa también guarda esa aprobación.
 
 ## Alta (`/animales/nuevo`)
 
 Es una **herramienta de tres pasos**, no un formulario largo ni una landing. Quien llega (sobre todo con un animal perdido, desde el celular) tiene que terminar en minutos. Un solo formulario sin scroll no cabe: el mapa y las fotos se pelean el viewport. Un wizard de 7 pasos se siente a trámite.
+
+Movimiento (GSAP, `HOME_EASE`; nada si el sistema pide menos movimiento):
+- **Al entrar** (cuando el esqueleto cambia por el formulario), todo aparece en cascada en menos de un segundo, en este orden: título, círculos de los pasos, bloques del paso, chips y botones de abajo.
+- **Al cambiar de paso**, el panel se desliza hacia el lado del avance y sus bloques entran en cascada.
+- Cada animación limpia sus estilos al terminar (`clearProps`) para no chocar con el pulso de los chips ni con la del stepper.
 
 1. **Foto y tipo** — fotos primero (es lo que reconoce a alguien): se arrastran o se eligen varias a la vez, hasta 3. Se reordenan arrastrando: la primera es la **portada** (`order: 1`) y es la que se ve en el listado y en la ficha. Tipo en chips, nombre. «No tiene nombre» va marcado si el estatus es encontrado / abandonado / rescatado.
 2. **Cómo reconocerlo** — tamaño y edad en chips, color, sexo, raza y **señas particulares** (obligatorias). **No sé** busca mestizo/sin raza; si no existe, pide la más cercana. Tipo, nombre y raza (con **No sé**) se reutilizan en el modal de reservar cita; el copy y el control deben coincidir.
@@ -59,7 +64,11 @@ Tono directo, español de México. No nombramos Leaflet, MapLibre, Nominatim ni 
 
 `/animales` es público. `?status=` (p. ej. `in_adoption`) prefiltra el listado; el hero de portada usa eso para «Quiero adoptar».
 
-Reportar (`/animales/nuevo`) exige sesión. Si no hay usuario, el CTA del listado abre el modal de registro; los enlaces del hero van a login/registro con `redirect` y conservan `?status=` (perdido, encontrado, en adopción). El formulario acepta también abandonado y rescatado.
+Reportar (`/animales/nuevo`) exige sesión, pero nunca se manda a la persona a `/auth/login`.
+- Todo enlace a un reporte nuevo usa `ReportLink`: en el hero, Cómo funciona, Reportes recientes, Primeras horas y el cierre del home. El listado hace lo mismo con su botón.
+- Sin sesión, al tocarlo se abre el modal de cuenta (`AuthGateModal`) sin salir de la página. Explica por qué pedimos cuenta y qué gana la persona según el tipo de reporte (`reportAuthCopy`, por `?status=`). Deja crear la cuenta o entrar ahí mismo y luego lleva al formulario con el mismo `?status=`.
+- Si alguien llega directo a `/animales/nuevo` sin sesión, ve el formulario de fondo con el mismo modal encima. Cerrarlo regresa a la página anterior.
+- El formulario acepta también abandonado y rescatado.
 
 ## Quién edita un animal (2026-10-14)
 

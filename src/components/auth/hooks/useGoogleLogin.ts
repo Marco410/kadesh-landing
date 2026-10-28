@@ -43,12 +43,20 @@ interface UseGoogleLoginOptions {
   redirectTo?: string | null;
 }
 
+/**
+ * `google.accounts.id.initialize` es global: si se llama varias veces, solo vale la última. Con
+ * varios botones en la misma página (un modal de cuenta por cada "Reportar" del home, cada uno con
+ * su `redirectTo`) el clic podía responder con el callback de otro. Se inicializa una sola vez con
+ * un despachador y cada botón, al dibujarse, se vuelve el activo.
+ */
+let activeCredentialHandler: ((response: { credential: string }) => void) | null = null;
+let gsiInitialized = false;
+
 export function useGoogleLogin(options?: UseGoogleLoginOptions) {
   const router = useRouter();
   const { refreshUser, setUser } = useUser();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const initialized = useRef(false);
   const buttonRendered = useRef(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const renderedOnContainerRef = useRef<HTMLDivElement | null>(null);
@@ -147,6 +155,8 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
     const container = containerRef.current;
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (!container || !clientId) return;
+    // El botón que se acaba de montar es el que la persona ve: su callback es el que responde.
+    activeCredentialHandler = handleCredential;
     // Re-render if we're on a different container (e.g. switched tab)
     if (buttonRendered.current && renderedOnContainerRef.current === container)
       return;
@@ -158,13 +168,13 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
         if (buttonRendered.current && renderedOnContainerRef.current === target)
           return;
 
-        if (!initialized.current) {
+        if (!gsiInitialized) {
           google.accounts.id.initialize({
             client_id: clientId,
-            callback: handleCredential,
+            callback: (response) => activeCredentialHandler?.(response),
             auto_select: false,
           });
-          initialized.current = true;
+          gsiInitialized = true;
         }
 
         google.accounts.id.renderButton(target, {
@@ -174,7 +184,9 @@ export function useGoogleLogin(options?: UseGoogleLoginOptions) {
           text: "continue_with",
           shape: "pill",
           logo_alignment: "left",
-          width: Math.max(target.offsetWidth || 0, 320),
+          // Ancho del contenedor dentro del rango que acepta Google (200–400 px); con un mínimo
+          // fijo de 320 se cortaba en la tarjeta del login en teléfonos.
+          width: Math.min(400, Math.max(200, target.offsetWidth || 0)),
           locale: "es",
         });
         buttonRendered.current = true;

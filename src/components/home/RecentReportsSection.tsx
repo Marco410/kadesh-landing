@@ -24,6 +24,7 @@ import {
 } from 'kadesh/components/home/hooks/useRecentReports';
 import { DEFAULT_RADIUS } from 'kadesh/constants/constans';
 import { Routes } from 'kadesh/core/routes';
+import ReportLink from 'kadesh/components/animals/ReportLink';
 import { cn } from 'kadesh/utils/cn';
 import { formatDate } from 'kadesh/utils/format-date';
 import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
@@ -261,12 +262,12 @@ export default function RecentReportsSection() {
               No hay reportes con este filtro por ahora. Si tu mascota se perdió,
               sé el primero en reportarla.
             </p>
-            <Link
+            <ReportLink
               href={`${Routes.animals.new}?status=lost`}
               className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
             >
               Reportar mascota perdida
-            </Link>
+            </ReportLink>
           </div>
         )}
 

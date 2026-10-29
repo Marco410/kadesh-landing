@@ -1,5 +1,5 @@
 import { SITE_URL } from 'kadesh/core/site';
-import { NEARBY_ANIMAL_TYPE } from './constants';
+import { ANIMAL_REPORT_NOTIFICATION_TYPE, NEARBY_ANIMAL_TYPE } from './constants';
 import type { AppNotification, NotificationGroup, NotificationTone } from './types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -34,8 +34,12 @@ export function groupNotifications(
   return buckets.filter((group) => group.items.length > 0);
 }
 
-/** Verde si es una alerta de zona de un animal encontrado, rojo si es otra alerta de zona, azul el resto. */
+/**
+ * Verde si es una alerta de zona de un animal encontrado o una posible coincidencia (perdido ↔
+ * encontrado), rojo si es otra alerta de zona, azul el resto.
+ */
 export function notificationTone(notification: AppNotification): NotificationTone {
+  if (notification.type === ANIMAL_REPORT_NOTIFICATION_TYPE.POSSIBLE_MATCH) return 'found';
   if (notification.type !== NEARBY_ANIMAL_TYPE) return 'brand';
   return /encontrad/i.test(notification.title) ? 'found' : 'lost';
 }

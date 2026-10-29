@@ -15,6 +15,26 @@ Formato:
 
 ---
 
+## 2026-10-28 · feat: reportes parecidos, comentar en vez de duplicar y pedir el reporte
+- Rama: feat/reportes-duplicados (aquí y en kadesh-back)
+- Qué cambió y por qué: tres personas publicaron al mismo perro (Chaneque, Morelia) y la revisión anterior (mismo enlace o mismo teléfono + nombre) no lo detectó.
+  - **Detección mientras se llena:** en el paso «Dónde», en cuanto hay ubicación, se consultan reportes parecidos. Un puntaje del backend compara nombre, cercanía (5 km), sexo, color, raza, señas y fecha, sin comparar ciudad. Aparece un aviso que no frena y, al publicar, la revisión se abre sola si hay uno «muy probable».
+  - **En la revisión:** se puede dejar un comentario en el reporte existente (`duplicate_report`) o pedir que el reporte pase a tu nombre si es tu mascota (`AnimalClaim`, con mensaje, teléfono y foto opcional). Con un comentario o una solicitud ya no hace falta publicar otro reporte.
+  - **Cruce perdido ↔ encontrado:** las coincidencias del otro lado salen en una sección aparte con «Es el mío: avisar» (`possible_match`) y no impiden publicar. El backend también avisa solo cuando se publica uno nuevo muy parecido.
+  - **Ficha:** «Es mi mascota» para reportes de la comunidad o de encontrados. Panel de solicitudes para quien atiende el reporte (aprobar o rechazar). Insignias «También lo reportó» y «Posible coincidencia» en comentarios. Ancla `#comentarios`.
+  - **Reporte unido a otro** (`duplicateOf`, lo pone un admin): la ficha redirige con 308 a la principal.
+  - **Notificaciones:** siete tipos nuevos con su ícono y tono.
+  - **Corrección:** «Quien reportó» ya no sale en todos los comentarios cuando la ficha no trae al dueño.
+  - Nuevo `Sheet` compartido (hoja modal montada en `body`).
+- Archivos: src/components/animals/queries.ts, src/components/animals/server.ts, src/components/animals/similarReportsCopy.ts (nuevo), src/components/animals/nuevo/NewAnimalForm.tsx, src/components/animals/nuevo/hooks/useSimilarReports.ts (nuevo), src/components/animals/nuevo/SimilarReportsNotice.tsx (nuevo), src/components/animals/nuevo/SimilarReportsSheet.tsx (nuevo), src/components/animals/claim/* (nuevo), src/components/animals/detail/ClaimReportButton.tsx (nuevo), src/components/animals/detail/AnimalClaimsPanel.tsx (nuevo), src/components/animals/detail/AnimalCommentsSection.tsx, src/components/animals/detail/hooks/useAnimalDetail.ts, src/components/animals/detail/index.ts, src/app/animales/[slug]/page.tsx, src/app/animales/[slug]/layout.tsx, src/components/shared/Sheet.tsx (nuevo), src/components/shared/index.ts, src/components/notifications/constants.ts, src/components/notifications/inbox.ts, src/components/notifications/NotificationList.tsx, src/components/animals/README.md
+- GraphQL:
+  - `FindAnimalReportDuplicates` extendida (ubicación, estatus y señas; regresa puntaje, nivel, tipo, razones, distancia, portada e `isMine`).
+  - `kind` en `CreateAnimalComment` y `GetAnimalComments`.
+  - `duplicateOf` en la ficha y en la consulta del servidor.
+  - Nuevas: `GetAnimalClaims`, `CreateAnimalClaim`, `ResolveAnimalClaim` y `CancelAnimalClaim`.
+  - Requiere desplegar primero kadesh-back con su migración.
+- Móvil: [prompt](../mobile-sync/2026-10-28-reportes-duplicados-y-reclamos.md)
+
 ## 2026-10-28 · feat: animación de entrada en el formulario de reporte
 - Rama: feat/report-auth-modal
 - Qué cambió y por qué: `/animales/nuevo` aparecía de golpe al cargar.

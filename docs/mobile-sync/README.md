@@ -16,3 +16,4 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 |---|---|---|---|
 | 2026-10-23 | [Cartilla digital de la mascota](2026-10-23-cartilla-mascotas.md) | profile | pendiente |
 | 2026-10-28 | [Pedir cuenta al reportar sin salir de la pantalla](2026-10-28-cuenta-al-reportar.md) | auth | pendiente |
+| 2026-10-28 | [Reportes parecidos, comentar en vez de duplicar y pedir el reporte](2026-10-28-reportes-duplicados-y-reclamos.md) | animals | pendiente |

@@ -10,6 +10,8 @@ export { default as LogTimeline } from './LogTimeline';
 export { default as LogMap } from './LogMap';
 export { default as MapModal } from './MapModal';
 export { default as AnimalCommentsSection } from './AnimalCommentsSection';
+export { default as AnimalClaimsPanel } from './AnimalClaimsPanel';
+export { default as ClaimReportButton } from './ClaimReportButton';
 
 
 

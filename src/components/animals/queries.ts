@@ -306,6 +306,10 @@ export const GET_ANIMAL_QUERY = gql`
       reportedBy
       id
       animal_viewsCount
+      duplicateOf {
+        id
+        slug
+      }
       logs (orderBy: $orderBy)  {
         address
         city
@@ -437,6 +441,7 @@ export const GET_ANIMAL_COMMENTS_QUERY = gql`
     animalComments(where: $where, orderBy: $orderBy) {
       id
       comment
+      kind
       createdAt
       animal {
         id
@@ -478,9 +483,13 @@ export interface AnimalCommentAnimal {
   name: string;
 }
 
+/** `duplicate_report`: iba a publicar el mismo animal. `possible_match`: cree que es el de su reporte. */
+export type AnimalCommentKind = 'comment' | 'duplicate_report' | 'possible_match';
+
 export interface AnimalComment {
   id: string;
   comment: string;
+  kind?: AnimalCommentKind | null;
   animal: AnimalCommentAnimal;
   user: AnimalCommentUser | null;
   createdAt: string;
@@ -519,6 +528,7 @@ export const CREATE_ANIMAL_COMMENT_MUTATION = gql`
 export interface CreateAnimalCommentVariables {
   data: {
     comment: string;
+    kind?: AnimalCommentKind;
     animal: {
       connect: {
         id: string;
@@ -567,23 +577,202 @@ export interface DeleteAnimalCommentResponse {
   };
 }
 
+/**
+ * Reportes parecidos al que se está llenando. `kind: duplicate` es el mismo animal ya reportado;
+ * `kind: match` es el otro lado de la historia (perdido ↔ encontrado). `level: likely` es
+ * «muy probable» (70+ puntos), `possible` desde 45. Nunca trae teléfonos ni nombres de personas.
+ */
 export const FIND_ANIMAL_REPORT_DUPLICATES = gql`
   query FindAnimalReportDuplicates(
     $phone: String
+    $phone2: String
     $animalTypeId: ID
     $name: String
     $sourceUrl: String
+    $lat: Float
+    $lng: Float
+    $status: String
+    $sex: String
+    $color: String
+    $breedId: ID
+    $description: String
+    $lostDate: DateTime
+    $excludeAnimalId: ID
   ) {
     findAnimalReportDuplicates(
       phone: $phone
+      phone2: $phone2
       animalTypeId: $animalTypeId
       name: $name
       sourceUrl: $sourceUrl
+      lat: $lat
+      lng: $lng
+      status: $status
+      sex: $sex
+      color: $color
+      breedId: $breedId
+      description: $description
+      lostDate: $lostDate
+      excludeAnimalId: $excludeAnimalId
     ) {
       id
       name
       slug
       url
+      score
+      level
+      kind
+      reasons
+      distanceKm
+      status
+      placeLabel
+      city
+      reportedAt
+      coverUrl
+      reportedBy
+      isMine
+    }
+  }
+`;
+
+export type SimilarReportKind = 'duplicate' | 'match';
+export type SimilarReportReason =
+  | 'same_source'
+  | 'same_phone'
+  | 'same_name'
+  | 'similar_name'
+  | 'very_close'
+  | 'close'
+  | 'same_sex'
+  | 'same_color'
+  | 'same_breed'
+  | 'similar_description'
+  | 'same_date';
+
+export interface SimilarReport {
+  id: string;
+  name: string;
+  slug: string | null;
+  url: string;
+  score: number;
+  level: 'likely' | 'possible';
+  kind: SimilarReportKind;
+  reasons: SimilarReportReason[];
+  distanceKm: number | null;
+  status: string | null;
+  placeLabel: string | null;
+  city: string | null;
+  reportedAt: string | null;
+  coverUrl: string | null;
+  reportedBy: string | null;
+  /** Es un reporte de quien está llenando el formulario. */
+  isMine: boolean;
+}
+
+export interface FindSimilarReportsVariables {
+  phone?: string | null;
+  phone2?: string | null;
+  animalTypeId?: string | null;
+  name?: string | null;
+  sourceUrl?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  status?: string | null;
+  sex?: string | null;
+  color?: string | null;
+  breedId?: string | null;
+  description?: string | null;
+  lostDate?: string | null;
+  excludeAnimalId?: string | null;
+}
+
+export interface FindSimilarReportsResponse {
+  findAnimalReportDuplicates: SimilarReport[];
+}
+
+// Solicitudes para quedarse con un reporte («Es mi mascota»).
+export type AnimalClaimStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+
+export interface AnimalClaim {
+  id: string;
+  status: AnimalClaimStatus;
+  message: string;
+  phone?: string | null;
+  claimantName?: string | null;
+  rejectReason?: string | null;
+  createdAt: string;
+  evidence?: { url: string } | null;
+  claimant?: { id: string } | null;
+}
+
+/** El acceso del backend ya filtra: quien reclamó, quien atiende el reporte o un admin. */
+export const GET_ANIMAL_CLAIMS_QUERY = gql`
+  query GetAnimalClaims($animalId: ID!) {
+    animalClaims(
+      where: { animal: { id: { equals: $animalId } } }
+      orderBy: [{ createdAt: desc }]
+    ) {
+      id
+      status
+      message
+      phone
+      claimantName
+      rejectReason
+      createdAt
+      evidence {
+        url
+      }
+      claimant {
+        id
+      }
+    }
+  }
+`;
+
+export interface GetAnimalClaimsResponse {
+  animalClaims: AnimalClaim[];
+}
+
+export const CREATE_ANIMAL_CLAIM_MUTATION = gql`
+  mutation CreateAnimalClaim($data: AnimalClaimCreateInput!) {
+    createAnimalClaim(data: $data) {
+      id
+      status
+    }
+  }
+`;
+
+export interface CreateAnimalClaimVariables {
+  data: {
+    animal: { connect: { id: string } };
+    message: string;
+    phone: string;
+    evidence?: { upload: File };
+  };
+}
+
+export interface AnimalClaimResult {
+  success: boolean;
+  message: string;
+  animalSlug: string | null;
+}
+
+export const RESOLVE_ANIMAL_CLAIM_MUTATION = gql`
+  mutation ResolveAnimalClaim($claimId: ID!, $approve: Boolean!, $reason: String) {
+    resolveAnimalClaim(claimId: $claimId, approve: $approve, reason: $reason) {
+      success
+      message
+      animalSlug
+    }
+  }
+`;
+
+export const CANCEL_ANIMAL_CLAIM_MUTATION = gql`
+  mutation CancelAnimalClaim($claimId: ID!) {
+    cancelAnimalClaim(claimId: $claimId) {
+      success
+      message
+      animalSlug
     }
   }
 `;

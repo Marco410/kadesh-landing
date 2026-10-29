@@ -20,6 +20,8 @@ export interface AnimalDetail {
   sourceUrl?: string | null;
   reportedBy?: string | null;
   animal_viewsCount?: number | null;
+  /** Si un admin lo unió con otro reporte del mismo animal, el principal. */
+  duplicateOf?: { id: string; slug?: string | null } | null;
   animal_breed: {
     id?: string;
     breed: string;

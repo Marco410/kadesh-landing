@@ -4,14 +4,18 @@ import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Alert02Icon,
+  BubbleChatIcon,
   CheckmarkCircle02Icon,
+  Link04Icon,
   Notification03Icon,
   NotificationOff01Icon,
+  SearchVisualIcon,
+  UserCheck01Icon,
 } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
 import { cn } from 'kadesh/utils/cn';
 import { Bone, SkeletonRegion, boneWidth } from 'kadesh/components/ui/skeleton';
-import { NOTIFICATION_TONE_COLOR } from './constants';
+import { ANIMAL_REPORT_NOTIFICATION_TYPE as REPORT_TYPE, NOTIFICATION_TONE_COLOR } from './constants';
 import {
   appPathFromUrl,
   formatNotificationTime,
@@ -26,6 +30,17 @@ const TONE_ICON = {
   lost: Alert02Icon,
   brand: Notification03Icon,
 } as const;
+
+/** Íconos propios de los avisos de un reporte; el resto usa el del tono. */
+const TYPE_ICON: Record<string, typeof Notification03Icon> = {
+  [REPORT_TYPE.COMMENTED]: BubbleChatIcon,
+  [REPORT_TYPE.DUPLICATE_REPORTED]: BubbleChatIcon,
+  [REPORT_TYPE.POSSIBLE_MATCH]: SearchVisualIcon,
+  [REPORT_TYPE.CLAIM_REQUESTED]: UserCheck01Icon,
+  [REPORT_TYPE.CLAIM_APPROVED]: UserCheck01Icon,
+  [REPORT_TYPE.CLAIM_REJECTED]: UserCheck01Icon,
+  [REPORT_TYPE.MERGED]: Link04Icon,
+};
 
 interface NotificationListProps {
   notifications: AppNotification[];
@@ -59,7 +74,7 @@ function NotificationItem({
         style={{ color, backgroundColor: `color-mix(in srgb, ${color} 14%, transparent)` }}
         aria-hidden="true"
       >
-        <HugeiconsIcon icon={TONE_ICON[tone]} size={20} strokeWidth={1.5} />
+        <HugeiconsIcon icon={TYPE_ICON[notification.type] ?? TONE_ICON[tone]} size={20} strokeWidth={1.5} />
       </span>
       <span className="min-w-0 flex-1">
         <span

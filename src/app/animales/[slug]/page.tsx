@@ -31,6 +31,8 @@ import {
   AnimalInfoSection,
   LogTimeline,
   AnimalCommentsSection,
+  AnimalClaimsPanel,
+  ClaimReportButton,
   ShareAnimalButton,
   NearbyVeterinariesRow,
 } from "kadesh/components/animals/detail";
@@ -70,9 +72,15 @@ export default function AnimalDetailPage() {
   useAnimalView(animal?.id || "");
 
   useEffect(() => {
+    // Un reporte unido a otro manda al principal (el servidor ya redirige; esto cubre la caché).
+    const main = animal?.duplicateOf;
+    if (main) {
+      router.replace(Routes.animals.detail(main.slug || main.id));
+      return;
+    }
     if (!animal?.slug || animal.slug === animalKey) return;
     router.replace(Routes.animals.detail(animal.slug));
-  }, [animal?.slug, animalKey, router]);
+  }, [animal?.duplicateOf, animal?.slug, animalKey, router]);
 
   if (loading) {
     return (
@@ -220,6 +228,14 @@ export default function AnimalDetailPage() {
               </div>
             )}
           </header>
+
+          <AnimalClaimsPanel
+            animal={animal}
+            onResolved={() => {
+              void refetch();
+            }}
+          />
+          <ClaimReportButton animal={animal} status={status} />
 
           <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(17rem,1fr)_minmax(0,1.2fr)] lg:grid-rows-[auto_minmax(0,1fr)]">
             <div className="min-h-0 overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-white/10 dark:bg-night-raised lg:row-span-2">

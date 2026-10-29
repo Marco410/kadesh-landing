@@ -13,6 +13,10 @@ const ANIMAL_SHARE_QUERY = `
       age
       color
       size
+      duplicateOf {
+        id
+        slug
+      }
       animal_breed {
         breed
         animal_type {
@@ -45,6 +49,7 @@ export type AnimalShareData = {
   age?: string | null;
   color?: string | null;
   size?: string | null;
+  duplicateOf?: { id: string; slug?: string | null } | null;
   animal_breed?: {
     breed?: string | null;
     animal_type?: { name?: string | null } | null;

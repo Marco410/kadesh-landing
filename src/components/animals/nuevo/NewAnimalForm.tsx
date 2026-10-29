@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMutation, useLazyQuery } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
 import {
   CREATE_ANIMAL_MUTATION,
   CREATE_ANIMAL_LOG_MUTATION,
   CREATE_ANIMAL_MULTIMEDIA_MUTATION,
-  FIND_ANIMAL_REPORT_DUPLICATES,
+  type FindSimilarReportsVariables,
+  type SimilarReport,
 } from 'kadesh/components/animals/queries';
+import { useSimilarReports } from 'kadesh/components/animals/nuevo/hooks/useSimilarReports';
+import SimilarReportsNotice from 'kadesh/components/animals/nuevo/SimilarReportsNotice';
+import SimilarReportsSheet from 'kadesh/components/animals/nuevo/SimilarReportsSheet';
 import { useUser } from 'kadesh/utils/UserContext';
 import LocationPicker from 'kadesh/components/animals/nuevo/LocationPicker';
 import AnimalNameInput from 'kadesh/components/animals/nuevo/AnimalNameInput';
@@ -86,6 +90,29 @@ function todayKey(date = new Date()) {
 }
 
 type DateMode = 'today' | 'yesterday' | 'other';
+
+/** Día (sin hora) de la fecha elegida, para comparar con otros reportes sin que cambie cada segundo. */
+function lostDayIso(mode: DateMode, otherDate: string) {
+  const day =
+    mode === 'today'
+      ? todayKey()
+      : mode === 'yesterday'
+        ? todayKey(new Date(Date.now() - 24 * 60 * 60 * 1000))
+        : otherDate;
+  if (!day) return null;
+  const date = new Date(`${day}T12:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+/** Abre la revisión al publicar: parecido «muy probable», misma publicación o mismo teléfono. */
+function mustReviewBeforePublish(reports: SimilarReport[]) {
+  return reports.some(
+    (report) =>
+      report.level === 'likely' ||
+      report.reasons.includes('same_source') ||
+      report.reasons.includes('same_phone')
+  );
+}
 
 function buildLostDate(mode: DateMode, otherDate: string, otherTime: string) {
   const now = new Date();
@@ -206,8 +233,8 @@ export default function NewAnimalForm({
   const [dateMode, setDateMode] = useState<DateMode>('today');
   const [otherDate, setOtherDate] = useState('');
   const [otherTime, setOtherTime] = useState('');
-  const [duplicates, setDuplicates] = useState<Array<{ id: string; name: string; url: string }>>([]);
-  const skipDuplicateCheck = useRef(false);
+  const [similarOpen, setSimilarOpen] = useState(false);
+  const skipSimilarCheck = useRef(false);
   const [images, setImages] = useState<ImagePreview[]>([]);
   const [errors, setErrors] = useState<FieldErrors>({});
 
@@ -443,9 +470,62 @@ export default function NewAnimalForm({
   const [createAnimal] = useMutation(CREATE_ANIMAL_MUTATION);
   const [createAnimalLog] = useMutation(CREATE_ANIMAL_LOG_MUTATION);
   const [createAnimalMultimedias] = useMutation(CREATE_ANIMAL_MULTIMEDIA_MUTATION);
-  const [findDuplicates] = useLazyQuery<
-    { findAnimalReportDuplicates: Array<{ id: string; name: string; url: string }> }
-  >(FIND_ANIMAL_REPORT_DUPLICATES, { fetchPolicy: 'network-only' });
+
+  // Revisión de reportes parecidos: en el paso «Dónde», en cuanto hay ubicación.
+  const contactDigits = useMemo(() => {
+    const phone = normalizeMxPhone(contactNumber);
+    return phone.ok ? phone.digits : null;
+  }, [contactNumber]);
+  const similarInput = useMemo<FindSimilarReportsVariables | null>(() => {
+    if (step !== STEPS.length - 1 || !animalTypeId || isResolvingPlace) return null;
+    const latNum = Number.parseFloat(lat);
+    const lngNum = Number.parseFloat(lng);
+    if (!Number.isFinite(latNum) || !Number.isFinite(lngNum)) return null;
+    return {
+      animalTypeId,
+      name: name.trim() || 'Sin nombre',
+      status,
+      sex,
+      color: color.trim() || null,
+      breedId: animalBreedId || null,
+      description: physicalDescription.trim() || null,
+      lat: latNum,
+      lng: lngNum,
+      phone: contactDigits,
+      sourceUrl: fromSocial ? sourceUrl.trim() || null : null,
+      lostDate: lostDayIso(dateMode, otherDate),
+    };
+  }, [
+    step,
+    animalTypeId,
+    isResolvingPlace,
+    lat,
+    lng,
+    name,
+    status,
+    sex,
+    color,
+    animalBreedId,
+    physicalDescription,
+    contactDigits,
+    fromSocial,
+    sourceUrl,
+    dateMode,
+    otherDate,
+  ]);
+  const similar = useSimilarReports(similarInput);
+
+  const openSimilarReview = () => {
+    similar.markReviewed();
+    setSimilarOpen(true);
+  };
+
+  const leaveForReport = async (report: SimilarReport, anchor?: string) => {
+    setSimilarOpen(false);
+    if (user?.id) await clearAnimalReportDraft(user.id);
+    const path = Routes.animals.detail(report.slug || report.id);
+    router.push(anchor ? `${path}#${anchor}` : path);
+  };
 
   const addImages = async (files: File[]) => {
     const incoming = Array.from(files);
@@ -650,23 +730,22 @@ export default function NewAnimalForm({
         return;
       }
 
-      if (!skipDuplicateCheck.current) {
-        const { data: duplicateData } = await findDuplicates({
-          variables: {
-            phone: phone.digits,
-            animalTypeId,
-            name: name.trim() || 'Sin nombre',
-            sourceUrl: fromSocial ? sourceUrl.trim() || null : null,
-          },
-        });
-        const matches = duplicateData?.findAnimalReportDuplicates ?? [];
-        if (matches.length) {
-          setDuplicates(matches);
+      let similarReports: SimilarReport[] = similar.reports;
+      if (!skipSimilarCheck.current) {
+        try {
+          similarReports = await similar.ensure();
+        } catch (error) {
+          // Si la revisión falla no se frena la publicación.
+          console.error('[animal] no se pudieron revisar reportes parecidos', error);
+        }
+        if (!similar.reviewed && mustReviewBeforePublish(similarReports)) {
+          openSimilarReview();
           setLoading(false);
           return;
         }
       }
-      skipDuplicateCheck.current = false;
+      skipSimilarCheck.current = false;
+      const dismissed = similarReports.filter((report) => report.kind === 'duplicate' && !report.isMine);
 
       const { data: animalData } = await createAnimal({
         variables: {
@@ -684,6 +763,14 @@ export default function NewAnimalForm({
             animal_type: { connect: { id: animalTypeId } },
             animal_breed: { connect: { id: animalBreedId } },
             user: { connect: { id: user.id } },
+            // Pista para que un admin decida si unirlo: los parecidos que vio y descartó.
+            ...(dismissed.length
+              ? {
+                  duplicateCheck: {
+                    candidates: dismissed.map((report) => ({ id: report.id, score: report.score })),
+                  },
+                }
+              : {}),
           },
         },
       });
@@ -756,6 +843,7 @@ export default function NewAnimalForm({
   }
 
   return (
+    <>
     <form
       ref={formRef}
       onSubmit={(event) => {
@@ -1051,6 +1139,8 @@ export default function NewAnimalForm({
                 ) : null}
               </div>
 
+              <SimilarReportsNotice reports={similar.reports} status={status} onReview={openSimilarReview} />
+
               <div>
                 <p className="mb-2 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
                   ¿Es tu mascota?
@@ -1197,31 +1287,6 @@ export default function NewAnimalForm({
       </div>
 
       <div className="shrink-0 border-t border-[#e6e9ef] bg-white px-4 py-3 dark:border-white/10 dark:bg-night-raised sm:px-6">
-        {duplicates.length > 0 && (
-          <div className="mx-auto mb-3 max-w-2xl rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-[#121212] dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-[#eef1f6]">
-            <p className="font-semibold">Parece que este reporte ya existe</p>
-            <ul className="mt-2 space-y-1">
-              {duplicates.map((item) => (
-                <li key={item.id}>
-                  <a href={item.url} className="font-semibold text-kadesh underline" target="_blank" rel="noopener noreferrer">
-                    {item.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              onClick={() => {
-                skipDuplicateCheck.current = true;
-                setDuplicates([]);
-                void handleSubmit();
-              }}
-              className="mt-3 inline-flex min-h-11 items-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white"
-            >
-              Publicar de todos modos
-            </button>
-          </div>
-        )}
         <div data-enter="actions" className="mx-auto flex max-w-2xl gap-3">
           <motion.button
             type="button"
@@ -1248,5 +1313,21 @@ export default function NewAnimalForm({
         </div>
       </div>
     </form>
+    <SimilarReportsSheet
+      isOpen={similarOpen}
+      onClose={() => setSimilarOpen(false)}
+      reports={similar.reports}
+      status={status}
+      isOwnPet={isOwnPet}
+      defaultPhone={isOwnPet ? contactNumber : user?.phone ?? ''}
+      publishing={loading}
+      onPublishAnyway={() => {
+        setSimilarOpen(false);
+        skipSimilarCheck.current = true;
+        void handleSubmit();
+      }}
+      onLeftReport={(report, anchor) => void leaveForReport(report, anchor)}
+    />
+    </>
   );
 }

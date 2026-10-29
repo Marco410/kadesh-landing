@@ -5,6 +5,7 @@ export { default as AuthorCard } from './AuthorCard';
 export { default as Autocomplete } from './Autocomplete';
 export type { AutocompleteOption } from './Autocomplete';
 export { default as ConfirmModal } from './ConfirmModal';
+export { default as Sheet } from './Sheet';
 export { default as UserInfo } from './UserInfo';
 export { default as DirectoryRadiusChips } from './DirectoryRadiusChips';
 export { default as DirectoryPagination } from './DirectoryPagination';

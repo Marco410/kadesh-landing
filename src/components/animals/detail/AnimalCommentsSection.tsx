@@ -18,6 +18,18 @@ interface AnimalCommentsSectionProps {
   animal: AnimalDetail;
 }
 
+/** Comentarios que vienen de la revisión de reportes parecidos. */
+const KIND_BADGES: Record<string, { label: string; className: string }> = {
+  duplicate_report: {
+    label: 'También lo reportó',
+    className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200',
+  },
+  possible_match: {
+    label: 'Posible coincidencia',
+    className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200',
+  },
+};
+
 export default function AnimalCommentsSection({ animal }: AnimalCommentsSectionProps) {
   const {
     comments,
@@ -55,7 +67,7 @@ export default function AnimalCommentsSection({ animal }: AnimalCommentsSectionP
 
   return (
     <section
-      id="comments-section"
+      id="comentarios"
       className="scroll-mt-20 rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised"
     >
       <h2 className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
@@ -153,11 +165,18 @@ export default function AnimalCommentsSection({ animal }: AnimalCommentsSectionP
                           className="object-contain"
                         />
                       )}
-                      {commentItem.user?.id === animal?.user?.id && (
+                      {Boolean(animal?.user?.id) && commentItem.user?.id === animal?.user?.id && (
                         <span className="rounded-full bg-kadesh-50 px-2 py-0.5 text-xs font-semibold text-kadesh dark:bg-kadesh/20">
                           Quien reportó
                         </span>
                       )}
+                      {commentItem.kind && KIND_BADGES[commentItem.kind] ? (
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${KIND_BADGES[commentItem.kind].className}`}
+                        >
+                          {KIND_BADGES[commentItem.kind].label}
+                        </span>
+                      ) : null}
                     </div>
                     <p className="mt-1 whitespace-pre-wrap leading-relaxed text-[#121212] dark:text-[#eef1f6]">
                       {commentItem.comment}

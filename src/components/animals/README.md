@@ -28,7 +28,28 @@ Movimiento (GSAP, `HOME_EASE`; nada si el sistema pide menos movimiento):
 
 1. **Foto y tipo** — fotos primero (es lo que reconoce a alguien): se arrastran o se eligen varias a la vez, hasta 3. Se reordenan arrastrando: la primera es la **portada** (`order: 1`) y es la que se ve en el listado y en la ficha. Tipo en chips, nombre. «No tiene nombre» va marcado si el estatus es encontrado / abandonado / rescatado.
 2. **Cómo reconocerlo** — tamaño y edad en chips, color, sexo, raza y **señas particulares** (obligatorias). **No sé** busca mestizo/sin raza; si no existe, pide la más cercana. Tipo, nombre y raza (con **No sé**) se reutilizan en el modal de reservar cita; el copy y el control deben coincidir.
-3. **Dónde** — estatus (prellenado con `?status=`): Perdido, Encontrado, En adopción, Abandonado y Rescatado siempre visibles, sin Más. **Hoy / Ayer / Otra fecha**. Otra fecha es solo el día; la hora es opcional y, si no va, se guarda a las 12:00. No hay fechas futuras. El mapa abre en la ubicación ya concedida o, si no hay, en Morelia. La búsqueda prioriza esa zona. Si ahí no hay coincidencias, se repite en todo México. Alcaldías y municipios (Iztapalapa, Coyoacán, Huixquilucan) cuentan como ciudad. **¿Es tu mascota?** Si la respuesta es no, el teléfono queda vacío y se pide el del dueño; hay un segundo teléfono opcional. El enlace de la publicación solo aparece si marcan que el registro viene de redes sociales. Si ya existe el mismo enlace, o el mismo teléfono con tipo y nombre parecido en 30 días, se avisa y se puede publicar igual.
+3. **Dónde** — estatus (prellenado con `?status=`): Perdido, Encontrado, En adopción, Abandonado y Rescatado siempre visibles, sin Más. **Hoy / Ayer / Otra fecha**. Otra fecha es solo el día; la hora es opcional y, si no va, se guarda a las 12:00. No hay fechas futuras. El mapa abre en la ubicación ya concedida o, si no hay, en Morelia. La búsqueda prioriza esa zona. Si ahí no hay coincidencias, se repite en todo México. Alcaldías y municipios (Iztapalapa, Coyoacán, Huixquilucan) cuentan como ciudad. **¿Es tu mascota?** Si la respuesta es no, el teléfono queda vacío y se pide el del dueño; hay un segundo teléfono opcional. El enlace de la publicación solo aparece si marcan que el registro viene de redes sociales. En este paso se revisa si ya hay un reporte parecido (ver «Reportes parecidos»).
+
+### Reportes parecidos (2026-10-28)
+
+En cuanto hay ubicación en el paso **Dónde**, el formulario consulta `findAnimalReportDuplicates`.
+- **Cuándo consulta:** se espera 600 ms después del último cambio (`useSimilarReports`). Se vuelve a consultar si cambian el pin, el estatus, el nombre, el tipo, las señas, el teléfono o el enlace.
+- **Qué manda:** tipo, nombre, estatus, sexo, color, raza, señas, lat/lng, teléfono, enlace y el día.
+- **Qué revisa el backend:** a 5 km o menos, perdidos de los últimos 90 días y el resto de 30. Califica nombre (sin acentos ni mayúsculas, con errores de dedo), cercanía, sexo, color, raza, señas y fecha. **No compara la ciudad**, porque el mapa da colonias distintas para puntos a 500 m.
+- **Dos tipos de resultado:**
+  - `duplicate`: el mismo animal ya reportado, con el mismo estatus.
+  - `match`: el otro lado de la historia (perdido ↔ encontrado, rescatado o abandonado).
+- **Niveles:** `likely` («Muy parecido», 70+) y `possible` (45+).
+- **En el formulario:**
+  - Si hay resultados, aparece un aviso que no frena (`SimilarReportsNotice`) con **Revisar**.
+  - Al dar **Publicar**, la revisión (`SimilarReportsSheet`) se abre sola si hay uno `likely`, la misma publicación o el mismo teléfono, y la persona aún no la vio.
+- **Acciones por tarjeta:**
+  - **Es el mismo: dejar comentario**: comentario `duplicate_report`; le avisa a quien lo reportó.
+  - **Es mi mascota: pedir el reporte**: solicitud `AnimalClaim`; solo aparece si dijo que es su mascota, reporta perdido, y el otro lo subió la comunidad o es un encontrado.
+  - En coincidencias: **Es el mío: avisar** / **Es este: avisar a su familia** (comentario `possible_match`). No impide publicar el propio reporte.
+  - Al comentar o pedir el reporte se borra el borrador y se abre la ficha de ese reporte.
+- **Reportes propios:** salen como «Ya lo reportaste tú» (`isMine`), sin acciones.
+- **Publicar de todos modos:** manda `duplicateCheck` con los parecidos descartados, como pista para que un admin los una.
 
 Lat/lng, estado y país no se muestran. La ciudad del mapa es el municipio, no la colonia. Si quien reporta editó la dirección, el título y el slug usan ese texto; la colonia del mapa queda solo como dato interno y no pisa la dirección ya escrita. Sin ciudad, el pin igual se publica: el servidor la completa.
 
@@ -49,6 +70,17 @@ Misma familia que la ficha de veterinaria: `pt-[72px]`, `night` / `night-raised`
 El trabajo es reconocer y actuar **sin recorrer la página**. En escritorio la ficha es un workspace de viewport: foto a la izquierda (llena la altura), datos compactos arriba a la derecha, historial y mapa abajo a la derecha. Encabezado: volver, nombre, chip de estatus, **Cómo llegar** y **Llamar**. La foto es el héroe de reconocimiento, sin halo de 5px; las miniaturas van encima de la foto. No se muestran coordenadas ni notas placeholder (`Sin información adicional`). Cómo llegar en el mapa sigue el pin seleccionado; el del encabezado va al último registro. Comentarios quedan debajo; no empujan el mapa fuera de pantalla.
 
 El dueño del reporte (`animal.user`) puede venir `null` para visitantes sin sesión: Keystone filtra el User. La ficha **no debe crashear** — muestra «Usuario de KADESH» y oculta Editar / acciones de dueño. No asumas `user` en el render.
+
+**Comentarios:** la sección tiene el ancla `#comentarios`, que es a donde llevan las notificaciones. Los comentarios `duplicate_report` llevan la insignia «También lo reportó» y los `possible_match`, «Posible coincidencia».
+
+**Pedir el reporte («Es mi mascota»):**
+- `ClaimReportButton` aparece a quien no puede editar, si el reporte lo subió la comunidad o es un encontrado, rescatado o abandonado.
+- Sin sesión abre `AuthGateModal` y vuelve con `?reclamar=1`, que abre la solicitud sola.
+- Con una solicitud pendiente propia muestra su estado y **Cancelar solicitud**.
+- **Quien atiende el reporte** ve `AnimalClaimsPanel` con las pendientes: nombre, mensaje, teléfono (**Llamar**) y la foto. Si la notificación trae `?reclamo=<id>`, esa solicitud se resalta.
+- **Aprobar** pasa el reporte a su nombre, con su teléfono como principal, y ya no lo puede editar quien lo subió. **Rechazar** le avisa.
+
+**Reportes unidos:** si un admin pone `duplicateOf` (Admin UI de Keystone), la ficha del repetido redirige con 308 a la principal (`layout.tsx`), y `useAnimalDetail` hace lo mismo del lado del cliente. Deja de salir en el listado y en el inicio (`getNearbyAnimals`).
 
 ## Mapa
 

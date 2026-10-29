@@ -11,6 +11,17 @@ export const MAX_DAILY_ALERTS = 5;
 
 export const NEARBY_ANIMAL_TYPE = 'animal.nearby';
 
+/** Avisos de un reporte (kadesh-back `models/Notification/constants.ts`). */
+export const ANIMAL_REPORT_NOTIFICATION_TYPE = {
+  COMMENTED: 'animal.commented',
+  DUPLICATE_REPORTED: 'animal.duplicate_reported',
+  POSSIBLE_MATCH: 'animal.possible_match',
+  CLAIM_REQUESTED: 'animal.claim_requested',
+  CLAIM_APPROVED: 'animal.claim_approved',
+  CLAIM_REJECTED: 'animal.claim_rejected',
+  MERGED: 'animal.merged',
+} as const;
+
 export const NOTIFICATION_TONE_COLOR = {
   found: '#10b981',
   lost: '#dc2626',

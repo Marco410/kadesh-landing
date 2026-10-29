@@ -15,6 +15,19 @@ Formato:
 
 ---
 
+## 2026-10-29 · chore: migrar el hosting de Vercel a Cloudflare Workers (OpenNext)
+- Rama: migracion-cloudflare
+- Qué cambió y por qué: dejar de pagar el Fast Origin Transfer de Vercel. La app se empaqueta con `@opennextjs/cloudflare` y corre como el worker `kadesh-pet` en `pet.kadesh.com.mx`.
+  - `next` 15.5.25 → 15.5.28 (el adaptador lo pide en la rama 15) y `wrangler` en dev.
+  - Fuera `@vercel/analytics` y `@vercel/speed-insights`, con `<Analytics />` y `<SpeedInsights />`.
+  - Caché ISR en R2 (`kadesh-pet-cache`) y cola de revalidación en un Durable Object, porque blog, home y OG usan `revalidate`.
+  - Scripts `preview`, `deploy`, `upload` y `cf-typegen`.
+  - Verificado con `pnpm run preview`: todas las rutas probadas responden bien y `/comunidad` da 308 a `/conocenos`. Worker de 3.7 MB en gzip (límite: 10 MB).
+  - Aún no se despliega ni se crean recursos en Cloudflare.
+- Archivos: package.json, pnpm-lock.yaml, src/app/ClientProviders.tsx, open-next.config.ts (nuevo), wrangler.jsonc (nuevo), .gitignore, CLAUDE.md
+- GraphQL: ninguna
+- Móvil: no aplica (hosting/infra de la web y analítica de Vercel)
+
 ## 2026-10-28 · feat: reportes parecidos, comentar en vez de duplicar y pedir el reporte
 - Rama: feat/reportes-duplicados (aquí y en kadesh-back)
 - Qué cambió y por qué: tres personas publicaron al mismo perro (Chaneque, Morelia) y la revisión anterior (mismo enlace o mismo teléfono + nombre) no lo detectó.

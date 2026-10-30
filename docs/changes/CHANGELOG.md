@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-10-30 · chore: Preview URLs del Worker
+- Rama: migracion-cloudflare
+- Qué cambió y por qué: con `"preview_urls": true`, cada versión subida (`pnpm run upload`) tiene su propia URL de prueba antes de promoverla. `"workers_dev": false` queda explícito: el sitio solo se sirve en `pet.kadesh.com.mx` y wrangler ya no avisa del valor por defecto. `"keep_names": false` se mantiene.
+- Archivos: wrangler.jsonc
+- GraphQL: ninguna
+- Móvil: no aplica (configuración de hosting de la web)
+
 ## 2026-10-29 · chore: migrar el hosting de Vercel a Cloudflare Workers (OpenNext)
 - Rama: migracion-cloudflare
 - Qué cambió y por qué: dejar de pagar el Fast Origin Transfer de Vercel. La app se empaqueta con `@opennextjs/cloudflare` y corre como el worker `kadesh-pet` en `pet.kadesh.com.mx`.

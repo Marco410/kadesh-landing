@@ -1,0 +1,53 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kadesh-pet",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "keep_names": false,
+  // Sin URL pública en workers.dev; cada versión subida tiene su propia URL de preview.
+  "workers_dev": false,
+  "preview_urls": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      // Lo usa OpenNext para llamarse a sí mismo (p. ej. revalidaciones).
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "kadesh-pet"
+    }
+  ],
+  "r2_buckets": [
+    {
+      // Caché incremental (ISR) de OpenNext.
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "kadesh-pet-cache"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        // Cola de revalidación de OpenNext.
+        "name": "NEXT_CACHE_DO_QUEUE",
+        "class_name": "DOQueueHandler"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DOQueueHandler"]
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "pet.kadesh.com.mx",
+      "custom_domain": true
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

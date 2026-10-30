@@ -16,7 +16,16 @@ pnpm dev           # start dev server (Turbopack) at http://localhost:3000
 pnpm build         # production build
 pnpm start         # run production build
 pnpm lint          # next lint
+
+# Cloudflare Workers (OpenNext)
+pnpm run preview   # OpenNext build + local Workers preview (wrangler dev, local R2/DO simulators)
+pnpm run deploy    # OpenNext build + deploy to Cloudflare (production)
+pnpm run upload    # OpenNext build + upload a new version without promoting it
+pnpm cf-typegen    # regenerate cloudflare-env.d.ts from wrangler.jsonc bindings
+pnpm wrangler deploy --dry-run --outdir /tmp/cf-dry   # check worker size (gzip must stay under 10 MB)
 ```
+
+Hosting is Cloudflare Workers via `@opennextjs/cloudflare` (not Vercel). Config lives in `open-next.config.ts` (R2 incremental cache + Durable Object revalidation queue, needed because blog/home/OG routes use `revalidate`) and `wrangler.jsonc` (worker `kadesh-pet`, custom domain `pet.kadesh.com.mx`, R2 bucket `kadesh-pet-cache`). `NEXT_PUBLIC_*` vars are inlined at build time (and OpenNext also copies the `.env*` values into the worker), so the build must see production values: `.env.local` overrides `.env.production`, so deploying from a dev machine whose `.env.local` points at `localhost` ships that. Use shell env vars or a `.env.production.local` (both take precedence), or build in CI with the real values. The build uses webpack (Next 15 default); if upgrading to Next 16, add `--webpack` to `buildCommand` in `open-next.config.ts`, since a Turbopack build pushes the worker over Cloudflare's 10 MB compressed limit.
 
 There is no test suite configured in this repo currently (no test files, no test runner in package.json), despite `.cursor/rules/basic.mdc` mentioning Playwright as an aspiration.
 
@@ -53,7 +62,7 @@ All internal imports use the `kadesh/*` alias, mapped to `./src/*` in `tsconfig.
 
 ### Provider composition
 
-`app/ClientProviders.tsx` nests, outermost to innermost: `ThemeProvider` → `HeroUIProvider` → `ApolloProviderWrapper` → `UserProvider`, then renders children plus a themed `Toaster` (from `sileo`), Vercel `SpeedInsights`, and `Analytics`. When adding a new global provider, place it inside this stack in the same order-of-concern (theme → UI kit → data → auth).
+`app/ClientProviders.tsx` nests, outermost to innermost: `ThemeProvider` → `HeroUIProvider` → `ApolloProviderWrapper` → `UserProvider`, then renders children plus the WhatsApp help button and a themed `Toaster` (from `sileo`). When adding a new global provider, place it inside this stack in the same order-of-concern (theme → UI kit → data → auth).
 
 ### Auth
 

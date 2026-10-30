@@ -12,7 +12,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "ci": "pnpm lint && pnpm build"
+    "ci": "pnpm lint && pnpm build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
     "@apollo/client": "^3.13.8",
@@ -29,11 +33,10 @@
     "@internationalized/date": "^3.10.0",
     "@keystone-6/document-renderer": "^1.1.2",
     "@maplibre/maplibre-gl-leaflet": "0.1.4",
+    "@opennextjs/cloudflare": "^1.20.14",
     "@react-google-maps/api": "^2.20.7",
     "@stripe/react-stripe-js": "^5.6.1",
     "@stripe/stripe-js": "^8.9.0",
-    "@vercel/analytics": "^1.5.0",
-    "@vercel/speed-insights": "^1.2.0",
     "apollo-upload-client": "^18.0.1",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.19.1",
@@ -42,7 +45,7 @@
     "heic-to": "1.5.2",
     "leaflet": "1.9.4",
     "maplibre-gl": "5",
-    "next": "15.5.25",
+    "next": "15.5.28",
     "next-themes": "^0.4.6",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
@@ -62,7 +65,8 @@
     "autoprefixer": "^10.4.22",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.156.0"
   },
   "browserslist": [
     "chrome >= 111",

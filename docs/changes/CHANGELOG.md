@@ -22,8 +22,11 @@ Formato:
   - Fuera `@vercel/analytics` y `@vercel/speed-insights`, con `<Analytics />` y `<SpeedInsights />`.
   - Caché ISR en R2 (`kadesh-pet-cache`) y cola de revalidación en un Durable Object, porque blog, home y OG usan `revalidate`.
   - Scripts `preview`, `deploy`, `upload` y `cf-typegen`.
+  - `"keep_names": false` en `wrangler.jsonc`, para que esbuild no envuelva las funciones con `__name(...)` al empaquetar el worker.
   - Verificado con `pnpm run preview`: todas las rutas probadas responden bien y `/comunidad` da 308 a `/conocenos`. Worker de 3.7 MB en gzip (límite: 10 MB).
-  - Aún no se despliega ni se crean recursos en Cloudflare.
+  - Primero se probó en `workers.dev` sin el bloque `routes`. Luego se desplegó con el dominio.
+  - Desde el 2026-10-29, `pet.kadesh.com.mx` lo sirve el Worker. El deploy cambió los registros A hacia Vercel (`64.29.17.65` y `216.198.79.1`) por la conexión al Worker, y `workers.dev` quedó apagado. Para regresar a Vercel: quitar el dominio del Worker y volver a crear esos registros A, solo DNS.
+  - Las variables se bajaron de Vercel a `.env.production.local`, solo las `NEXT_PUBLIC_*`. Con `.env.production`, `.env.local` le gana y el build usa `localhost`.
 - Archivos: package.json, pnpm-lock.yaml, src/app/ClientProviders.tsx, open-next.config.ts (nuevo), wrangler.jsonc (nuevo), .gitignore, CLAUDE.md
 - GraphQL: ninguna
 - Móvil: no aplica (hosting/infra de la web y analítica de Vercel)

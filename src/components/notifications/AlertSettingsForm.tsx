@@ -105,7 +105,7 @@ export default function AlertSettingsForm() {
         title: form.enabled ? 'Alertas activadas' : 'Alertas guardadas',
         description: form.enabled
           ? `Te avisaremos ${channels} de mascotas perdidas o encontradas a ${form.radiusKm} km.${
-              onlyZone ? ' Los demás avisos por WhatsApp los eliges en Notificaciones.' : ''
+              onlyZone ? ' Los demás avisos por WhatsApp los eliges en Ajustes de avisos.' : ''
             }`
           : 'No te enviaremos alertas de zona.',
       });
@@ -255,10 +255,10 @@ export default function AlertSettingsForm() {
         <p className="text-[13px] text-dash-muted">
           Los demás avisos por WhatsApp (cartilla, comentarios, solicitudes de tus reportes) los eliges en{' '}
           <Link
-            href={Routes.notifications.index}
+            href={Routes.notifications.settings}
             className="font-semibold text-kadesh-700 underline-offset-2 hover:underline dark:text-kadesh-300"
           >
-            Notificaciones
+            Ajustes de avisos
           </Link>
           .
         </p>

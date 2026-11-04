@@ -59,6 +59,15 @@ Barra de **tres círculos** (1 · 2 · 3). El paso listo muestra un check y la l
 
 El borrador se guarda en el navegador (paso, campos y fotos) por usuario. Recargar o volver más tarde retoma donde iba. Se borra al publicar.
 
+**Al publicar** (2026-11):
+- **Candado** (`submittingRef`): un doble clic o un Enter repetido no crea dos reportes.
+- **El botón dice en qué va**, con spinner (sin animación con "reducir movimiento"): "Revisando…", "Publicando…", "Subiendo la foto…" / "Subiendo N fotos…" y "Abriendo tu reporte…". Una barra fina bajo el encabezado y un `role="status"` lo anuncian.
+- Mientras tanto, los campos quedan inertes y atenuados, y "Atrás" y los pasos no responden.
+- **Si sale bien, el botón no se libera**: se queda en "Abriendo tu reporte…" hasta que abre la ficha. `router.push` no espera la navegación; si se liberara, se podría volver a publicar. Si falla, se libera y sale el toast de error.
+- En el teléfono, la ayuda de WhatsApp sube por encima del pie (`data-sticky-actions`; también en edición y en el registro de veterinaria).
+
+Pendiente: si el animal se crea pero fallan las fotos, el error deja publicar otra vez y se crearía un segundo reporte. Habría que llevar a la ficha con un aviso para agregar las fotos ahí.
+
 El mapa del picker no enseña coordenadas ni nombra el proveedor. CTA de posición: **Estoy aquí**.
 
 ## Ficha (`/animales/[slug]`)

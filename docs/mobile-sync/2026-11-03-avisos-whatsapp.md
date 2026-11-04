@@ -10,6 +10,8 @@ feature: notifications
 ## Contexto
 En la web, `/notificaciones` tiene ahora una tarjeta **Avisos por WhatsApp** con un interruptor. Quien lo activa recibe por WhatsApp, además de en la campana y en el push, los avisos importantes de Kadesh Pet: animales perdidos o encontrados cerca, recordatorios de la cartilla, posibles coincidencias, y comentarios y solicitudes de sus reportes. Los manda el backend desde el número de Kadesh, con una plantilla aprobada por Meta por cada tipo de aviso. La app solo tiene que ofrecer el mismo interruptor.
 
+En la web la tarjeta ya no está arriba de la bandeja: vive en su propia pantalla, **Ajustes de avisos**, a la que se llega desde la bandeja. Ahí se ve el estado de WhatsApp y de la zona. En la app ponla donde encaje (por ejemplo, un engrane en la pantalla de notificaciones) y usa el nombre de esa pantalla en los textos que la mencionan; abajo dice «Ajustes de avisos».
+
 ## Qué implementar en la app
 En la pantalla de notificaciones (o en sus ajustes), una tarjeta **Avisos por WhatsApp**:
 - Encabezado con el ícono de WhatsApp (`WhatsappIcon` de `@hugeicons/react-native`, en verde de datos), el título "Avisos por WhatsApp" y un interruptor (`Switch`) a la derecha.
@@ -49,10 +51,10 @@ En la pantalla de notificaciones (o en sus ajustes), una tarjeta **Avisos por Wh
 - **En la pantalla de Alertas de zona**: después del mapa y el radio, una sección **Cómo te avisamos** con dos filas.
   - "Campana y celular · En Notificaciones y en la app de Kadesh Pet, si la tienes." con "✓ Siempre".
   - "WhatsApp · También al {teléfono}." con un interruptor. Sin teléfono, en lugar del interruptor va el botón "Agregar teléfono".
-  - Debajo: "Los demás avisos por WhatsApp (cartilla, comentarios, solicitudes de tus reportes) los eliges en **Notificaciones**."
+  - Debajo: "Los demás avisos por WhatsApp (cartilla, comentarios, solicitudes de tus reportes) los eliges en **Ajustes de avisos**."
   - Con "Recibir alertas" apagado, la sección se ve atenuada.
   - El interruptor de WhatsApp se guarda con el mismo botón **Guardar** de la pantalla.
-  - Si WhatsApp estaba apagado del todo, encenderlo aquí manda `{ whatsappNotifications: true, whatsappMutedTypes: [todos los tipos de Pet menos animal.nearby] }`. Así solo se activan las alertas de zona y no todo de golpe. El toast termina con "Los demás avisos por WhatsApp los eliges en Notificaciones."
+  - Si WhatsApp estaba apagado del todo, encenderlo aquí manda `{ whatsappNotifications: true, whatsappMutedTypes: [todos los tipos de Pet menos animal.nearby] }`. Así solo se activan las alertas de zona y no todo de golpe. El toast termina con "Los demás avisos por WhatsApp los eliges en Ajustes de avisos."
   - Con WhatsApp ya encendido, solo quita o agrega `animal.nearby` en `whatsappMutedTypes`.
 - **Centro de la zona**: además de arrastrar el mapa, tocar un punto lo vuelve el centro. El mapa se desliza hasta ahí; sin animación si el sistema pide reducir movimiento. El texto de ayuda es "Toca un punto del mapa o arrástralo para poner el centro, o usa tu ubicación."
 - Carga: un esqueleto con la forma de la tarjeta. Error al cargar: no se muestra la tarjeta (la bandeja sigue funcionando).

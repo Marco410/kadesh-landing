@@ -68,6 +68,115 @@
   --color-night-raised: #1c2433;
 }
 
+/*
+ * ── Panel con sesión (Mi cuenta: /perfil, /notificaciones) ──────────────────────────────────
+ * Tokens del shell `kadesh/components/app-shell`. Viven en :root / .dark (no dentro de .kd-dash)
+ * para que modales y menús en portal (fuera del shell) también los lean. Neutros cálidos (los
+ * mismos de kadesh-business) y el azul de marca como único acento, derivado de --color-kadesh.
+ * Nada de naranja ni morado (el morado es de Kadesh AI). Ver DESIGN.md → Panel con sesión.
+ */
+:root {
+  --dash-canvas: #f6f5f3;
+  --dash-surface: #ffffff;
+  --dash-surface-2: #f1f0ed;
+  --dash-surface-3: #e7e5e1;
+  --dash-ink: #161616;
+  --dash-soft: #3d3d3d;
+  /* AA (≥ 4.5:1) sobre canvas, surface y surface-2; no sobre surface-3 ni sobre el tintado. */
+  --dash-muted: #6b6b6b;
+  /* No llega a AA: solo decorativo (separadores, deshabilitado). Nunca texto que haya que leer. */
+  --dash-faint: #9a9a9a;
+  --dash-line: rgba(20, 20, 20, 0.08);
+  --dash-line-strong: rgba(20, 20, 20, 0.16);
+  --dash-hover: rgba(20, 20, 20, 0.045);
+  --dash-on-ink: #ffffff;
+  --dash-glass: rgba(255, 255, 255, 0.78);
+  --dash-shadow: 0 1px 2px rgba(20, 20, 20, 0.04), 0 10px 30px -12px rgba(20, 20, 20, 0.1);
+  --dash-shadow-lift: 0 2px 6px rgba(20, 20, 20, 0.06), 0 24px 48px -20px rgba(20, 20, 20, 0.22);
+  --dash-shadow-accent: 0 8px 20px -10px color-mix(in srgb, var(--color-kadesh) 60%, transparent);
+  --dash-shadow-accent-lift: 0 12px 26px -10px color-mix(in srgb, var(--color-kadesh) 72%, transparent);
+  /*
+   * kadesh-400 → 500 → 700. El 500 llega pronto (12 %): así el texto blanco del botón queda
+   * siempre ≥ 4.5:1 (mínimo medido 4.69 en botones md/sm); con el 500 a la mitad bajaba a 3.6.
+   */
+  --dash-grad-accent: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-kadesh) 78%, white) 0%,
+    var(--color-kadesh) 12%,
+    color-mix(in srgb, var(--color-kadesh) 70%, black) 100%
+  );
+  --dash-grad-dark:
+    radial-gradient(120% 140% at 12% -10%, color-mix(in srgb, var(--color-kadesh) 42%, transparent), transparent 55%),
+    radial-gradient(100% 120% at 105% 115%, color-mix(in srgb, var(--color-kadesh) 30%, transparent), transparent 60%),
+    #0a0d14;
+  --dash-grad-tint: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--color-kadesh) 10%, white) 0%,
+    color-mix(in srgb, var(--color-kadesh) 20%, white) 100%
+  );
+  --dash-tint-line: color-mix(in srgb, var(--color-kadesh) 22%, transparent);
+  --dash-canvas-glow:
+    radial-gradient(70% 50% at 100% 0%, color-mix(in srgb, var(--color-kadesh) 10%, transparent), transparent 60%),
+    radial-gradient(60% 40% at 0% 100%, color-mix(in srgb, var(--color-kadesh) 6%, transparent), transparent 60%);
+  /* Brillo de la tarjeta del saludo (Inicio), en la esquina superior derecha. */
+  --dash-card-glow: radial-gradient(60% 120% at 100% 0%, color-mix(in srgb, var(--color-kadesh) 13%, transparent), transparent 60%);
+}
+
+.dark {
+  --dash-canvas: #0b0b0b;
+  --dash-surface: #171717;
+  --dash-surface-2: #222222;
+  --dash-surface-3: #2d2d2d;
+  --dash-ink: #f5f5f5;
+  --dash-soft: #d6d6d6;
+  --dash-muted: #a3a3a3;
+  --dash-faint: #767676;
+  --dash-line: rgba(255, 255, 255, 0.08);
+  --dash-line-strong: rgba(255, 255, 255, 0.16);
+  --dash-hover: rgba(255, 255, 255, 0.05);
+  --dash-on-ink: #121212;
+  --dash-glass: rgba(23, 23, 23, 0.78);
+  --dash-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+  --dash-shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.5), 0 24px 48px -20px rgba(0, 0, 0, 0.9);
+  --dash-shadow-accent: 0 8px 22px -10px color-mix(in srgb, var(--color-kadesh) 48%, transparent);
+  --dash-shadow-accent-lift: 0 12px 28px -10px color-mix(in srgb, var(--color-kadesh) 62%, transparent);
+  --dash-grad-dark:
+    radial-gradient(120% 140% at 12% -10%, color-mix(in srgb, var(--color-kadesh) 36%, transparent), transparent 55%),
+    radial-gradient(100% 120% at 105% 115%, color-mix(in srgb, var(--color-kadesh) 26%, transparent), transparent 60%),
+    #07090e;
+  --dash-grad-tint: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--color-kadesh) 14%, transparent) 0%,
+    color-mix(in srgb, var(--color-kadesh) 6%, transparent) 100%
+  );
+  --dash-tint-line: color-mix(in srgb, var(--color-kadesh) 26%, transparent);
+  --dash-canvas-glow:
+    radial-gradient(70% 50% at 100% 0%, color-mix(in srgb, var(--color-kadesh) 8%, transparent), transparent 60%),
+    radial-gradient(60% 40% at 0% 100%, color-mix(in srgb, var(--color-kadesh) 6%, transparent), transparent 60%);
+  --dash-card-glow: radial-gradient(60% 120% at 100% 0%, color-mix(in srgb, var(--color-kadesh) 16%, transparent), transparent 60%);
+}
+
+@theme inline {
+  --color-dash-canvas: var(--dash-canvas);
+  --color-dash-surface: var(--dash-surface);
+  --color-dash-surface-2: var(--dash-surface-2);
+  --color-dash-surface-3: var(--dash-surface-3);
+  --color-dash-ink: var(--dash-ink);
+  --color-dash-soft: var(--dash-soft);
+  --color-dash-muted: var(--dash-muted);
+  --color-dash-faint: var(--dash-faint);
+  --color-dash-line: var(--dash-line);
+  --color-dash-line-strong: var(--dash-line-strong);
+  --color-dash-hover: var(--dash-hover);
+  --color-dash-on-ink: var(--dash-on-ink);
+  --color-dash-glass: var(--dash-glass);
+  --shadow-dash: var(--dash-shadow);
+  --shadow-dash-lift: var(--dash-shadow-lift);
+  --shadow-dash-accent: var(--dash-shadow-accent);
+  --shadow-dash-accent-lift: var(--dash-shadow-accent-lift);
+  --font-dash: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
 @layer base {
   html {
     scroll-padding-top: 72px;
@@ -603,5 +712,168 @@ html.dark .kadesh-bone::after {
 
   .kadesh-bone::after {
     display: none;
+  }
+}
+
+/* ── Panel con sesión: raíz del shell y piezas sin equivalente en utilidades ─────────────────── */
+/* Inter variable: un solo archivo con todos los pesos (500/600 reales, no simulados). */
+.kd-dash {
+  font-family: var(--font-dash);
+  font-feature-settings: "cv11", "ss01";
+  color: var(--dash-ink);
+  background-color: var(--dash-canvas);
+  background-image: var(--dash-canvas-glow);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+ * Componentes del sitio reutilizados dentro del panel (selectores del alta de animales en la
+ * cartilla, mapas): su modo oscuro usa `bg-night` / `bg-night-raised`, que Tailwind compila como
+ * `var(--color-night…)`. Dentro del panel y de sus modales esos colores pasan a los neutros del
+ * panel, sin tocar los componentes del sitio. Los hex sueltos no cambian (hay que migrarlos).
+ */
+.kd-dash,
+.kd-dash-portal {
+  --color-night: var(--dash-canvas);
+  --color-night-raised: var(--dash-surface);
+}
+
+/* Botones y campos no heredan fuente en todos los navegadores. */
+.kd-dash :where(button, input, select, textarea),
+.kd-dash-portal :where(button, input, select, textarea) {
+  font-family: inherit;
+}
+
+/* El rebote del scroll (y lo que asoma bajo un modal) no muestra el blanco ni el azul noche del sitio. */
+html:has(.kd-dash),
+html:has(.kd-dash) body {
+  background: var(--dash-canvas);
+}
+
+/*
+ * La base del sitio pone `overflow-x: hidden; overflow-y: auto` en html y body. En el body eso lo
+ * vuelve contenedor de scroll (aunque nunca se desplace) y rompe `position: sticky` de la barra
+ * y del menú. En el panel el body vuelve a `visible`; el recorte horizontal lo sigue haciendo el
+ * viewport (el overflow de html se propaga a él).
+ */
+html:has(.kd-dash) body {
+  overflow: visible;
+}
+
+.dash-grad-accent {
+  background-image: var(--dash-grad-accent);
+}
+
+.dash-grad-dark {
+  background: var(--dash-grad-dark);
+}
+
+.dash-grad-tint {
+  background-image: var(--dash-grad-tint);
+}
+
+.dash-glow {
+  background-image: var(--dash-card-glow);
+}
+
+/* Lo que va a medias (periodo en curso, pendientes): rayas diagonales con el color actual. */
+.dash-hatch {
+  background-image: repeating-linear-gradient(-45deg, currentColor 0 2px, transparent 2px 7px);
+}
+
+@keyframes dash-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Entrada escalonada sin JS (filas de listas largas): style={{ "--i": n }}. Tope de 8 pasos. */
+.dash-enter {
+  animation: dash-enter 0.55s cubic-bezier(0.16, 0.84, 0.44, 1) both;
+  animation-delay: calc(min(var(--i, 0), 8) * 50ms);
+}
+
+@keyframes dash-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.dash-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--dash-surface-2) 0%,
+    var(--dash-surface) 50%,
+    var(--dash-surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: dash-shimmer 1.4s ease-in-out infinite;
+}
+
+/* Barras de las gráficas del panel (`charts.tsx`): crecen con la misma curva que todo lo demás. */
+@keyframes dashboard-bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes dashboard-bar-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.dashboard-bar-grow {
+  transform-origin: left center;
+  animation: dashboard-bar-grow 0.55s cubic-bezier(0.16, 0.84, 0.44, 1) both;
+}
+
+.dashboard-bar-grow-y {
+  transform-origin: center bottom;
+  animation: dashboard-bar-grow-y 0.55s cubic-bezier(0.16, 0.84, 0.44, 1) both;
+}
+
+/* Esqueletos (`kadesh/components/ui/skeleton`) dentro del panel: neutros cálidos, no el gris frío del sitio. */
+:root .kd-dash .kadesh-bone {
+  background: var(--dash-surface-2);
+}
+
+:root .kd-dash .kadesh-bone::after {
+  background: linear-gradient(90deg, transparent, var(--dash-surface), transparent);
+}
+
+:root.dark .kd-dash .kadesh-bone::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+}
+
+/* "Reducir movimiento": nada se anima en el panel (framer lo apaga con MotionConfig; esto, el CSS). */
+@media (prefers-reduced-motion: reduce) {
+  .kd-dash *,
+  .kd-dash *::before,
+  .kd-dash *::after,
+  .dash-enter,
+  .dash-shimmer,
+  .dashboard-bar-grow,
+  .dashboard-bar-grow-y {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

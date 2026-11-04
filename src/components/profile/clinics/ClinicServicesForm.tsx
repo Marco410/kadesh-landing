@@ -149,7 +149,7 @@ export default function ClinicServicesForm({
         {[1, 2, 3].map((item) => (
           <div
             key={item}
-            className="h-11 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10"
+            className="h-11 animate-pulse rounded-xl bg-dash-surface-3"
           />
         ))}
       </div>
@@ -161,7 +161,7 @@ export default function ClinicServicesForm({
       <form onSubmit={handleSubmit} className="space-y-3">
         {selected.length > 0 ? (
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#5a5a5a] dark:text-[#9aa3b2]">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-dash-muted">
               En tu ficha ({selected.length})
             </p>
             <ul className="flex flex-wrap gap-2">
@@ -181,7 +181,7 @@ export default function ClinicServicesForm({
             </ul>
           </div>
         ) : (
-          <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="text-sm text-dash-muted">
             Aún no marcas ninguno. No es obligatorio.
           </p>
         )}
@@ -192,7 +192,7 @@ export default function ClinicServicesForm({
             icon={Search01Icon}
             size={18}
             strokeWidth={1.5}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#5a5a5a]"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-dash-muted"
           />
           <input
             type="search"
@@ -203,16 +203,16 @@ export default function ClinicServicesForm({
           />
         </label>
 
-        <ul className="max-h-64 overflow-y-auto rounded-xl border border-[#ececec] dark:border-white/10">
+        <ul className="max-h-64 overflow-y-auto rounded-xl border border-dash-line">
           {filtered.length === 0 ? (
-            <li className="px-3 py-3 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+            <li className="px-3 py-3 text-sm text-dash-muted">
               {query.trim()
                 ? "Nada coincide. Pídelo abajo para que lo revisemos."
                 : "Ya marcaste todos o el catálogo está vacío."}
             </li>
           ) : (
             filtered.map((service) => (
-              <li key={service.id} className="border-b border-[#ececec] last:border-b-0 dark:border-white/10">
+              <li key={service.id} className="border-b border-dash-line last:border-b-0">
                 <label
                   className="flex min-h-11 cursor-pointer items-center gap-3 px-3 py-2"
                   title={service.description ?? undefined}
@@ -221,9 +221,9 @@ export default function ClinicServicesForm({
                     type="checkbox"
                     checked={false}
                     onChange={() => toggle(service.id)}
-                    className="h-4 w-4 shrink-0 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
+                    className="h-4 w-4 shrink-0 rounded border-dash-line-strong text-kadesh focus:ring-kadesh"
                   />
-                  <span className="min-w-0 text-sm font-medium text-[#121212] dark:text-[#eef1f6]">
+                  <span className="min-w-0 text-sm font-medium text-dash-ink">
                     {service.name}
                   </span>
                 </label>
@@ -235,7 +235,7 @@ export default function ClinicServicesForm({
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600 disabled:opacity-60 sm:w-auto"
+          className="inline-flex min-h-11 w-full items-center justify-center px-4 text-sm font-semibold text-white disabled:opacity-60 sm:w-auto rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
         >
           {loading ? "Guardando…" : "Guardar servicios"}
         </button>
@@ -246,14 +246,14 @@ export default function ClinicServicesForm({
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
             En revisión
           </p>
-          <ul className="space-y-1 text-sm text-[#3a3a3a] dark:text-[#d0d0d0]">
+          <ul className="space-y-1 text-sm text-dash-soft">
             {pending.map((service) => (
               <li key={service.id} className="rounded-lg bg-amber-50 px-3 py-2 dark:bg-amber-500/10">
                 {service.name}
               </li>
             ))}
           </ul>
-          <p className="mt-1 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="mt-1 text-xs text-dash-muted">
             No salen en la ficha hasta que los aceptemos.
           </p>
         </div>
@@ -261,12 +261,12 @@ export default function ClinicServicesForm({
 
       <form
         onSubmit={handleRequest}
-        className="space-y-3 rounded-xl border border-dashed border-[#d8dee8] p-3 dark:border-white/18"
+        className="space-y-3 rounded-xl border border-dashed border-dash-line-strong p-3"
       >
-        <p className="text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+        <p className="text-sm font-semibold text-dash-ink">
           ¿No está lo que ofreces?
         </p>
-        <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+        <p className="text-sm text-dash-muted">
           Pídelo. Lo revisamos y, si aplica, aparece en el catálogo para todas las clínicas.
         </p>
         <label className="block">
@@ -290,7 +290,7 @@ export default function ClinicServicesForm({
         <button
           type="submit"
           disabled={requesting}
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border-2 border-kadesh px-4 text-sm font-semibold text-kadesh hover:bg-kadesh hover:text-white disabled:opacity-60 sm:w-auto"
+          className="inline-flex min-h-11 w-full items-center justify-center px-4 text-sm font-semibold disabled:opacity-60 sm:w-auto rounded-full border border-dash-line-strong bg-dash-surface text-dash-ink transition-colors hover:border-kadesh-400"
         >
           {requesting ? "Enviando…" : "Pedir este servicio"}
         </button>

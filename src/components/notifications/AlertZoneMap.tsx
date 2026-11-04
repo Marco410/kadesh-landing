@@ -139,7 +139,7 @@ export default function AlertZoneMap({
   }, [center]);
 
   return (
-    <div className="relative h-72 overflow-hidden rounded-2xl border border-[#ececec] dark:border-white/10 sm:h-80">
+    <div className="relative h-72 overflow-hidden rounded-2xl border border-dash-line sm:h-80">
       {!ready ? <Bone kind="box" height="100%" radius={0} className="absolute inset-0" /> : null}
       <div ref={containerRef} className="h-full w-full" />
       <span

@@ -131,7 +131,7 @@ export default function RegisterFamilyMemberModal({
       isSubmitting={loading}
       error={submitError}
     >
-      <p className="rounded-xl bg-kadesh-50 p-3 text-sm text-[#121212] dark:bg-kadesh/15 dark:text-[#eef1f6]">
+      <p className="rounded-xl bg-kadesh-50 p-3 text-sm text-dash-ink dark:bg-kadesh/15">
         Crearemos su cuenta de Kadesh Pet con la contraseña que elijas y la agregaremos a la cartilla de{' '}
         {petName}. Le llegará un correo avisándole que tú tienes su contraseña.
       </p>
@@ -182,7 +182,7 @@ export default function RegisterFamilyMemberModal({
         {errors.email ? (
           <p className="mt-1 text-xs text-red-600">{errors.email}</p>
         ) : (
-          <p className="mt-1 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">Con este correo entrará a Kadesh Pet.</p>
+          <p className="mt-1 text-xs text-dash-muted">Con este correo entrará a Kadesh Pet.</p>
         )}
       </div>
 
@@ -221,7 +221,7 @@ export default function RegisterFamilyMemberModal({
             type="button"
             onClick={() => setShowPassword((value) => !value)}
             aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-            className="absolute right-1 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-[#5a5a5a] hover:bg-[#f3f5f8] dark:text-[#9aa3b2] dark:hover:bg-white/10"
+            className="absolute right-1 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-dash-muted hover:bg-dash-hover"
           >
             <HugeiconsIcon icon={showPassword ? ViewOffIcon : EyeIcon} size={18} strokeWidth={1.6} />
           </button>
@@ -229,7 +229,7 @@ export default function RegisterFamilyMemberModal({
         {errors.password ? (
           <p className="mt-1 text-xs text-red-600">{errors.password}</p>
         ) : (
-          <p className="mt-1 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="mt-1 text-xs text-dash-muted">
             Mínimo {MIN_PASSWORD_LENGTH} caracteres. Compártesela tú; el correo no la incluye.
           </p>
         )}

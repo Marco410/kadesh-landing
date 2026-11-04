@@ -29,7 +29,7 @@ const EMPTY_SETTINGS: AlertSettings = {
 function AlertSettingsSkeleton() {
   return (
     <SkeletonRegion label="Cargando tus alertas" className="space-y-6">
-      <div className="flex items-center justify-between gap-4 rounded-2xl border border-[#ececec] p-4 dark:border-white/10">
+      <div className="flex items-center justify-between gap-4 rounded-2xl border border-dash-line p-4">
         <div className="flex-1">
           <Bone kind="line" slot={24} width={140} />
           <Bone kind="line" slot={20} width="70%" />
@@ -115,12 +115,12 @@ export default function AlertSettingsForm() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+      <div className="flex items-center justify-between gap-4 rounded-3xl border border-dash-line bg-dash-surface p-4 shadow-dash">
         <div>
-          <p id="alerts-switch-label" className="text-base font-bold text-[#121212] dark:text-white">
+          <p id="alerts-switch-label" className="text-base font-bold text-dash-ink">
             Recibir alertas
           </p>
-          <p className="mt-0.5 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+          <p className="mt-0.5 text-sm text-dash-muted">
             Te avisamos cuando alguien reporte una mascota perdida o encontrada dentro de tu zona.
           </p>
         </div>
@@ -132,7 +132,7 @@ export default function AlertSettingsForm() {
           onClick={() => update({ enabled: !form.enabled })}
           className={cn(
             'relative inline-flex h-8 w-[52px] flex-shrink-0 items-center rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh',
-            form.enabled ? 'bg-kadesh' : 'bg-[#cfd5de] dark:bg-white/20'
+            form.enabled ? 'bg-kadesh' : 'bg-dash-faint'
           )}
         >
           <span
@@ -147,10 +147,10 @@ export default function AlertSettingsForm() {
       <section aria-labelledby="alerts-zone-heading" className="space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 id="alerts-zone-heading" className="text-base font-bold text-[#121212] dark:text-white">
+            <h2 id="alerts-zone-heading" className="text-base font-bold text-dash-ink">
               Tu zona
             </h2>
-            <p className="mt-0.5 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+            <p className="mt-0.5 text-sm text-dash-muted">
               Mueve el mapa para poner el centro, o usa tu ubicación.
             </p>
           </div>
@@ -158,7 +158,7 @@ export default function AlertSettingsForm() {
             type="button"
             onClick={() => void handleUseLocation()}
             disabled={locating}
-            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-kadesh px-4 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center gap-1.5 px-4 text-sm font-semibold disabled:opacity-50 rounded-full border border-dash-line-strong bg-dash-surface text-dash-ink transition-colors hover:border-kadesh-400"
           >
             <HugeiconsIcon icon={Location01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
             {locating ? 'Obteniendo ubicación…' : 'Mi ubicación'}
@@ -181,7 +181,7 @@ export default function AlertSettingsForm() {
           onChange={(radiusKm) => update({ radiusKm })}
           label="Radio de la zona"
         />
-        <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+        <p className="text-sm text-dash-muted">
           Recibirás como máximo {MAX_DAILY_ALERTS} avisos al día, de reportes de los últimos 3 días.
         </p>
       </section>
@@ -196,7 +196,7 @@ export default function AlertSettingsForm() {
         type="button"
         onClick={() => void handleSave()}
         disabled={saving || needsCenter || !dirty}
-        className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-kadesh px-6 font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh sm:w-auto"
+        className="inline-flex min-h-12 w-full items-center justify-center px-6 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh sm:w-auto rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
       >
         {saving ? 'Guardando…' : 'Guardar'}
       </button>

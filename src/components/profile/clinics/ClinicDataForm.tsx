@@ -152,17 +152,17 @@ export default function ClinicDataForm({
                 return (
                   <label
                     key={option.value}
-                    className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm font-medium ${
+                    className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-[14px] border px-3 py-2 text-sm font-medium transition-colors ${
                       selected
-                        ? "border-kadesh bg-kadesh-50 text-[#121212] dark:bg-kadesh/15 dark:text-[#eef1f6]"
-                        : "border-[#d8dee8] text-[#3a3a3a] dark:border-white/18 dark:text-[#d0d0d0]"
+                        ? "border-dash-ink bg-dash-surface-2 text-dash-ink"
+                        : "border-dash-line-strong text-dash-soft"
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={selected}
                       onChange={() => toggleType(option.value)}
-                      className="h-4 w-4 shrink-0 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
+                      className="h-4 w-4 shrink-0 rounded border-dash-line-strong text-kadesh focus:ring-kadesh"
                     />
                     {option.label}
                   </label>
@@ -174,7 +174,7 @@ export default function ClinicDataForm({
                 {typesError}
               </p>
             ) : (
-              <p className="mt-2 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+              <p className="mt-2 text-xs text-dash-muted">
                 Puedes marcar más de uno. Al menos uno debe quedar activo.
               </p>
             )}
@@ -270,7 +270,7 @@ export default function ClinicDataForm({
                   {socialRows.length > 1 ? (
                     <button
                       type="button"
-                      className="inline-flex min-h-11 shrink-0 items-center justify-center text-sm font-semibold text-[#5a5a5a] hover:text-red-600"
+                      className="inline-flex min-h-11 shrink-0 items-center justify-center text-sm font-semibold text-dash-muted hover:text-red-600"
                       onClick={() =>
                         setSocialRows(socialRows.filter((_, itemIndex) => itemIndex !== index))
                       }
@@ -334,30 +334,30 @@ export default function ClinicDataForm({
       <section>
         <h3 className={SECTION_TITLE_CLASS}>Cómo atienden</h3>
         <div className="mt-3 space-y-1">
-          <label className="flex min-h-11 items-center gap-2 text-sm font-medium text-[#121212] dark:text-[#eef1f6]">
+          <label className="flex min-h-11 items-center gap-2 text-sm font-medium text-dash-ink">
             <input
               type="checkbox"
               checked={emergencies}
               onChange={(e) => setEmergencies(e.target.checked)}
-              className="h-4 w-4 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
+              className="h-4 w-4 rounded border-dash-line-strong text-kadesh focus:ring-kadesh"
             />
             Atiende urgencias 24/7
           </label>
-          <label className="flex min-h-11 items-center gap-2 text-sm font-medium text-[#121212] dark:text-[#eef1f6]">
+          <label className="flex min-h-11 items-center gap-2 text-sm font-medium text-dash-ink">
             <input
               type="checkbox"
               checked={parking}
               onChange={(e) => setParking(e.target.checked)}
-              className="h-4 w-4 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
+              className="h-4 w-4 rounded border-dash-line-strong text-kadesh focus:ring-kadesh"
             />
             Tiene estacionamiento
           </label>
-          <label className="flex min-h-11 items-center gap-2 text-sm font-medium text-[#121212] dark:text-[#eef1f6]">
+          <label className="flex min-h-11 items-center gap-2 text-sm font-medium text-dash-ink">
             <input
               type="checkbox"
               checked={appointmentRequired}
               onChange={(e) => setAppointmentRequired(e.target.checked)}
-              className="h-4 w-4 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
+              className="h-4 w-4 rounded border-dash-line-strong text-kadesh focus:ring-kadesh"
             />
             Atiende solo con cita
           </label>
@@ -377,7 +377,7 @@ export default function ClinicDataForm({
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600 disabled:opacity-60 sm:w-auto"
+        className="inline-flex min-h-11 w-full items-center justify-center px-4 text-sm font-semibold text-white disabled:opacity-60 sm:w-auto rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
       >
         {loading ? "Guardando…" : "Guardar datos"}
       </button>

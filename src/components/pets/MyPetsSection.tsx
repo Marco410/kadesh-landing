@@ -7,7 +7,7 @@ import { useQuery } from '@apollo/client';
 import { motion } from 'framer-motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Add01Icon, Image01Icon, Notification01Icon } from '@hugeicons/core-free-icons';
-import { useUiMotion } from 'kadesh/components/shared/motion';
+import { useProfileMotion } from 'kadesh/components/profile/motion';
 import PetDetail from './PetDetail';
 import PetFormModal from './PetFormModal';
 import { MY_PETS_QUERY, type MyPetsResponse, type MyPetsVariables } from './queries';
@@ -19,13 +19,13 @@ import type { PetSummary } from './types';
 export const PET_SEARCH_PARAM = 'pet';
 
 function RegisterButton({ onClick }: { onClick: () => void }) {
-  const motionPrefs = useUiMotion();
+  const motionPrefs = useProfileMotion();
   return (
     <motion.button
       type="button"
       onClick={onClick}
       whileTap={motionPrefs.tap}
-      className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+      className="inline-flex min-h-11 items-center gap-1.5 px-4 text-sm font-semibold text-white rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
     >
       <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
       Registrar mascota
@@ -34,7 +34,7 @@ function RegisterButton({ onClick }: { onClick: () => void }) {
 }
 
 function PetCard({ pet, onOpen }: { pet: PetSummary; onOpen: () => void }) {
-  const motionPrefs = useUiMotion();
+  const motionPrefs = useProfileMotion();
   const cover = pet.multimedia[0]?.image?.url;
   const next = pet.reminders[0];
   const subtitle = petSubtitle(pet);
@@ -43,27 +43,27 @@ function PetCard({ pet, onOpen }: { pet: PetSummary; onOpen: () => void }) {
       type="button"
       onClick={onOpen}
       whileTap={motionPrefs.tap}
-      className="flex w-full items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-3 text-left transition-colors hover:border-kadesh-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:border-white/10 dark:bg-night-raised dark:hover:border-kadesh/40"
+      className="flex w-full items-start gap-3 rounded-[20px] border border-dash-line bg-dash-surface p-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh shadow-dash transition-[transform,box-shadow] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-0.5 hover:shadow-dash-lift"
     >
-      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]">
+      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-dash-surface-2">
         {cover ? (
           <Image src={cover} alt="" fill className="object-cover" sizes="64px" />
         ) : (
-          <span className="flex h-full w-full items-center justify-center text-[#9aa3b2]">
+          <span className="flex h-full w-full items-center justify-center text-dash-faint">
             <HugeiconsIcon icon={Image01Icon} size={22} strokeWidth={1.5} aria-hidden="true" />
           </span>
         )}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="break-words font-semibold text-[#121212] dark:text-[#eef1f6]">{pet.name}</p>
+          <p className="break-words font-semibold text-dash-ink">{pet.name}</p>
           {pet.status !== PET_STATUS.ACTIVE ? (
             <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${PET_STATUS_BADGE[pet.status] ?? ''}`}>
               {PET_STATUS_LABELS[pet.status] ?? pet.status}
             </span>
           ) : null}
         </div>
-        {subtitle ? <p className="mt-0.5 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">{subtitle}</p> : null}
+        {subtitle ? <p className="mt-0.5 text-xs text-dash-muted">{subtitle}</p> : null}
         {next ? (
           <p className={`mt-1.5 flex items-start gap-1 text-xs font-semibold ${DUE_TONE_CLASS[dueTone(next.dueDate)]}`}>
             <HugeiconsIcon icon={Notification01Icon} size={14} strokeWidth={1.8} className="mt-px shrink-0" aria-hidden="true" />
@@ -82,7 +82,7 @@ export default function MyPetsSection({ userId }: { userId: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const motionPrefs = useUiMotion();
+  const motionPrefs = useProfileMotion();
   const [registering, setRegistering] = useState(false);
   const openPetId = searchParams.get(PET_SEARCH_PARAM);
 
@@ -112,7 +112,7 @@ export default function MyPetsSection({ userId }: { userId: string }) {
     return (
       <div className="grid gap-3 sm:grid-cols-2" aria-busy="true">
         {[1, 2].map((item) => (
-          <div key={item} className="h-24 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10" />
+          <div key={item} className="h-24 dash-shimmer rounded-3xl" />
         ))}
       </div>
     );
@@ -120,9 +120,9 @@ export default function MyPetsSection({ userId }: { userId: string }) {
 
   if (error && pets.length === 0) {
     return (
-      <div className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised">
-        <p className="font-semibold text-[#121212] dark:text-[#eef1f6]">No pudimos cargar tus mascotas</p>
-        <p className="mt-1 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">Revisa tu conexión e intenta de nuevo.</p>
+      <div className="rounded-3xl border border-dash-line bg-dash-surface p-5 shadow-dash">
+        <p className="font-semibold text-dash-ink">No pudimos cargar tus mascotas</p>
+        <p className="mt-1 text-sm text-dash-muted">Revisa tu conexión e intenta de nuevo.</p>
       </div>
     );
   }
@@ -134,10 +134,10 @@ export default function MyPetsSection({ userId }: { userId: string }) {
           variants={motionPrefs.item}
           initial={motionPrefs.reduce ? false : 'hidden'}
           animate="show"
-          className="flex flex-col items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised"
+          className="flex flex-col items-start gap-3 rounded-3xl border border-dash-line bg-dash-surface p-5 shadow-dash"
         >
-          <p className="font-semibold text-[#121212] dark:text-[#eef1f6]">Aún no registras a tus mascotas</p>
-          <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="font-semibold text-dash-ink">Aún no registras a tus mascotas</p>
+          <p className="text-sm text-dash-muted">
             Lleva su cartilla de vacunas y desparasitaciones, y te avisamos antes de cada fecha. Si un día se
             pierde, publicas su reporte en un paso con sus fotos y señas.
           </p>

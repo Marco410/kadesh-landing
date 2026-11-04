@@ -15,6 +15,62 @@ Formato:
 
 ---
 
+## 2026-11-03 · style: barrido del panel con sesión (perfil, mascotas, clínicas, notificaciones)
+- Rama: feat/panel-cuenta
+- Qué cambió y por qué:
+  - **Colores:**
+    - 307 parejas de hex claro + `dark:` pasan a tokens `dash-*` con un codemod. Solo cambia un token si su pareja está en la misma cadena; se verificó que solo cambiaran clases. Quedan los colores de estatus y el azul de marca.
+    - Tarjetas de 24 px con sombra suave.
+  - **Botones:** degradado solo en la acción principal, tinta en las acciones de fila y contorno neutro en los secundarios. Los chips elegidos van en tinta.
+  - **Componentes del kit:**
+    - Las subpestañas de Publicaciones pasan a `DashSegmented`.
+    - Los modales de la cartilla (`PetSheet`), los de cancelar cita y `ConfirmModal` dentro del panel pasan a `DashModal`: foco, Escape, scroll bloqueado y animación también al cerrar.
+  - **Clínica:** "Administrar" es una vista propia (`?tab=clinics&clinic=<id>&vista=`) con migas, el nombre como título y un segmentado. El calendario ya tiene todo el ancho.
+  - **Movimiento:** perfil y mascotas usan la curva del panel, con escalón de 50 ms y tope de 8.
+  - **Sitio público:** las piezas compartidas (`NotificationList`, `ConfirmModal`, `ChoiceChip`) solo cambian dentro del panel (`useInDash`). Los selectores del alta de animales toman los neutros del panel por variables CSS.
+- Archivos: src/components/profile/{ProfileData,UserAnimalsSection,UserPostsSection,UserVeterinariesSection}.tsx, src/components/profile/motion.ts, src/components/profile/clinics/** (incl. formStyles.ts y README.md), src/components/pets/**, src/components/notifications/{NotificationList,AlertSettingsForm,AlertZoneMap}.tsx, src/components/veterinaries/UserAppointmentsSection.tsx, src/components/shared/ConfirmModal.tsx, src/components/animals/nuevo/ChoiceChip.tsx, src/components/app-shell/{ui.tsx,useLatched.ts,index.ts}, src/app/(cuenta)/perfil/page.tsx, src/app/globals.css, src/components/profile/README.md
+- GraphQL: ninguna
+- Móvil: no aplica (estilos y navegación propios de la web; la vista de clínica en la app tiene su propia navegación)
+
+---
+
+## 2026-11-03 · feat: Inicio del perfil y kit del panel
+- Rama: feat/panel-cuenta
+- Qué cambió y por qué:
+  - **Kit del panel** (`app-shell/ui.tsx`): KPIs oscuro/tintado con pastilla de cambio y sparkline, chips en tinta, segmentados con indicador que se desliza, botones, modal y cajón (portal, Escape, foco y scroll bloqueado), tarjetas, estados y clases de campos y tablas.
+  - **Inicio** (`/perfil` sin `tab`):
+    - Saludo con el resumen en una frase y cuatro atajos.
+    - "Requiere atención": recordatorios vencidos o de los próximos 7 días, citas por confirmar en sus clínicas, su cita en menos de 48 h, reclamos de sus reportes en revisión, clínicas en revisión, teléfono faltante y alertas de zona apagadas.
+    - KPIs: Mascotas, Próximas citas, Reportes activos (por el último estado) y Sin leer (con el cambio frente a los 7 días anteriores).
+    - Con una clínica verificada, la fila "Mi veterinaria": hoy, por confirmar, pacientes y barras de citas por semana.
+  - **Correcciones del shell:**
+    - La tabla oculta de las gráficas ensanchaba la página en el teléfono.
+    - "Reducir movimiento" no apagaba los fundidos de opacidad.
+    - El foco no entraba al cajón móvil.
+    - La barra no quedaba fija en el teléfono: el `overflow-x: hidden` del `body` rompía el `sticky`.
+- Archivos: src/components/app-shell/ui.tsx, src/components/app-shell/{index.ts,charts.tsx,Reveal.tsx,AppSidebar.tsx,AppShell.tsx,UserMenu.tsx,README.md}, src/components/profile/home/{ProfileHome.tsx,homeModel.ts,useProfileHome.ts,queries.ts}, src/components/profile/shell/dates.ts, src/components/notifications/NotificationBell.tsx, src/app/(cuenta)/perfil/page.tsx, src/app/(cuenta)/notificaciones/page.tsx, src/app/globals.css, src/components/profile/README.md
+- GraphQL: nuevas `ProfileHome` (alias de `petsCount`, `petReminders(Count)`, `petPlaceAppointments(Count)`, `animalClaimsCount`, `petPlaces`, `user`, `notificationsCount` ×8) y `ProfileClinicHome` (`petPlaceAppointmentsCount` ×10, `petPlaces { patientsCount }`)
+- Móvil: [prompt](../mobile-sync/2026-11-03-inicio-perfil.md)
+
+---
+
+## 2026-11-03 · feat: panel con sesión (shell, tokens e Inter variable)
+- Rama: feat/panel-cuenta
+- Qué cambió y por qué:
+  - `/perfil` y `/notificaciones` dejan la barra del sitio y viven en un panel propio con el mismo lenguaje que los paneles de kadesh-business, en azul de Kadesh Pet.
+  - El panel tiene menú lateral agrupado (Mi cuenta, Mis animales, Mis publicaciones, Mis veterinarias, Kadesh) con globos de pendientes. Se colapsa a iconos en escritorio y en móvil es un cajón.
+  - Barra flotante con migas, "Reportar animal", campana, tamaño de texto, tema y menú de cuenta. El menú conserva Mi perfil, Mis citas, el sitio y Cerrar sesión.
+  - Tokens `--dash-*` en `globals.css` (neutros cálidos y acento derivado de `--color-kadesh`). Inter pasa a variable.
+  - Las rutas pasan al grupo `app/(cuenta)` para compartir el shell; las URLs no cambian.
+  - `/perfil` sin `tab` abre Inicio (por ahora un esqueleto) y Datos pasa a `?tab=profile`. Se quita `ProfileTabs`.
+  - La guarda de sesión queda en el shell.
+  - `ThemeToggle` sale de `Navigation`. Sin cambio visual; su `aria-label` pasa al español.
+- Archivos: src/app/globals.css, src/app/layout.tsx, src/app/(cuenta)/layout.tsx, src/app/(cuenta)/perfil/page.tsx (movido), src/app/(cuenta)/notificaciones/** (movido), src/components/app-shell/**, src/components/profile/shell/**, src/components/profile/home/ProfileHome.tsx, src/components/profile/ProfileTabs.tsx (borrado), src/components/notifications/NotificationsShell.tsx, src/components/notifications/NotificationBell.tsx, src/components/layout/ThemeToggle.tsx, src/components/layout/Navigation.tsx, src/components/layout/FontSizeSlider.tsx, src/components/layout/KadeshHelpWhatsApp.tsx, src/core/routes.ts, DESIGN.md
+- GraphQL: nueva `ProfileNavCounts` (alias de `petRemindersCount` y `petPlaceAppointmentsCount`) para los globos del menú
+- Móvil: no aplica (layout, navegación y estilos propios de la web; los contadores se documentan en el prompt del Inicio del perfil)
+
+---
+
 ## 2026-10-30 · chore: Preview URLs del Worker
 - Rama: migracion-cloudflare
 - Qué cambió y por qué: con `"preview_urls": true`, cada versión subida (`pnpm run upload`) tiene su propia URL de prueba antes de promoverla. `"workers_dev": false` queda explícito: el sitio solo se sirve en `pet.kadesh.com.mx` y wrangler ya no avisa del valor por defecto. `"keep_names": false` se mantiene.

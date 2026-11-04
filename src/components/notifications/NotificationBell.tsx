@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Notification03Icon, Settings02Icon } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
@@ -11,7 +11,8 @@ import { useNotificationInbox } from './hooks';
 import { unreadBadgeLabel } from './inbox';
 import NotificationList from './NotificationList';
 
-type BellTone = 'onDark' | 'onLight';
+/** `dash`: barra del panel con sesión (tokens dash-*). */
+type BellTone = 'onDark' | 'onLight' | 'dash';
 
 interface NotificationBellProps {
   tone: BellTone;
@@ -21,12 +22,17 @@ interface NotificationBellProps {
   variant: 'panel' | 'link';
 }
 
-function BellIcon({ count }: { count: number }) {
+function BellIcon({ count, tone }: { count: number; tone: BellTone }) {
   return (
     <>
-      <HugeiconsIcon icon={Notification03Icon} size={22} strokeWidth={1.5} aria-hidden="true" />
+      <HugeiconsIcon icon={Notification03Icon} size={tone === 'dash' ? 20 : 22} strokeWidth={1.5} aria-hidden="true" />
       {count > 0 ? (
-        <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold leading-none text-white ring-2 ring-white dark:ring-night">
+        <span
+          className={cn(
+            'absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold leading-none text-white ring-2',
+            tone === 'dash' ? 'tabular-nums ring-dash-surface' : 'ring-white dark:ring-night'
+          )}
+        >
           {unreadBadgeLabel(count)}
         </span>
       ) : null}
@@ -40,6 +46,9 @@ function bellLabel(count: number): string {
 }
 
 function bellButtonClass(tone: BellTone): string {
+  if (tone === 'dash') {
+    return 'relative flex size-10 items-center justify-center rounded-full bg-dash-surface-2 text-dash-soft transition-colors hover:bg-dash-surface-3 hover:text-dash-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-kadesh-400';
+  }
   return cn(
     'relative flex h-10 w-10 items-center justify-center rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh',
     tone === 'onLight'
@@ -52,6 +61,8 @@ function NotificationPanelBell({ tone, count }: { tone: BellTone; count: number 
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const inbox = useNotificationInbox({ skip: !open });
+  const dash = tone === 'dash';
+  const reduce = useReducedMotion();
 
   useEffect(() => {
     if (!open) return;
@@ -79,7 +90,7 @@ function NotificationPanelBell({ tone, count }: { tone: BellTone; count: number 
         aria-haspopup="dialog"
         className={bellButtonClass(tone)}
       >
-        <BellIcon count={count} />
+        <BellIcon count={count} tone={tone} />
       </button>
 
       <AnimatePresence>
@@ -87,20 +98,37 @@ function NotificationPanelBell({ tone, count }: { tone: BellTone; count: number 
           <motion.div
             role="dialog"
             aria-label="Notificaciones"
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: dash ? -6 : -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute right-0 top-full z-50 mt-2 flex max-h-[70vh] w-[380px] flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_16px_40px_rgba(15,35,80,0.16)] dark:border-white/10 dark:bg-night-raised"
+            exit={{ opacity: 0, y: dash ? -6 : -10 }}
+            transition={dash ? (reduce ? { duration: 0 } : { duration: 0.28, ease: [0.16, 0.84, 0.44, 1] }) : undefined}
+            className={
+              dash
+                ? 'absolute right-0 top-[calc(100%+8px)] z-50 flex max-h-[min(70vh,560px)] w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-3xl border border-dash-line bg-dash-surface font-dash shadow-dash-lift'
+                : 'absolute right-0 top-full z-50 mt-2 flex max-h-[70vh] w-[380px] flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_16px_40px_rgba(15,35,80,0.16)] dark:border-white/10 dark:bg-night-raised'
+            }
           >
-            <div className="flex items-center justify-between gap-2 border-b border-[#ececec] px-4 py-3 dark:border-white/10">
-              <h2 className="text-base font-bold text-[#121212] dark:text-white">Notificaciones</h2>
+            <div
+              className={
+                dash
+                  ? 'flex items-center justify-between gap-2 border-b border-dash-line px-4 py-3'
+                  : 'flex items-center justify-between gap-2 border-b border-[#ececec] px-4 py-3 dark:border-white/10'
+              }
+            >
+              <h2 className={dash ? 'text-base font-semibold tracking-[-0.02em] text-dash-ink' : 'text-base font-bold text-[#121212] dark:text-white'}>
+                Notificaciones
+              </h2>
               <div className="flex items-center gap-1">
                 {inbox.hasUnread ? (
                   <button
                     type="button"
                     onClick={() => void inbox.markAllRead()}
                     disabled={inbox.markingAll}
-                    className="rounded-lg px-2 py-1.5 text-xs font-semibold text-kadesh transition-colors hover:bg-kadesh-50 disabled:opacity-50 dark:hover:bg-kadesh/15"
+                    className={
+                      dash
+                        ? 'rounded-full px-2.5 py-1.5 text-xs font-semibold text-kadesh-700 transition-colors hover:bg-dash-hover disabled:opacity-50 dark:text-kadesh-300'
+                        : 'rounded-lg px-2 py-1.5 text-xs font-semibold text-kadesh transition-colors hover:bg-kadesh-50 disabled:opacity-50 dark:hover:bg-kadesh/15'
+                    }
                   >
                     Marcar todas como leídas
                   </button>
@@ -109,7 +137,11 @@ function NotificationPanelBell({ tone, count }: { tone: BellTone; count: number 
                   href={Routes.notifications.alerts}
                   onClick={() => setOpen(false)}
                   aria-label="Configurar alertas de zona"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-[#5a5a5a] transition-colors hover:bg-[#f5f6f8] hover:text-kadesh dark:text-[#b0b0b0] dark:hover:bg-white/5"
+                  className={
+                    dash
+                      ? 'flex size-9 items-center justify-center rounded-full text-dash-muted transition-colors hover:bg-dash-hover hover:text-dash-ink'
+                      : 'flex h-9 w-9 items-center justify-center rounded-lg text-[#5a5a5a] transition-colors hover:bg-[#f5f6f8] hover:text-kadesh dark:text-[#b0b0b0] dark:hover:bg-white/5'
+                  }
                 >
                   <HugeiconsIcon icon={Settings02Icon} size={18} strokeWidth={1.5} />
                 </Link>
@@ -136,7 +168,11 @@ function NotificationPanelBell({ tone, count }: { tone: BellTone; count: number 
             <Link
               href={Routes.notifications.index}
               onClick={() => setOpen(false)}
-              className="border-t border-[#ececec] px-4 py-3 text-center text-sm font-semibold text-kadesh-700 hover:underline dark:border-white/10 dark:text-kadesh-300"
+              className={
+                dash
+                  ? 'border-t border-dash-line px-4 py-3 text-center text-sm font-semibold text-dash-ink transition-colors hover:bg-dash-hover'
+                  : 'border-t border-[#ececec] px-4 py-3 text-center text-sm font-semibold text-kadesh-700 hover:underline dark:border-white/10 dark:text-kadesh-300'
+              }
             >
               Ver todas
             </Link>
@@ -159,7 +195,7 @@ export default function NotificationBell({ tone, count, variant }: NotificationB
         aria-label={bellLabel(count)}
         className={bellButtonClass(tone)}
       >
-        <BellIcon count={count} />
+        <BellIcon count={count} tone={tone} />
       </Link>
     );
   }

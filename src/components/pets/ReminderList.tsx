@@ -7,7 +7,7 @@ import { sileo } from 'sileo';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { CheckmarkCircle02Icon, Delete02Icon, PencilEdit01Icon } from '@hugeicons/core-free-icons';
 import { ConfirmModal } from 'kadesh/components/shared';
-import { useUiMotion } from 'kadesh/components/shared/motion';
+import { useProfileMotion } from 'kadesh/components/profile/motion';
 import SectionCard, { IconAction } from './SectionCard';
 import { DELETE_REMINDER_MUTATION, PET_REFETCH, UPDATE_REMINDER_MUTATION } from './queries';
 import { REMINDER_CHANNEL_LABELS, REMINDER_STATUS, REMINDER_STATUS_LABELS } from './constants';
@@ -38,7 +38,7 @@ export default function ReminderList({
   onEdit: (reminder: PetReminder) => void;
 }) {
   const client = useApolloClient();
-  const motionPrefs = useUiMotion();
+  const motionPrefs = useProfileMotion();
   const [showPast, setShowPast] = useState(false);
   const [toDelete, setToDelete] = useState<PetReminder | null>(null);
   const [updateReminder, { loading: updating }] = useMutation(UPDATE_REMINDER_MUTATION);
@@ -77,22 +77,22 @@ export default function ReminderList({
     <motion.li key={reminder.id} variants={motionPrefs.item} className="flex gap-3 py-3 first:pt-0 last:pb-0">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="break-words font-semibold text-[#121212] dark:text-[#eef1f6]">{reminder.title}</p>
+          <p className="break-words font-semibold text-dash-ink">{reminder.title}</p>
           {reminder.status !== REMINDER_STATUS.PENDING ? (
-            <span className="rounded-full bg-[#eceff3] px-2 py-0.5 text-xs font-bold text-[#3a3a3a] dark:bg-white/10 dark:text-[#d0d0d0]">
+            <span className="rounded-full bg-dash-surface-2 px-2 py-0.5 text-xs font-bold text-dash-soft">
               {REMINDER_STATUS_LABELS[reminder.status] ?? reminder.status}
             </span>
           ) : null}
         </div>
         <p
           className={`text-sm font-semibold ${
-            isPast ? 'text-[#5a5a5a] dark:text-[#9aa3b2]' : DUE_TONE_CLASS[dueTone(reminder.dueDate)]
+            isPast ? 'text-dash-muted' : DUE_TONE_CLASS[dueTone(reminder.dueDate)]
           }`}
         >
           {formatDay(reminder.dueDate)}
           {isPast ? '' : ` · ${relativeDueLabel(reminder.dueDate)}`}
         </p>
-        {!isPast ? <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">{noticeText(reminder)}</p> : null}
+        {!isPast ? <p className="text-xs text-dash-muted">{noticeText(reminder)}</p> : null}
       </div>
       {!isPast ? (
         <div className="flex shrink-0 flex-col sm:flex-row">
@@ -120,12 +120,12 @@ export default function ReminderList({
       onAction={onAdd}
     >
       {active.length === 0 ? (
-        <p className="rounded-xl bg-[#f7f8fa] p-4 text-sm text-[#5a5a5a] dark:bg-night dark:text-[#9aa3b2]">
+        <p className="rounded-xl bg-dash-surface-2 p-4 text-sm text-dash-muted">
           No hay recordatorios pendientes.
         </p>
       ) : (
         <motion.ul
-          className="divide-y divide-[#ececec] dark:divide-white/10"
+          className="divide-y divide-dash-line"
           variants={motionPrefs.list}
           initial={motionPrefs.reduce ? false : 'hidden'}
           animate="show"
@@ -135,7 +135,7 @@ export default function ReminderList({
       )}
 
       {past.length ? (
-        <div className="mt-3 border-t border-[#ececec] pt-3 dark:border-white/10">
+        <div className="mt-3 border-t border-dash-line pt-3">
           <button
             type="button"
             onClick={() => setShowPast((value) => !value)}
@@ -148,7 +148,7 @@ export default function ReminderList({
             {showPast ? (
               <motion.ul
                 key="past"
-                className="divide-y divide-[#ececec] overflow-hidden dark:divide-white/10"
+                className="divide-y divide-dash-line overflow-hidden"
                 variants={motionPrefs.expand}
                 initial={motionPrefs.reduce ? false : 'hidden'}
                 animate="show"

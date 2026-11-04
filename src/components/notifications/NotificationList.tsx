@@ -12,6 +12,7 @@ import {
   SearchVisualIcon,
   UserCheck01Icon,
 } from '@hugeicons/core-free-icons';
+import { useInDash } from 'kadesh/components/app-shell/DashPortalContext';
 import { Routes } from 'kadesh/core/routes';
 import { cn } from 'kadesh/utils/cn';
 import { Bone, SkeletonRegion, boneWidth } from 'kadesh/components/ui/skeleton';
@@ -79,18 +80,18 @@ function NotificationItem({
       <span className="min-w-0 flex-1">
         <span
           className={cn(
-            'block text-sm leading-snug text-[#121212] dark:text-white',
+            'block text-sm leading-snug text-dash-ink',
             unread ? 'font-bold' : 'font-medium'
           )}
         >
           {notification.title}
         </span>
         {notification.body ? (
-          <span className="mt-0.5 line-clamp-2 block text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+          <span className="mt-0.5 line-clamp-2 block text-sm text-dash-muted">
             {notification.body}
           </span>
         ) : null}
-        <span className="mt-1 block text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+        <span className="mt-1 block text-xs text-dash-muted">
           {formatNotificationTime(notification.createdAt)}
         </span>
       </span>
@@ -106,7 +107,7 @@ function NotificationItem({
     'flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh',
     unread
       ? 'bg-kadesh-50 hover:bg-kadesh-100 dark:bg-kadesh/10 dark:hover:bg-kadesh/15'
-      : 'hover:bg-[#f5f6f8] dark:hover:bg-white/5'
+      : 'hover:bg-dash-hover'
   );
 
   if (path && isExternalPath(path)) {
@@ -165,6 +166,8 @@ export default function NotificationList({
   onRetry,
   skeletonRows = 5,
 }: NotificationListProps) {
+  // También se usa en la campana del sitio público: lo propio del panel va solo dentro de él.
+  const inDash = useInDash();
   if (loading) {
     return (
       <SkeletonRegion label="Cargando notificaciones" className="space-y-1">
@@ -178,14 +181,14 @@ export default function NotificationList({
   if (error && notifications.length === 0) {
     return (
       <div className="flex flex-col items-center px-4 py-10 text-center">
-        <p className="text-sm font-semibold text-[#121212] dark:text-white">
+        <p className="text-sm font-semibold text-dash-ink">
           No pudimos cargar tus notificaciones
         </p>
         {onRetry ? (
           <button
             type="button"
             onClick={onRetry}
-            className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-kadesh px-4 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white"
+            className="mt-4 inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold rounded-full border border-dash-line-strong bg-dash-surface text-dash-ink transition-colors hover:border-kadesh-400"
           >
             Reintentar
           </button>
@@ -200,13 +203,13 @@ export default function NotificationList({
         <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
           <HugeiconsIcon icon={NotificationOff01Icon} size={28} strokeWidth={1.5} aria-hidden="true" />
         </span>
-        <p className="text-base font-semibold text-[#121212] dark:text-white">Todo tranquilo por aquí</p>
-        <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#5a5a5a] dark:text-[#b0b0b0]">
+        <p className="text-base font-semibold text-dash-ink">Todo tranquilo por aquí</p>
+        <p className="mt-2 max-w-xs text-sm leading-relaxed text-dash-muted">
           Te avisaremos aquí cuando reporten una mascota cerca de tu zona.
         </p>
         <Link
           href={Routes.notifications.alerts}
-          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
+          className="mt-5 inline-flex min-h-11 items-center justify-center px-5 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
         >
           Configurar mis alertas
         </Link>
@@ -218,7 +221,7 @@ export default function NotificationList({
     <div>
       {groupNotifications(notifications).map((group) => (
         <section key={group.label} aria-label={group.label} className="mb-2">
-          <h3 className="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <h3 className="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-dash-muted">
             {group.label}
           </h3>
           <ul className="space-y-1">
@@ -237,7 +240,11 @@ export default function NotificationList({
             type="button"
             onClick={onLoadMore}
             disabled={loadingMore}
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-[#dcdcdc] text-sm font-semibold text-[#3a3a3a] transition-colors hover:border-kadesh hover:text-kadesh disabled:opacity-50 dark:border-white/15 dark:text-[#d0d0d0]"
+            className={
+              inDash
+                ? 'inline-flex min-h-11 w-full items-center justify-center rounded-full border border-dash-line-strong bg-dash-surface text-sm font-semibold text-dash-ink transition-colors hover:border-kadesh-400 disabled:opacity-50'
+                : 'inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-dash-line-strong text-sm font-semibold text-dash-soft transition-colors hover:border-kadesh hover:text-kadesh disabled:opacity-50'
+            }
           >
             {loadingMore ? 'Cargando más…' : 'Ver anteriores'}
           </button>

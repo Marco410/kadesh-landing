@@ -1,6 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from 'framer-motion';
+import { useInDash } from 'kadesh/components/app-shell/DashPortalContext';
+import { DashButton, DashModal } from 'kadesh/components/app-shell/ui';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -25,6 +27,38 @@ export default function ConfirmModal({
   isLoading = false,
   confirmButtonColor = 'red',
 }: ConfirmModalProps) {
+  // Dentro del panel con sesión, el mismo diálogo con el kit del panel (foco, Escape, tokens).
+  // En el sitio público se ve igual que siempre.
+  const inDash = useInDash();
+  if (inDash) {
+    return (
+      <DashModal
+        open={isOpen}
+        onClose={onClose}
+        busy={isLoading}
+        title={title}
+        footer={
+          <>
+            {cancelText ? (
+              <DashButton variant="ghost" onClick={onClose} disabled={isLoading}>
+                {cancelText}
+              </DashButton>
+            ) : null}
+            <DashButton
+              variant={confirmButtonColor === 'red' ? 'danger' : 'primary'}
+              onClick={onConfirm}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Procesando…' : confirmText}
+            </DashButton>
+          </>
+        }
+      >
+        <p className="text-[15px] leading-relaxed text-dash-muted">{message}</p>
+      </DashModal>
+    );
+  }
+
   const confirmButtonClasses = {
     red: 'bg-red-500 hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600',
     orange: 'bg-orange-500 hover:bg-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600',

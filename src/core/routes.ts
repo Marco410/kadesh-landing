@@ -43,8 +43,12 @@ export const Routes = {
   privacy: '/privacidad',
   contact: '/contacto',
   
-  // Profile
+  // Profile (panel con sesión). Sin `tab` abre Inicio; cada vista es `?tab=<clave>`.
   profile: '/perfil',
+  profileTab: (tab: string): string => `/perfil?tab=${tab}`,
+  profileClinic: (clinicId: string, vista?: string): string =>
+    `/perfil?tab=clinics&clinic=${encodeURIComponent(clinicId)}${vista ? `&vista=${vista}` : ''}`,
+  profilePet: (petId: string): string => `/perfil?tab=pets&pet=${encodeURIComponent(petId)}`,
   profileLead: (id: string): string => `/perfil/ventas/lead/${id}`,
   profileSyncLeads: '/perfil/ventas/obtener-clientes',
   profileAddSalesperson: '/perfil/ventas/agregar-vendedor',

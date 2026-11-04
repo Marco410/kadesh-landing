@@ -27,8 +27,8 @@ export const PET_MANUAL_STATUS_OPTIONS = [
 export const PET_STATUS_BADGE: Record<string, string> = {
   active: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
   lost: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
-  deceased: 'bg-[#eceff3] text-[#3a3a3a] dark:bg-white/10 dark:text-[#d0d0d0]',
-  transferred: 'bg-[#eceff3] text-[#3a3a3a] dark:bg-white/10 dark:text-[#d0d0d0]',
+  deceased: 'bg-dash-surface-2 text-dash-soft',
+  transferred: 'bg-dash-surface-2 text-dash-soft',
 };
 
 export const PET_STERILIZED_OPTIONS = [

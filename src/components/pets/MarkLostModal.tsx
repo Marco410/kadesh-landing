@@ -118,7 +118,7 @@ export default function MarkLostModal({ isOpen, onClose, petId, petName, onRepor
       isSubmitting={loading}
       error={submitError}
     >
-      <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+      <p className="text-sm text-dash-muted">
         Publicaremos un reporte con su nombre, fotos y señas de la cartilla, y avisaremos a quien tenga alertas
         en esa zona. Cuando regrese, ciérralo con «Ya regresó a casa».
       </p>
@@ -190,7 +190,7 @@ export default function MarkLostModal({ isOpen, onClose, petId, petName, onRepor
         {errors.phone ? (
           <p className="mt-1 text-xs text-red-600">{errors.phone}</p>
         ) : (
-          <p className="mt-1 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="mt-1 text-xs text-dash-muted">
             Aparece en el reporte público para que te llamen si la ven.
           </p>
         )}

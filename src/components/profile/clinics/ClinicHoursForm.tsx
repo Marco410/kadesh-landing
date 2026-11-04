@@ -107,7 +107,7 @@ export default function ClinicHoursForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <ul className="divide-y divide-[#ececec] overflow-hidden rounded-xl border border-[#ececec] dark:divide-white/10 dark:border-white/10">
+      <ul className="divide-y divide-dash-line overflow-hidden rounded-xl border border-dash-line">
         {PET_PLACE_WEEKDAYS.map((day) => {
           const row = days[day.value] ?? { open: false, timeIni: 9, timeEnd: 18 };
           return (
@@ -115,12 +115,12 @@ export default function ClinicHoursForm({
               key={day.value}
               className="flex flex-wrap items-center gap-2 px-3 py-1.5"
             >
-              <label className="flex min-h-11 min-w-[7.5rem] flex-1 items-center gap-2 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+              <label className="flex min-h-11 min-w-[7.5rem] flex-1 items-center gap-2 text-sm font-semibold text-dash-ink">
                 <input
                   type="checkbox"
                   checked={row.open}
                   onChange={(event) => setDay(day.value, { open: event.target.checked })}
-                  className="h-4 w-4 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
+                  className="h-4 w-4 rounded border-dash-line-strong text-kadesh focus:ring-kadesh"
                 />
                 {day.label}
               </label>
@@ -140,7 +140,7 @@ export default function ClinicHoursForm({
                       </option>
                     ))}
                   </select>
-                  <span className="shrink-0 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+                  <span className="shrink-0 text-sm text-dash-muted">
                     –
                   </span>
                   <select
@@ -159,7 +159,7 @@ export default function ClinicHoursForm({
                   </select>
                 </div>
               ) : (
-                <span className="min-h-11 flex-1 content-center text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+                <span className="min-h-11 flex-1 content-center text-sm text-dash-muted">
                   Cerrado
                 </span>
               )}
@@ -180,7 +180,7 @@ export default function ClinicHoursForm({
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600 disabled:opacity-60 sm:w-auto"
+        className="inline-flex min-h-11 w-full items-center justify-center px-4 text-sm font-semibold text-white disabled:opacity-60 sm:w-auto rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
       >
         {loading ? "Guardando…" : "Guardar horarios"}
       </button>

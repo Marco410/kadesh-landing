@@ -32,6 +32,13 @@ import {
 import ClinicAddAppointmentForm from "./ClinicAddAppointmentForm";
 import ClinicPatientsList from "./ClinicPatientsList";
 import { useProfileMotion } from "kadesh/components/profile/motion";
+import {
+  DashButton,
+  DashModal,
+  dashLabelClass,
+  dashTextareaClass,
+  useLatched,
+} from "kadesh/components/app-shell";
 
 const WEEKDAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const MONTHS = [
@@ -93,11 +100,11 @@ function defaultHourForDate(dateKey: string): number {
 }
 
 const ACTION_CLASS: Record<"primary" | "danger" | "neutral", string> = {
-  primary: "bg-kadesh text-white hover:bg-kadesh-600",
+  primary: "bg-dash-ink text-dash-on-ink transition-opacity hover:opacity-90",
   danger:
     "border border-red-300 text-red-700 hover:bg-red-50 dark:border-red-400/40 dark:text-red-300 dark:hover:bg-red-500/10",
   neutral:
-    "border border-[#d8dee8] text-[#3a3a3a] hover:bg-[#f3f5f8] dark:border-white/18 dark:text-[#e8edf4] dark:hover:bg-white/10",
+    "border border-dash-line-strong text-dash-soft hover:bg-dash-hover",
 };
 
 export default function ClinicAppointmentsCalendar({
@@ -119,6 +126,8 @@ export default function ClinicAppointmentsCalendar({
   const [cancelTarget, setCancelTarget] = useState<ClinicAppointment | null>(
     null,
   );
+  // Mientras el modal sale, sigue mostrando a quién se le cancelaba.
+  const shownCancel = useLatched(cancelTarget);
   const [cancelReason, setCancelReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
@@ -301,12 +310,12 @@ export default function ClinicAppointmentsCalendar({
               setOpenedId(null);
               setAdding(false);
             }}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-[#d8dee8] text-[#121212] dark:border-white/18 dark:text-white"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-dash-line-strong bg-dash-surface text-dash-ink transition-colors hover:border-kadesh-400"
             aria-label="Mes anterior"
           >
             ‹
           </button>
-          <p className="text-center text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+          <p className="text-center text-sm font-semibold text-dash-ink">
             {MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
           </p>
           <button
@@ -319,7 +328,7 @@ export default function ClinicAppointmentsCalendar({
               setOpenedId(null);
               setAdding(false);
             }}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-[#d8dee8] text-[#121212] dark:border-white/18 dark:text-white"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-dash-line-strong bg-dash-surface text-dash-ink transition-colors hover:border-kadesh-400"
             aria-label="Mes siguiente"
           >
             ›
@@ -328,7 +337,7 @@ export default function ClinicAppointmentsCalendar({
         <button
           type="button"
           onClick={goToToday}
-          className="inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh hover:bg-kadesh hover:text-white"
+          className="inline-flex min-h-11 items-center justify-center px-3 text-sm font-semibold rounded-full border border-dash-line-strong bg-dash-surface text-dash-ink transition-colors hover:border-kadesh-400"
         >
           Ir a hoy
         </button>
@@ -338,7 +347,7 @@ export default function ClinicAppointmentsCalendar({
         {WEEKDAYS.map((label) => (
           <div
             key={label}
-            className="py-1 text-center text-[11px] font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]"
+            className="py-1 text-center text-[11px] font-semibold text-dash-muted"
           >
             {label}
           </div>
@@ -359,16 +368,16 @@ export default function ClinicAppointmentsCalendar({
                 selectDay(cell.dateKey);
               }}
               whileTap={cell.dateKey ? motionPrefs.tapDay : undefined}
-              className={`flex min-h-11 flex-col items-center justify-center rounded-lg text-sm ${
+              className={`flex min-h-11 flex-col items-center justify-center rounded-[12px] text-sm tabular-nums ${
                 !cell.dateKey
                   ? "opacity-0"
                   : selected && isToday
-                    ? "bg-kadesh font-bold text-white ring-2 ring-amber-400 ring-offset-1 ring-offset-white dark:ring-offset-night-raised"
+                    ? "bg-dash-ink font-bold text-dash-on-ink ring-2 ring-amber-400 ring-offset-1 ring-offset-dash-surface"
                     : selected
-                      ? "bg-kadesh text-white"
+                      ? "bg-dash-ink font-semibold text-dash-on-ink"
                       : isToday
                         ? "border-2 border-amber-400 bg-amber-50 font-bold text-amber-900 dark:border-amber-300 dark:bg-amber-500/15 dark:text-amber-100"
-                        : "bg-[#f3f5f8] text-[#121212] hover:bg-kadesh-50 dark:bg-night dark:text-[#eef1f6] dark:hover:bg-kadesh/20"
+                        : "bg-dash-surface-2 text-dash-ink hover:bg-dash-surface-3"
               }`}
             >
               {cell.day}
@@ -376,7 +385,7 @@ export default function ClinicAppointmentsCalendar({
                 <span
                   className={`mt-0.5 h-1.5 w-1.5 rounded-full ${
                     selected
-                      ? "bg-white"
+                      ? "bg-dash-on-ink"
                       : isToday
                         ? "bg-amber-600"
                         : "bg-kadesh"
@@ -388,11 +397,11 @@ export default function ClinicAppointmentsCalendar({
         })}
       </div>
 
-      <div className="rounded-xl border border-[#ececec] p-3 dark:border-white/10">
+      <div className="rounded-xl border border-dash-line p-3">
         <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <h4
-              className={`text-sm font-bold text-[#121212] dark:text-[#eef1f6] ${
+              className={`text-sm font-bold text-dash-ink ${
                 adding ? "" : "capitalize"
               }`}
             >
@@ -410,7 +419,7 @@ export default function ClinicAppointmentsCalendar({
                   : "Elige un día"}
             </h4>
             {adding && selectedDateKey ? (
-              <p className="mt-0.5 text-sm capitalize text-[#5a5a5a] dark:text-[#9aa3b2]">
+              <p className="mt-0.5 text-sm capitalize text-dash-muted">
                 {new Date(`${selectedDateKey}T12:00:00`).toLocaleDateString(
                   "es-MX",
                   {
@@ -433,8 +442,8 @@ export default function ClinicAppointmentsCalendar({
               whileTap={motionPrefs.tap}
               className={
                 adding
-                  ? "inline-flex min-h-11 items-center justify-center self-start px-2 text-sm font-semibold text-[#5a5a5a] hover:text-[#121212] dark:text-[#9aa3b2] dark:hover:text-white"
-                  : "inline-flex min-h-11 items-center justify-center self-start rounded-xl bg-kadesh px-3 text-sm font-semibold text-white hover:bg-kadesh-600"
+                  ? "inline-flex min-h-11 items-center justify-center self-start px-2 text-sm font-semibold text-dash-muted hover:text-dash-ink"
+                  : "inline-flex min-h-11 items-center justify-center self-start px-3 text-sm font-semibold rounded-full bg-dash-ink text-dash-on-ink transition-opacity hover:opacity-90"
               }
             >
               {adding ? "Cerrar" : "Agregar cita"}
@@ -450,7 +459,7 @@ export default function ClinicAppointmentsCalendar({
               initial={motionPrefs.reduce ? false : "hidden"}
               animate="show"
               exit="exit"
-              className="mt-3 overflow-hidden border-t border-[#ececec] pt-4 dark:border-white/10"
+              className="mt-3 overflow-hidden border-t border-dash-line pt-4"
             >
               <ClinicAddAppointmentForm
                 dateKey={selectedDateKey}
@@ -472,11 +481,11 @@ export default function ClinicAppointmentsCalendar({
         ) : null}
 
         {loading && appointments.length === 0 ? (
-          <p className="mt-2 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="mt-2 text-sm text-dash-muted">
             Cargando citas…
           </p>
         ) : selectedAppointments.length === 0 && !adding ? (
-          <p className="mt-2 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="mt-2 text-sm text-dash-muted">
             Sin citas este día.
           </p>
         ) : (
@@ -485,12 +494,12 @@ export default function ClinicAppointmentsCalendar({
               const status = appointment.status ?? "";
               const badgeClass = isAppointmentStatus(status)
                 ? APPOINTMENT_STATUS_BADGE[status]
-                : "bg-[#ececec] text-[#5a5a5a] dark:bg-white/10 dark:text-[#b0b0b0]";
+                : "bg-dash-surface-3 text-dash-muted";
               const expanded = openedId === appointment.id;
               return (
                 <li
                   key={appointment.id}
-                  className="rounded-xl border border-[#ececec] bg-white p-3 dark:border-white/10 dark:bg-night"
+                  className="rounded-xl border border-dash-line bg-dash-surface p-3"
                 >
                   <button
                     type="button"
@@ -500,7 +509,7 @@ export default function ClinicAppointmentsCalendar({
                     className="flex w-full flex-col items-start gap-1 text-left"
                   >
                     <span className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-[#121212] dark:text-[#eef1f6]">
+                      <span className="font-semibold text-dash-ink">
                         {customerName(appointment)}
                       </span>
                       <span
@@ -509,7 +518,7 @@ export default function ClinicAppointmentsCalendar({
                         {appointmentStatusLabel(status)}
                       </span>
                     </span>
-                    <span className="text-sm text-[#3a3a3a] dark:text-[#d0d0d0]">
+                    <span className="text-sm text-dash-soft">
                       {formatAppointmentRange(
                         appointment.startsAt,
                         appointment.endsAt,
@@ -539,74 +548,47 @@ export default function ClinicAppointmentsCalendar({
 
       <ClinicPatientsList place={place} onSaved={onSaved} />
 
-      {cancelTarget ? (
-        <div
-          className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 p-4 sm:items-center"
-          onClick={saving ? undefined : () => setCancelTarget(null)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="clinic-cancel-title"
-            className="w-full max-w-lg rounded-2xl border border-[#e0e0e0] bg-white p-5 shadow-2xl dark:border-[#3a3a3a] dark:bg-[#1e1e1e]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h3
-              id="clinic-cancel-title"
-              className="text-xl font-bold text-[#212121] dark:text-white"
+      <DashModal
+        open={Boolean(cancelTarget)}
+        onClose={() => setCancelTarget(null)}
+        busy={saving}
+        title="¿Cancelar esta cita?"
+        subtitle={shownCancel ? `Se avisará a ${customerName(shownCancel)}.` : undefined}
+        footer={
+          <>
+            <DashButton variant="ghost" disabled={saving} onClick={() => setCancelTarget(null)}>
+              No
+            </DashButton>
+            <DashButton
+              variant="danger"
+              disabled={saving}
+              onClick={() =>
+                cancelTarget
+                  ? void applyStatus(cancelTarget, APPOINTMENT_STATUS.CANCELLED, cancelReason.trim())
+                  : undefined
+              }
             >
-              ¿Cancelar esta cita?
-            </h3>
-            <p className="mt-2 text-sm text-[#616161] dark:text-[#b0b0b0]">
-              Se avisará a {customerName(cancelTarget)}.
-            </p>
-            <label className="mt-4 block">
-              <span className="mb-1 block text-sm font-medium text-[#212121] dark:text-white">
-                Motivo (opcional)
-              </span>
-              <textarea
-                value={cancelReason}
-                onChange={(event) => setCancelReason(event.target.value)}
-                rows={3}
-                disabled={saving}
-                className="w-full min-h-[5.5rem] rounded-xl border border-[#d8dee8] bg-white px-4 py-3 text-sm dark:border-white/18 dark:bg-night dark:text-white"
-              />
-            </label>
-            {error ? (
-              <p
-                role="alert"
-                className="mt-2 text-sm text-red-600 dark:text-red-400"
-              >
-                {error}
-              </p>
-            ) : null}
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
-              <button
-                type="button"
-                disabled={saving}
-                onClick={() =>
-                  void applyStatus(
-                    cancelTarget,
-                    APPOINTMENT_STATUS.CANCELLED,
-                    cancelReason.trim(),
-                  )
-                }
-                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-500 px-4 text-sm font-semibold text-white hover:bg-red-600 disabled:opacity-60"
-              >
-                {saving ? "Cancelando…" : "Sí, cancelar"}
-              </button>
-              <button
-                type="button"
-                disabled={saving}
-                onClick={() => setCancelTarget(null)}
-                className="inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-[#e0e0e0] px-4 text-sm font-semibold dark:border-[#3a3a3a] dark:text-white"
-              >
-                No
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+              {saving ? "Cancelando…" : "Sí, cancelar"}
+            </DashButton>
+          </>
+        }
+      >
+        <label className="block">
+          <span className={dashLabelClass}>Motivo (opcional)</span>
+          <textarea
+            value={cancelReason}
+            onChange={(event) => setCancelReason(event.target.value)}
+            rows={3}
+            disabled={saving}
+            className={dashTextareaClass}
+          />
+        </label>
+        {error ? (
+          <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">
+            {error}
+          </p>
+        ) : null}
+      </DashModal>
     </div>
   );
 }
@@ -628,32 +610,32 @@ function AppointmentDetail({
   const actions = ownerAppointmentActions(appointment.status);
 
   return (
-    <div className="mt-3 space-y-2 border-t border-[#ececec] pt-3 text-sm dark:border-white/10">
+    <div className="mt-3 space-y-2 border-t border-dash-line pt-3 text-sm">
       {appointment.service?.name ? (
-        <p className="text-[#3a3a3a] dark:text-[#d0d0d0]">
+        <p className="text-dash-soft">
           Servicio: {appointment.service.name}
         </p>
       ) : null}
       {petLine ? (
-        <p className="text-[#3a3a3a] dark:text-[#d0d0d0]">Mascota: {petLine}</p>
+        <p className="text-dash-soft">Mascota: {petLine}</p>
       ) : null}
       {appointment.customer?.phone ? (
-        <p className="break-words text-[#3a3a3a] dark:text-[#d0d0d0]">
+        <p className="break-words text-dash-soft">
           Tel. {appointment.customer.phone}
         </p>
       ) : null}
       {appointment.customer?.email ? (
-        <p className="break-words text-[#3a3a3a] dark:text-[#d0d0d0]">
+        <p className="break-words text-dash-soft">
           {appointment.customer.email}
         </p>
       ) : null}
       {appointment.notes ? (
-        <p className="break-words text-[#3a3a3a] dark:text-[#d0d0d0]">
+        <p className="break-words text-dash-soft">
           Notas: {appointment.notes}
         </p>
       ) : null}
       {appointment.cancelReason ? (
-        <p className="break-words text-[#5a5a5a] dark:text-[#9aa3b2]">
+        <p className="break-words text-dash-muted">
           Motivo de cancelación: {appointment.cancelReason}
         </p>
       ) : null}
@@ -670,7 +652,7 @@ function AppointmentDetail({
               type="button"
               disabled={saving}
               onClick={() => onAction(appointment, action.status)}
-              className={`inline-flex min-h-11 items-center justify-center rounded-xl px-3 text-sm font-semibold disabled:opacity-60 ${ACTION_CLASS[action.tone]}`}
+              className={`inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold disabled:opacity-60 ${ACTION_CLASS[action.tone]}`}
             >
               {action.label}
             </button>

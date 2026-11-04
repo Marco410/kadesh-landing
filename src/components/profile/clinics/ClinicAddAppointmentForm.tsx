@@ -15,7 +15,7 @@ import type { ClinicPatient } from "kadesh/components/veterinaries/queries";
 import { CHIP_CLASS, INPUT_CLASS, chipTone } from "./formStyles";
 
 const FIELD_LABEL =
-  "mb-1.5 text-sm font-medium text-[#121212] dark:text-white";
+  "mb-1.5 text-sm font-medium text-dash-ink";
 
 const WEEKDAY_FROM_JS = [
   "Domingo",
@@ -160,7 +160,7 @@ export default function ClinicAddAppointmentForm({
 
   if (patients.length === 0) {
     return (
-      <p className="text-sm leading-relaxed text-[#5a5a5a] dark:text-[#9aa3b2]">
+      <p className="text-sm leading-relaxed text-dash-muted">
         Primero da de alta un paciente abajo. Con el correo podemos avisarle de
         la cita.
       </p>
@@ -197,7 +197,7 @@ export default function ClinicAddAppointmentForm({
           className="flex flex-wrap gap-1.5"
         >
           {visiblePatients.length === 0 ? (
-            <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+            <p className="text-sm text-dash-muted">
               Nadie coincide.
             </p>
           ) : (
@@ -235,7 +235,7 @@ export default function ClinicAddAppointmentForm({
       <fieldset>
         <legend className={FIELD_LABEL}>Hora</legend>
         {availableHours.length === 0 ? (
-          <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="text-sm text-dash-muted">
             Ya no hay horas libres hoy. Elige otro día.
           </p>
         ) : (
@@ -289,7 +289,7 @@ export default function ClinicAddAppointmentForm({
             );
           })}
         </div>
-        <p className="mt-2 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+        <p className="mt-2 text-sm text-dash-muted">
           {selectedPatient ? `${patientLabel(selectedPatient)} · ` : null}
           {formatTimeOnly(startsAt.toISOString())}–
           {formatTimeOnly(endsAt.toISOString())}
@@ -332,7 +332,7 @@ export default function ClinicAddAppointmentForm({
             </label>
           </div>
         ) : hasDetails ? (
-          <p className="mt-1 break-words text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="mt-1 break-words text-sm text-dash-muted">
             {[petName.trim(), notes.trim()].filter(Boolean).join(" · ")}
           </p>
         ) : null}
@@ -341,7 +341,7 @@ export default function ClinicAddAppointmentForm({
       <button
         type="submit"
         disabled={creating || availableHours.length === 0}
-        className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600 disabled:opacity-60 lg:w-auto"
+        className="inline-flex min-h-11 w-full items-center justify-center px-4 text-sm font-semibold text-white disabled:opacity-60 lg:w-auto rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
       >
         {creating ? "Agendando…" : "Agendar"}
       </button>

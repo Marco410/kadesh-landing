@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Settings02Icon } from "@hugeicons/core-free-icons";
+import { DashButton, dashButtonClass } from "kadesh/components/app-shell";
 import {
   NotificationList,
   NotificationsShell,
+  WhatsappNotificationsCard,
   useNotificationInbox,
 } from "kadesh/components/notifications";
 import { Routes } from "kadesh/core/routes";
@@ -17,29 +19,24 @@ export default function NotificacionesPage() {
 
   return (
     <NotificationsShell
-      title="Notificaciones"
+      view="notifications"
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {inbox.hasUnread ? (
-            <button
-              type="button"
-              onClick={() => void inbox.markAllRead()}
-              disabled={inbox.markingAll}
-              className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh-50 disabled:opacity-50 dark:hover:bg-kadesh/15"
-            >
+            <DashButton variant="ghost" size="sm" onClick={() => void inbox.markAllRead()} disabled={inbox.markingAll}>
               Marcar todas como leídas
-            </button>
+            </DashButton>
           ) : null}
-          <Link
-            href={Routes.notifications.alerts}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white"
-          >
-            <HugeiconsIcon icon={Settings02Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
+          <Link href={Routes.notifications.alerts} className={dashButtonClass({ variant: "outline", size: "sm" })}>
+            <HugeiconsIcon icon={Settings02Icon} size={16} aria-hidden="true" />
             Alertas de zona
           </Link>
         </div>
       }
     >
+      <div className="mb-5">
+        <WhatsappNotificationsCard />
+      </div>
       <NotificationList
         notifications={inbox.notifications}
         loading={inbox.loading}

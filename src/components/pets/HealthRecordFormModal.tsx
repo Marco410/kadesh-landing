@@ -237,7 +237,7 @@ export default function HealthRecordFormModal({
           {errors.nextDueDate ? (
             <p className="mt-1 text-xs text-red-600">{errors.nextDueDate}</p>
           ) : (
-            <p className="mt-1 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+            <p className="mt-1 text-xs text-dash-muted">
               {nextDueDate
                 ? `Te avisaremos ${REMINDER_DEFAULT_DAYS_BEFORE} días antes. Lo cambias en Recordatorios.`
                 : 'Opcional. Si la pones, te avisamos antes.'}

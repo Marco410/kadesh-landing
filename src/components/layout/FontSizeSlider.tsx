@@ -15,8 +15,8 @@ import {
 const PANEL_WIDTH_PX = 252;
 
 type FontSizeSliderProps = {
-  /** Nav over a dark/orange field vs. light bar. */
-  tone: "onDark" | "onLight";
+  /** Barra del sitio sobre fondo oscuro o claro; `panel`: barra del panel con sesión (tokens dash-*). */
+  tone: "onDark" | "onLight" | "panel";
   className?: string;
 };
 
@@ -92,6 +92,7 @@ export default function FontSizeSlider({
   }, [open]);
 
   const onDark = tone === "onDark";
+  const inPanel = tone === "panel";
   const percent = Math.round(scale * 100);
 
   const panel =
@@ -102,7 +103,11 @@ export default function FontSizeSlider({
         ref={panelRef}
         role="dialog"
         aria-label="Tamaño de fuente"
-        className="rounded-xl border border-[#e0e0e0] bg-white shadow-2xl dark:border-[#3a3a3a] dark:bg-[#1e1e1e]"
+        className={
+          inPanel
+            ? "rounded-[18px] border border-dash-line bg-dash-surface font-dash text-dash-ink shadow-dash-lift"
+            : "rounded-xl border border-[#e0e0e0] bg-white shadow-2xl dark:border-[#3a3a3a] dark:bg-[#1e1e1e]"
+        }
         style={{
           position: "fixed",
           top: coords.top,
@@ -114,17 +119,17 @@ export default function FontSizeSlider({
         }}
       >
         <div className="mb-3 flex items-baseline justify-between gap-3">
-          <p className="font-semibold text-[#212121] dark:text-white">
+          <p className={inPanel ? "font-semibold text-dash-ink" : "font-semibold text-[#212121] dark:text-white"}>
             Tamaño de texto
           </p>
-          <p className="tabular-nums text-[#616161] dark:text-[#b0b0b0]">
+          <p className={inPanel ? "tabular-nums text-dash-muted" : "tabular-nums text-[#616161] dark:text-[#b0b0b0]"}>
             {percent}%
           </p>
         </div>
         <div className="flex items-center" style={{ gap: 10 }}>
           <span
             aria-hidden
-            className="font-semibold text-[#616161] dark:text-[#b0b0b0]"
+            className={inPanel ? "font-semibold text-dash-muted" : "font-semibold text-[#616161] dark:text-[#b0b0b0]"}
             style={{ fontSize: 11, lineHeight: 1 }}
           >
             A
@@ -145,7 +150,11 @@ export default function FontSizeSlider({
             aria-valuemax={Math.round(FONT_SCALE_MAX * 100)}
             aria-valuenow={percent}
             aria-valuetext={`${percent} por ciento`}
-            className="font-scale-slider cursor-pointer appearance-none rounded-full bg-[#d4d4d4] accent-orange-500 dark:bg-[#525252] dark:accent-white"
+            className={
+              inPanel
+                ? "font-scale-slider cursor-pointer appearance-none rounded-full bg-dash-surface-3 text-dash-ink"
+                : "font-scale-slider cursor-pointer appearance-none rounded-full bg-[#d4d4d4] accent-orange-500 dark:bg-[#525252] dark:accent-white"
+            }
             style={{
               width: 176,
               height: 6,
@@ -154,7 +163,7 @@ export default function FontSizeSlider({
           />
           <span
             aria-hidden
-            className="font-semibold text-[#212121] dark:text-white"
+            className={inPanel ? "font-semibold text-dash-ink" : "font-semibold text-[#212121] dark:text-white"}
             style={{ fontSize: 18, lineHeight: 1 }}
           >
             A
@@ -175,13 +184,15 @@ export default function FontSizeSlider({
         aria-expanded={open}
         aria-haspopup="dialog"
         className={cn(
-          "inline-flex shrink-0 items-center justify-center rounded-lg font-semibold leading-none transition-colors disabled:opacity-60",
-          onDark
-            ? "text-white hover:bg-white/10"
-            : "text-gray-800 hover:bg-gray-100",
+          "inline-flex shrink-0 items-center justify-center font-semibold leading-none transition-colors disabled:opacity-60",
+          inPanel
+            ? "rounded-full bg-dash-surface-2 text-dash-soft hover:bg-dash-surface-3 hover:text-dash-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-kadesh-400"
+            : onDark
+              ? "rounded-lg text-white hover:bg-white/10"
+              : "rounded-lg text-gray-800 hover:bg-gray-100",
           className,
         )}
-        style={{ width: 36, height: 36, fontSize: 13 }}
+        style={{ width: inPanel ? 40 : 36, height: inPanel ? 40 : 36, fontSize: 13 }}
       >
         <span aria-hidden className="flex items-end gap-px">
           <span style={{ fontSize: 11 }}>A</span>

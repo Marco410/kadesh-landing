@@ -18,9 +18,10 @@ const poppins = Poppins({
   display: 'swap',
 });
 
+// Inter variable (sin `weight`: un solo archivo con todos los pesos). Es la fuente del panel con
+// sesión (`font-dash`), que usa 500 y 600; con pesos fijos 400/700 el navegador los simulaba.
 const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '700'],
   variable: '--font-inter',
   display: 'swap',
 });

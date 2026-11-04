@@ -23,7 +23,7 @@ export default function ExistingPhotos({
         return (
           <li key={photo.id} className="relative">
             <div
-              className={`relative h-20 w-20 overflow-hidden rounded-xl bg-[#e8edf3] dark:bg-[#2a3548] ${
+              className={`relative h-20 w-20 overflow-hidden rounded-xl bg-dash-surface-2 ${
                 removed ? 'opacity-35' : ''
               }`}
             >
@@ -36,12 +36,12 @@ export default function ExistingPhotos({
               onClick={() => onToggle(photo.id)}
               aria-label={removed ? 'Conservar esta foto' : 'Quitar esta foto'}
               aria-pressed={removed}
-              className="absolute -right-2 -top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d8dee8] bg-white text-[#3a3a3a] shadow-sm hover:bg-[#f7f8fa] dark:border-white/18 dark:bg-night dark:text-[#e8edf4]"
+              className="absolute -right-2 -top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-dash-line-strong bg-dash-surface text-dash-soft shadow-sm hover:bg-dash-hover"
             >
               <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={2} />
             </button>
             {removed ? (
-              <span className="absolute inset-x-0 bottom-1 text-center text-[10px] font-bold text-[#121212] dark:text-white">
+              <span className="absolute inset-x-0 bottom-1 text-center text-[10px] font-bold text-dash-ink">
                 Se quitará
               </span>
             ) : null}

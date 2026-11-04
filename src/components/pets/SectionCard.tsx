@@ -17,19 +17,19 @@ export default function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+    <section className="rounded-3xl border border-dash-line bg-dash-surface p-4 shadow-dash">
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h3 className="text-base font-black tracking-[-0.02em] text-[#121212] dark:text-[#eef1f6]">{title}</h3>
+          <h3 className="text-base font-bold tracking-[-0.02em] text-dash-ink">{title}</h3>
           {description ? (
-            <p className="mt-0.5 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">{description}</p>
+            <p className="mt-0.5 text-sm text-dash-muted">{description}</p>
           ) : null}
         </div>
         {actionLabel && onAction ? (
           <button
             type="button"
             onClick={onAction}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 self-start rounded-xl bg-kadesh-50 px-4 text-sm font-semibold text-kadesh hover:bg-kadesh-100 dark:bg-kadesh/15 dark:text-kadesh-300 dark:hover:bg-kadesh/25"
+            className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 self-start rounded-full border border-dash-line-strong bg-dash-surface px-4 text-sm font-semibold text-dash-ink transition-colors hover:border-kadesh-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-kadesh-400"
           >
             <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.8} aria-hidden="true" />
             {actionLabel}
@@ -65,7 +65,7 @@ export function IconAction({
       className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl disabled:opacity-50 ${
         tone === 'danger'
           ? 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10'
-          : 'text-[#5a5a5a] hover:bg-[#f3f5f8] dark:text-[#9aa3b2] dark:hover:bg-white/10'
+          : 'text-dash-muted hover:bg-dash-hover'
       }`}
     >
       {children}

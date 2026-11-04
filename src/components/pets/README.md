@@ -27,7 +27,7 @@ Las altas y ediciones se hacen en una hoja modal (`PetSheet`, mismo marco que el
 - `Perdida` no se elige en el formulario: entra con **Marcar como perdida** (`markPetAsLost`) y sale con **Ya regresó a casa** (`markPetAsFound`, cierra el reporte como «En familia»). A mano solo Activa, Fallecida o Transferida.
 - Marcar como perdida pide fecha (no futura), pin en el mapa y teléfono (10 dígitos, prellenado con el del perfil). Ese teléfono sale en el reporte público.
 - Un registro con **próxima fecha** crea su recordatorio solo (3 días antes, notificación y correo). Ese recordatorio no se borra ni se le cambia la fecha desde Recordatorios: se cambia la próxima fecha del registro.
-- Canales que ofrece la web: notificación (campana + push de la app) y correo. WhatsApp existe en el backend pero todavía no manda nada, así que no se ofrece; si un recordatorio ya lo trae, se conserva al guardar.
+- Canales que ofrece la web: notificación (campana + push de la app y, a quien activó los avisos por WhatsApp en `/notificaciones`, también WhatsApp) y correo. WhatsApp no se ofrece como canal aparte; si un recordatorio ya lo trae, se conserva al guardar.
 - La veterinaria de un registro es opcional y se busca en el directorio por nombre (`PetPlace` con tipo `veterinary`).
 
 ## Qué no va aquí

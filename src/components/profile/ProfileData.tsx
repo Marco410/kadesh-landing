@@ -29,7 +29,7 @@ import {
 import { useProfileMotion } from "./motion";
 
 const INPUT_CLASS =
-  "w-full rounded-xl border border-[#d8dee8] bg-white px-4 py-3 text-sm text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh dark:border-white/18 dark:bg-night dark:text-[#eef1f6] dark:placeholder:text-[#9aa3b2] disabled:cursor-not-allowed disabled:opacity-60";
+  "w-full rounded-xl border border-dash-line-strong bg-dash-surface px-4 py-3 text-sm text-dash-ink placeholder:text-dash-muted focus:outline-none focus:ring-2 focus:ring-kadesh disabled:cursor-not-allowed disabled:opacity-60";
 
 const INPUT_ERROR_CLASS =
   "border-red-400 focus:ring-red-400 dark:border-red-500/70";
@@ -39,7 +39,7 @@ function fieldClass(hasError: boolean) {
 }
 
 const DISABLED_FIELD_CLASS =
-  "w-full rounded-xl border border-[#ececec] bg-[#f3f5f8] px-4 py-3 text-sm text-[#5a5a5a] dark:border-white/10 dark:bg-night dark:text-[#9aa3b2]";
+  "w-full rounded-xl border border-dash-line bg-dash-surface-2 px-4 py-3 text-sm text-dash-muted";
 
 function toDateInputValue(isoOrNull: string | null | undefined): string {
   if (!isoOrNull) return "";
@@ -59,7 +59,7 @@ function SaveChangesButton({
   isDirty,
   saving,
   onSave,
-  className = "hidden sm:inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto lg:min-h-9",
+  className = "hidden sm:inline-flex min-h-11 w-full items-center justify-center gap-2 px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto lg:min-h-9 rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift",
 }: SaveChangesButtonProps) {
   const motionPrefs = useProfileMotion();
   return (
@@ -242,17 +242,17 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
 
   if (userLoading && !data?.user) {
     return (
-      <div className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6">
-        <div className="h-6 w-40 animate-pulse rounded-lg bg-[#e6e9ef] dark:bg-white/10" />
+      <div className="rounded-3xl border border-dash-line bg-dash-surface p-5 sm:p-6 shadow-dash">
+        <div className="h-6 w-40 animate-pulse rounded-lg bg-dash-surface-3" />
         <div className="mt-5 flex items-center gap-4">
-          <div className="h-20 w-20 animate-pulse rounded-full bg-[#e6e9ef] dark:bg-white/10" />
-          <div className="h-5 w-48 animate-pulse rounded-lg bg-[#e6e9ef] dark:bg-white/10" />
+          <div className="h-20 w-20 animate-pulse rounded-full bg-dash-surface-3" />
+          <div className="h-5 w-48 animate-pulse rounded-lg bg-dash-surface-3" />
         </div>
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           {[1, 2, 3, 4].map((item) => (
             <div
               key={item}
-              className="h-14 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10"
+              className="h-14 animate-pulse rounded-xl bg-dash-surface-3"
             />
           ))}
         </div>
@@ -262,7 +262,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
 
   return (
     <motion.div
-      className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised sm:p-6"
+      className="rounded-3xl border border-dash-line bg-dash-surface p-5 sm:p-6 shadow-dash"
       variants={motionPrefs.item}
       initial={motionPrefs.reduce ? false : "hidden"}
       animate="show"
@@ -283,7 +283,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
               onClick={() => fileInputRef.current?.click()}
               disabled={imageUploading}
               whileTap={motionPrefs.tap}
-              className="group relative flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-kadesh text-2xl font-bold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-kadesh focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 dark:focus-visible:ring-offset-night-raised"
+              className="group relative flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-full dash-grad-accent text-2xl font-bold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-kadesh focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 focus-visible:ring-offset-dash-surface"
             >
               {user.profileImage?.url ? (
                 <Image
@@ -302,7 +302,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
                 <span className="rounded-full bg-white/90 dark:bg-black/50 p-1.5">
                   <HugeiconsIcon
                     icon={Edit01Icon}
-                    className="size-5 text-[#212121] dark:text-white"
+                    className="size-5 text-dash-ink"
                   />
                 </span>
               </span>
@@ -319,7 +319,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
             )}
           </div>
           <div>
-            <h3 className="text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
+            <h3 className="text-lg font-bold tracking-[-0.03em] text-dash-ink">
               {user.name} {user.lastName} {user.secondLastName || ""}
             </h3>
             {user.verified && (
@@ -353,7 +353,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
         <div>
           <label
             htmlFor="profile-name"
-            className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]"
+            className="mb-1.5 block text-sm font-semibold text-dash-muted"
           >
             Nombre
           </label>
@@ -386,7 +386,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
         <div>
           <label
             htmlFor="profile-lastName"
-            className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]"
+            className="mb-1.5 block text-sm font-semibold text-dash-muted"
           >
             Apellido paterno
           </label>
@@ -418,7 +418,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
 
         {/* Apellido Materno - editable */}
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <label className="mb-1.5 block text-sm font-semibold text-dash-muted">
             Apellido materno
           </label>
           <input
@@ -432,7 +432,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
 
         {/* Username - no editable */}
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <label className="mb-1.5 block text-sm font-semibold text-dash-muted">
             Usuario
           </label>
           <div className="flex items-center gap-2">
@@ -444,7 +444,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
               className={DISABLED_FIELD_CLASS}
             />
           </div>
-          <p className="mt-1.5 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="mt-1.5 text-xs text-dash-muted">
             Si necesitas actualizar este campo, envía un mensaje en{" "}
             <Link
               href={Routes.contact}
@@ -458,7 +458,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
 
         {/* Email - no editable */}
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <label className="mb-1.5 block text-sm font-semibold text-dash-muted">
             Correo
           </label>
           <div className="flex items-center gap-2">
@@ -470,7 +470,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
               className={DISABLED_FIELD_CLASS}
             />
           </div>
-          <p className="mt-1.5 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="mt-1.5 text-xs text-dash-muted">
             Si necesitas actualizar este campo, envía un mensaje en{" "}
             <Link
               href={Routes.contact}
@@ -485,7 +485,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
         <div>
           <label
             htmlFor="profile-phone"
-            className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]"
+            className="mb-1.5 block text-sm font-semibold text-dash-muted"
           >
             Teléfono
           </label>
@@ -519,7 +519,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
         <div>
           <label
             htmlFor="profile-birthday"
-            className="mb-1.5 block text-sm font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]"
+            className="mb-1.5 block text-sm font-semibold text-dash-muted"
           >
             Fecha de nacimiento
           </label>
@@ -549,7 +549,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
 
         {/* Miembro desde */}
         <div className="md:col-span-2">
-          <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="text-xs text-dash-muted">
             Miembro desde {formatDate(user.createdAt)}
           </p>
         </div>
@@ -560,7 +560,7 @@ export default function ProfileData({ user: userProp }: ProfileDataProps) {
           isDirty={isDirty}
           saving={saving}
           onSave={handleSave}
-          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70 rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
         />
       </div>
     </motion.div>

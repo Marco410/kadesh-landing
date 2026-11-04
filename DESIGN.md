@@ -69,6 +69,8 @@ Cambia **solo** `--color-kadesh`. Superficies claras: blanco y `#f7f8fa`. Oscuro
 
 Poppins es display y UI (400–900). Inter es fallback. Títulos `font-black` con tracking negativo. Cuerpo 18px, medida ~65ch en bloques de lectura (qué es / FAQ).
 
+Panel con sesión (`/perfil`, `/notificaciones`): **Inter variable** (`font-dash`), con cifras tabulares. A más tamaño, menos tracking (títulos `-0.04em`, KPIs `-0.045em`). El sitio público conserva Poppins.
+
 ## Layout
 
 Home: hero full-bleed → definición → animales → veterinarias → historias → donaciones (campo de marca) → cómo funciona (secuencia) → roadmap en tres columnas de estado → FAQ visible → newsletter. Ritmo de sección ~96px. Más aire arriba del H2 que debajo. `/donaciones` es página de lectura: recuento de destinos, luego CTA; sin cifras inventadas.
@@ -94,10 +96,38 @@ Radios 12–16px en controles y tarjetas; CTAs primarios de listado pueden ser `
 - Ficha `/animales/[id]`: herramienta (foto para reconocer, hechos, historial + mapa, comentarios). Sin héroe azul ni footer. Llamar y Cómo llegar en el encabezado. Lat/lng no se muestran.
 - Alta `/animales/nuevo`: herramienta de 3 pasos (foto+tipo, cómo es, dónde), círculos 1–2–3 con check al completar, pie fijo Continuar/Publicar. El borrador sobrevive a un recarga. Sin héroe azul.
 
+## Panel con sesión (Mi cuenta, 2026-11)
+
+`/perfil` (todas sus vistas) y `/notificaciones` viven en un panel propio, sin la barra ni el pie del sitio. Es el mismo lenguaje que los paneles de kadesh-business, con los colores de Kadesh Pet. Código: `src/components/app-shell/` (ver su README) y `src/components/profile/shell/`.
+
+- **Estructura**:
+  - Menú lateral agrupado (Mi cuenta / Mis animales / Mis publicaciones / Mis veterinarias / Kadesh): títulos en versalitas, opción activa en píldora blanca que se desliza y globos rojos de pendientes. Se colapsa a iconos en escritorio; en móvil es un cajón.
+  - Barra superior flotante de vidrio: migas, "Reportar animal", campana, tamaño de texto, tema y menú de cuenta.
+  - Encabezado de vista: eyebrow, título `clamp(2rem, 1.4rem + 2.4vw, 2.85rem)` / `-0.04em` y descripción.
+- **Superficies**:
+  - Fondo cálido `#f6f5f3` / `#0b0b0b` con brillos azules (6–10 %) en las esquinas.
+  - Tarjetas `#fff` / `#171717` de 24 px, borde casi invisible y sombra suave.
+  - Los neutros del panel son cálidos, no los azulados del sitio (`night`).
+- **Tokens**: `--dash-*` en `:root` / `.dark`, usados como `bg-dash-*`, `text-dash-*`, `border-dash-line`, sin repetir `dark:`.
+- **KPIs**:
+  - Uno oscuro (casi negro con radiales azules) para la cifra principal de la vista; uno tintado (kadesh-50 → 100; en oscuro, azul al 14 % → 6 %) para la segunda; el resto blancos.
+  - Pastilla ↗/↘ y sparkline solo con historial real. Cuentan hacia arriba al aparecer.
+- **Acento**:
+  - El azul sólido o en degradado (kadesh-400 → 500 → 700, con el 500 al 12 % para que el texto blanco pase AA) va solo en la acción principal y en la barra pico de las gráficas.
+  - Los chips de filtro activos van en tinta (negro en claro, blanco en oscuro).
+  - Sin naranja; el morado es de Kadesh AI.
+- **Contraste**:
+  - `dash-muted` pasa AA sobre canvas y tarjetas; sobre el KPI tintado el texto va en `dash-soft`.
+  - `dash-faint` no pasa AA: solo es decorativo.
+- **Movimiento**:
+  - Una curva `[0.16, 0.84, 0.44, 1]`; entradas fade-up de 0.55 s escalonadas 50 ms (tope 8); indicadores con resorte; lift en lo tocable.
+  - Todo se apaga con "reducir movimiento".
+
 ## Do's and Don'ts
 
 - Do: un solo hex de marca en `globals.css`.
 - Do: responder la H2 en las primeras 40–60 palabras.
 - Don't: hardcodear `#216BFA` en componentes.
+- Don't: en el panel con sesión, hex sueltos ni parejas `dark:` junto a un token `dash-*` (la pareja gana por especificidad).
 - Don't: kickers, emojis de sistema, ni testimonios inventados.
 - Don't: FAQPage como promesa de rich result de Google; existe para extractabilidad.

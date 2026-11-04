@@ -84,7 +84,7 @@ export function dueTone(ymd: string): DueTone {
 export const DUE_TONE_CLASS: Record<DueTone, string> = {
   overdue: 'text-red-600 dark:text-red-400',
   soon: 'text-amber-700 dark:text-amber-300',
-  later: 'text-[#5a5a5a] dark:text-[#9aa3b2]',
+  later: 'text-dash-muted',
 };
 
 export function speciesLabel(name: string | null | undefined): string {

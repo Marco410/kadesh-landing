@@ -104,7 +104,7 @@ export default function FamilySection({
           : 'Quienes comparten esta cartilla.'
       }
     >
-      <ul className="divide-y divide-[#ececec] dark:divide-white/10">
+      <ul className="divide-y divide-dash-line">
         {owners.map((owner) => {
           const isMe = owner.id === myRow?.id;
           const canRemove =
@@ -112,11 +112,11 @@ export default function FamilySection({
           return (
             <li key={owner.id} className="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
               <div className="min-w-0 flex-1">
-                <p className="break-words font-semibold text-[#121212] dark:text-[#eef1f6]">
+                <p className="break-words font-semibold text-dash-ink">
                   {owner.userName || 'Sin nombre'}
-                  {isMe ? <span className="font-normal text-[#5a5a5a] dark:text-[#9aa3b2]"> (tú)</span> : null}
+                  {isMe ? <span className="font-normal text-dash-muted"> (tú)</span> : null}
                 </p>
-                <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+                <p className="text-xs text-dash-muted">
                   {PET_OWNER_ROLE_LABELS[owner.role] ?? owner.role}
                 </p>
               </div>
@@ -135,8 +135,8 @@ export default function FamilySection({
       </ul>
 
       {isPrincipal ? (
-        <form onSubmit={handleAdd} noValidate className="mt-4 border-t border-[#ececec] pt-4 dark:border-white/10">
-          <label htmlFor="pet-family-email" className="mb-1 block text-xs font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">
+        <form onSubmit={handleAdd} noValidate className="mt-4 border-t border-dash-line pt-4">
+          <label htmlFor="pet-family-email" className="mb-1 block text-xs font-semibold text-dash-muted">
             Agregar por correo
           </label>
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -157,21 +157,21 @@ export default function FamilySection({
             <button
               type="submit"
               disabled={adding}
-              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600 disabled:opacity-50"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center px-4 text-sm font-semibold disabled:opacity-50 rounded-full bg-dash-ink text-dash-on-ink transition-opacity hover:opacity-90"
             >
               {adding ? 'Agregando…' : 'Agregar'}
             </button>
           </div>
           {notFoundEmail ? (
-            <div className="mt-3 flex flex-col gap-3 rounded-xl border border-[#ececec] bg-[#f7f8fa] p-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-night">
-              <p className="text-sm text-[#3a3a3a] dark:text-[#d0d0d0]">
+            <div className="mt-3 flex flex-col gap-3 rounded-xl border border-dash-line bg-dash-surface-2 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-dash-soft">
                 <span className="break-all font-semibold">{notFoundEmail}</span> no tiene cuenta en Kadesh. Puedes
                 registrarla tú y quedará en la familia.
               </p>
               <button
                 type="button"
                 onClick={() => setRegistering(true)}
-                className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+                className="inline-flex min-h-11 shrink-0 items-center justify-center px-4 text-sm font-semibold rounded-full bg-dash-ink text-dash-on-ink transition-opacity hover:opacity-90"
               >
                 Registrar a esta persona
               </button>
@@ -179,7 +179,7 @@ export default function FamilySection({
           ) : emailError ? (
             <p className="mt-1 text-xs text-red-600">{emailError}</p>
           ) : (
-            <p className="mt-1 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+            <p className="mt-1 text-xs text-dash-muted">
               Si aún no tiene cuenta, podrás registrarla aquí mismo.
             </p>
           )}

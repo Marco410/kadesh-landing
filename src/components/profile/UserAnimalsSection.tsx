@@ -43,7 +43,7 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
         {[1, 2, 3].map((item) => (
           <div
             key={item}
-            className="h-20 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10"
+            className="h-20 dash-shimmer rounded-3xl"
           />
         ))}
       </div>
@@ -56,17 +56,17 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
         variants={motionPrefs.item}
         initial={motionPrefs.reduce ? false : "hidden"}
         animate="show"
-        className="flex flex-col items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised"
+        className="flex flex-col items-start gap-3 rounded-3xl border border-dash-line bg-dash-surface p-5 shadow-dash"
       >
-        <p className="font-semibold text-[#121212] dark:text-[#eef1f6]">
+        <p className="font-semibold text-dash-ink">
           Aún no has publicado un reporte
         </p>
-        <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+        <p className="text-sm text-dash-muted">
           Publica un animal perdido, encontrado o en adopción. Quedará en esta lista y en el mapa.
         </p>
         <Link
           href={Routes.animals.new}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+          className="inline-flex min-h-11 items-center gap-1.5 px-4 text-sm font-semibold text-white rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
         >
           <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
           Reportar
@@ -81,7 +81,7 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
         <motion.div whileTap={motionPrefs.tap}>
           <Link
             href={Routes.animals.new}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+            className="inline-flex min-h-11 items-center gap-1.5 px-4 text-sm font-semibold text-white rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
           >
             <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
             Reportar
@@ -103,9 +103,9 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
               <motion.div whileTap={motionPrefs.tap}>
               <Link
                 href={animalDetailHref(animal)}
-                className="flex items-center gap-3 rounded-2xl border border-[#ececec] bg-white p-3 transition-colors hover:border-kadesh-300 dark:border-white/10 dark:bg-night-raised dark:hover:border-kadesh/40"
+                className="flex items-center gap-3 rounded-[20px] border border-dash-line bg-dash-surface p-3 shadow-dash transition-[transform,box-shadow] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-0.5 hover:shadow-dash-lift"
               >
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[#e8edf3] dark:bg-[#2a3548]">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-dash-surface-2">
                   {cover ? (
                     <Image
                       src={cover}
@@ -115,7 +115,7 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
                       sizes="56px"
                     />
                   ) : (
-                    <span className="flex h-full w-full items-center justify-center text-[#9aa3b2]">
+                    <span className="flex h-full w-full items-center justify-center text-dash-faint">
                       <HugeiconsIcon
                         icon={Image01Icon}
                         size={20}
@@ -126,7 +126,7 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate font-semibold text-[#121212] dark:text-[#eef1f6]">
+                    <p className="truncate font-semibold text-dash-ink">
                       {animal.name || "Sin nombre"}
                     </p>
                     {status ? (
@@ -138,7 +138,7 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-0.5 truncate text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+                  <p className="mt-0.5 truncate text-xs text-dash-muted">
                     {[
                       ANIMAL_TYPE_LABELS[typeName] || typeName,
                       animal.animal_breed?.breed,

@@ -15,6 +15,19 @@ Formato:
 
 ---
 
+## 2026-11-03 · fix: tarjetas para compartir (OG) rotas en Cloudflare
+- Rama: feat/panel-cuenta
+- Qué cambió y por qué:
+  - En el worker de Cloudflare, `readFile(new URL('./poppins-700.woff', import.meta.url))` devolvía un buffer vacío (sin error) y Satori fallaba con `RangeError: Offset is outside the bounds of the DataView`.
+  - En `/animales/[slug]/og` se servía la foto tal cual en vez de la tarjeta, y cada petición dejaba un error "Animal share card failed with photo". En `/veterinarias/[slug]/og` siempre caía a `/og-image.png`.
+  - Las fuentes (Poppins 700/800, subconjunto latin de `@fontsource/poppins`, ~10 KB cada una) ahora van en base64 en `src/core/og-fonts.ts`, que comparten ambas rutas. Ya no se lee nada del disco.
+  - Probado con `opennextjs-cloudflare build` + `wrangler dev`: las dos rutas devuelven PNG 1200×630 sin errores.
+- Archivos: src/core/og-fonts.ts (nuevo), src/app/animales/[slug]/og/route.tsx, src/app/veterinarias/[slug]/og/route.tsx; borrados src/app/{animales,veterinarias}/[slug]/og/poppins-{700,800}.woff
+- GraphQL: ninguna
+- Móvil: no aplica (imágenes OG para compartir en redes; la app no las genera)
+
+---
+
 ## 2026-11-03 · style: barrido del panel con sesión (perfil, mascotas, clínicas, notificaciones)
 - Rama: feat/panel-cuenta
 - Qué cambió y por qué:

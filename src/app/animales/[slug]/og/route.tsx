@@ -1,6 +1,6 @@
-import { readFile } from 'node:fs/promises';
 import { NextResponse } from 'next/server';
 import { ImageResponse } from 'next/og';
+import { ogFonts } from 'kadesh/core/og-fonts';
 import { SITE_URL } from 'kadesh/core/site';
 import { getStatusColor } from 'kadesh/components/animals/constants';
 import { animalShareFacts } from 'kadesh/components/animals/animal-seo';
@@ -38,22 +38,6 @@ async function fetchPhoto(url: string | null): Promise<Photo | null> {
   } catch (error) {
     console.error('Animal share image fetch failed:', error);
     return null;
-  }
-}
-
-async function loadFonts() {
-  try {
-    const [bold, black] = await Promise.all([
-      readFile(new URL('./poppins-700.woff', import.meta.url)),
-      readFile(new URL('./poppins-800.woff', import.meta.url)),
-    ]);
-    return [
-      { name: 'Poppins', data: bold, weight: 700 as const, style: 'normal' as const },
-      { name: 'Poppins', data: black, weight: 800 as const, style: 'normal' as const },
-    ];
-  } catch (error) {
-    console.error('Animal share fonts failed to load:', error);
-    return undefined;
   }
 }
 
@@ -221,7 +205,7 @@ async function renderCard(facts: Facts, photo: Photo | null) {
         </div>
       </div>
     ),
-    { width: WIDTH, height: HEIGHT, fonts: await loadFonts() },
+    { width: WIDTH, height: HEIGHT, fonts: ogFonts() },
   );
 
   // Forzar el render aquí para poder caer al plan B si Satori rechaza la foto.

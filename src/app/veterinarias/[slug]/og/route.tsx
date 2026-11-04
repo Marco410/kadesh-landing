@@ -1,6 +1,6 @@
-import { readFile } from 'node:fs/promises';
 import { NextResponse } from 'next/server';
 import { ImageResponse } from 'next/og';
+import { ogFonts } from 'kadesh/core/og-fonts';
 import { SITE_URL } from 'kadesh/core/site';
 import { petPlaceShareFacts } from 'kadesh/components/veterinaries/pet-place-seo';
 import { fetchPetPlaceForShare } from 'kadesh/components/veterinaries/server';
@@ -17,32 +17,6 @@ function fallbackResponse() {
     status: 302,
     headers: { 'Cache-Control': 'public, max-age=300' },
   });
-}
-
-async function loadFonts() {
-  try {
-    const [bold, black] = await Promise.all([
-      readFile(new URL('./poppins-700.woff', import.meta.url)),
-      readFile(new URL('./poppins-800.woff', import.meta.url)),
-    ]);
-    return [
-      {
-        name: 'Poppins',
-        data: bold,
-        weight: 700 as const,
-        style: 'normal' as const,
-      },
-      {
-        name: 'Poppins',
-        data: black,
-        weight: 800 as const,
-        style: 'normal' as const,
-      },
-    ];
-  } catch (error) {
-    console.error('Pet place share fonts failed to load:', error);
-    return undefined;
-  }
 }
 
 type Facts = ReturnType<typeof petPlaceShareFacts>;
@@ -201,7 +175,7 @@ async function renderCard(facts: Facts) {
         </div>
       </div>
     ),
-    { width: WIDTH, height: HEIGHT, fonts: await loadFonts() },
+    { width: WIDTH, height: HEIGHT, fonts: ogFonts() },
   );
 
   return card.arrayBuffer();

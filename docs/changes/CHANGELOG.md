@@ -15,6 +15,33 @@ Formato:
 
 ---
 
+## 2026-11-04 · feat: bandeja y Ajustes de avisos por separado
+- Rama: feat/panel-cuenta
+- Qué cambió y por qué:
+  - En `/notificaciones` la configuración (tarjeta de WhatsApp) quedaba arriba de los avisos y se mezclaba con ellos. Además, a la derecha sobraba espacio.
+  - La configuración pasa a su propia página, **Ajustes de avisos** (`/notificaciones/ajustes`, `Routes.notifications.settings`). A la izquierda va la tarjeta de WhatsApp; a la derecha, sticky, el estado de las alertas de zona y "¿No te llega el WhatsApp?". En las migas es el detalle de Notificaciones.
+  - La bandeja usa el ancho: en escritorio, la lista y una columna "Cómo te avisamos" con el estado de la campana, WhatsApp (N de M avisos) y la zona, más el botón a los ajustes. En teléfono y tableta, una franja arriba de la lista con el mismo estado.
+  - Los enlaces y el toast de Alertas de zona ahora dicen "Ajustes de avisos".
+- Archivos: src/core/routes.ts, src/app/(cuenta)/notificaciones/{page.tsx,ajustes/page.tsx,ajustes/layout.tsx}, src/components/notifications/{NotificationChannelsSummary.tsx,NotificationsShell.tsx,AlertSettingsForm.tsx,index.ts,README.md}, docs/mobile-sync/2026-11-03-avisos-whatsapp.md (texto)
+- GraphQL: ninguna (usa las consultas de WhatsApp y alertas que ya existían)
+- Móvil: no aplica (organización de pantallas propia de la web). El prompt pendiente de WhatsApp ya dice que la tarjeta vive en Ajustes de avisos.
+
+---
+
+## 2026-11-04 · fix: publicar reporte se ve ocupado y no se publica dos veces
+- Rama: feat/panel-cuenta
+- Qué cambió y por qué:
+  - Al publicar un reporte el botón se veía igual y, tras crearlo, volvía a "Publicar reporte" mientras abría la ficha (`router.push` no espera la navegación). Parecía que no pasaba nada y se podía publicar dos veces.
+  - Ahora un candado evita el doble envío, y el botón dice en qué va con spinner: Revisando, Publicando, Subiendo fotos y Abriendo tu reporte.
+  - Los campos quedan inertes, "Atrás" se deshabilita y aparece una barra de progreso.
+  - Si sale bien, el botón sigue ocupado hasta que abre la ficha.
+  - En el teléfono, la ayuda de WhatsApp ya no tapa el botón de las pantallas con pie fijo.
+- Archivos: src/components/animals/nuevo/{NewAnimalForm.tsx,EditAnimalForm.tsx}, src/components/veterinaries/RegisterVeterinaryForm.tsx, src/components/ui/skeleton/LoadingBar.tsx (prop `label`), src/app/globals.css, src/components/animals/README.md
+- GraphQL: ninguna
+- Móvil: [prompt](../mobile-sync/2026-11-04-publicar-reporte-ocupado.md)
+
+---
+
 ## 2026-11-03 · feat: avisos por WhatsApp (opt-in y por tipo) en notificaciones
 - Rama: feat/panel-cuenta
 - Qué cambió y por qué:

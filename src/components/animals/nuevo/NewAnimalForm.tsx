@@ -4,7 +4,8 @@ import { useMemo, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@apollo/client';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
+import { ArrowLeft01Icon, Loading03Icon } from '@hugeicons/core-free-icons';
+import { LoadingBar } from 'kadesh/components/ui/skeleton';
 import {
   CREATE_ANIMAL_MUTATION,
   CREATE_ANIMAL_LOG_MUTATION,
@@ -180,6 +181,22 @@ function publishErrorMessage(error: unknown): { text: string; step: number; fiel
   return { text: 'Revisa los datos marcados e inténtalo de nuevo.', step: 2 };
 }
 
+/** En qué va la publicación. El botón lo dice para que se note que algo está pasando. */
+type PublishStage = 'checking' | 'creating' | 'photos' | 'opening';
+
+function publishStageLabel(stage: PublishStage, photos: number): string {
+  switch (stage) {
+    case 'checking':
+      return 'Revisando…';
+    case 'creating':
+      return 'Publicando…';
+    case 'photos':
+      return photos > 1 ? `Subiendo ${photos} fotos…` : 'Subiendo la foto…';
+    case 'opening':
+      return 'Abriendo tu reporte…';
+  }
+}
+
 export default function NewAnimalForm({
   initialStatus,
 }: {
@@ -188,7 +205,12 @@ export default function NewAnimalForm({
   const router = useRouter();
   const { user } = useUser();
   const [step, setStep] = useState(0);
-  const [loading, setLoading] = useState(false);
+  // `null` = no se está publicando. Mientras dure, el formulario queda inerte y el botón dice en
+  // qué va. Al terminar bien se queda en "Abriendo tu reporte…" hasta que cambia la página.
+  const [publishStage, setPublishStage] = useState<PublishStage | null>(null);
+  const loading = publishStage !== null;
+  // Candado contra el doble clic: el estado tarda un render en llegar; la ref, no.
+  const submittingRef = useRef(false);
   const [hydrated, setHydrated] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -695,6 +717,7 @@ export default function NewAnimalForm({
   };
 
   const handleSubmit = async () => {
+    if (submittingRef.current) return;
     if (!validateStep(2) || !user?.id) {
       if (!user?.id) {
         sileo.error({ title: 'Inicia sesión para publicar' });
@@ -708,7 +731,9 @@ export default function NewAnimalForm({
       return;
     }
 
-    setLoading(true);
+    submittingRef.current = true;
+    setPublishStage('checking');
+    let published = false;
 
     try {
       const lostDate = buildLostDate(dateMode, otherDate, otherTime);
@@ -740,13 +765,13 @@ export default function NewAnimalForm({
         }
         if (!similar.reviewed && mustReviewBeforePublish(similarReports)) {
           openSimilarReview();
-          setLoading(false);
           return;
         }
       }
       skipSimilarCheck.current = false;
       const dismissed = similarReports.filter((report) => report.kind === 'duplicate' && !report.isMine);
 
+      setPublishStage('creating');
       const { data: animalData } = await createAnimal({
         variables: {
           data: {
@@ -801,6 +826,7 @@ export default function NewAnimalForm({
       });
 
       if (images.length > 0) {
+        setPublishStage('photos');
         await createAnimalMultimedias({
           variables: {
             data: images.map((img, index) => ({
@@ -813,6 +839,8 @@ export default function NewAnimalForm({
       }
 
       await clearAnimalReportDraft(user.id);
+      published = true;
+      setPublishStage('opening');
       const slug =
         logResult.data?.createAnimalLog?.animal?.slug ||
         animalData?.createAnimal?.slug ||
@@ -827,9 +855,16 @@ export default function NewAnimalForm({
         description: parsed.text,
       });
     } finally {
-      setLoading(false);
+      // Si se publicó, el botón sigue ocupado hasta que la ficha abre (`router.push` no espera la
+      // navegación): si volviera a "Publicar reporte", se podría publicar dos veces.
+      if (!published) {
+        submittingRef.current = false;
+        setPublishStage(null);
+      }
     }
   };
+
+  const publishLabel = publishStage ? publishStageLabel(publishStage, images.length) : '';
 
   const whenLabel =
     status === 'lost'
@@ -862,7 +897,8 @@ export default function NewAnimalForm({
           <button
             type="button"
             onClick={goBack}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#121212] hover:bg-[#f3f5f8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:text-[#eef1f6] dark:hover:bg-night"
+            disabled={loading}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#121212] hover:bg-[#f3f5f8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#eef1f6] dark:hover:bg-night"
             aria-label={step === 0 ? 'Volver al directorio' : 'Paso anterior'}
           >
             <HugeiconsIcon icon={ArrowLeft01Icon} size={20} strokeWidth={1.5} />
@@ -878,6 +914,7 @@ export default function NewAnimalForm({
             step={step}
             labels={STEPS}
             onSelect={(index) => {
+              if (loading) return;
               if (index <= step) {
                 setErrors({});
                 setStep(index);
@@ -888,8 +925,18 @@ export default function NewAnimalForm({
           />
         </div>
       </header>
+      <LoadingBar active={loading} label="Publicando tu reporte" />
+      {/* Para lectores de pantalla: en qué va la publicación. */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {publishLabel}
+      </p>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div
+        className={`min-h-0 flex-1 overflow-y-auto transition-opacity duration-200 ${loading ? 'opacity-60' : ''}`}
+        aria-busy={loading}
+        // Mientras publica no se edita nada: lo que se mandó es lo que se ve.
+        inert={loading || undefined}
+      >
         <div ref={panelRef} className="mx-auto w-full max-w-2xl px-4 py-5 sm:px-6 sm:py-6">
           {step === 0 && (
             <div className="space-y-6">
@@ -1286,25 +1333,40 @@ export default function NewAnimalForm({
         </div>
       </div>
 
-      <div className="shrink-0 border-t border-[#e6e9ef] bg-white px-4 py-3 dark:border-white/10 dark:bg-night-raised sm:px-6">
+      {/* `data-sticky-actions`: en el teléfono, la ayuda de WhatsApp sube para no tapar estos botones (globals.css). */}
+      <div data-sticky-actions="" className="shrink-0 border-t border-[#e6e9ef] bg-white px-4 py-3 dark:border-white/10 dark:bg-night-raised sm:px-6">
         <div data-enter="actions" className="mx-auto flex max-w-2xl gap-3">
           <motion.button
             type="button"
             onClick={goBack}
-            whileTap={motionPrefs.tap}
-            className="rounded-xl px-4 py-3 text-sm font-semibold text-[#3a3a3a] hover:bg-[#f3f5f8] dark:text-[#d0d0d0] dark:hover:bg-night"
+            disabled={loading}
+            whileTap={loading ? undefined : motionPrefs.tap}
+            className="rounded-xl px-4 py-3 text-sm font-semibold text-[#3a3a3a] hover:bg-[#f3f5f8] disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#d0d0d0] dark:hover:bg-night"
           >
             {step === 0 ? 'Cancelar' : 'Atrás'}
           </motion.button>
           <motion.button
             type="submit"
             disabled={loading || (step === STEPS.length - 1 && isResolvingPlace)}
+            aria-busy={loading}
             whileTap={loading || isResolvingPlace ? undefined : motionPrefs.tap}
-            className="flex-1 rounded-xl bg-kadesh px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50"
+            // Publicando: se ve ocupado (spinner, sin atenuar), no "apagado".
+            className={`flex-1 rounded-xl bg-kadesh px-6 py-3 text-sm font-semibold text-white transition-colors ${
+              loading ? 'cursor-wait' : 'hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50'
+            }`}
           >
-            {loading
-              ? 'Publicando…'
-              : step === STEPS.length - 1 && isResolvingPlace
+            {loading ? (
+              <span className="inline-flex items-center justify-center gap-2">
+                <HugeiconsIcon
+                  icon={Loading03Icon}
+                  size={18}
+                  strokeWidth={2}
+                  className="animate-spin motion-reduce:animate-none"
+                  aria-hidden
+                />
+                {publishLabel}
+              </span>
+            ) : step === STEPS.length - 1 && isResolvingPlace
                 ? 'Ubicando…'
                 : step < STEPS.length - 1
                   ? 'Continuar'

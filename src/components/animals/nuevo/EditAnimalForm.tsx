@@ -448,7 +448,8 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
         </div>
       </div>
 
-      <div className="shrink-0 border-t border-[#e6e9ef] bg-white px-4 py-3 dark:border-white/10 dark:bg-night-raised sm:px-6">
+      {/* `data-sticky-actions`: en el teléfono, la ayuda de WhatsApp sube para no tapar estos botones (globals.css). */}
+      <div data-sticky-actions="" className="shrink-0 border-t border-[#e6e9ef] bg-white px-4 py-3 dark:border-white/10 dark:bg-night-raised sm:px-6">
         <div className="mx-auto flex max-w-2xl gap-3">
           <button
             type="button"

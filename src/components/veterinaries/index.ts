@@ -6,6 +6,7 @@ export { default as OpenNowChip } from './OpenNowChip';
 export { default as ClaimPetPlaceSection } from './ClaimPetPlaceSection';
 export { default as PetPlaceContactCard } from './PetPlaceContactCard';
 export { default as VerifiedBadge } from './VerifiedBadge';
+export { default as UnverifiedChip } from './UnverifiedChip';
 export { default as PetPlaceLikeButton } from './PetPlaceLikeButton';
 export { default as PetPlaceBookCta } from './PetPlaceBookCta';
 export { default as UserAppointmentsSection } from './UserAppointmentsSection';

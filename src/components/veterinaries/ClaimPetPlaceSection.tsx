@@ -18,6 +18,7 @@ import {
 import {
   CLAIM_BENEFITS,
   CLAIM_ROLE_OPTIONS,
+  CLAIM_SECTION_ID,
   PET_PLACE_CLAIM_ROLE,
   PET_PLACE_CLAIM_STATUS,
   type PetPlaceClaimRole,
@@ -25,6 +26,10 @@ import {
 import { claimWhatsAppUrl, disputeClaimWhatsAppUrl } from "./claimWhatsApp";
 import type { PetPlaceDetail } from "./types";
 import { useUiMotion } from "kadesh/components/shared/motion";
+
+/** `scroll-mt` se suma al `scroll-padding-top` del html para no quedar bajo la barra fija. */
+const SECTION_CLASS =
+  "scroll-mt-4 rounded-2xl border border-[#ececec] bg-white p-4 focus:outline-none dark:border-white/10 dark:bg-night-raised";
 
 const INPUT_CLASS =
   "w-full rounded-xl border border-[#d8dee8] bg-white px-4 py-3 text-sm text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh dark:border-white/18 dark:bg-night dark:text-white dark:placeholder:text-[#9aa3b2]";
@@ -114,7 +119,7 @@ export default function ClaimPetPlaceSection({
 
   if (isVerified && isOwn) {
     return (
-      <section className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+      <section id={CLAIM_SECTION_ID} tabIndex={-1} className={SECTION_CLASS}>
         <h2 className="text-sm font-bold text-[#121212] dark:text-white">
           Esta ficha es tuya
         </h2>
@@ -133,7 +138,7 @@ export default function ClaimPetPlaceSection({
 
   if (takenByOther) {
     return (
-      <section className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+      <section id={CLAIM_SECTION_ID} tabIndex={-1} className={SECTION_CLASS}>
         <h2 className="text-sm font-bold text-[#121212] dark:text-white">
           Ficha en revisión
         </h2>
@@ -155,7 +160,7 @@ export default function ClaimPetPlaceSection({
 
   if (isOwn && isPending) {
     return (
-      <section className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+      <section id={CLAIM_SECTION_ID} tabIndex={-1} className={SECTION_CLASS}>
         <h2 className="text-sm font-bold text-[#121212] dark:text-white">
           Solicitud enviada
         </h2>
@@ -177,7 +182,7 @@ export default function ClaimPetPlaceSection({
   }
 
   return (
-    <section className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
+    <section id={CLAIM_SECTION_ID} tabIndex={-1} className={SECTION_CLASS}>
       <h2 className="text-sm font-bold text-[#121212] dark:text-white">
         ¿Es tu clínica?
       </h2>

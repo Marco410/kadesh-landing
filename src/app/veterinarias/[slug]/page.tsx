@@ -37,11 +37,15 @@ import {
   ClaimPetPlaceSection,
   PetPlaceContactCard,
   VerifiedBadge,
+  UnverifiedChip,
   PetPlaceLikeButton,
   PetPlaceBookCta,
 } from "kadesh/components/veterinaries";
 import { getPetPlaceBookingMode } from "kadesh/components/veterinaries/appointments";
-import { formatPetPlaceTypeLabels } from "kadesh/components/veterinaries/constants";
+import {
+  formatPetPlaceTypeLabels,
+  PET_PLACE_CLAIM_STATUS,
+} from "kadesh/components/veterinaries/constants";
 import { isPetPlaceKeystoneId } from "kadesh/components/veterinaries/petPlaceSlug";
 import PetPlaceDetailSkeleton from "kadesh/components/veterinaries/PetPlaceDetailSkeleton";
 import type {
@@ -423,6 +427,11 @@ export default function VeterinaryDetailPage() {
     : null;
   const isBookable = getPetPlaceBookingMode(place.types) !== null;
   const typeLine = formatPetPlaceTypeLabels(place.types);
+  // Misma regla que ClaimPetPlaceSection: si no está verificada, esa sección
+  // siempre se muestra y el chip "No verificada" lleva a ella.
+  const isVerified =
+    Boolean(place.verified) ||
+    place.claimStatus === PET_PLACE_CLAIM_STATUS.VERIFIED;
 
   return (
     <DetailShell>
@@ -446,7 +455,7 @@ export default function VeterinaryDetailPage() {
             <div className="min-w-0 flex-1">
               <h1 className="flex min-w-0 items-center gap-2 text-pretty text-xl font-black leading-tight tracking-[-0.03em] text-[#121212] dark:text-white sm:text-2xl">
                 <span className="min-w-0 lg:truncate">{displayName}</span>
-                {place.verified ? <VerifiedBadge size={22} /> : null}
+                {isVerified ? <VerifiedBadge size={22} /> : null}
               </h1>
               {typeLine ? (
                 <p className="mt-1 break-words text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
@@ -487,6 +496,7 @@ export default function VeterinaryDetailPage() {
                     {place.isOpen ? "Abierto" : "Cerrado"}
                   </span>
                 )}
+                {!isVerified && <UnverifiedChip />}
               </div>
             </div>
           </div>

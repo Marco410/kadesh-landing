@@ -201,7 +201,7 @@ export default function PetFormModal({ isOpen, onClose, pet, onSaved }: PetFormM
           onRemove={queue.remove}
           onReorder={queue.reorder}
         />
-        <p className="mt-1 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+        <p className="mt-1 text-xs text-dash-muted">
           Hasta {MAX_PET_PHOTOS}. La primera es la principal y son las que irían en un reporte si se pierde.
         </p>
       </div>
@@ -381,7 +381,7 @@ export default function PetFormModal({ isOpen, onClose, pet, onSaved }: PetFormM
               />
             ))}
           </div>
-          <p className="mt-1 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="mt-1 text-xs text-dash-muted">
             Si se pierde, usa «Marcar como perdida» para publicar su reporte.
           </p>
         </div>

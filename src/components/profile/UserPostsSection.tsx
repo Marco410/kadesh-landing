@@ -14,6 +14,7 @@ import { ConfirmModal } from "kadesh/components/shared";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete02Icon } from "@hugeicons/core-free-icons";
 import type { UserComment } from "./queries";
+import { DashSegmented } from "kadesh/components/app-shell";
 import { useProfileMotion } from "./motion";
 
 interface UserPostsSectionProps {
@@ -87,41 +88,12 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
 
   return (
     <div>
-      <div
-        role="tablist"
-        aria-label="Publicaciones"
-        className="flex flex-wrap gap-2"
-      >
-        {POST_TABS.map((tab) => {
-          const selected = tab.key === selectedTab;
-          return (
-            <motion.button
-              key={tab.key}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              onClick={() => setSelectedTab(tab.key)}
-              whileTap={motionPrefs.tap}
-              className={`relative inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${
-                selected
-                  ? "text-white"
-                  : "bg-[#f3f5f8] text-[#3a3a3a] hover:bg-kadesh-50 dark:bg-night dark:text-[#d0d0d0] dark:hover:bg-kadesh/20"
-              }`}
-            >
-              {selected ? (
-                <motion.span
-                  layoutId="perfil-posts-tab-pill"
-                  className="absolute inset-0 rounded-full bg-kadesh shadow-[0_8px_18px_rgba(15,35,80,0.18)]"
-                  transition={motionPrefs.transition}
-                />
-              ) : null}
-              <span className="relative z-10">
-                {tab.label} ({countFor[tab.key]})
-              </span>
-            </motion.button>
-          );
-        })}
-      </div>
+      <DashSegmented
+        ariaLabel="Publicaciones"
+        value={selectedTab}
+        onChange={setSelectedTab}
+        items={POST_TABS.map((tab) => ({ id: tab.key, label: tab.label, count: countFor[tab.key] }))}
+      />
 
       <div className="mt-5">
         <AnimatePresence mode="wait">
@@ -140,13 +112,13 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
               ))}
             </div>
           ) : favoritePosts.length === 0 ? (
-            <div className="flex flex-col items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised">
-              <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+            <div className="flex flex-col items-start gap-3 rounded-3xl border border-dash-line bg-dash-surface p-5 shadow-dash">
+              <p className="text-sm text-dash-muted">
                 Los artículos que guardes aparecen aquí.
               </p>
               <Link
                 href={Routes.blog.index}
-                className="inline-flex min-h-11 items-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+                className="inline-flex min-h-11 items-center px-4 text-sm font-semibold text-white rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
               >
                 Ir al blog
               </Link>
@@ -167,13 +139,13 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
               ))}
             </div>
           ) : likedPosts.length === 0 ? (
-            <div className="flex flex-col items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised">
-              <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+            <div className="flex flex-col items-start gap-3 rounded-3xl border border-dash-line bg-dash-surface p-5 shadow-dash">
+              <p className="text-sm text-dash-muted">
                 Los artículos que marques con me gusta aparecen aquí.
               </p>
               <Link
                 href={Routes.blog.index}
-                className="inline-flex min-h-11 items-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+                className="inline-flex min-h-11 items-center px-4 text-sm font-semibold text-white rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
               >
                 Ir al blog
               </Link>
@@ -192,18 +164,18 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-24 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10"
+                  className="h-24 animate-pulse rounded-xl bg-dash-surface-3"
                 />
               ))}
             </div>
           ) : comments.length === 0 ? (
-            <div className="flex flex-col items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised">
-              <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+            <div className="flex flex-col items-start gap-3 rounded-3xl border border-dash-line bg-dash-surface p-5 shadow-dash">
+              <p className="text-sm text-dash-muted">
                 Tus comentarios en el blog aparecen aquí.
               </p>
               <Link
                 href={Routes.blog.index}
-                className="inline-flex min-h-11 items-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+                className="inline-flex min-h-11 items-center px-4 text-sm font-semibold text-white rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
               >
                 Ir al blog
               </Link>
@@ -219,7 +191,7 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
                 <motion.div
                   key={comment.id}
                   variants={motionPrefs.item}
-                  className="relative rounded-2xl border border-[#ececec] bg-white p-3 dark:border-white/10 dark:bg-night-raised"
+                  className="relative rounded-[20px] border border-dash-line bg-dash-surface p-3 shadow-dash"
                 >
                   <Link
                     href={Routes.blog.post(comment.post.url)}
@@ -236,13 +208,13 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
                       </div>
                     )}
                     <div className="min-w-0 flex-1 pr-8">
-                      <h3 className="truncate font-semibold text-[#121212] dark:text-[#eef1f6]">
+                      <h3 className="truncate font-semibold text-dash-ink">
                         {comment.post.title}
                       </h3>
-                      <p className="mt-1 line-clamp-2 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+                      <p className="mt-1 line-clamp-2 text-sm text-dash-muted">
                         {comment.comment}
                       </p>
-                      <p className="mt-1 text-xs text-[#9aa3b2]">
+                      <p className="mt-1 text-xs text-dash-muted">
                         {formatDate(comment.createdAt)}
                       </p>
                     </div>
@@ -254,7 +226,7 @@ export default function UserPostsSection({ userId }: UserPostsSectionProps) {
                       e.stopPropagation();
                       openDeleteModal(comment.id);
                     }}
-                    className="absolute right-2 top-2 inline-flex h-11 w-11 items-center justify-center rounded-lg text-[#5a5a5a] hover:bg-red-50 hover:text-red-600 dark:text-[#9aa3b2] dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                    className="absolute right-2 top-2 inline-flex h-11 w-11 items-center justify-center rounded-lg text-dash-muted hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
                     aria-label="Eliminar comentario"
                   >
                     <HugeiconsIcon icon={Delete02Icon} size={16} />

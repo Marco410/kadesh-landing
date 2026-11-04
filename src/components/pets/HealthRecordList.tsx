@@ -14,7 +14,7 @@ import {
   Stethoscope02Icon,
 } from '@hugeicons/core-free-icons';
 import { ConfirmModal } from 'kadesh/components/shared';
-import { useUiMotion } from 'kadesh/components/shared/motion';
+import { useProfileMotion } from 'kadesh/components/profile/motion';
 import SectionCard, { IconAction } from './SectionCard';
 import { DELETE_HEALTH_RECORD_MUTATION, PET_REFETCH } from './queries';
 import { healthRecordTypeLabel } from './constants';
@@ -37,7 +37,7 @@ export default function HealthRecordList({
   onEdit: (record: PetHealthRecord) => void;
 }) {
   const client = useApolloClient();
-  const motionPrefs = useUiMotion();
+  const motionPrefs = useProfileMotion();
   const [toDelete, setToDelete] = useState<PetHealthRecord | null>(null);
   const [deleteRecord, { loading: deleting }] = useMutation(DELETE_HEALTH_RECORD_MUTATION);
 
@@ -61,12 +61,12 @@ export default function HealthRecordList({
       onAction={onAdd}
     >
       {records.length === 0 ? (
-        <p className="rounded-xl bg-[#f7f8fa] p-4 text-sm text-[#5a5a5a] dark:bg-night dark:text-[#9aa3b2]">
+        <p className="rounded-xl bg-dash-surface-2 p-4 text-sm text-dash-muted">
           Aún no hay registros. Agrega su última vacuna; si pones la próxima fecha, te avisamos antes.
         </p>
       ) : (
         <motion.ul
-          className="divide-y divide-[#ececec] dark:divide-white/10"
+          className="divide-y divide-dash-line"
           variants={motionPrefs.list}
           initial={motionPrefs.reduce ? false : 'hidden'}
           animate="show"
@@ -77,8 +77,8 @@ export default function HealthRecordList({
                 <HugeiconsIcon icon={recordIcon(record.type)} size={20} strokeWidth={1.6} aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="break-words font-semibold text-[#121212] dark:text-[#eef1f6]">{record.name}</p>
-                <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+                <p className="break-words font-semibold text-dash-ink">{record.name}</p>
+                <p className="text-xs text-dash-muted">
                   {healthRecordTypeLabel(record.type)} · {formatDay(record.appliedDate)}
                   {record.veterinary ? ` · ${record.veterinary.name}` : ''}
                 </p>
@@ -88,7 +88,7 @@ export default function HealthRecordList({
                   </p>
                 ) : null}
                 {record.notes ? (
-                  <p className="mt-1 whitespace-pre-line break-words text-sm text-[#3a3a3a] dark:text-[#d0d0d0]">
+                  <p className="mt-1 whitespace-pre-line break-words text-sm text-dash-soft">
                     {record.notes}
                   </p>
                 ) : null}
@@ -101,7 +101,7 @@ export default function HealthRecordList({
                           href={attachment.image.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="relative block h-14 w-14 overflow-hidden rounded-lg bg-[#e8edf3] dark:bg-[#2a3548]"
+                          className="relative block h-14 w-14 overflow-hidden rounded-lg bg-dash-surface-2"
                           aria-label="Ver foto adjunta"
                         >
                           <Image src={attachment.image.url} alt="" fill className="object-cover" sizes="56px" />

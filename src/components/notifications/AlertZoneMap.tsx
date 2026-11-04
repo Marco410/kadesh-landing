@@ -32,7 +32,8 @@ function samePoint(a: LatLng, b: LatLng): boolean {
 }
 
 /**
- * Mapa con un pin fijo al centro y el círculo del radio. Al arrastrar el mapa cambia el centro.
+ * Mapa con un pin fijo al centro y el círculo del radio. El centro cambia al arrastrar el mapa o
+ * al tocar un punto (el mapa se desliza hasta ahí; sin animación con "reducir movimiento").
  */
 export default function AlertZoneMap({
   center,
@@ -98,9 +99,20 @@ export default function AlertZoneMap({
       if (centerRef.current) commitCenter();
     };
 
+    // Tocar un punto lo vuelve el centro. Se confirma al terminar de deslizarse: si se confirmara
+    // antes, el efecto de `center` haría `setView` a media animación y la cortaría.
+    const centerOnClick = (...args: unknown[]) => {
+      const point = (args[0] as { latlng?: LatLng } | undefined)?.latlng;
+      if (!point) return;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      map.once('moveend', commitCenter);
+      map.panTo(point, { animate: !reduce, duration: 0.45 });
+    };
+
     map.on('move', followCenter);
     map.on('dragend', commitCenter);
     map.on('zoomend', commitAfterZoom);
+    map.on('click', centerOnClick);
 
     requestAnimationFrame(() => map.invalidateSize());
     const later = window.setTimeout(() => map.invalidateSize(), 250);
@@ -110,6 +122,7 @@ export default function AlertZoneMap({
       map.off('move', followCenter);
       map.off('dragend', commitCenter);
       map.off('zoomend', commitAfterZoom);
+      map.off('click', centerOnClick);
       map.remove();
       mapRef.current = null;
       circleRef.current = null;
@@ -139,7 +152,7 @@ export default function AlertZoneMap({
   }, [center]);
 
   return (
-    <div className="relative h-72 overflow-hidden rounded-2xl border border-[#ececec] dark:border-white/10 sm:h-80">
+    <div className="relative h-72 overflow-hidden rounded-3xl border border-dash-line shadow-dash sm:h-80">
       {!ready ? <Bone kind="box" height="100%" radius={0} className="absolute inset-0" /> : null}
       <div ref={containerRef} className="h-full w-full" />
       <span

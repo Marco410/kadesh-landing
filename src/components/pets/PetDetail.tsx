@@ -18,7 +18,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
 import { ConfirmModal } from 'kadesh/components/shared';
-import { useUiMotion } from 'kadesh/components/shared/motion';
+import { useProfileMotion } from 'kadesh/components/profile/motion';
 import PetFormModal from './PetFormModal';
 import HealthRecordFormModal from './HealthRecordFormModal';
 import ReminderFormModal from './ReminderFormModal';
@@ -49,8 +49,8 @@ function DataItem({ label, value, wide }: { label: string; value: string; wide?:
   if (!value) return null;
   return (
     <div className={wide ? 'sm:col-span-2' : undefined}>
-      <dt className="text-xs font-semibold text-[#5a5a5a] dark:text-[#9aa3b2]">{label}</dt>
-      <dd className="mt-0.5 whitespace-pre-line break-words text-sm text-[#121212] dark:text-[#eef1f6]">{value}</dd>
+      <dt className="text-xs font-semibold text-dash-muted">{label}</dt>
+      <dd className="mt-0.5 whitespace-pre-line break-words text-sm text-dash-ink">{value}</dd>
     </div>
   );
 }
@@ -65,7 +65,7 @@ export default function PetDetail({
   onBack: () => void;
 }) {
   const client = useApolloClient();
-  const motionPrefs = useUiMotion();
+  const motionPrefs = useProfileMotion();
   const { data, loading, error } = useQuery<PetDetailResponse>(PET_DETAIL_QUERY, {
     variables: { id: petId },
     fetchPolicy: 'cache-and-network',
@@ -84,9 +84,9 @@ export default function PetDetail({
   if (loading && !pet) {
     return (
       <div className="space-y-3" aria-busy="true">
-        <div className="h-11 w-36 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10" />
-        <div className="h-40 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10" />
-        <div className="h-32 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10" />
+        <div className="h-11 w-36 animate-pulse rounded-xl bg-dash-surface-3" />
+        <div className="h-40 dash-shimmer rounded-3xl" />
+        <div className="h-32 dash-shimmer rounded-3xl" />
       </div>
     );
   }
@@ -95,7 +95,7 @@ export default function PetDetail({
     <button
       type="button"
       onClick={onBack}
-      className="mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-sm font-semibold text-[#3a3a3a] hover:bg-[#f3f5f8] dark:text-[#d0d0d0] dark:hover:bg-white/10"
+      className="mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-sm font-semibold text-dash-soft hover:bg-dash-hover"
     >
       <HugeiconsIcon icon={ArrowLeft01Icon} size={18} strokeWidth={1.6} aria-hidden="true" />
       Mis mascotas
@@ -106,11 +106,11 @@ export default function PetDetail({
     return (
       <div>
         {backButton}
-        <div className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised">
-          <p className="font-semibold text-[#121212] dark:text-[#eef1f6]">
+        <div className="rounded-3xl border border-dash-line bg-dash-surface p-5 shadow-dash">
+          <p className="font-semibold text-dash-ink">
             {error ? 'No pudimos cargar esta mascota' : 'No encontramos esta mascota'}
           </p>
-          <p className="mt-1 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="mt-1 text-sm text-dash-muted">
             {error ? 'Revisa tu conexión e intenta de nuevo.' : 'Puede que la hayan borrado o que ya no estés en su cartilla.'}
           </p>
         </div>
@@ -160,33 +160,33 @@ export default function PetDetail({
       >
         <motion.section
           variants={motionPrefs.item}
-          className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised"
+          className="rounded-3xl border border-dash-line bg-dash-surface p-4 shadow-dash"
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-            <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl bg-[#e8edf3] dark:bg-[#2a3548]">
+            <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl bg-dash-surface-2">
               {cover ? (
                 <Image src={cover} alt={`Foto de ${pet.name}`} fill className="object-cover" sizes="112px" />
               ) : (
-                <span className="flex h-full w-full items-center justify-center text-[#9aa3b2]">
+                <span className="flex h-full w-full items-center justify-center text-dash-faint">
                   <HugeiconsIcon icon={Image01Icon} size={28} strokeWidth={1.5} aria-hidden="true" />
                 </span>
               )}
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="break-words text-2xl font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]">
+                <h2 className="break-words text-2xl font-bold tracking-[-0.03em] text-dash-ink">
                   {pet.name}
                 </h2>
                 <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${PET_STATUS_BADGE[pet.status] ?? PET_STATUS_BADGE.active}`}>
                   {PET_STATUS_LABELS[pet.status] ?? pet.status}
                 </span>
               </div>
-              {subtitle ? <p className="mt-0.5 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">{subtitle}</p> : null}
+              {subtitle ? <p className="mt-0.5 text-sm text-dash-muted">{subtitle}</p> : null}
               {pet.multimedia.length > 1 ? (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {pet.multimedia.slice(1).map((photo) =>
                     photo.image?.url ? (
-                      <div key={photo.id} className="relative h-14 w-14 overflow-hidden rounded-lg bg-[#e8edf3] dark:bg-[#2a3548]">
+                      <div key={photo.id} className="relative h-14 w-14 overflow-hidden rounded-lg bg-dash-surface-2">
                         <Image src={photo.image.url} alt="" fill className="object-cover" sizes="56px" />
                       </div>
                     ) : null,
@@ -197,7 +197,7 @@ export default function PetDetail({
                 <button
                   type="button"
                   onClick={() => setEditingPet(true)}
-                  className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[#f3f5f8] px-4 text-sm font-semibold text-[#121212] hover:bg-[#e6e9ef] dark:bg-night dark:text-[#eef1f6] dark:hover:bg-white/10"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-dash-surface-2 px-4 text-sm font-semibold text-dash-ink hover:bg-dash-hover"
                 >
                   <HugeiconsIcon icon={PencilEdit01Icon} size={16} strokeWidth={1.6} aria-hidden="true" />
                   Editar
@@ -206,7 +206,7 @@ export default function PetDetail({
                   <button
                     type="button"
                     onClick={() => setMarkingLost(true)}
-                    className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-red-200 px-4 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-500/30 dark:text-red-300 dark:hover:bg-red-500/10"
+                    className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-red-200 px-4 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-500/30 dark:text-red-300 dark:hover:bg-red-500/10"
                   >
                     <HugeiconsIcon icon={Alert02Icon} size={16} strokeWidth={1.6} aria-hidden="true" />
                     Marcar como perdida
@@ -216,7 +216,7 @@ export default function PetDetail({
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(true)}
-                    className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                    className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
                   >
                     <HugeiconsIcon icon={Delete02Icon} size={16} strokeWidth={1.6} aria-hidden="true" />
                     Borrar
@@ -236,7 +236,7 @@ export default function PetDetail({
                 <button
                   type="button"
                   onClick={() => setConfirmFound(true)}
-                  className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700"
                 >
                   <HugeiconsIcon icon={Home01Icon} size={16} strokeWidth={1.6} aria-hidden="true" />
                   Ya regresó a casa
@@ -244,7 +244,7 @@ export default function PetDetail({
                 {reportHref ? (
                   <Link
                     href={reportHref}
-                    className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-500/30 dark:bg-transparent dark:text-red-300 dark:hover:bg-red-500/10"
+                    className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-red-200 bg-dash-surface px-4 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-500/30 dark:text-red-300 dark:hover:bg-red-500/10"
                   >
                     <HugeiconsIcon icon={Location01Icon} size={16} strokeWidth={1.6} aria-hidden="true" />
                     Ver reporte
@@ -254,7 +254,7 @@ export default function PetDetail({
             </div>
           ) : null}
 
-          <dl className="mt-4 grid gap-3 border-t border-[#ececec] pt-4 sm:grid-cols-2 dark:border-white/10">
+          <dl className="mt-4 grid gap-3 border-t border-dash-line pt-4 sm:grid-cols-2">
             <DataItem label="Sexo" value={sexLabel(pet.sex)} />
             <DataItem
               label={pet.birthday ? 'Nacimiento' : 'Edad'}

@@ -5,6 +5,13 @@ import Link from "next/link";
 import { useMutation, useQuery } from "@apollo/client";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Calendar02Icon } from "@hugeicons/core-free-icons";
+import {
+  DashButton,
+  DashModal,
+  dashLabelClass,
+  dashTextareaClass,
+  useLatched,
+} from "kadesh/components/app-shell";
 import { Routes } from "kadesh/core/routes";
 import {
   APPOINTMENT_STATUS_BADGE,
@@ -33,7 +40,7 @@ function CancelAppointmentModal({
   onClose,
   onConfirm,
 }: {
-  appointment: MyAppointment;
+  appointment: MyAppointment | null;
   reason: string;
   error: string | null;
   loading: boolean;
@@ -41,67 +48,45 @@ function CancelAppointmentModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
-  const placeName = appointment.pet_place?.name || "el negocio";
+  // Mientras sale, sigue mostrando la cita que tenía (al cerrar `appointment` ya es null).
+  const shown = useLatched(appointment);
+  const placeName = shown?.pet_place?.name || "el negocio";
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 p-4 sm:items-center"
-      onClick={loading ? undefined : onClose}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="cancel-appointment-title"
-        className="w-full max-w-lg rounded-2xl border border-[#e0e0e0] bg-white p-5 shadow-2xl dark:border-[#3a3a3a] dark:bg-[#1e1e1e] sm:p-6"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <h3
-          id="cancel-appointment-title"
-          className="text-xl font-bold text-[#212121] dark:text-white"
-        >
-          ¿Cancelar esta cita?
-        </h3>
-        <p className="mt-2 text-sm leading-relaxed text-[#616161] dark:text-[#b0b0b0]">
-          Se cancelará la cita en {placeName}. El negocio recibirá el aviso.
-        </p>
-        <label className="mt-4 block">
-          <span className="mb-1 block text-sm font-medium text-[#212121] dark:text-white">
-            Motivo (opcional)
-          </span>
-          <textarea
-            value={reason}
-            onChange={(event) => onReasonChange(event.target.value)}
-            rows={3}
-            disabled={loading}
-            placeholder="Si quieres, di por qué cancelas"
-            className="w-full min-h-[5.5rem] rounded-xl border border-[#d8dee8] bg-white px-4 py-3 text-sm text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh disabled:opacity-60 dark:border-white/18 dark:bg-night dark:text-white"
-          />
-        </label>
-        {error ? (
-          <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">
-            {error}
-          </p>
-        ) : null}
-        <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={loading}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-500 px-4 text-sm font-semibold text-white hover:bg-red-600 disabled:cursor-wait disabled:opacity-60"
-          >
-            {loading ? "Cancelando…" : "Sí, cancelar"}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-[#e0e0e0] px-4 text-sm font-semibold text-[#212121] hover:bg-[#f5f5f5] disabled:opacity-60 dark:border-[#3a3a3a] dark:text-white dark:hover:bg-[#2a2a2a]"
-          >
+    <DashModal
+      open={Boolean(appointment)}
+      onClose={onClose}
+      busy={loading}
+      title="¿Cancelar esta cita?"
+      subtitle={`Se cancelará la cita en ${placeName}. El negocio recibirá el aviso.`}
+      footer={
+        <>
+          <DashButton variant="ghost" onClick={onClose} disabled={loading}>
             No
-          </button>
-        </div>
-      </div>
-    </div>
+          </DashButton>
+          <DashButton variant="danger" onClick={onConfirm} disabled={loading}>
+            {loading ? "Cancelando…" : "Sí, cancelar"}
+          </DashButton>
+        </>
+      }
+    >
+      <label className="block">
+        <span className={dashLabelClass}>Motivo (opcional)</span>
+        <textarea
+          value={reason}
+          onChange={(event) => onReasonChange(event.target.value)}
+          rows={3}
+          disabled={loading}
+          placeholder="Si quieres, di por qué cancelas"
+          className={dashTextareaClass}
+        />
+      </label>
+      {error ? (
+        <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">
+          {error}
+        </p>
+      ) : null}
+    </DashModal>
   );
 }
 
@@ -161,8 +146,8 @@ export default function UserAppointmentsSection() {
 
   if (loadError) {
     return (
-      <div className="rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised">
-        <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+      <div className="rounded-3xl border border-dash-line bg-dash-surface p-5 shadow-dash">
+        <p className="text-sm text-dash-muted">
           No se pudieron cargar tus citas. Intenta de nuevo más tarde.
         </p>
       </div>
@@ -175,7 +160,7 @@ export default function UserAppointmentsSection() {
         {[1, 2, 3].map((item) => (
           <div
             key={item}
-            className="h-24 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10"
+            className="h-24 dash-shimmer rounded-3xl"
           />
         ))}
       </div>
@@ -184,17 +169,17 @@ export default function UserAppointmentsSection() {
 
   if (appointments.length === 0) {
     return (
-      <div className="flex flex-col items-start gap-3 rounded-2xl border border-[#ececec] bg-white p-5 dark:border-white/10 dark:bg-night-raised">
-        <p className="font-semibold text-[#121212] dark:text-[#eef1f6]">
+      <div className="flex flex-col items-start gap-3 rounded-3xl border border-dash-line bg-dash-surface p-5 shadow-dash">
+        <p className="font-semibold text-dash-ink">
           Aún no tienes citas
         </p>
-        <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+        <p className="text-sm text-dash-muted">
           Reserva en la ficha de una veterinaria, refugio, hotel o groomer. La
           solicitud queda pendiente hasta que el negocio la confirme.
         </p>
         <Link
           href={Routes.veterinaries.index}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+          className="inline-flex min-h-11 items-center gap-1.5 px-4 text-sm font-semibold text-white rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
         >
           <HugeiconsIcon
             icon={Calendar02Icon}
@@ -215,7 +200,7 @@ export default function UserAppointmentsSection() {
           const status = appointment.status ?? "";
           const badgeClass = isAppointmentStatus(status)
             ? APPOINTMENT_STATUS_BADGE[status]
-            : "bg-[#ececec] text-[#5a5a5a] dark:bg-white/10 dark:text-[#b0b0b0]";
+            : "bg-dash-surface-3 text-dash-muted";
           const place = appointment.pet_place;
           const petLine = [appointment.petName, appointment.petSpecies]
             .filter(Boolean)
@@ -224,7 +209,7 @@ export default function UserAppointmentsSection() {
           return (
             <li
               key={appointment.id}
-              className="rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised"
+              className="rounded-3xl border border-dash-line bg-dash-surface p-4 shadow-dash"
             >
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
@@ -232,12 +217,12 @@ export default function UserAppointmentsSection() {
                     {place ? (
                       <Link
                         href={veterinaryDetailHref(place)}
-                        className="min-w-0 break-words font-semibold text-[#121212] hover:text-kadesh dark:text-[#eef1f6]"
+                        className="min-w-0 break-words font-semibold text-dash-ink hover:text-kadesh"
                       >
                         {place.name || "Negocio"}
                       </Link>
                     ) : (
-                      <p className="font-semibold text-[#121212] dark:text-[#eef1f6]">
+                      <p className="font-semibold text-dash-ink">
                         Negocio
                       </p>
                     )}
@@ -247,14 +232,14 @@ export default function UserAppointmentsSection() {
                       {appointmentStatusLabel(status)}
                     </span>
                   </div>
-                  <p className="mt-1 break-words text-sm text-[#3a3a3a] dark:text-[#d0d0d0]">
+                  <p className="mt-1 break-words text-sm text-dash-soft">
                     {formatAppointmentRange(
                       appointment.startsAt,
                       appointment.endsAt,
                     )}
                   </p>
                   {petLine ? (
-                    <p className="mt-0.5 break-words text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+                    <p className="mt-0.5 break-words text-xs text-dash-muted">
                       {petLine}
                     </p>
                   ) : null}
@@ -267,7 +252,7 @@ export default function UserAppointmentsSection() {
                       setReason("");
                       setTarget(appointment);
                     }}
-                    className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl border border-[#d8dee8] px-4 text-sm font-semibold text-[#3a3a3a] hover:border-red-300 hover:text-red-700 dark:border-white/18 dark:text-[#e8edf4] dark:hover:border-red-400/40 dark:hover:text-red-300"
+                    className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-dash-line-strong px-4 text-sm font-semibold text-dash-soft hover:border-red-300 hover:text-red-700 dark:hover:border-red-400/40 dark:hover:text-red-300"
                   >
                     Cancelar
                   </button>
@@ -278,17 +263,15 @@ export default function UserAppointmentsSection() {
         })}
       </ul>
 
-      {target ? (
-        <CancelAppointmentModal
-          appointment={target}
-          reason={reason}
-          error={error}
-          loading={cancelling}
-          onReasonChange={setReason}
-          onClose={closeCancel}
-          onConfirm={handleCancel}
-        />
-      ) : null}
+      <CancelAppointmentModal
+        appointment={target}
+        reason={reason}
+        error={error}
+        loading={cancelling}
+        onReasonChange={setReason}
+        onClose={closeCancel}
+        onConfirm={handleCancel}
+      />
     </div>
   );
 }

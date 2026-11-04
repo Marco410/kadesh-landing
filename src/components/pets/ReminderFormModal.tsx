@@ -109,7 +109,7 @@ export default function ReminderFormModal({ isOpen, onClose, petId, reminder }: 
       error={submitError}
     >
       {fromRecord && reminder?.healthRecord ? (
-        <p className="rounded-xl bg-kadesh-50 p-3 text-sm text-[#121212] dark:bg-kadesh/15 dark:text-[#eef1f6]">
+        <p className="rounded-xl bg-kadesh-50 p-3 text-sm text-dash-ink dark:bg-kadesh/15">
           Sale del registro «{healthRecordTypeLabel(reminder.healthRecord.type)}: {reminder.healthRecord.name}».
           Para cambiar la fecha, edita la próxima fecha de ese registro en la cartilla.
         </p>
@@ -177,7 +177,7 @@ export default function ReminderFormModal({ isOpen, onClose, petId, reminder }: 
         {errors.channels ? (
           <p className="mt-1 text-xs text-red-600">{errors.channels}</p>
         ) : (
-          <p className="mt-1 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+          <p className="mt-1 text-xs text-dash-muted">
             Les llega a todos los dueños de la mascota. La notificación sale en la campana y en la app.
           </p>
         )}

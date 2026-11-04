@@ -83,20 +83,20 @@ export default function ClinicPatientsList({
   return (
     <section className="space-y-3">
       <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-        <h4 className="text-sm font-bold text-[#121212] dark:text-[#eef1f6]">
+        <h4 className="text-sm font-bold text-dash-ink">
           Pacientes ({patients.length})
         </h4>
         <motion.button
           type="button"
           onClick={() => setOpen((value) => !value)}
           whileTap={motionPrefs.tap}
-          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh hover:bg-kadesh hover:text-white"
+          className="inline-flex min-h-11 items-center justify-center gap-1.5 px-3 text-sm font-semibold rounded-full border border-dash-line-strong bg-dash-surface text-dash-ink transition-colors hover:border-kadesh-400"
         >
           <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
           {open ? "Cerrar formulario" : "Nuevo paciente"}
         </motion.button>
       </div>
-      <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+      <p className="text-sm text-dash-muted">
         Al darlo de alta se crea su cuenta en Kadesh y queda ligado a esta clínica. Con el correo podemos avisarle de la cita.
       </p>
 
@@ -109,7 +109,7 @@ export default function ClinicPatientsList({
             initial={motionPrefs.reduce ? false : "hidden"}
             animate="show"
             exit="exit"
-            className="space-y-3 overflow-hidden rounded-xl border border-[#ececec] p-3 dark:border-white/10"
+            className="space-y-3 overflow-hidden rounded-xl border border-dash-line p-3"
           >
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block">
@@ -159,7 +159,7 @@ export default function ClinicPatientsList({
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600 disabled:opacity-60 sm:w-auto"
+            className="inline-flex min-h-11 w-full items-center justify-center px-4 text-sm font-semibold text-white disabled:opacity-60 sm:w-auto rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
           >
             {loading ? "Guardando…" : "Dar de alta"}
           </button>
@@ -172,12 +172,12 @@ export default function ClinicPatientsList({
       ) : null}
 
       {patients.length === 0 ? (
-        <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
+        <p className="text-sm text-dash-muted">
           Aún no hay pacientes. Dalos de alta para poder agendarles.
         </p>
       ) : (
         <motion.ul
-          className="divide-y divide-[#ececec] overflow-hidden rounded-xl border border-[#ececec] dark:divide-white/10 dark:border-white/10"
+          className="divide-y divide-dash-line overflow-hidden rounded-xl border border-dash-line"
           variants={motionPrefs.list}
           initial={motionPrefs.reduce ? false : "hidden"}
           animate="show"
@@ -188,10 +188,10 @@ export default function ClinicPatientsList({
               variants={motionPrefs.item}
               className="px-3 py-2.5"
             >
-              <p className="text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+              <p className="text-sm font-semibold text-dash-ink">
                 {patientLabel(patient)}
               </p>
-              <p className="break-words text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+              <p className="break-words text-xs text-dash-muted">
                 {[patient.phone, patient.email].filter(Boolean).join(" · ") ||
                   "Sin teléfono ni correo"}
               </p>

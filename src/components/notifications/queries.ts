@@ -116,3 +116,53 @@ export interface UpdatePetAlertSettingsVariables {
 export interface UpdatePetAlertSettingsResponse {
   updateUser: PetAlertSettingsUser | null;
 }
+
+/**
+ * Avisos por WhatsApp (opt-in). `whatsappNotifications` hace que los avisos de la campana también
+ * lleguen por WhatsApp al `phone` del perfil (kadesh-back `utils/notifications/whatsapp.ts`).
+ * La persona solo puede cambiar el suyo.
+ */
+export const WHATSAPP_NOTIFICATIONS_QUERY = gql`
+  query WhatsappNotifications($id: ID!) {
+    user(where: { id: $id }) {
+      id
+      phone
+      whatsappNotifications
+      whatsappMutedTypes
+    }
+  }
+`;
+
+export interface WhatsappNotificationsUser {
+  id: string;
+  phone: string | null;
+  whatsappNotifications: boolean | null;
+  /** Tipos de aviso que no quiere por WhatsApp (`NOTIFICATION_TYPE`); vacío = todos. */
+  whatsappMutedTypes: string[] | null;
+}
+
+export interface WhatsappNotificationsResponse {
+  user: WhatsappNotificationsUser | null;
+}
+
+/** El interruptor general y los de cada tipo usan la misma mutación (solo se manda lo que cambia). */
+export const UPDATE_WHATSAPP_NOTIFICATIONS_MUTATION = gql`
+  mutation UpdateWhatsappNotifications($id: ID!, $data: UserUpdateInput!) {
+    updateUser(where: { id: $id }, data: $data) {
+      id
+      whatsappNotifications
+      whatsappMutedTypes
+    }
+  }
+`;
+
+export interface UpdateWhatsappNotificationsVariables {
+  id: string;
+  data: { whatsappNotifications?: boolean; whatsappMutedTypes?: string[] };
+}
+
+export interface UpdateWhatsappNotificationsResponse {
+  updateUser:
+    | (Pick<WhatsappNotificationsUser, 'id' | 'whatsappNotifications' | 'whatsappMutedTypes'> & { __typename?: 'User' })
+    | null;
+}

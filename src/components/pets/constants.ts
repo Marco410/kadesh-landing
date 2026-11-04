@@ -90,8 +90,9 @@ export const REMINDER_STATUS_LABELS: Record<string, string> = {
 };
 
 /**
- * Canales que ofrece la web. WhatsApp existe en el backend pero todavía no manda nada (falta la
- * plantilla de Meta), así que no se ofrece; si un recordatorio ya lo trae, se conserva al guardar.
+ * Canales que ofrece la web. WhatsApp no es un canal aparte: el recordatorio sale por WhatsApp con
+ * "Notificación" a quien activó los avisos por WhatsApp en /notificaciones. Si un recordatorio ya
+ * trae el canal `whatsapp`, se conserva al guardar.
  */
 export const REMINDER_CHANNEL_OPTIONS = [
   { label: 'Notificación', value: 'push' },

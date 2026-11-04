@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Location01Icon } from '@hugeicons/core-free-icons';
+import { Location01Icon, Notification03Icon, Tick02Icon, WhatsappIcon } from '@hugeicons/core-free-icons';
 import { sileo } from 'sileo';
-import DirectoryRadiusChips from 'kadesh/components/shared/DirectoryRadiusChips';
+import { DashFilterChips, DashSwitch, dashButtonClass, dashSurfaceClass } from 'kadesh/components/app-shell';
+import { Routes } from 'kadesh/core/routes';
 import { MORELIA_CENTER } from 'kadesh/components/animals/nuevo/nominatimPlace';
 import { Bone, SkeletonRegion } from 'kadesh/components/ui/skeleton';
 import {
@@ -16,6 +18,7 @@ import {
 import { useUser } from 'kadesh/utils/UserContext';
 import { cn } from 'kadesh/utils/cn';
 import { useAlertSettings } from './hooks';
+import { useWhatsappNotifications } from './hooks/useWhatsappNotifications';
 import { ALERT_RADIUS_OPTIONS, DEFAULT_ALERT_RADIUS_KM, MAX_DAILY_ALERTS } from './constants';
 import AlertZoneMap from './AlertZoneMap';
 import type { AlertSettings } from './types';
@@ -50,6 +53,9 @@ function AlertSettingsSkeleton() {
 export default function AlertSettingsForm() {
   const { user } = useUser();
   const { settings, loading, error, save, saving } = useAlertSettings(user?.id);
+  const whatsapp = useWhatsappNotifications(user?.id);
+  // `null` = no se ha tocado: se muestra lo guardado. Se guarda con el resto, en "Guardar".
+  const [whatsappDraft, setWhatsappDraft] = useState<boolean | null>(null);
   const [form, setForm] = useState<AlertSettings>(EMPTY_SETTINGS);
   const [dirty, setDirty] = useState(false);
   const [locating, setLocating] = useState(false);
@@ -66,6 +72,9 @@ export default function AlertSettingsForm() {
   };
 
   const needsCenter = form.enabled && !form.center;
+  const whatsappOn = whatsappDraft ?? whatsapp.zoneOn;
+  const whatsappChanged = whatsappDraft !== null && whatsappDraft !== whatsapp.zoneOn;
+  const canWhatsapp = Boolean(whatsapp.phoneLabel);
 
   const handleUseLocation = async () => {
     setLocating(true);
@@ -87,12 +96,17 @@ export default function AlertSettingsForm() {
   const handleSave = async () => {
     if (needsCenter) return;
     try {
-      await save(form);
+      if (dirty) await save(form);
+      const { onlyZone } = whatsappChanged ? await whatsapp.setZoneWhatsapp(whatsappOn) : { onlyZone: false };
       setDirty(false);
+      setWhatsappDraft(null);
+      const channels = whatsappOn ? 'en la campana y por WhatsApp' : 'en la campana';
       sileo.success({
         title: form.enabled ? 'Alertas activadas' : 'Alertas guardadas',
         description: form.enabled
-          ? `Te avisaremos de mascotas perdidas o encontradas a ${form.radiusKm} km.`
+          ? `Te avisaremos ${channels} de mascotas perdidas o encontradas a ${form.radiusKm} km.${
+              onlyZone ? ' Los demás avisos por WhatsApp los eliges en Notificaciones.' : ''
+            }`
           : 'No te enviaremos alertas de zona.',
       });
     } catch (err) {
@@ -115,33 +129,21 @@ export default function AlertSettingsForm() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 rounded-3xl border border-dash-line bg-dash-surface p-4 shadow-dash">
+      <div className={cn(dashSurfaceClass, 'flex items-center justify-between gap-4 p-4 sm:p-5')}>
         <div>
-          <p id="alerts-switch-label" className="text-base font-bold text-dash-ink">
+          <p id="alerts-switch-label" className="text-[17px] font-semibold tracking-[-0.02em] text-dash-ink">
             Recibir alertas
           </p>
-          <p className="mt-0.5 text-sm text-dash-muted">
+          <p id="alerts-switch-hint" className="mt-0.5 text-sm text-dash-muted">
             Te avisamos cuando alguien reporte una mascota perdida o encontrada dentro de tu zona.
           </p>
         </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={form.enabled}
-          aria-labelledby="alerts-switch-label"
-          onClick={() => update({ enabled: !form.enabled })}
-          className={cn(
-            'relative inline-flex h-8 w-[52px] flex-shrink-0 items-center rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh',
-            form.enabled ? 'bg-kadesh' : 'bg-dash-faint'
-          )}
-        >
-          <span
-            className={cn(
-              'inline-block h-6 w-6 rounded-full bg-white shadow transition-transform',
-              form.enabled ? 'translate-x-[24px]' : 'translate-x-1'
-            )}
-          />
-        </button>
+        <DashSwitch
+          checked={form.enabled}
+          onChange={(enabled) => update({ enabled })}
+          labelledBy="alerts-switch-label"
+          describedBy="alerts-switch-hint"
+        />
       </div>
 
       <section aria-labelledby="alerts-zone-heading" className="space-y-3">
@@ -151,7 +153,7 @@ export default function AlertSettingsForm() {
               Tu zona
             </h2>
             <p className="mt-0.5 text-sm text-dash-muted">
-              Mueve el mapa para poner el centro, o usa tu ubicación.
+              Toca un punto del mapa o arrástralo para poner el centro, o usa tu ubicación.
             </p>
           </div>
           <button
@@ -175,30 +177,106 @@ export default function AlertSettingsForm() {
           onCenterChange={(center) => update({ center })}
         />
 
-        <DirectoryRadiusChips
-          options={ALERT_RADIUS_OPTIONS}
-          value={form.radiusKm}
-          onChange={(radiusKm) => update({ radiusKm })}
-          label="Radio de la zona"
+        <DashFilterChips
+          label="Radio"
+          options={ALERT_RADIUS_OPTIONS.map((km) => ({ value: String(km), label: `${km} km` }))}
+          value={String(form.radiusKm)}
+          onChange={(km) => update({ radiusKm: Number(km) })}
         />
         <p className="text-sm text-dash-muted">
           Recibirás como máximo {MAX_DAILY_ALERTS} avisos al día, de reportes de los últimos 3 días.
         </p>
       </section>
 
+      <section aria-labelledby="alerts-channels-heading" className="space-y-3">
+        <div>
+          <h2 id="alerts-channels-heading" className="text-base font-bold text-dash-ink">
+            Cómo te avisamos
+          </h2>
+          <p className="mt-0.5 text-sm text-dash-muted">
+            {form.enabled
+              ? 'Siempre en la campana. Si quieres, también por WhatsApp.'
+              : 'Activa «Recibir alertas» para elegir cómo te avisamos.'}
+          </p>
+        </div>
+        <ul
+          className={cn(
+            dashSurfaceClass,
+            'divide-y divide-dash-line overflow-hidden transition-opacity duration-200',
+            !form.enabled && 'opacity-60'
+          )}
+        >
+          <li className="flex items-center gap-3 px-4 py-3.5">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-dash-surface-2 text-dash-soft">
+              <HugeiconsIcon icon={Notification03Icon} size={18} aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1 leading-tight">
+              <span className="block text-sm font-semibold text-dash-ink">Campana y celular</span>
+              <span className="mt-0.5 block text-[13px] leading-snug text-dash-muted">
+                En Notificaciones y en la app de Kadesh Pet, si la tienes.
+              </span>
+            </span>
+            <span className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold text-dash-soft">
+              <HugeiconsIcon icon={Tick02Icon} size={16} aria-hidden />
+              Siempre
+            </span>
+          </li>
+          <li className="flex flex-wrap items-center gap-3 px-4 py-3.5">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-300">
+              <HugeiconsIcon icon={WhatsappIcon} size={18} aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1 leading-tight">
+              <span id="alerts-whatsapp-label" className="block text-sm font-semibold text-dash-ink">
+                WhatsApp
+              </span>
+              <span id="alerts-whatsapp-hint" className="mt-0.5 block text-[13px] leading-snug text-dash-muted">
+                {whatsapp.loading
+                  ? 'Cargando…'
+                  : canWhatsapp
+                    ? `También al ${whatsapp.phoneLabel}.`
+                    : 'Agrega tu teléfono para recibirlas por WhatsApp.'}
+              </span>
+            </span>
+            {canWhatsapp || whatsapp.loading ? (
+              <DashSwitch
+                checked={whatsappOn}
+                onChange={(next) => setWhatsappDraft(next)}
+                disabled={!form.enabled || whatsapp.loading || Boolean(whatsapp.error)}
+                labelledBy="alerts-whatsapp-label"
+                describedBy="alerts-whatsapp-hint"
+              />
+            ) : (
+              <Link href={Routes.profileTab('profile')} className={dashButtonClass({ variant: 'outline', size: 'sm' })}>
+                Agregar teléfono
+              </Link>
+            )}
+          </li>
+        </ul>
+        <p className="text-[13px] text-dash-muted">
+          Los demás avisos por WhatsApp (cartilla, comentarios, solicitudes de tus reportes) los eliges en{' '}
+          <Link
+            href={Routes.notifications.index}
+            className="font-semibold text-kadesh-700 underline-offset-2 hover:underline dark:text-kadesh-300"
+          >
+            Notificaciones
+          </Link>
+          .
+        </p>
+      </section>
+
       {needsCenter ? (
         <p className="text-sm font-medium text-red-600 dark:text-red-400" role="alert">
-          Elige el centro de tu zona: mueve el mapa o usa «Mi ubicación».
+          Elige el centro de tu zona: toca un punto del mapa, arrástralo o usa «Mi ubicación».
         </p>
       ) : null}
 
       <button
         type="button"
         onClick={() => void handleSave()}
-        disabled={saving || needsCenter || !dirty}
+        disabled={saving || whatsapp.saving || needsCenter || (!dirty && !whatsappChanged)}
         className="inline-flex min-h-12 w-full items-center justify-center px-6 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh sm:w-auto rounded-full dash-grad-accent shadow-dash-accent transition-[transform,box-shadow,opacity] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-px hover:shadow-dash-accent-lift"
       >
-        {saving ? 'Guardando…' : 'Guardar'}
+        {saving || whatsapp.saving ? 'Guardando…' : 'Guardar'}
       </button>
     </div>
   );

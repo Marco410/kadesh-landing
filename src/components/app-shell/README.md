@@ -86,6 +86,7 @@ Copia adaptada de `components/admin/ui.tsx` de business, con prefijo `Dash*`. Ni
   - `dark`, `outline`, `ghost`, `danger`, `danger-ghost`.
 
   Tamaños `md` / `sm` / `icon` / `icon-sm`, y `fullWidth`.
+- **`DashSwitch`**: interruptor (`role="switch"`, `md`/`sm`) etiquetado con `labelledBy`/`describedBy`. Encendido en azul: es un estado, no una acción.
 - **`DashSectionCard`** (tarjeta con título, descripción y acción, con entrada escalonada), **`DashEmptyState`**, **`DashErrorState`**, **`DashLoadingRows`**, **`DashLoadMore`** y **`DashStatusBadge`** (colores de estatus: aquí sí con su `dark:`).
 - **`DashModal`** (centrado; hoja inferior en móvil) y **`DashDrawer`** (sale de la derecha desde 640 px).
   - Portal a `body` con `font-dash`.

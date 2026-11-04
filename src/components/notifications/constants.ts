@@ -27,3 +27,77 @@ export const NOTIFICATION_TONE_COLOR = {
   lost: '#dc2626',
   brand: 'var(--color-kadesh)',
 } as const;
+
+/**
+ * Avisos que pueden llegar por WhatsApp (los que tienen plantilla en kadesh-back,
+ * `utils/notifications/whatsapp.ts`), agrupados como los ve la persona. Cada uno es un interruptor
+ * en "Avisos por WhatsApp"; apagarlo agrega sus `types` a `User.whatsappMutedTypes`. Las respuestas
+ * a una solicitud (aceptada / rechazada) van juntas. `admin`: solo se muestran a admins.
+ */
+export const WHATSAPP_CATEGORIES = [
+  {
+    id: 'nearby',
+    label: 'Alertas de zona',
+    description: 'Un animal perdido o encontrado cerca de ti.',
+    types: ['animal.nearby'],
+  },
+  {
+    id: 'reminders',
+    label: 'Recordatorios de la cartilla',
+    description: 'Vacunas, desparasitaciones y otros pendientes de tus mascotas.',
+    types: ['pet.reminder_due'],
+  },
+  {
+    id: 'matches',
+    label: 'Posibles coincidencias',
+    description: 'Un reporte nuevo se parece a uno tuyo.',
+    types: ['animal.possible_match'],
+  },
+  {
+    id: 'comments',
+    label: 'Comentarios en tus reportes',
+    description: 'Alguien comenta en un reporte que publicaste.',
+    types: ['animal.commented'],
+  },
+  {
+    id: 'claims',
+    label: 'Solicitudes de tus reportes',
+    description: 'Alguien dice que el animal de tu reporte es su mascota.',
+    types: ['animal.claim_requested'],
+  },
+  {
+    id: 'claim-answers',
+    label: 'Respuestas a tus solicitudes',
+    description: 'Aceptaron o rechazaron tu solicitud para quedarte con un reporte.',
+    types: ['animal.claim_approved', 'animal.claim_rejected'],
+  },
+  {
+    id: 'admin-animals',
+    label: 'Animales nuevos',
+    description: 'Alguien registró un animal.',
+    types: ['animal.created'],
+    admin: true,
+  },
+  {
+    id: 'admin-services',
+    label: 'Servicios solicitados',
+    description: 'Una clínica pidió un servicio nuevo para el catálogo.',
+    types: ['petplace.service_requested'],
+    admin: true,
+  },
+  {
+    id: 'admin-bank',
+    label: 'Datos bancarios',
+    description: 'Un usuario actualizó sus datos bancarios.',
+    types: ['user.bank_details_updated'],
+    admin: true,
+  },
+] as const satisfies ReadonlyArray<{
+  id: string;
+  label: string;
+  description: string;
+  types: readonly string[];
+  admin?: boolean;
+}>;
+
+export type WhatsappCategory = (typeof WHATSAPP_CATEGORIES)[number];

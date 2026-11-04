@@ -237,6 +237,53 @@ export function DashButton({
   );
 }
 
+/**
+ * Interruptor (`role="switch"`). Encendido en el azul de marca: es un estado, no una acción.
+ * Se etiqueta con `labelledBy` (y `describedBy`) apuntando al texto que lo explica.
+ */
+export function DashSwitch({
+  checked,
+  onChange,
+  disabled = false,
+  labelledBy,
+  describedBy,
+  size = "md",
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  disabled?: boolean;
+  labelledBy: string;
+  describedBy?: string;
+  size?: "md" | "sm";
+}) {
+  const small = size === "sm";
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-labelledby={labelledBy}
+      aria-describedby={describedBy}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "relative inline-flex shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-kadesh-400 focus-visible:ring-offset-2 focus-visible:ring-offset-dash-surface disabled:cursor-not-allowed disabled:opacity-50",
+        small ? "h-6 w-10" : "h-8 w-[52px]",
+        checked ? "bg-kadesh" : "bg-dash-faint",
+      )}
+    >
+      <span
+        aria-hidden
+        className={cn(
+          "inline-block rounded-full bg-white shadow-[0_1px_3px_rgba(20,20,20,0.25)] transition-transform duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)]",
+          small ? "size-[18px]" : "size-6",
+          checked ? (small ? "translate-x-[19px]" : "translate-x-[24px]") : small ? "translate-x-[3px]" : "translate-x-1",
+        )}
+      />
+    </button>
+  );
+}
+
 // ─── Tarjetas y estados ─────────────────────────────────────────────────────────────────────
 
 export function DashSectionCard({

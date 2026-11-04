@@ -7,6 +7,7 @@ import { DashButton, dashButtonClass } from "kadesh/components/app-shell";
 import {
   NotificationList,
   NotificationsShell,
+  WhatsappNotificationsCard,
   useNotificationInbox,
 } from "kadesh/components/notifications";
 import { Routes } from "kadesh/core/routes";
@@ -33,6 +34,9 @@ export default function NotificacionesPage() {
         </div>
       }
     >
+      <div className="mb-5">
+        <WhatsappNotificationsCard />
+      </div>
       <NotificationList
         notifications={inbox.notifications}
         loading={inbox.loading}

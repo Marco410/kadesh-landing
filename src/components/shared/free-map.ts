@@ -75,6 +75,8 @@ export interface LeafletMap {
   ): void;
   on(event: string, fn: (...args: unknown[]) => void): void;
   off(event: string, fn: (...args: unknown[]) => void): void;
+  once(event: string, fn: (...args: unknown[]) => void): void;
+  panTo(center: { lat: number; lng: number }, options?: { animate?: boolean; duration?: number }): LeafletMap;
   removeLayer(layer: LeafletLayer): LeafletMap;
   invalidateSize(): void;
   remove(): void;

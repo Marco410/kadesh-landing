@@ -31,6 +31,7 @@ export {
   DashSegmented,
   DashStatTile,
   DashStatusBadge,
+  DashSwitch,
   dashButtonClass,
   dashInputClass,
   dashLabelClass,

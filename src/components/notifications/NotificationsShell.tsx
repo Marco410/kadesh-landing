@@ -25,7 +25,8 @@ export default function NotificationsShell({ view, back, actions, children }: No
   const config = PROFILE_VIEWS[view];
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
+    // Alineado a la izquierda como las demás vistas del panel; la lista conserva su medida.
+    <div className="w-full max-w-3xl">
       <AppPageHeader
         eyebrow={
           back ? (

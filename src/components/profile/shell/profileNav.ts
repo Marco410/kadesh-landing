@@ -81,7 +81,7 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
     icon: RadarIcon,
     group: "cuenta",
     href: Routes.notifications.alerts,
-    description: "Elige una zona y te avisamos en la campana cuando reporten una mascota perdida o encontrada ahí.",
+    description: "Elige una zona y te avisamos cuando reporten una mascota perdida o encontrada ahí: en la campana y, si quieres, por WhatsApp.",
   },
   pets: {
     label: "Mascotas",

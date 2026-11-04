@@ -15,6 +15,31 @@ Formato:
 
 ---
 
+## 2026-11-03 · feat: avisos por WhatsApp (opt-in y por tipo) en notificaciones
+- Rama: feat/panel-cuenta
+- Qué cambió y por qué:
+  - `/notificaciones` tiene la tarjeta **Avisos por WhatsApp**, con un interruptor que guarda `User.whatsappNotifications`.
+    - Con él, los avisos importantes también llegan por WhatsApp al teléfono del perfil: animal cerca, recordatorio de la cartilla, posible coincidencia, comentarios y solicitudes de los reportes.
+    - Sin un teléfono válido no se puede encender y manda a Datos del perfil. Se guarda al tocar, con toast.
+  - En kadesh-back hay siete plantillas `kadesh_pet_*` nuevas, con sus variables en cada aviso (ver su `models/Notification/README.md`).
+    - **Hay que darlas de alta y aprobarlas en Meta**; hasta entonces el envío falla en el log y la campana sigue igual.
+  - El recordatorio sale por WhatsApp con el canal Notificación, sin duplicarse si también trae `whatsapp`.
+  - La vista de Notificaciones queda alineada a la izquierda, como las demás del panel.
+  - **Por tipo**: con el interruptor general encendido, cada aviso tiene su propio interruptor (las respuestas aceptada y rechazada van juntas; los admins ven además sus tres avisos).
+    - Lo apagado se guarda en el campo nuevo `User.whatsappMutedTypes` y el envío lo respeta.
+    - **Falta la migración en kadesh-back (`yarn migrate`).**
+  - **Alertas de zona integradas**:
+    - La pantalla de alertas tiene "Cómo te avisamos" (campana siempre y WhatsApp con interruptor), que se guarda con el mismo botón. Si WhatsApp estaba apagado del todo, encenderlo ahí activa solo las alertas de zona.
+    - En la tarjeta de WhatsApp, la fila de zona dice el radio o, si falta, "Te falta configurar tu zona para que te lleguen" y lleva a configurarla.
+    - Cada aviso lleva ícono y cada grupo, su contador. Con WhatsApp apagado, la lista se ve atenuada en vez de ocultarse.
+    - El centro de la zona también se elige tocando el mapa, y el radio usa los chips del kit.
+    - Nuevo `DashSwitch` en el kit.
+- Archivos: src/components/notifications/{WhatsappNotificationsCard.tsx (nuevo),hooks/useWhatsappNotifications.ts (nuevo),hooks/index.ts,queries.ts,constants.ts,index.ts,NotificationsShell.tsx,AlertSettingsForm.tsx,AlertZoneMap.tsx,README.md (nuevo)}, src/components/app-shell/{ui.tsx,index.ts,README.md}, src/components/shared/free-map.ts (solo tipos), src/components/profile/shell/profileNav.ts, src/app/(cuenta)/notificaciones/page.tsx, src/components/pets/{constants.ts,README.md}; kadesh-back: models/User/{User.ts,whatsappPrefs.ts (nuevo)}, utils/notifications/{whatsapp.ts,nearbyAnimalAlerts.ts,animalReportAlerts.ts,possibleMatchAlerts.ts}, utils/pet/petReminders.ts, models/Notification/README.md, docs/cartilla/README.md, schema.graphql, schema.prisma
+- GraphQL: nuevas `WhatsappNotifications` (query) y `UpdateWhatsappNotifications` (mutación sobre `updateUser` con `UserUpdateInput`), con `whatsappNotifications` (ya existía) y `whatsappMutedTypes` (nuevo)
+- Móvil: [prompt](../mobile-sync/2026-11-03-avisos-whatsapp.md)
+
+---
+
 ## 2026-11-03 · feat: chip «No verificada» en la ficha de veterinaria
 - Rama: feat/panel-cuenta
 - Qué cambió y por qué:

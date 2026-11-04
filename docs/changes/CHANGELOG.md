@@ -15,6 +15,21 @@ Formato:
 
 ---
 
+## 2026-11-04 · feat: errores, pantalla y actividad de Kadesh Pet en Operaciones
+- Rama: feat/control-actividad
+- Qué cambió y por qué:
+  - Cada petición al back lleva la app (`x-kadesh-app: pet-web`) y la pantalla (`x-kadesh-page`, con solo `tab`/`vista`/`clinic`/`pet` de la URL). El back las guarda en cada evento de Operaciones → Actividad, junto con la IP y el navegador, para saber dónde y desde qué dispositivo le pasó algo a alguien.
+  - Interceptor de Apollo (`requestErrorLink`): reporta como `app.client_error` los errores de red que el back no ve (sin respuesta, 5xx, 413, 429, respuesta no JSON). Los errores de GraphQL ya los registra el back.
+  - Pantallas caídas: `src/app/error.tsx` y `global-error.tsx` (antes no había) muestran "Reintentar" y reportan el error. `useClientErrorListener` reporta errores de código no atrapados, sin el ruido de extensiones y scripts de terceros.
+  - Sin sesión solo se mandan errores (el back los acepta con tope por IP). Con sesión, la landing ahora registra qué pantallas abre la persona y su tiempo activo (`usePetActivity`, latido cada 5 min), y la salida (`trackLogout`).
+  - Ante `RATE_LIMITED` (límites contra abuso) o `IP_BLOCKED`, se muestra el mensaje del back en un aviso.
+  - Perfil: si un post con like, favorito o comentario vuelve a borrador, ya no rompe la pestaña de publicaciones (el back ahora oculta borradores y programados).
+- Archivos: src/utils/activity/{track.ts,clientContext.ts,reportClientError.ts,requestErrorLink.ts,useClientErrorListener.ts,usePetActivity.ts,index.ts,README.md}, src/providers/apollo-client.ts, src/app/{ClientProviders.tsx,error.tsx,global-error.tsx}, src/components/shared/PetActivityTracker.tsx, src/components/auth/hooks/useLogout.ts, src/components/profile/hooks/{useUserFavoritePosts.ts,useUserLikedPosts.ts,useUserComments.ts}
+- GraphQL: `trackEvents` acepta `app.client_error` (también sin sesión). Headers nuevos `x-kadesh-app` y `x-kadesh-page`. Cambios del back en kadesh-back@feat/control-actividad: accesos cerrados en 25 listas, límites contra abuso y bloqueo de IP.
+- Móvil: [prompt](../mobile-sync/2026-11-04-errores-contexto-y-abuso.md)
+
+---
+
 ## 2026-11-04 · feat: bandeja y Ajustes de avisos por separado
 - Rama: feat/panel-cuenta
 - Qué cambió y por qué:

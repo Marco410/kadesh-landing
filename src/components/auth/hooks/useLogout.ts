@@ -6,6 +6,7 @@ import { useApolloClient } from "@apollo/client";
 import { END_SESSION_MUTATION, EndSessionResponse } from "kadesh/utils/queries";
 import { useUser } from "kadesh/utils/UserContext";
 import { Routes } from "kadesh/core/routes";
+import { trackLogout } from "kadesh/utils/activity";
 
 /**
  * Cierra la sesión en Keystone (`endSession`) y luego en el navegador.
@@ -18,6 +19,8 @@ export function useLogout() {
   const { setUser } = useUser();
 
   return useCallback(async () => {
+    // Antes de borrar el token: la salida queda en Operaciones → Actividad.
+    trackLogout();
     try {
       await client.mutate<EndSessionResponse>({ mutation: END_SESSION_MUTATION });
     } catch (error) {

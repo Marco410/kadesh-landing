@@ -27,20 +27,23 @@ export function useUserFavoritePosts(userId: string) {
   });
 
   // Transformar los datos para que coincidan con BlogPost
-  const posts: BlogPost[] = (data?.postFavorites || []).map((favorite) => ({
+  const posts: BlogPost[] = (data?.postFavorites || [])
+    // Si el post volvió a borrador o se programó, el back ya no lo devuelve (`post` llega null).
+    .filter((favorite) => favorite.post != null)
+    .map((favorite) => ({
     id: favorite.post.id,
     title: favorite.post.title,
     url: favorite.post.url,
     excerpt: favorite.post.excerpt || '',
     image: favorite.post.image || { url: '' },
     author: {
-      id: favorite.post.author.id,
-      name: favorite.post.author.name,
-      lastName: favorite.post.author.lastName || '',
-      username: favorite.post.author.username || '',
-      verified: favorite.post.author.verified || false,
-      profileImage: favorite.post.author.profileImage,
-      createdAt: favorite.post.author.createdAt || '',
+      id: favorite.post.author?.id ?? '',
+      name: favorite.post.author?.name ?? '',
+      lastName: favorite.post.author?.lastName || '',
+      username: favorite.post.author?.username || '',
+      verified: favorite.post.author?.verified || false,
+      profileImage: favorite.post.author?.profileImage,
+      createdAt: favorite.post.author?.createdAt || '',
     },
     category: favorite.post.category || { name: '', url: '' },
     commentsCount: favorite.post.commentsCount || 0,

@@ -78,6 +78,8 @@ export const Routes = {
   notifications: {
     index: '/notificaciones',
     alerts: '/notificaciones/alertas',
+    /** Ajustes de avisos: WhatsApp (general y por tipo) y acceso a las alertas de zona. */
+    settings: '/notificaciones/ajustes',
   },
 
   // About

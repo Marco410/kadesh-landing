@@ -11,8 +11,13 @@ import { useUser } from 'kadesh/utils/UserContext';
 
 interface NotificationsShellProps {
   view: 'notifications' | 'alerts';
+  /** Título y descripción propios (si no, los de la vista en `profileNav`). */
+  title?: string;
+  description?: string;
   back?: { href: string; label: string };
   actions?: ReactNode;
+  /** Ancho para dos columnas (contenido + columna lateral). Si no, la medida de una lista. */
+  wide?: boolean;
   children: ReactNode;
 }
 
@@ -20,13 +25,21 @@ interface NotificationsShellProps {
  * Contenido de las páginas de notificaciones dentro del panel (`app/(cuenta)`): encabezado con el
  * título y la descripción de la vista (de `profileNav`) y sus acciones. La sesión la exige el shell.
  */
-export default function NotificationsShell({ view, back, actions, children }: NotificationsShellProps) {
+export default function NotificationsShell({
+  view,
+  title,
+  description,
+  back,
+  actions,
+  wide = false,
+  children,
+}: NotificationsShellProps) {
   const { user, loading } = useUser();
   const config = PROFILE_VIEWS[view];
 
   return (
     // Alineado a la izquierda como las demás vistas del panel; la lista conserva su medida.
-    <div className="w-full max-w-3xl">
+    <div className={wide ? 'w-full max-w-6xl' : 'w-full max-w-3xl'}>
       <AppPageHeader
         eyebrow={
           back ? (
@@ -41,8 +54,8 @@ export default function NotificationsShell({ view, back, actions, children }: No
             profileGroupTitle(view)
           )
         }
-        title={config.label}
-        description={config.description}
+        title={title ?? config.label}
+        description={description ?? config.description}
         actions={user?.id ? actions : null}
       />
 

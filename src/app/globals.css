@@ -634,6 +634,17 @@ html.dark .status-date-picker-popover [data-slot="cell"] > span[data-outside-mon
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
+/*
+ * Pantallas con barra de acciones fija abajo (alta y edición de reporte, registro de veterinaria):
+ * en el teléfono la ayuda de WhatsApp (`[data-dash-outside]`, fija abajo a la derecha) tapaba el
+ * botón principal. Ahí sube por encima de la barra.
+ */
+@media (max-width: 639px) {
+  body:has([data-sticky-actions]) [data-dash-outside] {
+    bottom: 5.5rem;
+  }
+}
+
 /* Esqueletos de carga (kadesh/components/ui/skeleton). Barrido de 1.4s; con
    reduce-motion, latido de opacidad en vez de barrido (nunca se detiene). */
 .kadesh-bone {

@@ -8,6 +8,9 @@ export const PET_PLACE_CLAIM_STATUS = {
 export type PetPlaceClaimStatus =
   (typeof PET_PLACE_CLAIM_STATUS)[keyof typeof PET_PLACE_CLAIM_STATUS];
 
+/** `id` de la sección "¿Es tu clínica?" en la ficha; el chip "No verificada" lleva aquí. */
+export const CLAIM_SECTION_ID = "reclamar";
+
 export const PET_PLACE_CLAIM_ROLE = {
   OWNER: "owner",
   MANAGER: "manager",

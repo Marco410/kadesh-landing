@@ -15,16 +15,16 @@ Formato:
 
 ---
 
-## 2026-11-03 · fix: tarjetas para compartir (OG) rotas en Cloudflare
+## 2026-11-03 · feat: chip «No verificada» en la ficha de veterinaria
 - Rama: feat/panel-cuenta
 - Qué cambió y por qué:
-  - En el worker de Cloudflare, `readFile(new URL('./poppins-700.woff', import.meta.url))` devolvía un buffer vacío (sin error) y Satori fallaba con `RangeError: Offset is outside the bounds of the DataView`.
-  - En `/animales/[slug]/og` se servía la foto tal cual en vez de la tarjeta, y cada petición dejaba un error "Animal share card failed with photo". En `/veterinarias/[slug]/og` siempre caía a `/og-image.png`.
-  - Las fuentes (Poppins 700/800, subconjunto latin de `@fontsource/poppins`, ~10 KB cada una) ahora van en base64 en `src/core/og-fonts.ts`, que comparten ambas rutas. Ya no se lee nada del disco.
-  - Probado con `opennextjs-cloudflare build` + `wrangler dev`: las dos rutas devuelven PNG 1200×630 sin errores.
-- Archivos: src/core/og-fonts.ts (nuevo), src/app/animales/[slug]/og/route.tsx, src/app/veterinarias/[slug]/og/route.tsx; borrados src/app/{animales,veterinarias}/[slug]/og/poppins-{700,800}.woff
-- GraphQL: ninguna
-- Móvil: no aplica (imágenes OG para compartir en redes; la app no las genera)
+  - Si la clínica no está verificada, la ficha muestra el chip **No verificada** junto a Abierto/Cerrado. Al tocarlo, la ficha baja con scroll suave a **¿Es tu clínica?**. Con «reducir movimiento», el salto no se anima. Antes no había nada que avisara al dueño de que podía reclamarla.
+  - El chip y el check del nombre usan la misma regla que la sección de reclamo: está verificada si `verified` **o** `claimStatus === "verified"`. Antes el check solo miraba `verified`.
+  - La sección de reclamo tiene `id="reclamar"` (`CLAIM_SECTION_ID`) en todos sus estados y `scroll-mt` para no quedar debajo de la barra fija.
+  - Solo va en la ficha: en el directorio sería ruido, porque la mayoría no están verificadas.
+- Archivos: src/components/veterinaries/UnverifiedChip.tsx (nuevo), src/components/veterinaries/{ClaimPetPlaceSection.tsx,constants.ts,index.ts,README.md}, src/app/veterinarias/[slug]/page.tsx
+- GraphQL: ninguna (usa `verified` y `claimStatus`, que la ficha ya pedía)
+- Móvil: [prompt](../mobile-sync/2026-11-03-chip-no-verificada.md)
 
 ---
 
@@ -44,6 +44,19 @@ Formato:
 - Archivos: src/components/profile/{ProfileData,UserAnimalsSection,UserPostsSection,UserVeterinariesSection}.tsx, src/components/profile/motion.ts, src/components/profile/clinics/** (incl. formStyles.ts y README.md), src/components/pets/**, src/components/notifications/{NotificationList,AlertSettingsForm,AlertZoneMap}.tsx, src/components/veterinaries/UserAppointmentsSection.tsx, src/components/shared/ConfirmModal.tsx, src/components/animals/nuevo/ChoiceChip.tsx, src/components/app-shell/{ui.tsx,useLatched.ts,index.ts}, src/app/(cuenta)/perfil/page.tsx, src/app/globals.css, src/components/profile/README.md
 - GraphQL: ninguna
 - Móvil: no aplica (estilos y navegación propios de la web; la vista de clínica en la app tiene su propia navegación)
+
+---
+
+## 2026-11-03 · fix: tarjetas para compartir (OG) rotas en Cloudflare
+- Rama: feat/panel-cuenta
+- Qué cambió y por qué:
+  - En el worker de Cloudflare, `readFile(new URL('./poppins-700.woff', import.meta.url))` devolvía un buffer vacío (sin error) y Satori fallaba con `RangeError: Offset is outside the bounds of the DataView`.
+  - En `/animales/[slug]/og` se servía la foto tal cual en vez de la tarjeta, y cada petición dejaba un error "Animal share card failed with photo". En `/veterinarias/[slug]/og` siempre caía a `/og-image.png`.
+  - Las fuentes (Poppins 700/800, subconjunto latin de `@fontsource/poppins`, ~10 KB cada una) ahora van en base64 en `src/core/og-fonts.ts`, que comparten ambas rutas. Ya no se lee nada del disco.
+  - Probado con `opennextjs-cloudflare build` + `wrangler dev`: las dos rutas devuelven PNG 1200×630 sin errores.
+- Archivos: src/core/og-fonts.ts (nuevo), src/app/animales/[slug]/og/route.tsx, src/app/veterinarias/[slug]/og/route.tsx; borrados src/app/{animales,veterinarias}/[slug]/og/poppins-{700,800}.woff
+- GraphQL: ninguna
+- Móvil: no aplica (imágenes OG para compartir en redes; la app no las genera)
 
 ---
 

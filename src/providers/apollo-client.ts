@@ -1,10 +1,18 @@
 import { ApolloClient, InMemoryCache } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { ApolloLink } from "@apollo/client";
+import { clientContextHeaders } from "kadesh/utils/activity/clientContext";
+import { requestErrorLink } from "kadesh/utils/activity/requestErrorLink";
 // @ts-ignore
 import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 
 const SESSION_TOKEN_KEY = "keystonejs-session-token";
+
+/** App y pantalla de cada petición: el back las guarda en Actividad (y en sus errores). */
+const clientContextLink = setContext((_, { headers }) => {
+  if (typeof window === "undefined") return { headers };
+  return { headers: { ...headers, ...clientContextHeaders() } };
+});
 
 const authLink = setContext((_, { headers }) => {
   if (typeof window === "undefined") return { headers };
@@ -28,7 +36,7 @@ const uploadLink = createUploadLink({
 
 export const createApolloClient = () => {
   return new ApolloClient({
-    link: ApolloLink.from([authLink, uploadLink]),
+    link: ApolloLink.from([clientContextLink, authLink, requestErrorLink, uploadLink]),
     cache: new InMemoryCache(),
     credentials: "include",
     defaultOptions: {

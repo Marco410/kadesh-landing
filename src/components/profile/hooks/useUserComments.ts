@@ -58,7 +58,8 @@ export function useUserComments(userId: string) {
     }
   };
 
-  const comments = data?.postComments || [];
+  // Comentarios de posts que volvieron a borrador: el back ya no devuelve el post.
+  const comments = (data?.postComments || []).filter((comment) => comment.post != null);
 
   return {
     comments,

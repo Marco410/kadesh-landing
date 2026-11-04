@@ -27,20 +27,23 @@ export function useUserLikedPosts(userId: string) {
   });
 
   // Transformar los datos para que coincidan con BlogPost
-  const posts: BlogPost[] = (data?.postLikes || []).map((like) => ({
+  const posts: BlogPost[] = (data?.postLikes || [])
+    // Si el post volvió a borrador o se programó, el back ya no lo devuelve (`post` llega null).
+    .filter((like) => like.post != null)
+    .map((like) => ({
     id: like.post.id,
     title: like.post.title,
     url: like.post.url,
     excerpt: like.post.excerpt || '',
     image: like.post.image || { url: '' },
     author: {
-      id: like.post.author.id,
-      name: like.post.author.name,
-      lastName: like.post.author.lastName || '',
-      username: like.post.author.username || '',
-      verified: like.post.author.verified || false,
-      profileImage: like.post.author.profileImage,
-      createdAt: like.post.author.createdAt || '',
+      id: like.post.author?.id ?? '',
+      name: like.post.author?.name ?? '',
+      lastName: like.post.author?.lastName || '',
+      username: like.post.author?.username || '',
+      verified: like.post.author?.verified || false,
+      profileImage: like.post.author?.profileImage,
+      createdAt: like.post.author?.createdAt || '',
     },
     category: like.post.category || { name: '', url: '' },
     commentsCount: like.post.commentsCount || 0,

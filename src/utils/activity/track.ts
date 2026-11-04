@@ -1,0 +1,154 @@
+/**
+ * Registro de uso de Kadesh Pet (`trackEvents` en kadesh-back → `ActivityEvent` / `UserActivityDay`).
+ * Mismo mecanismo que el panel de Negocios (kadesh-business `src/utils/activity/track.ts`).
+ *
+ * Junta los eventos y los manda en lote cada 10 s, al ocultar la pestaña o al salir.
+ * Usa `fetch` con `keepalive` en vez de Apollo: es lo único que sigue enviando cuando la
+ * página se cierra (y `sendBeacon` no deja mandar el header `Authorization`).
+ * Nunca lanza ni bloquea la UI: si falla, se reintenta una vez (p. ej. sin red) y luego se pierde.
+ *
+ * Sin sesión solo se mandan errores del navegador (`app.client_error`): el back los acepta con
+ * tope por IP. Cada envío lleva la app y la pantalla (`clientContextHeaders`).
+ */
+
+import { clientContextHeaders } from "./clientContext";
+
+const SESSION_TOKEN_KEY = "keystonejs-session-token";
+const FLUSH_MS = 10_000;
+const MAX_BATCH = 50;
+
+const TRACK_EVENTS_MUTATION = `
+  mutation TrackEvents($events: [TrackEventInput!]!) {
+    trackEvents(events: $events) {
+      accepted
+    }
+  }
+`;
+
+/** Tipos que acepta el back (ver `CLIENT_EVENT_TYPES` en kadesh-back). */
+export const TRACK_EVENT = {
+  SECTION_VIEWED: "ui.section_viewed",
+  LOGOUT: "auth.logout",
+  HEARTBEAT: "auth.heartbeat",
+  /** Error que solo vio el navegador (red, pantalla caída). También sin sesión. */
+  CLIENT_ERROR: "app.client_error",
+} as const;
+
+export type TrackEventType = (typeof TRACK_EVENT)[keyof typeof TRACK_EVENT];
+
+/** Lo único que se manda sin sesión (ver `ANONYMOUS_CLIENT_EVENT_TYPES` en kadesh-back). */
+const ANONYMOUS_TYPES: ReadonlySet<string> = new Set([TRACK_EVENT.CLIENT_ERROR]);
+
+/** Datos chicos y planos. Nada personal: ni nombres, ni teléfonos, ni textos libres. */
+export type TrackMetadata = Record<string, string | number | boolean | null>;
+
+type QueuedEvent = {
+  type: TrackEventType;
+  metadata?: TrackMetadata;
+  entityType?: string;
+  entityId?: string;
+  occurredAt: string;
+  /** Ya se reintentó una vez. */
+  retried?: boolean;
+};
+
+let queue: QueuedEvent[] = [];
+let timer: ReturnType<typeof setTimeout> | null = null;
+let listening = false;
+
+/** El mismo evento dos veces en este lapso cuenta una (StrictMode, re-renders). */
+const DEDUPE_MS = 3_000;
+const recent = new Map<string, number>();
+
+function isRepeated(key: string, now: number) {
+  for (const [k, at] of recent) {
+    if (now - at > DEDUPE_MS) recent.delete(k);
+  }
+  if (recent.has(key)) return true;
+  recent.set(key, now);
+  return false;
+}
+
+function readToken(): string | null {
+  try {
+    return window.localStorage.getItem(SESSION_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Al fallar el envío (sin red, back caído), se reintenta una sola vez en el siguiente lote. */
+function requeue(events: QueuedEvent[]) {
+  const pending = events.filter((event) => !event.retried).map((event) => ({ ...event, retried: true }));
+  if (pending.length === 0) return;
+  queue.push(...pending);
+  if (!timer) timer = setTimeout(() => flushActivity(), FLUSH_MS * 3);
+}
+
+function send(batch: QueuedEvent[], keepalive: boolean) {
+  const url = process.env.NEXT_PUBLIC_API_URL;
+  const token = readToken();
+  const events = token ? batch : batch.filter((event) => ANONYMOUS_TYPES.has(event.type));
+  if (!url || events.length === 0) return;
+  const payload = events.map(({ retried: _retried, ...event }) => event);
+  fetch(url, {
+    method: "POST",
+    keepalive,
+    headers: {
+      "content-type": "application/json",
+      ...clientContextHeaders(),
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ query: TRACK_EVENTS_MUTATION, variables: { events: payload } }),
+  }).catch(() => {
+    // Sin red o back caído: un reintento más tarde; si vuelve a fallar, se pierde.
+    requeue(events);
+  });
+}
+
+/** Manda lo pendiente ya. `keepalive` para cuando la página se está cerrando. */
+export function flushActivity(options: { keepalive?: boolean } = {}) {
+  if (typeof window === "undefined") return;
+  if (timer) {
+    clearTimeout(timer);
+    timer = null;
+  }
+  while (queue.length > 0) {
+    send(queue.splice(0, MAX_BATCH), options.keepalive ?? false);
+  }
+}
+
+function listenForPageExit() {
+  if (listening) return;
+  listening = true;
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushActivity({ keepalive: true });
+  });
+  window.addEventListener("pagehide", () => flushActivity({ keepalive: true }));
+}
+
+export function trackActivity(
+  type: TrackEventType,
+  data: { metadata?: TrackMetadata; entityType?: string; entityId?: string } = {},
+) {
+  if (typeof window === "undefined") return;
+  const key = JSON.stringify([type, data.metadata ?? null, data.entityId ?? null]);
+  if (isRepeated(key, Date.now())) return;
+  listenForPageExit();
+  queue.push({ type, ...data, occurredAt: new Date().toISOString() });
+  if (queue.length >= MAX_BATCH) {
+    flushActivity();
+    return;
+  }
+  if (!timer) timer = setTimeout(() => flushActivity(), FLUSH_MS);
+}
+
+/**
+ * Para el logout: registra la salida y la manda en el momento, antes de borrar el token.
+ * El token se lee al armar la petición, así que hay que llamarla primero.
+ */
+export function trackLogout() {
+  if (typeof window === "undefined") return;
+  queue.push({ type: TRACK_EVENT.LOGOUT, occurredAt: new Date().toISOString() });
+  flushActivity({ keepalive: true });
+}

@@ -7,6 +7,8 @@ import { HeroUIProvider } from "@heroui/system";
 import { Toaster } from "sileo";
 import { useTheme } from "next-themes";
 import KadeshHelpWhatsApp from "kadesh/components/layout/KadeshHelpWhatsApp";
+import { useClientErrorListener } from "kadesh/utils/activity";
+import PetActivityTracker from "kadesh/components/shared/PetActivityTracker";
 
 function ThemedToaster() {
   const { resolvedTheme } = useTheme();
@@ -23,12 +25,16 @@ export default function ClientProviders({
 }: {
   children: React.ReactNode;
 }) {
+  // Errores de código que nadie atrapó → Operaciones → Actividad → Errores.
+  useClientErrorListener();
   return (
     <ThemeProvider>
       <HeroUIProvider>
         <ApolloProviderWrapper>
           <UserProvider>
             {children}
+            {/* Pantallas que abre y tiempo activo, solo con sesión. */}
+            <PetActivityTracker />
             <KadeshHelpWhatsApp />
             <ThemedToaster />
           </UserProvider>

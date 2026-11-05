@@ -3,7 +3,7 @@ import { setContext } from "@apollo/client/link/context";
 import { ApolloLink } from "@apollo/client";
 import { clientContextHeaders } from "kadesh/utils/activity/clientContext";
 import { requestErrorLink } from "kadesh/utils/activity/requestErrorLink";
-// @ts-ignore
+// @ts-expect-error -- apollo-upload-client no publica tipos para este subpath.
 import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 
 const SESSION_TOKEN_KEY = "keystonejs-session-token";

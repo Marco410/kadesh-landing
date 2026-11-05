@@ -14,7 +14,7 @@ export default function Testimonials() {
           <div className="bg-[#f5f5f5] dark:bg-[#1e1e1e] shadow-md p-8 rounded-3xl max-w-[420px] border-none relative mx-4">
             <div className="absolute -left-6 -top-6 w-12 h-12 bg-[#f7945e] rounded-full opacity-[0.13] z-[1]" />
             <p className="text-[#f7945e] text-lg text-center relative z-[2]">
-              "KADESH es un puente de esperanza para quienes no tienen voz."
+              &quot;KADESH es un puente de esperanza para quienes no tienen voz.&quot;
             </p>
           </div>
         </div>

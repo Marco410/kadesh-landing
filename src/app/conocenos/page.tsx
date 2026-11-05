@@ -1,6 +1,8 @@
 "use client";
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { Routes } from 'kadesh/core/routes';
 import { Navigation, Footer } from 'kadesh/components/layout';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
@@ -344,13 +346,13 @@ export default function ConocenosPage() {
                   >
                     Crear Cuenta
                   </a>
-                  <a
-                    href="/blog"
+                  <Link
+                    href={Routes.blog.index}
                     className="px-8 py-4 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition-colors border-2 border-white/30"
                     aria-label="Ver blog de KADESH"
                   >
                     Ver Blog
-                  </a>
+                  </Link>
                 </div>
               </nav>
             </motion.div>

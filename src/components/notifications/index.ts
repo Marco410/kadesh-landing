@@ -1,7 +1,6 @@
 export { default as NotificationBell } from './NotificationBell';
 export { default as NotificationList } from './NotificationList';
 export { default as AlertSettingsForm } from './AlertSettingsForm';
-export { default as ZoneAlertsInvite } from './ZoneAlertsInvite';
 export { default as NotificationsShell } from './NotificationsShell';
 export { default as WhatsappNotificationsCard } from './WhatsappNotificationsCard';
 export { default as NotificationChannelsSummary } from './NotificationChannelsSummary';

@@ -15,6 +15,23 @@ Formato:
 
 ---
 
+## 2026-11-04 · feat: sección «Alertas de zona» en la portada
+- Rama: develop (sin rama propia todavía)
+- Qué cambió y por qué:
+  - Las alertas de zona no se veían en la portada: solo había una invitación para quien tenía sesión sin alertas, y los buscadores y las IA no tenían texto sobre la función.
+  - Nueva sección `#alertas` entre «Reportes recientes» y «Cómo funciona». Va ahí porque quien no encontró a su mascota en los reportes sigue con «te avisamos cuando aparezca una cerca».
+  - Explica la función con una respuesta directa bajo el H2 (GEO) y tres reglas reales: radio de 1 a 50 km, al momento, máximo 5 al día.
+  - Lista de alertas recientes renderizada en el servidor: las 5 más recientes de México, con enlace a su ficha y `<time dateTime>`. Revalida cada 10 min, así que la portada se regenera cada 10 min en vez de cada hora.
+  - En el navegador la lista cambia a la zona de quien la ve: la de sus alertas si las tiene activas, o su ubicación (30 km) si ya la compartió. Muestra cuántos perdidos y encontrados hay ahí.
+  - Botón «Activar alertas de mi zona»: sin sesión abre el modal de cuenta. Con alertas activas dice el radio y ofrece «Cambiar zona».
+  - SEO/GEO: pregunta nueva en la FAQ y su JSON-LD. «¿Quién ve mi reporte?» menciona las alertas. `HOME_DEFINITION` y `knowsAbout` nombran las alertas de zona, `llms.txt` las describe y la FAQ dice «Actualizado en noviembre de 2026».
+  - Se borró `ZoneAlertsInvite`: la sección cubre su caso.
+- Archivos: src/app/page.tsx, src/components/home/{ZoneAlertsSection.tsx,ZoneAlertsFeed.tsx,ZoneAlertsCta.tsx,zoneAlerts.ts,hooks/useZoneAlerts.ts,server.ts,constants.ts,FaqSection.tsx,HomeJsonLd.tsx,index.ts,README.md}, src/components/notifications/{ZoneAlertsInvite.tsx (borrado),index.ts}, src/core/routes.ts (`navigation.zoneAlerts`), public/llms.txt
+- GraphQL: query de servidor nueva `HomeZoneAlerts` (`animalLogs` perdidos/encontrados con la última bitácora de cada animal). En el navegador se reutiliza `getNearbyAnimals` (`status: lost` y `status: found`).
+- Móvil: no aplica (sección de la portada web; la app ya tiene sus alertas de zona y no usa la portada).
+
+---
+
 ## 2026-11-04 · feat: errores, pantalla y actividad de Kadesh Pet en Operaciones
 - Rama: feat/control-actividad
 - Qué cambió y por qué:

@@ -15,6 +15,7 @@ export const Routes = {
   // Navigation sections (anchors on home page)
   navigation: {
     lostAnimals: '#animales',
+    zoneAlerts: '#alertas',
     howItWorks: '#como-funciona',
     firstHours: '#primeras-24-horas',
     stories: '#historias',

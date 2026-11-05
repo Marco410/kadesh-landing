@@ -25,7 +25,7 @@ export default function FaqSection() {
         </div>
 
         <p className="mt-12 text-sm text-[#6a6a6a] dark:text-[#9a9a9a]">
-          Actualizado en octubre de 2026. KADESH, México.
+          Actualizado en noviembre de 2026. KADESH, México.
         </p>
       </div>
     </section>

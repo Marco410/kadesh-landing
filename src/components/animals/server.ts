@@ -114,3 +114,45 @@ export function animalCoverUrl(animal: AnimalShareData): string | null {
   const [cover] = sortMultimediaByOrder(animal.multimedia);
   return cover?.image?.url || null;
 }
+
+const SITEMAP_ANIMALS_QUERY = `
+  query AnimalsForSitemap($take: Int!, $skip: Int!) {
+    animals(where: { duplicateOf: null }, orderBy: [{ createdAt: desc }], take: $take, skip: $skip) {
+      id
+      slug
+      createdAt
+    }
+  }
+`;
+
+const SITEMAP_PAGE = 1000;
+const SITEMAP_MAX = 10000;
+
+export type SitemapAnimal = { path: string; createdAt: string | null };
+
+/** Fichas de animales para el sitemap (sin los reportes unidos a otro). Solo servidor. */
+export async function fetchAnimalsForSitemap(): Promise<SitemapAnimal[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return [];
+  const out: SitemapAnimal[] = [];
+  try {
+    for (let skip = 0; skip < SITEMAP_MAX; skip += SITEMAP_PAGE) {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: SITEMAP_ANIMALS_QUERY, variables: { take: SITEMAP_PAGE, skip } }),
+        next: { revalidate: 60 * 60 },
+      });
+      if (!response.ok) break;
+      const payload = (await response.json()) as {
+        data?: { animals: Array<{ id: string; slug: string | null; createdAt: string | null }> | null };
+      };
+      const rows = payload.data?.animals ?? [];
+      out.push(...rows.map((row) => ({ path: `/animales/${row.slug || row.id}`, createdAt: row.createdAt })));
+      if (rows.length < SITEMAP_PAGE) break;
+    }
+  } catch (error) {
+    console.error('Animals sitemap fetch failed:', error);
+  }
+  return out;
+}

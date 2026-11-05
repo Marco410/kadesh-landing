@@ -114,3 +114,11 @@ Reportar (`/animales/nuevo`) exige sesión, pero nunca se manda a la persona a `
 ## Quién edita un animal (2026-10-14)
 
 Editar la ficha, las fotos y las etapas lo puede hacer **el dueño o un admin de plataforma** (`canEditAnimal`). Esa regla aplica en tres lugares: la página `/animales/[slug]/editar`, el botón "Editar" de la ficha y el agregar o borrar etapas en `LogTimeline`. El admin llega desde Operaciones de Kadesh (Kadesh Pet → Animales → Editar en Kadesh Pet) y necesita tener sesión aquí con su cuenta de admin. kadesh-back aplica la misma regla en `Animal.access.ts`; este front solo decide qué mostrar.
+
+## Buscadores e IA
+
+La ficha (`/animales/<slug>`) y el directorio se pintan en el navegador; lo que llega en el HTML lo pone el servidor:
+- `app/animales/[slug]/layout.tsx`: metadatos, JSON-LD (`WebPage` con foto y fecha, más migas) y un resumen visible «Resumen del reporte» (`animalSummary`: especie, raza, rasgos, estado desde cuándo y última ubicación; sin teléfono ni dirección exacta).
+- `/animales` es un envoltorio de servidor (`app/animales/page.tsx`) con título, descripción, canonical y JSON-LD; el directorio vive en `AnimalsDirectory.tsx`. `/animales/nuevo` tiene sus metadatos en su `layout`.
+- Todas las fichas (menos las unidas a otro reporte) van al sitemap.
+

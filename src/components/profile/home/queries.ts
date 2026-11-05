@@ -156,3 +156,118 @@ export type ProfileClinicHomeVariables = {
   todayWhere: Record<string, unknown>;
   pendingWhere: Record<string, unknown>;
 } & Record<`c${0 | 1 | 2 | 3 | 4 | 5 | 6 | 7}`, Record<string, unknown>>;
+
+/**
+ * "Los próximos 7 días" del Inicio. Las fechas de cada evento se piden ya recortadas a la semana
+ * (`sessions(where: …)`): `$from` / `$to` son el inicio de hoy y el de dentro de 7 días.
+ */
+const WEEK_EVENT_FIELDS = `
+  id
+  slug
+  title
+  category
+  timeZone
+  stateCode
+  city
+  state
+  placeLabel
+  neighborhood
+  sessions(where: { startsAt: { lt: $to }, endsAt: { gt: $from } }, orderBy: [{ startsAt: asc }]) {
+    id
+    startsAt
+    endsAt
+  }
+`;
+
+export const PROFILE_WEEK_QUERY = gql`
+  query ProfileWeek(
+    $userId: ID!
+    $from: DateTime!
+    $to: DateTime!
+    $appointmentWhere: PetPlaceAppointmentWhereInput!
+    $interestWhere: PetEventInterestWhereInput!
+    $myEventsWhere: PetEventWhereInput!
+  ) {
+    me: user(where: { id: $userId }) {
+      id
+      alertLat
+      alertLng
+    }
+    weekAppointments: petPlaceAppointments(where: $appointmentWhere, orderBy: [{ startsAt: asc }], take: 30) {
+      id
+      startsAt
+      endsAt
+      status
+      petName
+      pet_place {
+        id
+        name
+      }
+    }
+    weekInterests: petEventInterests(where: $interestWhere, take: 50) {
+      id
+      kind
+      event {
+        ${WEEK_EVENT_FIELDS}
+      }
+    }
+    weekMyEvents: petEvents(where: $myEventsWhere, take: 50) {
+      ${WEEK_EVENT_FIELDS}
+    }
+  }
+`;
+
+export type WeekEvent = {
+  id: string;
+  slug: string | null;
+  title: string;
+  category: string;
+  timeZone: string | null;
+  stateCode: string | null;
+  city: string | null;
+  state: string | null;
+  placeLabel: string | null;
+  neighborhood: string | null;
+  sessions: Array<{ id: string; startsAt: string; endsAt: string }> | null;
+};
+
+export type ProfileWeekResponse = {
+  me: { id: string; alertLat: number | null; alertLng: number | null } | null;
+  weekAppointments: Array<HomeAppointment & { endsAt: string | null }> | null;
+  weekInterests: Array<{ id: string; kind: string; event: WeekEvent | null }> | null;
+  weekMyEvents: WeekEvent[] | null;
+};
+
+export type ProfileWeekVariables = {
+  userId: string;
+  from: string;
+  to: string;
+  appointmentWhere: Record<string, unknown>;
+  interestWhere: Record<string, unknown>;
+  myEventsWhere: Record<string, unknown>;
+};
+
+/** Eventos próximos de la semana: cerca de la zona de la persona o, sin zona, de todo México. */
+export const PROFILE_WEEK_FEED_QUERY = gql`
+  query ProfileWeekFeed($input: PetEventsFeedInput!, $from: DateTime!, $to: DateTime!) {
+    petEventsFeed(input: $input) {
+      total
+      items {
+        distanceKm
+        event {
+          ${WEEK_EVENT_FIELDS}
+        }
+      }
+    }
+  }
+`;
+
+export type ProfileWeekFeedResponse = {
+  petEventsFeed: { total: number; items: Array<{ distanceKm: number | null; event: WeekEvent }> } | null;
+};
+
+export type ProfileWeekFeedVariables = {
+  input: { to: string; lat?: number; lng?: number; radiusKm?: number; take: number };
+  from: string;
+  to: string;
+};

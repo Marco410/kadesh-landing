@@ -59,7 +59,7 @@ export default function VeterinariansSection() {
     <section
       ref={rootRef}
       id="veterinarias"
-      className="w-full scroll-mt-20 bg-[#f7f8fa] py-24 dark:bg-night-raised"
+      className="w-full scroll-mt-20 bg-[#f7f8fa] py-24  dark:bg-night"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-14 max-w-3xl text-center">

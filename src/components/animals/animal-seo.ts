@@ -143,3 +143,62 @@ export function buildAnimalMetadata(animal: AnimalShareData): Metadata {
     },
   };
 }
+
+type JsonLd = Record<string, unknown>;
+
+/**
+ * Resumen del reporte que se entiende solo (lo citan buscadores e IA y llega en el HTML aunque la
+ * ficha se pinte en el navegador). Sin teléfono ni dirección exacta, igual que lo que se comparte:
+ * «Chumina, perro chihuahua (hembra, mayor, color café claro, tamaño pequeño). Estado: perdido desde
+ * el 3 de noviembre de 2026. Última ubicación: Trincheras de Morelos, Morelia, Michoacán.»
+ */
+export function animalSummary(animal: AnimalShareData): string {
+  const facts = animalShareFacts(animal);
+  const kind = [facts.typeLabel, facts.breed]
+    .filter((part, index, all) => part && all.indexOf(part) === index)
+    .join(' ')
+    .toLowerCase();
+  const traits = facts.traits.map((trait) => trait.toLowerCase()).join(', ');
+  const who = [facts.name !== facts.typeLabel ? facts.name : '', kind].filter(Boolean).join(', ');
+  const parts = [
+    `${who ? who.charAt(0).toUpperCase() + who.slice(1) : 'Animal'}${traits ? ` (${traits})` : ''}.`,
+    `Estado: ${facts.statusLabel.toLowerCase()}${facts.seenAt ? ` desde el ${facts.seenAt}` : ''}.`,
+    facts.location ? `Última ubicación: ${facts.location}.` : '',
+    'Si lo reconoces, avisa a quien lo reportó desde esta ficha o compártela para ayudar.',
+  ];
+  return parts.filter(Boolean).join(' ');
+}
+
+/** JSON-LD de la ficha: la página con su foto, fecha y migas (no hay un tipo de schema.org para mascotas). */
+export function buildAnimalJsonLd(animal: AnimalShareData): JsonLd {
+  const facts = animalShareFacts(animal);
+  const url = `${SITE_URL}${animalCanonicalPath(animal)}`;
+  const log = animal.logs?.[0];
+  const title = animalTitle(facts);
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebPage',
+        '@id': `${url}#pagina`,
+        url,
+        name: title,
+        description: animalSummary(animal),
+        inLanguage: 'es-MX',
+        datePublished: log?.date_status || log?.createdAt || undefined,
+        primaryImageOfPage: { '@type': 'ImageObject', url: animalShareImageUrl(animal), width: 1200, height: 630 },
+        isPartOf: { '@id': `${SITE_URL}/#website` },
+        breadcrumb: { '@id': `${url}#breadcrumb` },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${url}#breadcrumb`,
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${SITE_URL}/` },
+          { '@type': 'ListItem', position: 2, name: 'Animales', item: `${SITE_URL}${Routes.animals.index}` },
+          { '@type': 'ListItem', position: 3, name: facts.name, item: url },
+        ],
+      },
+    ],
+  };
+}

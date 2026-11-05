@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowRightIcon, HospitalLocationIcon } from '@hugeicons/core-free-icons';
+import { ArrowRightIcon, Calendar03Icon, HospitalLocationIcon } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
 import { getStatusColor } from 'kadesh/components/animals/constants';
 import ReportLink from 'kadesh/components/animals/ReportLink';
@@ -107,39 +107,74 @@ function roundDownForDisplay(value: number): number {
   return value;
 }
 
+/** Cifra de eventos del hero: los eventos registrados (publicados, también los que ya pasaron). */
+export type HeroEventsStat = { count: number };
+
+const statLinkClass =
+  'group inline-flex min-h-11 flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-xl px-2 py-1 transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white lg:justify-start';
+
 /**
- * Prueba social: veterinarias y ciudades. No se muestran animales registrados ni reencuentros
- * hasta que exista una cifra real de reencuentros que se vea bien.
+ * Cifras bajo los accesos, cada una lleva a su lugar: veterinarias (prueba social, redondeada y
+ * solo desde 10) → `/veterinarias`; eventos registrados (desde 1; redondeada desde 100) → la
+ * sección `#eventos`.
+ * No se muestran animales registrados ni reencuentros hasta tener una cifra real de reencuentros.
  */
-function HeroProof({ stats }: { stats: PetLandingStats }) {
-  const showVets = stats.veterinaries >= MIN_STAT_TO_SHOW;
-  const showCities = stats.cities >= MIN_STAT_TO_SHOW;
-  if (!showVets) return null;
+function HeroProof({ stats, events }: { stats?: PetLandingStats | null; events?: HeroEventsStat | null }) {
+  const showVets = Boolean(stats && stats.veterinaries >= MIN_STAT_TO_SHOW);
+  const showCities = Boolean(stats && stats.cities >= MIN_STAT_TO_SHOW);
+  const showEvents = Boolean(events && events.count > 0);
+  if (!showVets && !showEvents) return null;
 
   return (
-    <p className="kadesh-hero-in kadesh-hero-in-delay-3 mx-auto mt-10 flex max-w-lg flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-white/15 pt-6 text-base text-white/90 lg:mx-0 lg:justify-start">
-      <HugeiconsIcon icon={HospitalLocationIcon} size={18} strokeWidth={2} aria-hidden />
-      <strong className="font-black text-white">
-        <StatsCounter value={roundDownForDisplay(stats.veterinaries)} suffix="+" />
-      </strong>
-      <span>veterinarias</span>
-      {showCities && (
-        <>
-          <span>en</span>
-          <strong className="font-black text-white">
-            <StatsCounter value={roundDownForDisplay(stats.cities)} suffix="+" />
-          </strong>
-          <span>ciudades de México</span>
-        </>
-      )}
-    </p>
+    <ul className="kadesh-hero-in kadesh-hero-in-delay-3 mx-auto mt-10 flex max-w-lg flex-col items-center gap-1 border-t border-white/15 pt-6 text-base text-white/90 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-4 lg:mx-0 lg:-ml-2 lg:items-start lg:justify-start">
+      {showVets && stats ? (
+        <li>
+          <Link href={Routes.veterinaries.index} className={statLinkClass}>
+            <HugeiconsIcon icon={HospitalLocationIcon} size={18} strokeWidth={2} aria-hidden />
+            <strong className="font-black text-white">
+              <StatsCounter value={roundDownForDisplay(stats.veterinaries)} suffix="+" />
+            </strong>{' '}
+            <span className="underline-offset-4 group-hover:underline">
+              veterinarias
+              {showCities ? (
+                <>
+                  {' '}en{' '}
+                  <strong className="font-black text-white">
+                    <StatsCounter value={roundDownForDisplay(stats.cities)} suffix="+" />
+                  </strong>{' '}
+                  ciudades de México
+                </>
+              ) : null}
+            </span>
+          </Link>
+        </li>
+      ) : null}
+      {showEvents && events ? (
+        <li>
+          <a href={Routes.navigation.events} className={statLinkClass}>
+            <HugeiconsIcon icon={Calendar03Icon} size={18} strokeWidth={2} aria-hidden />
+            <strong className="font-black text-white">
+              <StatsCounter
+                value={events.count >= MIN_STAT_TO_SHOW ? roundDownForDisplay(events.count) : events.count}
+                suffix={events.count >= 100 ? '+' : ''}
+              />
+            </strong>{' '}
+            <span className="underline-offset-4 group-hover:underline">
+              {events.count === 1 ? 'evento registrado' : 'eventos registrados'}
+            </span>
+          </a>
+        </li>
+      ) : null}
+    </ul>
   );
 }
 
 export default function HeroSection({
   stats,
+  events,
 }: {
   stats?: PetLandingStats | null;
+  events?: HeroEventsStat | null;
 }) {
   return (
     <section
@@ -171,7 +206,7 @@ export default function HeroSection({
             <SecondaryAccessNav />
           </div>
 
-          {stats && <HeroProof stats={stats} />}
+          <HeroProof stats={stats} events={events} />
         </div>
 
         <HeroMap />

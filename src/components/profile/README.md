@@ -38,7 +38,8 @@ Editar lo que sí se puede cambiar (nombre, teléfono, foto) y ver la actividad 
 - **Saludo**:
   - "{Buenos días…}, {nombre}." y una frase con lo que tiene (mascotas, citas próximas, reportes activos).
   - Cierra con "N cosas necesitan atención." (rojo) o "Todo en orden." (verde).
-  - Abajo, cuatro atajos: mascotas, buscar veterinaria, alertas de zona y reportar animal.
+  - **Los próximos 7 días** (`WeekStrip`, reglas en `weekAgenda.ts`): fichas de hoy y los 6 días siguientes con puntitos (azul = citas, verde = sus eventos, morado = eventos cerca) y la lista del día elegido. «Cerca» usa el centro de sus alertas de zona, si no la ubicación ya compartida, si no todo México.
+  - Abajo, cinco atajos: mascotas, buscar veterinaria, alertas de zona, eventos y reportar animal (en móvil, el último ocupa la fila completa).
 - **Requiere atención**, de lo más urgente a lo menos:
   1. Recordatorios vencidos (rojo) o de los próximos 7 días (ámbar).
   2. Citas por confirmar en sus clínicas.

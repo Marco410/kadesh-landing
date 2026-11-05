@@ -75,6 +75,9 @@ export const PET_ALERT_SETTINGS_QUERY = gql`
       alertLat
       alertLng
       alertRadiusKm
+      eventAlertsEnabled
+      alertCity
+      alertStateCode
     }
   }
 `;
@@ -85,6 +88,9 @@ export interface PetAlertSettingsUser {
   alertLat: number | null;
   alertLng: number | null;
   alertRadiusKm: number | null;
+  eventAlertsEnabled: boolean | null;
+  alertCity: string | null;
+  alertStateCode: string | null;
 }
 
 export interface PetAlertSettingsResponse {
@@ -99,6 +105,9 @@ export const UPDATE_PET_ALERT_SETTINGS_MUTATION = gql`
       alertLat
       alertLng
       alertRadiusKm
+      eventAlertsEnabled
+      alertCity
+      alertStateCode
     }
   }
 `;
@@ -110,6 +119,7 @@ export interface UpdatePetAlertSettingsVariables {
     alertLat: number | null;
     alertLng: number | null;
     alertRadiusKm: number;
+    eventAlertsEnabled: boolean;
   };
 }
 

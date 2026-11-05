@@ -27,5 +27,5 @@ La portada usa `fetchHomeEvents` (semana completa de México) y la tira de días
 - **SEO / GEO**: la ficha lleva una frase resumen que se entiende sola (`eventSummary`: qué, dónde, fecha con año, costo, quién organiza, cupo) y un JSON-LD `Event` por fecha con `organizer.url`. `/eventos` lleva `CollectionPage`, `ItemList`, `FAQPage` (preguntas visibles en `EVENTS_FAQ`) y migas.
 - **Títulos**: `eventPageTitle` arma «<título> en <ciudad> · Gratis · 10 nov» (lo que se busca) sin pasar de ~60 caracteres con « | KADESH»; el `<h1>` es el título de quien organiza.
 - **URLs de listados**: `eventsListingHref` (estado y municipio en la ruta, `tipo` / `cuando` / `cerca` en la query) y `resolveEventsPlace` en `searchParams.ts`.
-- **IndexNow**: la clave pública vive en `src/app/indexnow-key.txt/route.ts` y debe coincidir con `INDEXNOW_KEY` de kadesh-back (`utils/seo/indexNow.ts`).
+- **IndexNow**: la clave pública vive en `src/core/indexnow.ts` (la sirve `src/app/indexnow-key.txt/route.ts`) y debe coincidir con `INDEXNOW_KEY` de kadesh-back (`utils/seo/indexNow.ts`).
 - **Lado servidor**: `server.ts` y `events-seo.ts` se importan por archivo desde `app/eventos`; el barril (`index.ts`) solo exporta lo del cliente.

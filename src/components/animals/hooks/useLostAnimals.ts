@@ -16,6 +16,18 @@ function normalizeText(text: string): string {
     .toLowerCase();
 }
 
+/** `NearbyAnimalsInput` del back: lat/lng/radio solo si hay ubicación (con null no devuelve nada). */
+interface NearbyAnimalsQueryInput {
+  limit: number;
+  skip: number;
+  lat?: number;
+  lng?: number;
+  radius?: number;
+  animalType?: string;
+  status?: string;
+  location?: string;
+}
+
 interface NearbyAnimal {
   id: string;
   slug?: string | null;
@@ -123,7 +135,7 @@ export function useLostAnimals(
 
   // Build input for getNearbyAnimals query (lat/lng null = backend returns all)
   const queryInput = useMemo(() => {
-    const input: any = {
+    const input: NearbyAnimalsQueryInput = {
       limit: 500, // Get enough for client-side filtering and pagination
       skip: 0,
     };
@@ -143,7 +155,8 @@ export function useLostAnimals(
     if (filters.type && animalTypesData?.animalTypes) {
       const dbTypeName = typeNameMap[filters.type] || filters.type;
       const animalType = animalTypesData.animalTypes.find(
-        (at: any) => at.name?.toLowerCase() === dbTypeName.toLowerCase()
+        (at: { id: string; name?: string | null }) =>
+          at.name?.toLowerCase() === dbTypeName.toLowerCase()
       );
       if (animalType?.id) {
         input.animalType = animalType.id;

@@ -137,7 +137,7 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
         dateStatus,
       });
       // onSuccess, resetForm, and onClose are handled by the hook's onSuccess callback
-    } catch (err: any) {
+    } catch {
       // Error is handled by useCreateLog hook's onError callback
     }
   };

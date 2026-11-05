@@ -873,6 +873,38 @@ html:has(.kd-dash) body {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
 }
 
+/*
+ * Área con scroll interno (ficha del animal en escritorio): si hay más contenido abajo, el borde
+ * inferior se desvanece para avisarlo; al llegar al final se ve completo. Si no hay scroll, la
+ * línea de tiempo está inactiva y no se aplica nada. Sin soporte (Firefox), simplemente no hay
+ * desvanecido. Va en un contenedor interno: la máscara también borraría el borde de la tarjeta.
+ */
+@property --scroll-fade-size {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes kadesh-scroll-fade {
+  0%,
+  85% {
+    --scroll-fade-size: 3rem;
+  }
+  100% {
+    --scroll-fade-size: 0px;
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (min-width: 64rem) {
+    .kadesh-scroll-fade {
+      mask-image: linear-gradient(to bottom, #000 calc(100% - var(--scroll-fade-size)), transparent);
+      animation: kadesh-scroll-fade linear both;
+      animation-timeline: scroll(self);
+    }
+  }
+}
+
 /* "Reducir movimiento": nada se anima en el panel (framer lo apaga con MotionConfig; esto, el CSS). */
 @media (prefers-reduced-motion: reduce) {
   .kd-dash *,

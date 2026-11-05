@@ -15,6 +15,24 @@ import {
 } from "kadesh/components/profile/sales/queries";
 import { Routes } from "kadesh/core/routes";
 
+/** Tarjeta guardada en Stripe, solo con lo que se compara para no duplicarla. */
+type StripeCardMethod = {
+  id: string;
+  card?: {
+    last4?: string | null;
+    exp_month?: number | null;
+    exp_year?: number | null;
+    brand?: string | null;
+  } | null;
+};
+
+type StripePaymentMethodsResult = {
+  StripePaymentMethods?: {
+    success?: boolean | null;
+    data?: { data?: StripeCardMethod[] | null } | null;
+  } | null;
+};
+
 export interface SubscriptionPaymentFormData {
   nameCard: string;
   email: string;
@@ -85,7 +103,7 @@ export function useSubscriptionPayment(
 
       // Listar métodos de pago en Stripe solo si hay customer (evitar "No such customer").
       // Si no hay stripeCustomerId, o el backend devuelve success: false, usamos lista vacía.
-      let methodsList: unknown[] = [];
+      let methodsList: StripeCardMethod[] = [];
       if (stripeCustomerId) {
         try {
           const { data: getStripePaymentMethods } = await client.query({
@@ -93,7 +111,8 @@ export function useSubscriptionPayment(
             variables: { email: userEmail },
             fetchPolicy: "network-only",
           });
-          const raw = (getStripePaymentMethods as any)?.StripePaymentMethods;
+          const raw = (getStripePaymentMethods as StripePaymentMethodsResult | null)
+            ?.StripePaymentMethods;
           if (raw?.success === true && Array.isArray(raw?.data?.data)) {
             methodsList = raw.data.data;
           }
@@ -103,12 +122,12 @@ export function useSubscriptionPayment(
       }
 
       const stripePaymentMethodDuplicate = methodsList.find(
-        (method: any) =>
+        (method) =>
           method.card?.last4 === paymentMethod.card?.last4 &&
           method.card?.exp_month === paymentMethod.card?.exp_month &&
           method.card?.exp_year === paymentMethod.card?.exp_year &&
           method.card?.brand === paymentMethod.card?.brand,
-      ) as { id: string } | undefined;
+      );
 
       let paymentMethodId: string;
       let noDuplicatePaymentMethod: boolean;
@@ -133,7 +152,8 @@ export function useSubscriptionPayment(
             },
           },
         });
-        paymentMethodId = (res.data as any).createSaasPaymentMethod.id;
+        paymentMethodId = (res.data as { createSaasPaymentMethod: { id: string } })
+          .createSaasPaymentMethod.id;
         noDuplicatePaymentMethod = true;
       } else {
         const { data: getPaymentMethod } = await client.query({
@@ -143,7 +163,8 @@ export function useSubscriptionPayment(
           },
           fetchPolicy: "network-only",
         });
-        paymentMethodId = (getPaymentMethod as any).saasPaymentMethod.id;
+        paymentMethodId = (getPaymentMethod as { saasPaymentMethod: { id: string } })
+          .saasPaymentMethod.id;
         noDuplicatePaymentMethod = false;
       }
 

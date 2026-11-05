@@ -52,7 +52,7 @@ type QueuedEvent = {
   retried?: boolean;
 };
 
-let queue: QueuedEvent[] = [];
+const queue: QueuedEvent[] = [];
 let timer: ReturnType<typeof setTimeout> | null = null;
 let listening = false;
 

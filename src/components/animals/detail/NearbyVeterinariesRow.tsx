@@ -17,6 +17,7 @@ import {
   type PetPlace,
 } from "kadesh/components/veterinaries";
 import { Routes } from "kadesh/core/routes";
+import { cn } from "kadesh/utils/cn";
 
 const NEARBY_LIMIT = 12;
 
@@ -102,11 +103,13 @@ function NearbyVetCard({ place }: { place: PetPlace }) {
 interface NearbyVeterinariesRowProps {
   lat: number;
   lng: number;
+  className?: string;
 }
 
 export default function NearbyVeterinariesRow({
   lat,
   lng,
+  className,
 }: NearbyVeterinariesRowProps) {
   const trackRef = useRef<HTMLUListElement>(null);
   const location = useMemo(() => ({ lat, lng }), [lat, lng]);
@@ -123,7 +126,10 @@ export default function NearbyVeterinariesRow({
   return (
     <section
       aria-labelledby="nearby-vets-title"
-      className="rounded-2xl border border-[#ececec] bg-white p-3 dark:border-white/10 dark:bg-night-raised"
+      className={cn(
+        "rounded-2xl border border-[#ececec] bg-white p-3 dark:border-white/10 dark:bg-night-raised",
+        className,
+      )}
     >
       <div className="mb-2 flex items-center gap-2">
         <HugeiconsIcon

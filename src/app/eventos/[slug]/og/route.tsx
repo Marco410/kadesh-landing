@@ -1,7 +1,21 @@
 import { NextResponse } from 'next/server';
-import { ImageResponse } from 'next/og';
-import { ogFonts } from 'kadesh/core/og-fonts';
 import { SITE_URL } from 'kadesh/core/site';
+import {
+  OG_CACHE_CONTROL,
+  OG_CONTENT_STYLE,
+  OG_HEIGHT,
+  OG_SAFE_WIDTH,
+  OG_WIDTH,
+  OgBrandFooter,
+  fetchOgPhoto,
+  ogPhotoSrc,
+  ogPng,
+  ogVariant,
+  renderOgCard,
+  withOgEdgeCache,
+  type OgPhoto,
+  type OgVariant,
+} from 'kadesh/core/og-card';
 import { eventCategory } from 'kadesh/components/events/constants';
 import { eventShareFacts, type EventShareFacts } from 'kadesh/components/events/events-seo';
 import { fetchPublicEventBySlug } from 'kadesh/components/events/server';
@@ -9,16 +23,10 @@ import { fetchPublicEventBySlug } from 'kadesh/components/events/server';
 /**
  * Tarjeta para compartir un evento (WhatsApp, Facebook, X): como la de animales, la foto o el
  * cartel de portada de fondo con un degradado, el tipo de evento, el título, la próxima fecha, el
- * lugar y el costo. Sin foto, un fondo del color del tipo. Si el render falla con la foto, se sirve
- * la portada tal cual; si falla todo, la imagen genérica del sitio.
+ * lugar y el costo, centrados en la zona segura (ver `kadesh/core/og-card`). Sin foto, un fondo
+ * del color del tipo. Si el render falla con la foto, se sirve la portada tal cual; si falla todo,
+ * la imagen genérica del sitio.
  */
-
-const WIDTH = 1200;
-const HEIGHT = 630;
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const CACHE_CONTROL = 'public, max-age=600, s-maxage=600, stale-while-revalidate=86400';
-
-type Photo = { bytes: ArrayBuffer; contentType: string };
 
 function fallbackResponse() {
   return NextResponse.redirect(`${SITE_URL}/og-image.png`, {
@@ -27,196 +35,186 @@ function fallbackResponse() {
   });
 }
 
-async function fetchPhoto(url: string | null): Promise<Photo | null> {
-  if (!url) return null;
-  try {
-    const upstream = await fetch(url, { cache: 'no-store' });
-    const contentType = upstream.headers.get('content-type') ?? '';
-    if (!upstream.ok || !contentType.startsWith('image/')) return null;
-    const bytes = await upstream.arrayBuffer();
-    if (bytes.byteLength === 0 || bytes.byteLength > MAX_IMAGE_BYTES) return null;
-    return { bytes, contentType };
-  } catch (error) {
-    console.error('Event share image fetch failed:', error);
-    return null;
-  }
+function titleSize(title: string) {
+  if (title.length > 60) return 46;
+  if (title.length > 30) return 56;
+  return 68;
 }
 
-async function renderCard(facts: EventShareFacts, photo: Photo | null) {
-  const color = eventCategory(facts.category).color;
-  const titleSize = facts.title.length > 60 ? 52 : facts.title.length > 30 ? 62 : 74;
-  const photoSrc = photo
-    ? `data:${photo.contentType};base64,${Buffer.from(photo.bytes).toString('base64')}`
-    : null;
+function Pill({ children, background, border }: { children: string; background: string; border?: boolean }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        backgroundColor: background,
+        color: '#ffffff',
+        fontSize: 32,
+        fontWeight: 800,
+        padding: '8px 28px',
+        borderRadius: 999,
+        whiteSpace: 'nowrap',
+        // Satori falla con `border: undefined`: la clave solo va si hay borde.
+        ...(border ? { border: '3px solid rgba(255,255,255,0.85)' } : {}),
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
-  const card = new ImageResponse(
-    (
+async function renderCard(facts: EventShareFacts, photo: OgPhoto | null, variant: OgVariant) {
+  const color = eventCategory(facts.category).color;
+  const photoSrc = ogPhotoSrc(photo);
+
+  return renderOgCard(
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        position: 'relative',
+        backgroundColor: '#0b1530',
+        backgroundImage: `linear-gradient(135deg, ${color} 0%, #0b2f7a 70%, #0a1330 100%)`,
+        fontFamily: 'Poppins',
+      }}
+    >
+      {photoSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={photoSrc}
+          alt=""
+          width={OG_WIDTH}
+          height={OG_HEIGHT}
+          style={{ position: 'absolute', top: 0, left: 0, width: OG_WIDTH, height: OG_HEIGHT, objectFit: 'cover' }}
+        />
+      ) : null}
       <div
         style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          position: 'relative',
-          backgroundColor: '#0b1530',
-          backgroundImage: `linear-gradient(135deg, ${color} 0%, #0b2f7a 70%, #0a1330 100%)`,
-          fontFamily: 'Poppins',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: OG_WIDTH,
+          height: OG_HEIGHT,
+          backgroundImage: photoSrc
+            ? 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.1) 100%)'
+            : 'linear-gradient(to top, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 60%)',
         }}
-      >
-        {photoSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={photoSrc}
-            alt=""
-            width={WIDTH}
-            height={HEIGHT}
-            style={{ position: 'absolute', top: 0, left: 0, width: WIDTH, height: HEIGHT, objectFit: 'cover' }}
-          />
-        ) : null}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: WIDTH,
-            height: HEIGHT,
-            backgroundImage: photoSrc
-              ? 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 42%, rgba(0,0,0,0.1) 100%)'
-              : 'linear-gradient(to top, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 60%)',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: WIDTH,
-            height: HEIGHT,
-            padding: '48px 64px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', gap: 14 }}>
+      />
+      <div style={OG_CONTENT_STYLE}>
+        <div style={{ display: 'flex', gap: 14 }}>
+          <Pill background={color} border>
+            {facts.categoryLabel}
+          </Pill>
+          {facts.status ? <Pill background="#dc2626">{facts.status}</Pill> : null}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+          <div
+            style={{
+              display: 'block',
+              maxWidth: '100%',
+              textAlign: 'center',
+              color: '#ffffff',
+              fontSize: titleSize(facts.title),
+              fontWeight: 800,
+              lineHeight: 1.08,
+              lineClamp: 3,
+            }}
+          >
+            {facts.title}
+          </div>
+          {facts.when ? (
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginTop: 14 }}>
+              <div style={{ display: 'flex', color: '#ffffff', fontSize: 36, fontWeight: 800 }}>{facts.when}</div>
+              {facts.moreDates ? (
+                <div style={{ display: 'flex', color: '#e5e7eb', fontSize: 26, fontWeight: 700 }}>{facts.moreDates}</div>
+              ) : null}
+            </div>
+          ) : null}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 16,
+              marginTop: 14,
+              maxWidth: OG_SAFE_WIDTH,
+            }}
+          >
+            {facts.price ? (
               <div
                 style={{
                   display: 'flex',
-                  backgroundColor: color,
+                  backgroundColor: facts.isFree ? '#16a34a' : 'rgba(255,255,255,0.18)',
                   color: '#ffffff',
-                  fontSize: 34,
+                  fontSize: 26,
                   fontWeight: 800,
-                  padding: '8px 30px',
+                  padding: '4px 20px',
                   borderRadius: 999,
-                  border: '3px solid rgba(255,255,255,0.85)',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
                 }}
               >
-                {facts.categoryLabel}
-              </div>
-              {facts.status ? (
-                <div
-                  style={{
-                    display: 'flex',
-                    backgroundColor: '#dc2626',
-                    color: '#ffffff',
-                    fontSize: 34,
-                    fontWeight: 800,
-                    padding: '8px 30px',
-                    borderRadius: 999,
-                  }}
-                >
-                  {facts.status}
-                </div>
-              ) : null}
-            </div>
-            <div style={{ display: 'flex', color: '#ffffff', fontSize: 40, fontWeight: 800, letterSpacing: 4 }}>
-              KADESH
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div
-              style={{
-                display: 'flex',
-                color: '#ffffff',
-                fontSize: titleSize,
-                fontWeight: 800,
-                lineHeight: 1.08,
-                maxWidth: 1072,
-              }}
-            >
-              {facts.title}
-            </div>
-            {facts.when ? (
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginTop: 14 }}>
-                <div style={{ display: 'flex', color: '#ffffff', fontSize: 38, fontWeight: 800 }}>{facts.when}</div>
-                {facts.moreDates ? (
-                  <div style={{ display: 'flex', color: '#e5e7eb', fontSize: 28, fontWeight: 700 }}>{facts.moreDates}</div>
-                ) : null}
+                {facts.price}
               </div>
             ) : null}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 18, maxWidth: 820 }}>
-                {facts.price ? (
-                  <div
-                    style={{
-                      display: 'flex',
-                      backgroundColor: facts.isFree ? '#16a34a' : 'rgba(255,255,255,0.18)',
-                      color: '#ffffff',
-                      fontSize: 28,
-                      fontWeight: 800,
-                      padding: '4px 20px',
-                      borderRadius: 999,
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {facts.price}
-                  </div>
-                ) : null}
-                <div style={{ display: 'flex', color: '#ffd9b8', fontSize: 30, fontWeight: 700, whiteSpace: 'nowrap' }}>
-                  {facts.place}
-                </div>
+            {facts.place ? (
+              <div
+                style={{
+                  display: 'block',
+                  color: '#ffd9b8',
+                  fontSize: 28,
+                  fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  minWidth: 0,
+                }}
+              >
+                {facts.place}
               </div>
-              <div style={{ display: 'flex', color: '#d1d5db', fontSize: 26, fontWeight: 700 }}>pet.kadesh.com.mx</div>
-            </div>
+            ) : null}
+          </div>
+          <div style={{ display: 'flex', marginTop: 22 }}>
+            <OgBrandFooter />
           </div>
         </div>
       </div>
-    ),
-    { width: WIDTH, height: HEIGHT, fonts: ogFonts() },
+    </div>,
+    variant,
   );
-
-  // Forzar el render aquí para poder caer al plan B si Satori rechaza la foto.
-  return card.arrayBuffer();
 }
 
-export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+async function buildCardResponse(slug: string, variant: OgVariant): Promise<Response> {
   const event = await fetchPublicEventBySlug(slug);
   if (!event) return fallbackResponse();
 
   const facts = eventShareFacts(event);
-  const photo = await fetchPhoto(facts.coverUrl);
+  const photo = await fetchOgPhoto(facts.coverUrl);
 
   try {
-    const png = await renderCard(facts, photo);
-    return new NextResponse(png, { headers: { 'Content-Type': 'image/png', 'Cache-Control': CACHE_CONTROL } });
+    return ogPng(await renderCard(facts, photo, variant));
   } catch (error) {
     console.error('Event share card failed with photo:', error);
   }
 
   // Formato de foto que el render no acepta: se sirve la portada tal cual.
   if (photo) {
-    return new NextResponse(photo.bytes, {
-      headers: { 'Content-Type': photo.contentType, 'Cache-Control': CACHE_CONTROL },
+    return new Response(photo.bytes, {
+      headers: { 'Content-Type': photo.contentType, 'Cache-Control': OG_CACHE_CONTROL },
     });
   }
 
   try {
-    const png = await renderCard(facts, null);
-    return new NextResponse(png, { headers: { 'Content-Type': 'image/png', 'Cache-Control': CACHE_CONTROL } });
+    return ogPng(await renderCard(facts, null, variant));
   } catch (error) {
     console.error('Event share card failed:', error);
     return fallbackResponse();
   }
+}
+
+export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const variant = ogVariant(request);
+  return withOgEdgeCache(request, variant, () => buildCardResponse(slug, variant));
 }

@@ -63,7 +63,7 @@ export interface LeafletLayer {
   bringToFront?(): LeafletLayer;
 }
 
-export interface LeafletTileLayer extends LeafletLayer {}
+export type LeafletTileLayer = LeafletLayer;
 
 export interface LeafletMap {
   setView(center: [number, number], zoom: number): LeafletMap;

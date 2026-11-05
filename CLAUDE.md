@@ -15,7 +15,7 @@ pnpm install       # install dependencies
 pnpm dev           # start dev server (Turbopack) at http://localhost:3000
 pnpm build         # production build
 pnpm start         # run production build
-pnpm lint          # next lint
+pnpm lint          # eslint . (ESLint 9 + eslint-config-next 15, eslint.config.mjs); no corre dentro de next build
 
 # Cloudflare Workers (OpenNext)
 pnpm run preview   # OpenNext build + local Workers preview (wrangler dev, local R2/DO simulators)
@@ -55,6 +55,7 @@ All internal imports use the `kadesh/*` alias, mapped to `./src/*` in `tsconfig.
 
 - `app/` — Next.js App Router routes. `layout.tsx` defines global metadata/fonts and delegates client-side setup to `app/ClientProviders.tsx`. Route folders mirror `core/routes.ts` (e.g. `app/animales/[id]`, `app/perfil/ventas/planes`, `app/blog/[url]`).
 - `components/<feature>/` — feature-colocated UI. A feature typically contains its components, `hooks/`, `queries.ts` (Apollo queries/mutations), `constants.ts`, `types.ts`, and a barrel `index.ts` that re-exports the feature's public API (e.g. `src/components/animals/index.ts`). Prefer importing from the barrel (`kadesh/components/animals`) rather than reaching into a feature's internal files.
+- `core/og-card.tsx` — shared pieces of the share cards (`app/*/[slug]/og/route.tsx`): keep all content in the centered 760px safe column (Facebook mobile crops ~190px per side), render with `renderOgCard` (serves WhatsApp a half-size variant; don't use `transform: scale` in Satori, it breaks ellipsis clipping) and wrap the handler in `withOgEdgeCache`.
 - `core/site.ts` — canonical origin (`https://pet.kadesh.com.mx`). `core/routes.ts` — the single source of truth for all route paths/anchors. Always use `Routes` from `kadesh/core/routes` instead of hardcoding path strings. Always use `SITE_URL` from `kadesh/core/site` for absolute URLs (canonical, OG, JSON-LD, sitemap).
 - `providers/` — cross-cutting React context/client setup: `apollo-client.ts` (Apollo client factory + auth link that attaches the KeystoneJS session token from `localStorage`), `ApolloProviderWrapper.tsx`, `ThemeProvider.tsx` (next-themes).
 - `utils/` — pure helpers plus `UserContext.tsx` (the app-wide authenticated-user context/hook `useUser`) and `getAuthUser.ts` (fetches `authenticatedItem` from Keystone). No UI in this folder.

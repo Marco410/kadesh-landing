@@ -1,3 +1,5 @@
+import type { DocumentRendererProps } from '@keystone-6/document-renderer';
+
 export interface Image {
   url: string;
 }
@@ -24,7 +26,7 @@ export interface Tag {
 }
 
 export interface Content {
-  document: any;
+  document: DocumentRendererProps["document"];
 }
 
 export interface BlogPost {
@@ -46,7 +48,7 @@ export interface BlogPost {
 }
 
 export interface PostWhereInput {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface PostOrderByInput {

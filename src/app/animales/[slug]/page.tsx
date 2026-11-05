@@ -146,7 +146,8 @@ export default function AnimalDetailPage() {
         initial={motionPrefs.panel ? "hidden" : false}
         animate="show"
       >
-        <div className="flex min-h-0 flex-col gap-3 py-3 lg:h-[calc(100dvh-72px)] lg:overflow-hidden">
+        {/* Ocupa la pantalla, pero en laptops bajas no se aplasta: abajo de 48rem la página hace scroll. */}
+        <div className="flex min-h-0 flex-col gap-3 py-3 lg:h-[max(calc(100dvh-72px),48rem)] lg:overflow-hidden">
           <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 lg:flex-nowrap">
             <Link
               href={Routes.animals.index}
@@ -237,8 +238,15 @@ export default function AnimalDetailPage() {
           />
           <ClaimReportButton animal={animal} status={status} />
 
-          <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(17rem,1fr)_minmax(0,1.2fr)] lg:grid-rows-[auto_minmax(0,1fr)]">
-            <div className="min-h-0 overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-white/10 dark:bg-night-raised lg:row-span-2">
+          {/*
+            Escritorio: foto (izq.) y ficha (der.) arriba; historial + mapa ocupan el resto de la
+            columna derecha con un alto mínimo, y las veterinarias cercanas van bajo la foto.
+            La ficha cede espacio (y hace scroll) antes que el historial y el mapa.
+            Sin separación vertical entre filas: la ponen los márgenes, para que la tercera fila
+            no deje hueco cuando no hay veterinarias.
+          */}
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(17rem,1fr)_minmax(0,1.4fr)] lg:grid-rows-[auto_1fr_auto] lg:gap-y-0">
+            <div className="min-h-0 overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-white/10 dark:bg-night-raised lg:col-start-1 lg:row-span-2 lg:row-start-1">
               <AnimalImageGrid
                 images={animal.multimedia}
                 animalName={animal.name}
@@ -247,9 +255,16 @@ export default function AnimalDetailPage() {
                 fill
               />
             </div>
-            <div className="flex min-w-0 gap-3">
-              <div className="min-w-0 flex-1 rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised">
-                <AnimalInfoSection animal={animal} />
+            <div
+              className={`flex min-w-0 gap-3 lg:col-start-2 lg:row-start-1 lg:mb-3 lg:min-h-0 ${
+                // El anuncio lateral mide al menos 284px: la fila no puede encogerse por debajo.
+                ANIMAL_DETAIL_AD_SLOT ? "xl:min-h-[284px]" : ""
+              }`}
+            >
+              <div className="min-w-0 flex-1 overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-white/10 dark:bg-night-raised">
+                <div className="kadesh-scroll-fade p-4 lg:h-full lg:overflow-y-auto lg:overscroll-contain">
+                  <AnimalInfoSection animal={animal} />
+                </div>
               </div>
               <AdSlot
                 slot={ANIMAL_DETAIL_AD_SLOT}
@@ -257,26 +272,23 @@ export default function AnimalDetailPage() {
                 className={AD_SIDE_CLASS}
               />
             </div>
-            <div className="flex min-h-0 min-w-0 flex-col gap-3">
-              <div className="min-h-0 flex-1">
-                <LogTimeline
-                  logs={logs ?? []}
-                  animal={animal}
-                  animalName={animal.name}
-                  onLogCreated={async () => {
-                    await refetch();
-                  }}
-                />
-              </div>
-              {hasCoords && (
-                <div className="min-w-0 shrink-0">
-                  <NearbyVeterinariesRow
-                    lat={Number(lastLog.lat)}
-                    lng={Number(lastLog.lng)}
-                  />
-                </div>
-              )}
+            <div className="min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-2 lg:min-h-[20rem]">
+              <LogTimeline
+                logs={logs ?? []}
+                animal={animal}
+                animalName={animal.name}
+                onLogCreated={async () => {
+                  await refetch();
+                }}
+              />
             </div>
+            {hasCoords && (
+              <NearbyVeterinariesRow
+                lat={Number(lastLog.lat)}
+                lng={Number(lastLog.lng)}
+                className="min-w-0 lg:col-start-1 lg:row-start-3 lg:mt-3"
+              />
+            )}
           </div>
         </div>
 

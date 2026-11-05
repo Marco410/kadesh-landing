@@ -5,6 +5,8 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Alert02Icon,
   BubbleChatIcon,
+  Calendar03Icon,
+  CalendarCheckIn01Icon,
   CheckmarkCircle02Icon,
   Link04Icon,
   Notification03Icon,
@@ -16,7 +18,11 @@ import { useInDash } from 'kadesh/components/app-shell/DashPortalContext';
 import { Routes } from 'kadesh/core/routes';
 import { cn } from 'kadesh/utils/cn';
 import { Bone, SkeletonRegion, boneWidth } from 'kadesh/components/ui/skeleton';
-import { ANIMAL_REPORT_NOTIFICATION_TYPE as REPORT_TYPE, NOTIFICATION_TONE_COLOR } from './constants';
+import {
+  ANIMAL_REPORT_NOTIFICATION_TYPE as REPORT_TYPE,
+  EVENT_NOTIFICATION_TYPE as EVENT_TYPE,
+  NOTIFICATION_TONE_COLOR,
+} from './constants';
 import {
   appPathFromUrl,
   formatNotificationTime,
@@ -32,7 +38,7 @@ const TONE_ICON = {
   brand: Notification03Icon,
 } as const;
 
-/** Íconos propios de los avisos de un reporte; el resto usa el del tono. */
+/** Íconos propios de los avisos de un reporte y de eventos; el resto usa el del tono. */
 const TYPE_ICON: Record<string, typeof Notification03Icon> = {
   [REPORT_TYPE.COMMENTED]: BubbleChatIcon,
   [REPORT_TYPE.DUPLICATE_REPORTED]: BubbleChatIcon,
@@ -41,6 +47,10 @@ const TYPE_ICON: Record<string, typeof Notification03Icon> = {
   [REPORT_TYPE.CLAIM_APPROVED]: UserCheck01Icon,
   [REPORT_TYPE.CLAIM_REJECTED]: UserCheck01Icon,
   [REPORT_TYPE.MERGED]: Link04Icon,
+  [EVENT_TYPE.NEARBY]: Calendar03Icon,
+  [EVENT_TYPE.REMINDER]: CalendarCheckIn01Icon,
+  [EVENT_TYPE.SUBMITTED]: Calendar03Icon,
+  [EVENT_TYPE.UPDATED]: Calendar03Icon,
 };
 
 interface NotificationListProps {

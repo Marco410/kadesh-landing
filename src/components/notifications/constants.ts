@@ -22,6 +22,17 @@ export const ANIMAL_REPORT_NOTIFICATION_TYPE = {
   MERGED: 'animal.merged',
 } as const;
 
+/** Avisos de eventos (kadesh-back `models/Notification/constants.ts`). */
+export const EVENT_NOTIFICATION_TYPE = {
+  NEARBY: 'event.nearby',
+  REMINDER: 'event.reminder',
+  SUBMITTED: 'event.submitted',
+  APPROVED: 'event.approved',
+  REJECTED: 'event.rejected',
+  CANCELLED: 'event.cancelled',
+  UPDATED: 'event.updated',
+} as const;
+
 export const NOTIFICATION_TONE_COLOR = {
   found: '#10b981',
   lost: '#dc2626',

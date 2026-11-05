@@ -15,6 +15,122 @@ Formato:
 
 ---
 
+## 2026-11-05 · feat: SEO de eventos — títulos buscables, páginas por estado y municipio, IndexNow
+- Rama: feat/eventos
+- Qué cambió y por qué:
+  - **Títulos**: la ficha se titula con lo que la gente busca: «Campaña de esterilización en Morelia · Gratis · 10 nov» (agrega «Gratis» y la fecha si caben en ~60 caracteres con « | KADESH» y si el título no los dice ya). El `<h1>` sigue siendo el de quien organiza.
+  - **Páginas por lugar con URL propia**: `/eventos/en/michoacan` y `/eventos/en/michoacan/morelia`, con título («Eventos para mascotas en Morelia, Michoacán»), un texto con datos (cuántos eventos hay, en cuántos municipios y cuál es el próximo, con fecha y año), JSON-LD `CollectionPage` + `ItemList` + migas y enlaces entre niveles («Eventos por estado» en `/eventos`, «Eventos por municipio» en cada estado). Sin eventos próximos llevan `noindex`. Entran al sitemap las que tienen eventos. Los filtros de estado y municipio ahora navegan a estas rutas y `/eventos?estado=…` redirige (308). La ficha del evento enlaza a su estado y municipio en las migas (visibles y JSON-LD).
+  - **IndexNow**: la web sirve la clave en `/indexnow-key.txt`; el backend avisa a Bing al publicar, cancelar o cambiar un evento (ver kadesh-back@feat/pet-events, `utils/seo/indexNow.ts`).
+- Archivos: src/components/events/{EventsListingPage.tsx (nuevo),events-seo.ts,searchParams.ts,EventsIndexClient.tsx,EventDetail.tsx,README.md}, src/app/eventos/{page.tsx,en/page.tsx,en/[estado]/page.tsx,en/[estado]/[ciudad]/page.tsx}, src/app/indexnow-key.txt/route.ts, src/app/sitemap.ts, src/core/routes.ts (`events.place`)
+- GraphQL: ninguna nueva.
+- Móvil: no aplica (SEO). En el backend `en` quedó reservado como slug de evento (no cambia nada para la app).
+
+---
+
+## 2026-11-05 · feat: tarjeta para compartir de eventos como la de animales; SEO y GEO de eventos
+- Rama: feat/eventos
+- Qué cambió y por qué:
+  - Al compartir un evento (WhatsApp, Facebook, X) la tarjeta era solo texto sobre azul. Ahora es como la de animales: la foto o el cartel de portada de fondo con degradado, el tipo de evento (pastilla de su color), el título, la próxima fecha y «y N fechas más», el costo corto («Gratis», «$100») y el lugar. Sin foto, el fondo va del color del tipo; «Cancelado» o «Terminó» cuando aplica. Si la foto no se puede dibujar, se sirve la portada tal cual (mismo plan B que animales).
+  - GEO: la ficha lleva bajo el título una frase que se entiende sola: qué, dónde, fecha con año, costo, quién organiza y cupo.
+  - SEO: el JSON-LD del organizador lleva `url` (su sitio o su primer perfil), que Google recomienda. `/eventos` suma 4 preguntas frecuentes visibles con su `FAQPage`. La portada suma «¿Dónde encuentro campañas de esterilización o vacunación?» y el JSON-LD de la organización nombra campañas y ferias de adopción.
+  - Arreglos: «Síguelos» mostraba «@profile.php» con perfiles de Facebook por número (ahora «Facebook»); «Ciudad de México, Ciudad de México» se muestra una sola vez.
+- Archivos: src/app/eventos/[slug]/og/route.tsx, src/app/eventos/page.tsx, src/components/events/{events-seo.ts,format.ts,socialLinks.ts,EventDetail.tsx,README.md}, src/components/home/{constants.ts,HomeJsonLd.tsx}, docs/mobile-sync/2026-11-04-eventos-ver-y-asistir.md
+- GraphQL: ninguna
+- Móvil: la tarjeta, el JSON-LD y las preguntas no aplican (SEO). Las dos reglas de texto (perfil de Facebook por número y la ciudad repetida) se agregaron al prompt pendiente de [ver y asistir](../mobile-sync/2026-11-04-eventos-ver-y-asistir.md).
+
+---
+
+## 2026-11-05 · feat: cifra de eventos en el hero y cifras con enlace
+- Rama: feat/eventos
+- Qué cambió y por qué:
+  - El hero solo mostraba «20+ veterinarias» como texto. Ahora cada cifra es un enlace: veterinarias → `/veterinarias`; y una nueva de eventos → la sección `#eventos` de la portada.
+  - La de eventos es «N eventos registrados»: todos los publicados, también los que ya pasaron. Sale desde 1 (con 0 no aparece) y se redondea hacia abajo con «+» desde 100. Veterinarias sigue redondeada y oculta debajo de 10.
+- Archivos: src/components/home/{HeroSection.tsx,README.md}, src/components/events/server.ts (`publishedTotal` en `fetchHomeEvents`), src/app/page.tsx
+- GraphQL: `HomeEventsWeek` agrega `publishedEvents: petEventsCount(where: { status: { equals: "approved" } })`.
+- Móvil: no aplica (hero de la portada web).
+
+---
+
+## 2026-11-05 · feat: «Los próximos 7 días» de eventos en la portada
+- Rama: feat/eventos
+- Qué cambió y por qué:
+  - La sección de eventos de la portada mostraba solo 3 tarjetas. Ahora tiene una tira de 7 días (HOY, VIE, SÁB…) con **todos** los eventos publicados de México de la semana, sin filtro: puntitos del color de cada tipo por día y, abajo, las tarjetas del día elegido (arranca en el primer día con eventos). Una fecha de varios días sale en cada día que toca.
+  - Si la semana viene vacía muestra los 3 siguientes eventos; si no hay ninguno, invita a publicar.
+  - Botón **Ver eventos cerca de ti** → `/eventos?cerca=1`: la lista abre con «Cerca de mí» y pide la ubicación (la persona ya lo pidió). «Cerca de mí» ahora también queda en la URL (`cerca=1`) para recargar o compartir.
+  - Todo sale del servidor (SEO) y revalida cada 10 min; la ventana es de día completo en hora de CDMX y al hidratar «hoy» se ajusta al día del navegador.
+- Archivos: src/components/events/{week.ts (nuevo),server.ts,searchParams.ts,EventsIndexClient.tsx,README.md}, src/components/home/{HomeEventsWeek.tsx (nuevo),UpcomingEventsSection.tsx,README.md}, src/app/page.tsx
+- GraphQL: query de servidor nueva `HomeEventsWeek` (`petEventsFeed` con `to` a 7 días y las fechas de la semana con `sessions(where: …)`).
+- Móvil: no aplica (portada web; en la app, la lista de eventos ya tiene «Cerca de mí» y la semana va en el Inicio del perfil).
+
+---
+
+## 2026-11-05 · feat: «Los próximos 7 días» en el Inicio del panel
+- Rama: feat/eventos
+- Qué cambió y por qué:
+  - El Inicio no mostraba qué viene en la semana. Ahora, bajo el saludo, hay 7 fichas (hoy y los 6 días siguientes) con puntitos por tipo: azul = citas, verde = sus eventos (organiza, asistirá o le interesa), morado = eventos para descubrir. Al tocar un día se ve la lista de ese día (hora, título, lugar y etiqueta) con enlace a la ficha o a «Citas».
+  - Los eventos para descubrir salen cerca del centro de sus alertas de zona (50 km); si no tiene zona, de la ubicación ya compartida; si tampoco, de todo México, con «Elegir mi zona».
+  - Una fecha de varios días aparece en cada día que toca; un evento que la persona sigue y que además está cerca sale una sola vez, como suyo. Las horas van en la zona horaria del evento.
+  - No incluye anuncios: el backend solo deja leerlos a los admins.
+- Archivos: src/components/profile/home/{WeekStrip.tsx,weekAgenda.ts,useWeekAgenda.ts (nuevos),queries.ts,ProfileHome.tsx}, src/components/profile/README.md, docs/mobile-sync/2026-11-03-inicio-perfil.md
+- GraphQL: queries nuevas `ProfileWeek` (`petPlaceAppointments`, `petEventInterests`, `petEvents` de la semana, con `sessions(where: …)`) y `ProfileWeekFeed` (`petEventsFeed` con las fechas de la semana).
+- Móvil: agregado al prompt pendiente de [Inicio del perfil](../mobile-sync/2026-11-03-inicio-perfil.md).
+
+---
+
+## 2026-11-05 · fix: «Me interesa» / «Asistiré» no se veían marcados; atajo «Eventos» en el panel
+- Rama: feat/eventos
+- Qué cambió y por qué:
+  - Al tocar «Me interesa» o «Asistiré» se guardaba (el conteo subía), pero el botón no cambiaba: `cn` solo concatena clases y los colores del estado normal (`bg-white`, `dark:bg-night`, `dark:text-white`) le ganaban a los del activo. Ahora cada estado lleva su juego completo de colores: «Me interesa» marcado va relleno azul y «Asistiré» relleno verde, con palomita, y abajo dice «Vas a ir. Te recordamos un día antes. Tócalo otra vez para quitarlo.».
+  - El mismo choque de clases en los cuadros de texto del formulario de eventos (descripción, requisitos) y en el motivo de cancelación de «Mis eventos»: ahora usan clases propias (`textareaClass`, `dashTextareaClass`).
+  - Inicio del panel: atajo nuevo **Eventos** («Campañas y jornadas», a `/eventos`) entre «Alertas de zona» y «Reportar animal». Son 5 atajos: una fila en escritorio; en 2 columnas el último ocupa la fila completa.
+- Archivos: src/components/events/{EventActions.tsx,MyEventsSection.tsx,form/EventForm.tsx,form/styles.ts}, src/components/profile/home/ProfileHome.tsx, src/components/profile/README.md, docs/mobile-sync/2026-11-03-inicio-perfil.md
+- GraphQL: ninguna
+- Móvil: el atajo se agregó al prompt pendiente de [Inicio del perfil](../mobile-sync/2026-11-03-inicio-perfil.md). Lo de los botones marcados ya está en el prompt de eventos («alternan; tocar el activo lo quita»); el choque de clases es propio de la web.
+
+---
+
+## 2026-11-05 · feat: redes sociales del evento
+- Rama: feat/eventos
+- Qué cambió y por qué:
+  - Quien publica un evento puede poner sus redes (Facebook, Instagram, TikTok, X) y su sitio web en «¿Quién lo organiza?», para que la gente siga a la organización y vea novedades del evento.
+  - Se acepta el link o el usuario (`@refugio.morelia`) y se guarda el link completo. Un link de otra red se rechaza («El link de Instagram debe ser de instagram.com.»). Las mismas reglas en el backend (`normalizeSocialUrl`).
+  - La ficha muestra un bloque «Síguelos» en la tarjeta lateral, con el usuario o el dominio en cada botón (`rel="nofollow ugc"`). El JSON-LD agrega los perfiles como `sameAs` del organizador.
+  - Operaciones muestra las redes en el modal de revisión (kadesh-business@feat/pet-events-admin), para revisar que sean de quien organiza.
+- Archivos: src/components/events/{socialLinks.ts (nuevo),types.ts,fields.ts,EventDetail.tsx,events-seo.ts,form/EventForm.tsx,form/eventFormModel.ts}, docs/mobile-sync/{2026-11-04-eventos-ver-y-asistir.md,2026-11-04-eventos-publicar.md}
+- GraphQL: campos nuevos de `PetEvent` y de `PetEventInput`: `facebookUrl`, `instagramUrl`, `tiktokUrl`, `xUrl`, `websiteUrl` (kadesh-back@feat/pet-events; entran en la misma migración pendiente).
+- Móvil: los dos prompts de eventos seguían pendientes; se actualizaron con los campos y las reglas ([ver y asistir](../mobile-sync/2026-11-04-eventos-ver-y-asistir.md) · [publicar](../mobile-sync/2026-11-04-eventos-publicar.md)).
+
+---
+
+## 2026-11-04 · feat: eventos (campañas, jornadas, ferias de adopción) con revisión y avisos por zona
+- Rama: feat/eventos
+- Qué cambió y por qué:
+  - La comunidad no tenía dónde anunciar campañas de esterilización, vacunación, ferias de adopción, colectas, etc. Ahora cualquiera con sesión publica un evento; el equipo lo revisa en Operaciones (kadesh-business) antes de que sea público.
+  - `/eventos`: próximos eventos con filtros por estado y municipio (solo los que tienen eventos, de `petEventFacets`), tipo, «Esta semana» / «Este mes» y «Cerca de mí» (100 km). La primera página llega del servidor; «Cerca de mí» y «Ver más» piden en el navegador.
+  - Ficha `/eventos/<slug>`: galería, descripción, requisitos, mapa y «Cómo llegar», fechas en la zona horaria del estado del evento, costo, cupo, a quién va dirigido, registro (link o WhatsApp), «Me interesa» / «Asistiré» (con cupo: «Asistiré» se cierra al llenarse), Google Calendar y `.ics`, compartir y «Editar» para quien lo publicó. Si no es público, quien lo publicó lo ve como vista previa con su estado y el motivo del rechazo.
+  - Publicar y editar (`/eventos/nuevo`, `/eventos/<slug>/editar`): formulario en 5 partes; fechas múltiples, de varios días y «Repetir cada semana»; alcance zona (5–50 km) / municipio / estado (nacional solo admins); hasta 6 fotos. Editar uno publicado lo regresa a revisión.
+  - Panel: «Mis eventos» (`/perfil?tab=events`) con estado de revisión, asistentes, editar y cancelar (con motivo).
+  - Portada: «Campañas y jornadas para tus mascotas» después de las alertas de zona (3 próximos, del servidor, revalida cada 10 min). «Eventos» en el menú, el pie y el panel.
+  - Avisos: tipos `event.*` con ícono de calendario en la campana; «Avisos de eventos» (`eventAlertsEnabled`) en Alertas de zona, con la misma zona y el municipio/estado que detecta el backend.
+- Archivos: src/components/events/** (nuevo), src/app/eventos/{page.tsx,nuevo/page.tsx,[slug]/page.tsx,[slug]/editar/page.tsx}, src/components/home/{UpcomingEventsSection.tsx,index.ts,README.md}, src/app/page.tsx, src/app/(cuenta)/perfil/page.tsx, src/components/profile/shell/profileNav.ts, src/components/layout/{Navigation.tsx,Footer.tsx}, src/components/changelog/RoadmapSection.tsx («Calendario» pasa a completado), src/components/notifications/{constants.ts,inbox.ts,NotificationList.tsx,AlertSettingsForm.tsx,NotificationChannelsSummary.tsx,queries.ts,types.ts,hooks/useAlertSettings.ts}, src/core/routes.ts
+- GraphQL: nuevas `petEventsFeed`, `petEventFacets`, `submitPetEvent`, `updateMyPetEvent`, `cancelPetEvent`, `setPetEventInterest`; lists `PetEvent`, `PetEventSession`, `PetEventMultimedia` (fotos con `createPetEventMultimedias`), `PetEventInterest`; campos nuevos de `User`: `eventAlertsEnabled`, `alertCity`, `alertStateCode`. Backend en kadesh-back@feat/pet-events (requiere `yarn migrate`).
+- Móvil: [ver y asistir](../mobile-sync/2026-11-04-eventos-ver-y-asistir.md) · [publicar](../mobile-sync/2026-11-04-eventos-publicar.md)
+
+---
+
+## 2026-11-04 · feat: SEO de eventos (JSON-LD, tarjeta para compartir, calendario y sitemap)
+- Rama: feat/eventos
+- Qué cambió y por qué:
+  - Ficha con JSON-LD `Event` por cada fecha próxima (máx. 10): estado (programado / cancelado), lugar con dirección y coordenadas, oferta en MXN (`SoldOut` con cupo lleno), organizador y migas. El índice lleva `CollectionPage` + `ItemList`.
+  - Metadatos: «<título> en <municipio>», descripción con fecha, lugar y costo. Los cancelados y los que ya pasaron quedan `noindex`. El filtro por estado tiene su canónica (`/eventos?estado=…`) y su título («Eventos para mascotas en Michoacán»).
+  - Tarjeta para compartir `/eventos/<slug>/og` (como la de veterinarias) y archivo `.ics` en `/eventos/<slug>/calendario`.
+  - Sitemap: `/eventos` (diario) y los eventos publicados próximos o de los últimos 30 días. `llms.txt` describe la sección.
+- Archivos: src/components/events/events-seo.ts, src/app/eventos/[slug]/og/route.tsx, src/app/eventos/[slug]/calendario/route.ts, src/app/sitemap.ts, public/llms.txt
+- GraphQL: `petEvents` (sitemap) y `petEvent(where: { slug })` desde el servidor.
+- Móvil: no aplica (SEO, OG y sitemap).
+
+---
+
 ## 2026-11-04 · feat: sección «Alertas de zona» en la portada
 - Rama: develop (sin rama propia todavía)
 - Qué cambió y por qué:

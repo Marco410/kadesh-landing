@@ -20,6 +20,7 @@ const PRIMARY_NAV = [
   { label: "Inicio", href: Routes.home },
   { label: "Veterinarias", href: Routes.veterinaries.index },
   { label: "Animales", href: Routes.animals.index },
+  { label: "Eventos", href: Routes.events.index },
   { label: "Blog", href: Routes.blog.index },
   { label: "Conócenos", href: Routes.conocenos },
   { label: "Contacto", href: Routes.contact },

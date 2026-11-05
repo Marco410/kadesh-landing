@@ -2,6 +2,7 @@ import {
   HeroSection,
   RecentReportsSection,
   ZoneAlertsSection,
+  UpcomingEventsSection,
   HowItWorksSection,
   FirstHoursSection,
   StoriesSection,
@@ -13,6 +14,7 @@ import {
 import FaqSection from "kadesh/components/home/FaqSection";
 import HomeJsonLd from "kadesh/components/home/HomeJsonLd";
 import { fetchPetLandingStats, fetchRecentZoneAlerts } from "kadesh/components/home/server";
+import { fetchHomeEvents } from "kadesh/components/events/server";
 import { HOME_DEFINITION } from "kadesh/components/home/constants";
 import { Footer, Navigation } from "kadesh/components/layout";
 import { NewsletterSubscription } from "kadesh/components/newsletter";
@@ -26,20 +28,28 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [stats, zoneAlerts] = await Promise.all([fetchPetLandingStats(), fetchRecentZoneAlerts()]);
+  const [stats, zoneAlerts, events] = await Promise.all([
+    fetchPetLandingStats(),
+    fetchRecentZoneAlerts(),
+    fetchHomeEvents(),
+  ]);
 
   return (
     <>
       <HomeJsonLd />
       <main className="min-h-screen">
         <Navigation overDarkHero />
-        <HeroSection stats={stats} />
+        <HeroSection
+          stats={stats}
+          events={events.publishedTotal > 0 ? { count: events.publishedTotal } : null}
+        />
         <RecentReportsSection />
         <ZoneAlertsSection alerts={zoneAlerts} />
+        <VeterinariansSection />
+        <UpcomingEventsSection events={events} />
         <HowItWorksSection />
         <FirstHoursSection />
         <StoriesSection />
-        <VeterinariansSection />
         <DonationsSection />
         <BusinessStrip />
         <FaqSection />

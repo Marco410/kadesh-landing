@@ -16,6 +16,7 @@ export const Routes = {
   navigation: {
     lostAnimals: '#animales',
     zoneAlerts: '#alertas',
+    events: '#eventos',
     howItWorks: '#como-funciona',
     firstHours: '#primeras-24-horas',
     stories: '#historias',
@@ -75,6 +76,21 @@ export const Routes = {
     image: (slug: string): string => `/veterinarias/${slug}/og`,
   },
   
+  // Events (campañas, jornadas, ferias de adopción)
+  events: {
+    index: '/eventos',
+    new: '/eventos/nuevo',
+    detail: (slug: string): string => `/eventos/${slug}`,
+    edit: (slug: string): string => `/eventos/${slug}/editar`,
+    image: (slug: string): string => `/eventos/${slug}/og`,
+    calendar: (slug: string): string => `/eventos/${slug}/calendario`,
+    /** Página de un estado o municipio: `/eventos/en/michoacan` o `/eventos/en/michoacan/morelia`. */
+    place: (stateSlug: string, cityKey?: string | null): string =>
+      cityKey ? `/eventos/en/${stateSlug}/${cityKey}` : `/eventos/en/${stateSlug}`,
+    /** «Mis eventos» en el panel. */
+    mine: '/perfil?tab=events',
+  },
+
   // Notifications (campana y alertas de zona)
   notifications: {
     index: '/notificaciones',

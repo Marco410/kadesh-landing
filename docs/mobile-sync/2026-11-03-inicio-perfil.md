@@ -17,7 +17,8 @@ Una pantalla de **Inicio del perfil** (o la sección superior de la pestaña de 
    - Si tiene algo: "Tienes 3 mascotas, 2 citas próximas y 2 reportes activos." (solo las partes distintas de cero, unidas con comas y "y"; singular/plural correcto).
    - Si no tiene nada: "Aquí verás a tus mascotas, tus citas y tus reportes."
    - Termina con "N cosas necesitan atención." (rojo; "1 cosa necesita atención.") o "Todo en orden." (verde). N cuenta las filas de "Requiere atención" **excepto** la sugerencia de alertas de zona.
-   - **Atajos** (4): Mis mascotas (o "Registrar mascota" si tiene 0) · "Cartilla y recordatorios"; Buscar veterinaria · "Y agendar una cita"; Alertas de zona · "Activas" / "Apagadas"; Reportar animal · "Perdido o encontrado".
+   - **Los próximos 7 días** (entre la frase y los atajos): 7 fichas en fila (hoy y los 6 días siguientes) con «HOY» / «VIE» / «SÁB»… y el número del día; la elegida va en tinta (fondo oscuro en claro, claro en oscuro). Bajo el número, hasta 3 puntitos: azul = sus **citas**, verde = **sus eventos** (organiza, asistirá o le interesa), morado = **eventos para descubrir** (cerca de su zona). Abajo, la lista del día elegido (máx. 4 y «Ver N más»): hora («9:00 – 14:00», «Desde 10:00» / «Hasta 18:00» si dura varios días, «Todo el día» en los de en medio), título, lugar y etiqueta («Cita», «Organizas», «Asistirás», «Te interesa», «Cerca de ti» o «Evento»); al tocar abre la ficha del evento o «Citas». Día vacío: «Nada para el sábado 7.» y, si no hay nada en toda la semana, «Mira los próximos eventos». Leyenda de colores y «Con eventos cerca de tu zona de alertas.» (o «…de tu ubicación.» / «…de todo México.» + «Elegir mi zona»). Arriba a la derecha, «Eventos de la semana» → lista de eventos con «Esta semana». Ver las consultas `ProfileWeek` y `ProfileWeekFeed` abajo.
+   - **Atajos** (5): Mis mascotas (o "Registrar mascota" si tiene 0) · "Cartilla y recordatorios"; Buscar veterinaria · "Y agendar una cita"; Alertas de zona · "Activas" / "Apagadas"; Eventos · "Campañas y jornadas" (abre la lista de eventos, ver `2026-11-04-eventos-ver-y-asistir.md`); Reportar animal · "Perdido o encontrado". En 2 columnas, el último ocupa la fila completa.
 2. **Requiere atención**: lista de filas tocables (ícono por severidad, título, detalle), ordenada de lo más urgente a lo menos. Muestra 5 y luego "Ver N más" / "Ver menos". Vacío: "Todo en orden · Cuando algo necesite tu atención (un recordatorio, una cita) aparece aquí." Ver reglas abajo.
 3. **KPIs** (4 tarjetas tocables):
    - **Mascotas** (la principal, tarjeta oscura): `petsCount`. Pista: "N recordatorios por atender" si hay; si no, "Sin recordatorios esta semana" (o "Registra a la primera" con 0 mascotas). Lleva a Mascotas.
@@ -206,7 +207,44 @@ type ProfileClinicHomeResponse = {
 } & Record<"c0" | "c1" | "c2" | "c3" | "c4" | "c5" | "c6" | "c7", number | null>;
 ```
 
+**Los próximos 7 días** (requiere el backend de eventos, ver `2026-11-04-eventos-ver-y-asistir.md`). `from` = inicio de hoy y `to` = inicio de dentro de 7 días, en ISO:
+
+```graphql
+fragment WeekEvent on PetEvent {
+  id slug title category timeZone stateCode city state placeLabel neighborhood
+  sessions(where: { startsAt: { lt: $to }, endsAt: { gt: $from } }, orderBy: [{ startsAt: asc }]) { id startsAt endsAt }
+}
+
+query ProfileWeek(
+  $userId: ID!
+  $from: DateTime!
+  $to: DateTime!
+  $appointmentWhere: PetPlaceAppointmentWhereInput!   # { customer: { id: { equals: userId } }, status: { in: ["pending","confirmed"] }, startsAt: { gte: from, lt: to } }
+  $interestWhere: PetEventInterestWhereInput!         # { user: { id: { equals: userId } }, event: WINDOW }
+  $myEventsWhere: PetEventWhereInput!                 # { user: { id: { equals: userId } }, ...WINDOW }
+) {
+  me: user(where: { id: $userId }) { id alertLat alertLng }
+  weekAppointments: petPlaceAppointments(where: $appointmentWhere, orderBy: [{ startsAt: asc }], take: 30) {
+    id startsAt endsAt status petName pet_place { id name }
+  }
+  weekInterests: petEventInterests(where: $interestWhere, take: 50) { id kind event { ...WeekEvent } }
+  weekMyEvents: petEvents(where: $myEventsWhere, take: 50) { ...WeekEvent }
+}
+# WINDOW = { status: { equals: "approved" }, firstStartsAt: { lt: to }, lastEndsAt: { gt: from } }
+
+query ProfileWeekFeed($input: PetEventsFeedInput!, $from: DateTime!, $to: DateTime!) {
+  # input: { to, take: 30, lat, lng, radiusKm: 50 } — lat/lng del centro de sus alertas (me.alertLat/alertLng);
+  # si no tiene, la ubicación del teléfono si ya dio permiso; si tampoco, sin lat/lng (todo México).
+  petEventsFeed(input: $input) { total items { distanceKm event { ...WeekEvent } } }
+}
+```
+
 ## Reglas y constantes
+**Los próximos 7 días:**
+- Cada fecha de un evento es una fila; una fecha que dura varios días aparece en cada día que toca (un fin a las 00:00 no ocupa el día siguiente). Los días de los eventos se cuentan en la zona horaria del evento (`timeZone`); los de las citas, en la del teléfono.
+- Sin repetidos: si el mismo evento llega por varios lados gana, en este orden, Organizas > Asistirás > Te interesa > Cerca de ti / Evento.
+- Se ordena por hora de inicio. Se elige hoy al abrir.
+
 **Variables de `ProfileHome`** (`now` = la hora actual redondeada hacia abajo a la hora; se fija al abrir la pantalla):
 
 ```ts
@@ -257,7 +295,7 @@ c[i] = { ...place, status: { notIn: ["cancelled"] }, startsAt: { gte: lunes − 
 **Colores**: azul de marca `#216BFA` solo para la acción principal y la barra más alta de la gráfica; estatus en rojo (vencido), ámbar (pronto / por confirmar) y verde ("Todo en orden", cambio positivo). Sin naranja ni morado.
 
 ## Referencia web
-`src/components/profile/home/` (`ProfileHome.tsx`, `homeModel.ts` con todas las reglas, `useProfileHome.ts`, `queries.ts`) y `src/components/profile/shell/` (`profileNav.ts`, `queries.ts`, `useProfileNavCounts.ts`).
+`src/components/profile/home/` (`ProfileHome.tsx`, `homeModel.ts` con todas las reglas, `useProfileHome.ts`, `queries.ts`, `weekAgenda.ts`, `useWeekAgenda.ts`, `WeekStrip.tsx`) y `src/components/profile/shell/` (`profileNav.ts`, `queries.ts`, `useProfileNavCounts.ts`).
 
 ## Criterios de aceptación
 - [ ] Con una cuenta nueva: saludo con "Aquí verás…", "Todo en orden" o solo las sugerencias, y KPIs en 0 sin pastilla ni gráfica.
@@ -267,5 +305,6 @@ c[i] = { ...place, status: { notIn: ["cancelled"] }, startsAt: { gte: lunes − 
 - [ ] La fila "Mi veterinaria" solo aparece con una clínica verificada; la semana en curso se distingue en la gráfica.
 - [ ] La alerta de zona apagada se muestra pero no suma a "N cosas necesitan atención".
 - [ ] Los globos del menú/pestañas se actualizan cada 60 s y no se muestran en 0.
+- [ ] «Los próximos 7 días» muestra puntitos en los días con citas, eventos propios o eventos cerca, y al tocar un día lista lo de ese día; un evento de dos días sale en ambos.
 - [ ] Funciona en iOS y Android, en modo claro y oscuro.
 - [ ] Maneja carga, error y vacío.

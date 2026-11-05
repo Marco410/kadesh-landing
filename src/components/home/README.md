@@ -7,14 +7,15 @@ La portada le habla primero a **quien perdió a su mascota**. Los demás públic
 1. Hero (`HeroSection`)
 2. Reportes recientes (`RecentReportsSection`, `#animales`)
 3. Alertas de zona (`ZoneAlertsSection`, `#alertas`)
-4. Cómo funciona (`HowItWorksSection`, `#como-funciona`)
-5. Primeras 24 horas (`FirstHoursSection`, `#primeras-24-horas`)
-6. Historias (`StoriesSection`, `#historias`)
-7. Veterinarias cerca (`VeterinariansSection`, `#veterinarias`)
-8. Donaciones (`DonationsSection`, `#donaciones`)
-9. Franja para negocios (`BusinessStrip`) → el detalle vive en `/anunciate` (`components/advertise`)
-10. Preguntas frecuentes (`FaqSection`, `#preguntas-frecuentes`)
-11. Cierre (`ClosingSection`), suscripción al blog y pie
+4. Próximos eventos (`UpcomingEventsSection`, `#eventos`)
+5. Cómo funciona (`HowItWorksSection`, `#como-funciona`)
+6. Primeras 24 horas (`FirstHoursSection`, `#primeras-24-horas`)
+7. Historias (`StoriesSection`, `#historias`)
+8. Veterinarias cerca (`VeterinariansSection`, `#veterinarias`)
+9. Donaciones (`DonationsSection`, `#donaciones`)
+10. Franja para negocios (`BusinessStrip`) → el detalle vive en `/anunciate` (`components/advertise`)
+11. Preguntas frecuentes (`FaqSection`, `#preguntas-frecuentes`)
+12. Cierre (`ClosingSection`), suscripción al blog y pie
 
 Fuera de la portada: el roadmap vive en `/novedades#roadmap` (`components/changelog/RoadmapSection`), Kadesh Business y FOOD en el pie (columna Familia Kadesh), y «¿Qué es KADESH?» con la frase «Tecnología moderna. Corazón compasivo. Misión espiritual.» en Conócenos (`WhatIsKadesh` se sigue exportando para esa página).
 
@@ -22,7 +23,7 @@ Fuera de la portada: el roadmap vive en `/novedades#roadmap` (`components/change
 
 Una sola promesa: «¿Se perdió tu mascota? Repórtala gratis…». El botón principal «Reportar mascota perdida» va en rojo (color de urgencia, mismo tono que el pin «Perdido») a `/animales/nuevo?status=lost`. Debajo se avisa que hay que crear cuenta («Crear tu cuenta toma 1 minuto») para que no sea sorpresa. Cuatro accesos secundarios del mismo tamaño: encontré, quiero adoptar, dar en adopción y veterinarias.
 
-Prueba social: solo veterinarias y ciudades (de `petLandingStats`, redondeadas hacia abajo; se ocultan si son menores a 10). No se muestran animales registrados ni reencuentros hasta tener una cifra real de reencuentros que se vea bien.
+Cifras bajo los accesos, cada una es un enlace: veterinarias y ciudades (de `petLandingStats`, redondeadas hacia abajo; se ocultan si son menores a 10) → `/veterinarias`; eventos registrados («N eventos registrados»: todos los publicados, también los que ya pasaron; desde 1, redondeada desde 100; sale de `fetchHomeEvents`) → `#eventos`. No se muestran animales registrados ni reencuentros hasta tener una cifra real de reencuentros que se vea bien.
 
 ## Reportes recientes
 
@@ -42,6 +43,15 @@ Va después de los reportes: quien no encontró a su mascota en la lista sigue c
 - **Botón** (`ZoneAlertsCta`): sin sesión abre el modal de cuenta y luego lleva a `/notificaciones/alertas`; con alertas activas dice el radio y ofrece **Cambiar zona**.
 - `useAlertSettings` y las constantes se importan por archivo, no por el barril de notificaciones (el barril exporta el shell del panel).
 - Las fotos son URLs firmadas que vencen en 1 h: si la caché trae una vencida, la fila muestra el ícono.
+
+## Próximos eventos
+
+Va después de las alertas de zona: «te avisamos de lo que pasa cerca» sigue con las campañas y jornadas.
+
+- **Servidor** (`UpcomingEventsSection`, datos de `fetchHomeEvents` en `components/events/server.ts`, revalida cada 10 min como las alertas): **todos** los eventos publicados de México con alguna fecha en los próximos 7 días, sin filtro. La ventana es de día completo en hora de CDMX, así la llave de la caché no cambia en todo el día. Todo llega en el HTML.
+- **Tira de 7 días** (`HomeEventsWeek`, reglas en `components/events/week.ts`): una ficha por día (HOY, VIE, SÁB…) con puntitos del color de cada tipo de evento; abajo, las tarjetas del día elegido (3 y «Ver N más de este día»). Arranca en el primer día con eventos. Una fecha de varios días sale en cada día que toca, contada en la zona del evento. El HTML sale con «hoy» de CDMX y al hidratar se ajusta al día del navegador.
+- Semana vacía: «No hay eventos en los próximos 7 días. Estos son los siguientes» con los 3 siguientes. Sin ningún evento: invitación a publicar. Nunca se oculta.
+- Botones: **Ver eventos cerca de ti** (`/eventos?cerca=1`, que abre la lista con «Cerca de mí» y pide la ubicación porque la persona lo pidió) y **Ver todos los eventos**. Arriba, **Publicar un evento**.
 
 ## Cómo funciona
 

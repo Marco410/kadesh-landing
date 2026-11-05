@@ -92,7 +92,7 @@ const ROADMAP_ITEMS = [
   {
     id: 14,
     title: "Calendario",
-    status: "pending",
+    status: "completed",
     description:
       "Campañas de vacunación, esterilización, adopciones y actividades solidarias.",
   },

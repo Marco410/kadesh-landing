@@ -29,6 +29,8 @@ const graph = {
         'Rescate de animales',
         'Mascotas perdidas y encontradas',
         'Alertas de mascotas perdidas por zona',
+        'Campañas de esterilización y vacunación',
+        'Ferias de adopción',
         'Veterinarias',
         'Donaciones para animales',
       ],

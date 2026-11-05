@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 export interface AutocompleteOption {
   id: string;
   label: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface AutocompleteProps {
@@ -25,6 +25,12 @@ interface AutocompleteProps {
   /** Si el texto coincide exacto con una opción, la elige al salir del campo. */
   selectExactOnBlur?: boolean;
   className?: string;
+}
+
+/** Texto de un campo de la opción (`label` u otro de `searchKey`/`displayKey`); vacío si no hay. */
+function optionText(option: AutocompleteOption, key: string): string {
+  const value = option[key];
+  return value == null ? '' : String(value);
 }
 
 function foldMatch(value: string) {
@@ -62,7 +68,7 @@ export default function Autocomplete({
 
   // Filter options based on search
   const filteredOptions = options.filter((option) => {
-    const searchValue = option[searchKey]?.toLowerCase() || '';
+    const searchValue = optionText(option, searchKey).toLowerCase();
     return searchValue.includes(search.toLowerCase());
   });
 
@@ -83,7 +89,7 @@ export default function Autocomplete({
   // Update search when value changes externally
   useEffect(() => {
     if (selectedOption) {
-      setSearch(selectedOption[displayKey] || '');
+      setSearch(optionText(selectedOption, displayKey));
     } else if (!value) {
       setSearch('');
     }
@@ -102,7 +108,7 @@ export default function Autocomplete({
   };
 
   const handleSelect = (option: AutocompleteOption) => {
-    setSearch(option[displayKey] || '');
+    setSearch(optionText(option, displayKey));
     setShowDropdown(false);
     onSelect(option);
     inputRef.current?.blur();
@@ -194,7 +200,7 @@ export default function Autocomplete({
                     : 'text-[#212121] dark:text-[#ffffff]'
                 }`}
               >
-                {option[displayKey]}
+                {optionText(option, displayKey)}
               </button>
             ))}
           </div>
@@ -203,7 +209,7 @@ export default function Autocomplete({
         {/* No results message */}
         {showDropdown && !disabled && !loading && search && filteredOptions.length === 0 && (
           <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#121212] border border-[#e0e0e0] dark:border-[#3a3a3a] rounded-lg shadow-lg p-4 text-center text-[#616161] dark:text-[#b0b0b0]">
-            No se encontraron resultados que coincidan con "{search}"
+            No se encontraron resultados que coincidan con &quot;{search}&quot;
           </div>
         )}
       </div>

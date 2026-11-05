@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useId, useRef, useState } from "react";
 import { AnimalDetail } from "./hooks/useAnimalDetail";
 import { ANIMAL_TYPE_LABELS } from "../constants";
 import { TypeGlyph } from "../TypeGlyph";
@@ -19,6 +20,55 @@ function Fact({ label, value }: { label: string; value?: string | null }) {
       <dd className="font-semibold text-[#121212] dark:text-[#eef1f6]">
         {value}
       </dd>
+    </div>
+  );
+}
+
+/**
+ * Las señas pueden ser un párrafo largo: se muestran recortadas para no empujar
+ * el historial y el mapa, con "Ver más" solo si de verdad no caben.
+ */
+function PhysicalDescription({ text }: { text: string }) {
+  const textId = useId();
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+
+  useEffect(() => {
+    const el = textRef.current;
+    if (!el || expanded) return;
+    const measure = () => setOverflows(el.scrollHeight > el.clientHeight + 1);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [expanded, text]);
+
+  return (
+    <div>
+      <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+        Señas particulares
+      </p>
+      <p
+        id={textId}
+        ref={textRef}
+        className={`mt-0.5 text-sm leading-snug text-[#121212] dark:text-[#eef1f6] ${
+          expanded ? "" : "line-clamp-4 lg:line-clamp-3"
+        }`}
+      >
+        {text}
+      </p>
+      {overflows || expanded ? (
+        <button
+          type="button"
+          aria-expanded={expanded}
+          aria-controls={textId}
+          onClick={() => setExpanded((value) => !value)}
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-kadesh hover:underline lg:mt-1 lg:min-h-0"
+        >
+          {expanded ? "Ver menos" : "Ver más"}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -85,14 +135,7 @@ export default function AnimalInfoSection({ animal }: AnimalInfoSectionProps) {
       </dl>
 
       {animal.physical_description ? (
-        <div>
-          <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
-            Señas particulares
-          </p>
-          <p className="mt-0.5 text-sm leading-snug text-[#121212] dark:text-[#eef1f6]">
-            {animal.physical_description}
-          </p>
-        </div>
+        <PhysicalDescription text={animal.physical_description} />
       ) : null}
 
       {animal.organization ? (

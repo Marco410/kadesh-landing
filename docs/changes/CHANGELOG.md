@@ -15,6 +15,43 @@ Formato:
 
 ---
 
+## 2026-11-05 · chore: ESLint instalado y en verde (el CI ya lo pedía)
+- Rama: fix/ficha-animal-og-y-lint (hotfix)
+- Qué cambió y por qué: el CI corre `pnpm lint` en cada PR, pero ESLint nunca estuvo instalado ni configurado: `next lint` no revisaba nada. Ahora:
+  - `eslint` 9 + `eslint-config-next` 15.5.28 (misma versión que `next`) + `@eslint/eslintrc`, con `eslint.config.mjs` en formato plano (`next/core-web-vitals` y `next/typescript`). Se quedó en ESLint 9 porque `eslint-config-next` 15 no soporta la 10.
+  - `pnpm lint` pasa de `next lint` (obsoleto desde Next 15.5) a `eslint .`. Se excluyen `.claude/` y `.cursor/` (scripts de skills de terceros).
+  - `next.config.ts`: `eslint.ignoreDuringBuilds`. Con ESLint instalado, `next build` también lo correría y cualquier aviso nuevo podría tumbar un deploy desde local. El lint es un paso propio del CI.
+  - Se corrigieron los 19 errores que ya había, sin cambiar comportamiento: `any` con tipos reales (`useLostAnimals`, `useSubscriptionPayment`, `getAuthUser` → `AuthenticatedItem`, `blog/types` → tipo del `DocumentRenderer`, `AutocompleteOption` → `unknown` con un helper `optionText`), comillas escapadas (`&quot;`, mismo glifo), `<a href="/blog">` → `<Link>` en Conócenos, `@ts-ignore` → `@ts-expect-error`, `let` → `const`, interfaz vacía → alias.
+  - Resultado: 0 errores, 38 avisos (variables sin usar y dependencias de hooks; no bloquean).
+- Archivos: package.json, pnpm-lock.yaml, eslint.config.mjs (nuevo), next.config.ts, CLAUDE.md, src/app/conocenos/page.tsx, src/components/animals/{detail/AddLogModal.tsx,hooks/useLostAnimals.ts}, src/components/blog/types.ts, src/components/landing/Testimonials.tsx, src/components/profile/sales/planes/hooks/useSubscriptionPayment.ts, src/components/shared/{Autocomplete.tsx,free-map.ts}, src/providers/apollo-client.ts, src/utils/{activity/track.ts,getAuthUser.ts}
+- GraphQL: ninguna.
+- Móvil: no aplica (herramientas de la web).
+
+## 2026-11-05 · fix: tarjetas para compartir — vista previa de WhatsApp vacía y recorte de Facebook
+- Rama: fix/ficha-animal-og-y-lint (hotfix)
+- Qué cambió y por qué:
+  - **WhatsApp**: el enlace de una ficha salía solo con el dominio (sin foto ni título); en Facebook sí. El HTML ya traía bien los metadatos (`og:*` en el `<head>` también para el agente de WhatsApp). El problema era la imagen OG: PNG de 1200×630 de **925 KB** que se regeneraba en cada petición (~4 s: pedir los datos, bajar la foto original de S3 y renderizar). WhatsApp arma la vista previa en el teléfono de quien comparte, con poco tiempo y un tope de peso (~300 KB). Ahora a WhatsApp (agente `WhatsApp/…`; Signal se presenta igual) se le sirve la misma tarjeta a la mitad, 600×315. Se maqueta directo a ese tamaño escalando cada medida del JSX: con `transform: scale()` Satori recortaba mal los textos con elipsis. Facebook y los demás siguen recibiendo 1200×630. `?v=wa` fuerza la variante. Respuesta con `Vary: User-Agent`.
+  - **Caché**: cada tarjeta se guarda 10 min en la caché del edge de Cloudflare (Cache API, una entrada por variante y parámetros). Un reporte se comparte muchas veces seguidas y ya no se vuelve a renderizar cada vez. En `next dev` no hay caché.
+  - **Recorte de Facebook**: en móvil Facebook muestra la tarjeta a ~1.3:1 y se perdían ~190 px por lado (se leía «ido» y «rmes» en vez de «Perdido» y «Hermes»). Ahora todo va centrado en una columna de 760 px; los lados solo llevan fondo. La marca pasó de la esquina a un pie «KADESH · pet.kadesh.com.mx». Títulos con `lineClamp` y tamaño según el largo, y lugares largos con elipsis, para que nada se salga de la columna.
+  - Las tres tarjetas (animales, veterinarias, eventos) usan las piezas comunes de `kadesh/core/og-card` (variante, render, caché, foto, pie). La descarga de foto que estaba copiada en dos rutas quedó en un solo lugar. La de organizaciones se migra igual en `feat/espacios-de-rescate`, que todavía no sale.
+  - Probado con las rutas reales empaquetadas y datos simulados (cortos y muy largos): con el recorte de Facebook no se pierde nada. Las versiones de WhatsApp pesan 117–276 KB, contra 320–860 KB las de 1200×630. Las siguientes peticiones salen de caché sin llamar a la API.
+  - Pendiente de comprobar en WhatsApp y Facebook después de desplegar. WhatsApp guarda en el teléfono la vista previa de cada URL, así que hay que probar con otra ficha o con la URL más `?w=1`. En Facebook, «Volver a extraer» en el Depurador de contenido compartido.
+- Archivos: src/core/og-card.tsx (nuevo), src/app/{animales,veterinarias,eventos}/[slug]/og/route.tsx
+- GraphQL: ninguna.
+- Móvil: no aplica (imágenes OG para compartir; las genera la web para cualquier enlace).
+
+## 2026-11-05 · fix: historial y mapa siempre visibles en la ficha del animal; señas con «Ver más»
+- Rama: fix/ficha-animal-og-y-lint (hotfix)
+- Qué cambió y por qué: en escritorio la ficha ocupa la pantalla y la fila de datos tomaba todo el alto que pedía su contenido. Con señas particulares largas, el historial y el mapa (lo más importante del reporte) quedaban aplastados a unos pocos píxeles.
+  - **Señas particulares** recortadas a 4 líneas (3 en escritorio) con «Ver más / Ver menos». El botón solo aparece si el texto de verdad no cabe (se mide con `ResizeObserver`).
+  - **Grid de escritorio**: el historial y el mapa tienen alto mínimo (20rem) y la ficha cede espacio antes que ellos. Si no le alcanza, hace scroll dentro de su tarjeta y el borde inferior se desvanece para avisar que hay más (`.kadesh-scroll-fade`, animación ligada al scroll, sin JS). Con el anuncio lateral (xl) la fila no baja de 284px.
+  - **Veterinarias cercanas** pasan bajo la foto en escritorio, para dejarle al historial y al mapa todo el alto de la columna derecha. En móvil siguen después del mapa (el orden del DOM no cambia, solo la colocación en el grid).
+  - Columna derecha un poco más ancha (1fr : 1.4fr): con la ficha más ancha, «Color» y el aviso de comunidad ocupan menos líneas y en 1920×1050 o 1797×938 cabe completa sin scroll.
+  - En pantallas bajas (laptops de 768px) el alto de la vista tiene un piso de 48rem: la página hace scroll en vez de aplastar el contenido.
+- Archivos: src/app/animales/[slug]/page.tsx, src/components/animals/detail/{AnimalInfoSection.tsx,NearbyVeterinariesRow.tsx (acepta `className`)}, src/app/globals.css
+- GraphQL: ninguna.
+- Móvil: [prompt](../mobile-sync/2026-11-05-senas-ver-mas.md) (solo el «Ver más» de las señas; el reacomodo del grid es exclusivo de escritorio).
+
 ## 2026-11-05 · fix: las especies de un espacio de rescate son los tipos de animal
 - Rama: develop
 - Qué cambió y por qué: «¿Qué animales rescatan?» tenía su propia lista (Perros, Gatos, Otros). Ahora usa los tipos de animal de los reportes, `ANIMAL_TYPE_OPTIONS`: Perro, Gato, Ave, Pez, Reptil y Mamífero. El backend también (kadesh-back: `RescueOrganization.species` y su validación usan `ANIMAL_TYPE_OPTIONS`), para que coincidan con los animales que publica. En el perfil público y en la descripción SEO van en plural («Rescata: perros, gatos y aves»).

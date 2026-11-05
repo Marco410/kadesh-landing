@@ -1,7 +1,21 @@
 import { NextResponse } from 'next/server';
-import { ImageResponse } from 'next/og';
-import { ogFonts } from 'kadesh/core/og-fonts';
 import { SITE_URL } from 'kadesh/core/site';
+import {
+  OG_CACHE_CONTROL,
+  OG_CONTENT_STYLE,
+  OG_HEIGHT,
+  OG_SAFE_WIDTH,
+  OG_WIDTH,
+  OgBrandFooter,
+  fetchOgPhoto,
+  ogPhotoSrc,
+  ogPng,
+  ogVariant,
+  renderOgCard,
+  withOgEdgeCache,
+  type OgPhoto,
+  type OgVariant,
+} from 'kadesh/core/og-card';
 import { getStatusColor } from 'kadesh/components/animals/constants';
 import { animalShareFacts } from 'kadesh/components/animals/animal-seo';
 import {
@@ -9,13 +23,11 @@ import {
   fetchAnimalForShare,
 } from 'kadesh/components/animals/server';
 
-const WIDTH = 1200;
-const HEIGHT = 630;
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const CACHE_CONTROL =
-  'public, max-age=600, s-maxage=600, stale-while-revalidate=86400';
-
-type Photo = { bytes: ArrayBuffer; contentType: string };
+/**
+ * Tarjeta para compartir un animal: la foto de portada de fondo con un degradado, el estado, el
+ * nombre, sus rasgos y la última ubicación, centrados en la zona segura (ver `kadesh/core/og-card`).
+ * Si el render falla con la foto, se sirve la portada tal cual; si falla todo, la imagen genérica.
+ */
 
 function fallbackResponse() {
   return NextResponse.redirect(`${SITE_URL}/og-image.png`, {
@@ -24,233 +36,176 @@ function fallbackResponse() {
   });
 }
 
-async function fetchPhoto(url: string | null): Promise<Photo | null> {
-  if (!url) return null;
-  try {
-    const upstream = await fetch(url, { cache: 'no-store' });
-    const contentType = upstream.headers.get('content-type') ?? '';
-    if (!upstream.ok || !contentType.startsWith('image/')) return null;
-    const bytes = await upstream.arrayBuffer();
-    if (bytes.byteLength === 0 || bytes.byteLength > MAX_IMAGE_BYTES) {
-      return null;
-    }
-    return { bytes, contentType };
-  } catch (error) {
-    console.error('Animal share image fetch failed:', error);
-    return null;
-  }
-}
-
 type Facts = ReturnType<typeof animalShareFacts>;
 
-async function renderCard(facts: Facts, photo: Photo | null) {
+/** El nombre va en una línea: el tamaño baja con el largo para que quepa en la zona segura. */
+function nameSize(name: string) {
+  if (name.length <= 11) return 96;
+  if (name.length <= 15) return 76;
+  if (name.length <= 19) return 62;
+  return 52;
+}
+
+async function renderCard(facts: Facts, photo: OgPhoto | null, variant: OgVariant) {
   const statusColor = getStatusColor(facts.status);
   const kind = [facts.typeLabel, facts.breed]
     .filter((part, index, all) => part && all.indexOf(part) === index)
     .join(' · ');
   const profile = [kind, ...facts.shortTraits].filter(Boolean).join('  ·  ');
   const location = facts.location ? `Última ubicación: ${facts.location}` : '';
-  const nameSize = facts.name.length > 22 ? 64 : facts.name.length > 14 ? 80 : 96;
-  const photoSrc = photo
-    ? `data:${photo.contentType};base64,${Buffer.from(photo.bytes).toString('base64')}`
-    : null;
+  const photoSrc = ogPhotoSrc(photo);
 
-  const card = new ImageResponse(
-    (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          position: 'relative',
-          backgroundColor: '#1a1a1a',
-          backgroundImage: `linear-gradient(135deg, #2a2a2a 0%, ${statusColor} 160%)`,
-          fontFamily: 'Poppins',
-        }}
-      >
-        {photoSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={photoSrc}
-            alt=""
-            width={WIDTH}
-            height={HEIGHT}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: WIDTH,
-              height: HEIGHT,
-              objectFit: 'cover',
-            }}
-          />
-        ) : null}
-        <div
+  return renderOgCard(
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        position: 'relative',
+        backgroundColor: '#1a1a1a',
+        backgroundImage: `linear-gradient(135deg, #2a2a2a 0%, ${statusColor} 160%)`,
+        fontFamily: 'Poppins',
+      }}
+    >
+      {photoSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={photoSrc}
+          alt=""
+          width={OG_WIDTH}
+          height={OG_HEIGHT}
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
-            width: WIDTH,
-            height: HEIGHT,
-            backgroundImage:
-              'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 38%, rgba(0,0,0,0.05) 100%)',
+            width: OG_WIDTH,
+            height: OG_HEIGHT,
+            objectFit: 'cover',
           }}
         />
+      ) : null}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: OG_WIDTH,
+          height: OG_HEIGHT,
+          backgroundImage:
+            'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 42%, rgba(0,0,0,0.05) 100%)',
+        }}
+      />
+      <div style={OG_CONTENT_STYLE}>
         <div
           style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: WIDTH,
-            height: HEIGHT,
-            padding: '48px 64px',
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
+            backgroundColor: statusColor,
+            color: '#ffffff',
+            fontSize: 40,
+            fontWeight: 800,
+            padding: '8px 36px',
+            borderRadius: 999,
+            border: '3px solid rgba(255,255,255,0.85)',
           }}
         >
+          {facts.statusLabel}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           <div
             style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              display: 'block',
+              maxWidth: OG_SAFE_WIDTH,
+              color: '#ffffff',
+              fontSize: nameSize(facts.name),
+              fontWeight: 800,
+              lineHeight: 1.1,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                backgroundColor: statusColor,
-                color: '#ffffff',
-                fontSize: 40,
-                fontWeight: 800,
-                padding: '8px 34px',
-                borderRadius: 999,
-              }}
-            >
-              {facts.statusLabel}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                color: '#ffffff',
-                fontSize: 40,
-                fontWeight: 800,
-                letterSpacing: 4,
-              }}
-            >
-              KADESH
-            </div>
+            {facts.name}
           </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {profile ? (
             <div
               style={{
-                display: 'flex',
-                color: '#ffffff',
-                fontSize: nameSize,
-                fontWeight: 800,
-                lineHeight: 1.1,
-                maxWidth: 1072,
-                overflow: 'hidden',
+                display: 'block',
+                maxWidth: '100%',
+                textAlign: 'center',
+                color: '#f3f4f6',
+                fontSize: 32,
+                fontWeight: 700,
+                lineHeight: 1.3,
+                marginTop: 8,
+                lineClamp: 2,
+              }}
+            >
+              {profile}
+            </div>
+          ) : null}
+          {location ? (
+            <div
+              style={{
+                display: 'block',
+                maxWidth: OG_SAFE_WIDTH,
+                color: '#ffd9b8',
+                fontSize: 28,
+                fontWeight: 700,
+                marginTop: 12,
                 whiteSpace: 'nowrap',
+                overflow: 'hidden',
                 textOverflow: 'ellipsis',
               }}
             >
-              {facts.name}
+              {location}
             </div>
-            {profile ? (
-              <div
-                style={{
-                  display: 'flex',
-                  color: '#f3f4f6',
-                  fontSize: 36,
-                  fontWeight: 700,
-                  marginTop: 8,
-                  maxWidth: 1072,
-                }}
-              >
-                {profile}
-              </div>
-            ) : null}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: 14,
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  color: '#ffd9b8',
-                  fontSize: 30,
-                  fontWeight: 700,
-                }}
-              >
-                {location}
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  color: '#d1d5db',
-                  fontSize: 26,
-                  fontWeight: 700,
-                }}
-              >
-                pet.kadesh.com.mx
-              </div>
-            </div>
+          ) : null}
+          <div style={{ display: 'flex', marginTop: 22 }}>
+            <OgBrandFooter />
           </div>
         </div>
       </div>
-    ),
-    { width: WIDTH, height: HEIGHT, fonts: ogFonts() },
+    </div>,
+    variant,
   );
-
-  // Forzar el render aquí para poder caer al plan B si Satori rechaza la foto.
-  return card.arrayBuffer();
 }
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ slug: string }> },
-) {
-  const { slug } = await params;
+async function buildCardResponse(slug: string, variant: OgVariant): Promise<Response> {
   const animal = await fetchAnimalForShare(slug);
   if (!animal) {
     return fallbackResponse();
   }
 
   const facts = animalShareFacts(animal);
-  const photo = await fetchPhoto(animalCoverUrl(animal));
+  const photo = await fetchOgPhoto(animalCoverUrl(animal));
 
   try {
-    const png = await renderCard(facts, photo);
-    return new NextResponse(png, {
-      headers: { 'Content-Type': 'image/png', 'Cache-Control': CACHE_CONTROL },
-    });
+    return ogPng(await renderCard(facts, photo, variant));
   } catch (error) {
     console.error('Animal share card failed with photo:', error);
   }
 
   // Formato de foto no soportado por el render: se sirve la portada tal cual.
   if (photo) {
-    return new NextResponse(photo.bytes, {
-      headers: {
-        'Content-Type': photo.contentType,
-        'Cache-Control': CACHE_CONTROL,
-      },
+    return new Response(photo.bytes, {
+      headers: { 'Content-Type': photo.contentType, 'Cache-Control': OG_CACHE_CONTROL },
     });
   }
 
   try {
-    const png = await renderCard(facts, null);
-    return new NextResponse(png, {
-      headers: { 'Content-Type': 'image/png', 'Cache-Control': CACHE_CONTROL },
-    });
+    return ogPng(await renderCard(facts, null, variant));
   } catch (error) {
     console.error('Animal share card failed:', error);
     return fallbackResponse();
   }
+}
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  const { slug } = await params;
+  const variant = ogVariant(request);
+  return withOgEdgeCache(request, variant, () => buildCardResponse(slug, variant));
 }

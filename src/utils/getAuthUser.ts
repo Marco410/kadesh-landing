@@ -1,7 +1,8 @@
 import { createApolloClient } from "kadesh/providers/apollo-client";
 import { AUTHENTICATED_ITEM_QUERY } from "./queries";
+import type { AuthenticatedItem } from "./types";
 
-export async function getAuthenticatedUser(): Promise<any | null> {
+export async function getAuthenticatedUser(): Promise<AuthenticatedItem | null> {
   try {
     const client = createApolloClient();
 

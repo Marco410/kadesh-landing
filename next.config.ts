@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // El lint corre aparte (`pnpm lint`, paso propio en CI). Sin esto, `next build` también lo
+  // correría y un aviso nuevo podría tumbar un deploy hecho desde local.
+  eslint: { ignoreDuringBuilds: true },
   transpilePackages: ["@maplibre/maplibre-gl-leaflet"],
   experimental: {
     optimizePackageImports: [

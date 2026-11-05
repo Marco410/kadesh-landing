@@ -148,13 +148,13 @@ export default function HowItWorksSection() {
             >
               Ver animales en adopción
             </Link>
-            {' · '}¿Eres rescatista?{' '}
-            <ReportLink
-              href={`${Routes.animals.new}?status=rescued`}
+            {' · '}¿Eres rescatista o refugio?{' '}
+            <Link
+              href={Routes.rescueActivate}
               className="font-semibold text-kadesh-700 underline-offset-4 hover:underline dark:text-kadesh-300"
             >
-              Publica tus casos
-            </ReportLink>
+              Activa tu espacio de rescate
+            </Link>
           </p>
         </div>
       </div>

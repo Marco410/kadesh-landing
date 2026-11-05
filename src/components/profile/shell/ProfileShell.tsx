@@ -71,7 +71,7 @@ export default function ProfileShell({ children }: { children: ReactNode }) {
 
   // `vista` (las secciones de una clínica) no cuenta: es un segmentado dentro de la vista y el foco
   // debe quedarse en él.
-  const viewKey = [pathname, tab, searchParams.get("clinic"), searchParams.get("pet")].join("|");
+  const viewKey = [pathname, tab, searchParams.get("clinic"), searchParams.get("pet"), searchParams.get("org")].join("|");
   const firstView = useRef(true);
   useEffect(() => {
     if (firstView.current) {

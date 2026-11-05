@@ -7,6 +7,7 @@ import {
   BubbleChatIcon,
   Calendar03Icon,
   CalendarCheckIn01Icon,
+  CharityIcon,
   CheckmarkCircle02Icon,
   Link04Icon,
   Notification03Icon,
@@ -21,6 +22,7 @@ import { Bone, SkeletonRegion, boneWidth } from 'kadesh/components/ui/skeleton';
 import {
   ANIMAL_REPORT_NOTIFICATION_TYPE as REPORT_TYPE,
   EVENT_NOTIFICATION_TYPE as EVENT_TYPE,
+  RESCUE_NOTIFICATION_TYPE as RESCUE_TYPE,
   NOTIFICATION_TONE_COLOR,
 } from './constants';
 import {
@@ -51,6 +53,8 @@ const TYPE_ICON: Record<string, typeof Notification03Icon> = {
   [EVENT_TYPE.REMINDER]: CalendarCheckIn01Icon,
   [EVENT_TYPE.SUBMITTED]: Calendar03Icon,
   [EVENT_TYPE.UPDATED]: Calendar03Icon,
+  [RESCUE_TYPE.SUBMITTED]: CharityIcon,
+  [RESCUE_TYPE.MEMBER_ADDED]: CharityIcon,
 };
 
 interface NotificationListProps {

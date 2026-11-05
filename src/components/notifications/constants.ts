@@ -33,6 +33,14 @@ export const EVENT_NOTIFICATION_TYPE = {
   UPDATED: 'event.updated',
 } as const;
 
+/** Avisos de espacios de rescate (kadesh-back `models/Notification/constants.ts`). */
+export const RESCUE_NOTIFICATION_TYPE = {
+  SUBMITTED: 'rescue.submitted',
+  VERIFIED: 'rescue.verified',
+  REJECTED: 'rescue.rejected',
+  MEMBER_ADDED: 'rescue.member_added',
+} as const;
+
 export const NOTIFICATION_TONE_COLOR = {
   found: '#10b981',
   lost: '#dc2626',

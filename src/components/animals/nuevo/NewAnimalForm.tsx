@@ -52,6 +52,8 @@ import { MORELIA_CENTER, placeLabelFromAddress } from 'kadesh/components/animals
 import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
 import { normalizeMxPhone } from 'kadesh/utils/phone';
 import { toUploadableImage } from 'kadesh/utils/uploadable-image';
+import { usePublishableRescueOrgs } from 'kadesh/components/rescue/hooks/usePublishableRescueOrgs';
+import { RESCUE_ORG_STATUS } from 'kadesh/components/rescue/constants';
 
 const STEPS = ['Foto y tipo', 'Cómo reconocerlo', 'Dónde'] as const;
 const MAX_IMAGES = 3;
@@ -199,11 +201,19 @@ function publishStageLabel(stage: PublishStage, photos: number): string {
 
 export default function NewAnimalForm({
   initialStatus,
+  initialOrganizationId,
 }: {
   initialStatus?: string | null;
+  /** `?org=<id>`: preselecciona «Publicar como» ese espacio de rescate (si la persona puede). */
+  initialOrganizationId?: string | null;
 }) {
   const router = useRouter();
   const { user } = useUser();
+  // Espacios de rescate a cuyo nombre puede publicar (admin, coordinador o voluntario).
+  const { orgs: rescueOrgs } = usePublishableRescueOrgs(user?.id);
+  const [organizationId, setOrganizationId] = useState('');
+  const organizationPicked = useRef(false);
+  const selectedOrg = rescueOrgs.find((org) => org.id === organizationId) ?? null;
   const [step, setStep] = useState(0);
   // `null` = no se está publicando. Mientras dure, el formulario queda inerte y el botón dice en
   // qué va. Al terminar bien se queda en "Abriendo tu reporte…" hasta que cambia la página.
@@ -248,6 +258,17 @@ export default function NewAnimalForm({
   const [isResolvingPlace, setIsResolvingPlace] = useState(false);
   const [isOwnPet, setIsOwnPet] = useState(true);
   const [contactNumber, setContactNumber] = useState(user?.phone ?? '');
+
+  // `?org=<id>` llega antes que la lista de espacios: se aplica una sola vez, cuando ya cargó.
+  useEffect(() => {
+    if (organizationPicked.current || !initialOrganizationId || rescueOrgs.length === 0) return;
+    const org = rescueOrgs.find((item) => item.id === initialOrganizationId);
+    organizationPicked.current = true;
+    if (!org) return;
+    setOrganizationId(org.id);
+    setIsOwnPet(false);
+    if (org.whatsapp) setContactNumber(org.whatsapp);
+  }, [initialOrganizationId, rescueOrgs]);
   const [contactNumber2, setContactNumber2] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [fromSocial, setFromSocial] = useState(false);
@@ -784,10 +805,12 @@ export default function NewAnimalForm({
             color: color.trim() || null,
             size: size.trim() || null,
             sourceUrl: fromSocial ? sourceUrl.trim() : '',
-            reportedBy: isOwnPet ? 'owner' : 'volunteer',
+            reportedBy: isOwnPet && !selectedOrg ? 'owner' : 'volunteer',
             animal_type: { connect: { id: animalTypeId } },
             animal_breed: { connect: { id: animalBreedId } },
             user: { connect: { id: user.id } },
+            // A nombre de un espacio de rescate: su equipo lo podrá actualizar.
+            ...(selectedOrg ? { organization: { connect: { id: selectedOrg.id } } } : {}),
             // Pista para que un admin decida si unirlo: los parecidos que vio y descartó.
             ...(dismissed.length
               ? {
@@ -1189,32 +1212,75 @@ export default function NewAnimalForm({
               <SimilarReportsNotice reports={similar.reports} status={status} onReview={openSimilarReview} />
 
               <div>
-                <p className="mb-2 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
-                  ¿Es tu mascota?
-                </p>
-                <div className="mb-4 flex flex-wrap gap-1.5">
-                  <ChoiceChip
-                    label="Sí"
-                    selected={isOwnPet}
-                    onSelect={() => {
-                      setIsOwnPet(true);
-                      if (!contactNumber.trim() && user?.phone) setContactNumber(user.phone);
-                    }}
-                  />
-                  <ChoiceChip
-                    label="No, la reporto por alguien más"
-                    selected={!isOwnPet}
-                    onSelect={() => {
-                      setIsOwnPet(false);
-                      setContactNumber('');
-                    }}
-                  />
-                </div>
+                {rescueOrgs.length > 0 ? (
+                  <>
+                    <p className="mb-2 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+                      Publicar como
+                    </p>
+                    <div className="mb-2 flex flex-wrap gap-1.5">
+                      <ChoiceChip
+                        label="Yo"
+                        selected={!selectedOrg}
+                        onSelect={() => {
+                          if (selectedOrg && contactNumber === (selectedOrg.whatsapp ?? '')) {
+                            setContactNumber(isOwnPet ? user?.phone ?? '' : '');
+                          }
+                          setOrganizationId('');
+                        }}
+                      />
+                      {rescueOrgs.map((org) => (
+                        <ChoiceChip
+                          key={org.id}
+                          label={org.name}
+                          selected={selectedOrg?.id === org.id}
+                          onSelect={() => {
+                            setOrganizationId(org.id);
+                            setIsOwnPet(false);
+                            if (org.whatsapp) setContactNumber(org.whatsapp);
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <p className="mb-4 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+                      {selectedOrg
+                        ? selectedOrg.status === RESCUE_ORG_STATUS.VERIFIED
+                          ? `Saldrá con el nombre de ${selectedOrg.name} y su equipo podrá actualizarlo.`
+                          : `Su equipo podrá actualizarlo. Mientras verificamos ${selectedOrg.name}, el público verá tu nombre.`
+                        : 'Si lo publicas a nombre de tu espacio de rescate, tu equipo podrá actualizarlo.'}
+                    </p>
+                  </>
+                ) : null}
+                {!selectedOrg ? (
+                  <>
+                    <p className="mb-2 text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+                      ¿Es tu mascota?
+                    </p>
+                    <div className="mb-4 flex flex-wrap gap-1.5">
+                      <ChoiceChip
+                        label="Sí"
+                        selected={isOwnPet}
+                        onSelect={() => {
+                          setIsOwnPet(true);
+                          if (!contactNumber.trim() && user?.phone) setContactNumber(user.phone);
+                        }}
+                      />
+                      <ChoiceChip
+                        label="No, la reporto por alguien más"
+                        selected={!isOwnPet}
+                        onSelect={() => {
+                          setIsOwnPet(false);
+                          setContactNumber('');
+                        }}
+                      />
+                    </div>
+                  </>
+                ) : null}
                 <label
                   htmlFor="contactNumber"
                   className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
                 >
-                  {isOwnPet ? 'Teléfono' : 'Teléfono del dueño'} <span className="text-red-600">*</span>
+                  {selectedOrg ? 'Teléfono de contacto' : isOwnPet ? 'Teléfono' : 'Teléfono del dueño'}{' '}
+                  <span className="text-red-600">*</span>
                 </label>
                 <input
                   id="contactNumber"

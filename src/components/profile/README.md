@@ -13,6 +13,7 @@ Editar lo que sí se puede cambiar (nombre, teléfono, foto) y ver la actividad 
   - **Mi cuenta**: Inicio, Datos del perfil, Notificaciones, Alertas de zona.
   - **Mis animales**: Mascotas, Citas, Reportes.
   - **Mis publicaciones**: Publicaciones.
+  - **Rescate**: Espacio de rescate (visible para todos; sin espacio invita a activarlo). Vive en `src/components/rescue/` (ver su README).
   - **Mis veterinarias**: Clínicas, visible para todos como antes.
   - **Kadesh**: Veterinarias ↗, Animales ↗, Novedades ↗ (sitio público).
 - **Globos** (`ProfileNavCounts`, cada minuto):
@@ -20,14 +21,14 @@ Editar lo que sí se puede cambiar (nombre, teléfono, foto) y ver la actividad 
   - Mascotas: recordatorios pendientes o avisados que vencen en los próximos 7 días, incluidos los ya vencidos.
   - Citas: las que reservó, pendientes o confirmadas, desde ahora.
   - Clínicas: citas por confirmar en sus clínicas.
-- **Vistas en `?tab=`**: sin `tab`, o con uno desconocido como el viejo `?tab=ventas`, abre **Inicio**. Las demás claves son `profile` (Datos), `pets`, `posts`, `animals`, `appointments` y `clinics`, y los enlaces de siempre siguen funcionando. Rutas: `Routes.profileTab(tab)`, `Routes.profileClinic(id)` y `Routes.profilePet(id)`.
+- **Vistas en `?tab=`**: sin `tab`, o con uno desconocido como el viejo `?tab=ventas`, abre **Inicio**. Las demás claves son `profile` (Datos), `pets`, `posts`, `animals`, `appointments`, `rescate` y `clinics`, y los enlaces de siempre siguen funcionando. Rutas: `Routes.profileTab(tab)`, `Routes.profileClinic(id)`, `Routes.profilePet(id)` y `Routes.profileRescue(id, vista)`; activar un espacio es la ruta propia `Routes.rescueActivate` (`/perfil/rescate/activar`).
 - **Cada vista**: encabezado con eyebrow (el grupo; en Inicio, la fecha), título y descripción. Todo sale de `PROFILE_VIEWS`.
   - La vista se remonta al cambiar, así su entrada se repite, y el foco pasa a su `h1`.
   - Las migas son "Perfil › grupo › vista", más el detalle si lo hay (`useProfileDetailCrumb`).
 - **Sesión**: la exige el shell. Sin usuario manda a login y vuelve a la misma vista, con su query.
 - **Mascotas** es la cartilla digital; vive en `src/components/pets/` (ver su README). Con `&pet=<id>` abre la cartilla de una mascota; cambiar de pestaña lo quita.
 - Vacío con siguiente paso: Mascotas invita a registrar una; Reportes invita a publicar; Publicaciones manda al blog; Citas manda al directorio para reservar; Clínicas manda al directorio para reclamar una ficha.
-- No hay vistas de “próximamente” (donaciones, refugios) ni **Ventas**.
+- No hay vistas de “próximamente” (donaciones) ni **Ventas**.
 - Correo y usuario no se editan aquí: se manda a **contacto**. Edad no se muestra: sale de la fecha de nacimiento.
 - Al guardar: nombre y apellido paterno obligatorios. Teléfono obligatorio, 10 dígitos (espacios y guiones se quitan); Keystone no acepta `null` en ese campo. Fecha de nacimiento opcional, no posterior a hoy.
 
@@ -45,7 +46,7 @@ Editar lo que sí se puede cambiar (nombre, teléfono, foto) y ver la actividad 
   2. Citas por confirmar en sus clínicas.
   3. Su próxima cita, si es en menos de 48 h.
   4. Reclamos de sus reportes que Kadesh revisa.
-  5. Clínicas en revisión.
+  5. Clínicas en revisión, y espacios de rescate en revisión o rechazados (solo a su admin).
   6. Teléfono faltante.
   7. Alertas de zona apagadas. Es una sugerencia: no cuenta en la frase.
 

@@ -338,6 +338,21 @@ export const GET_ANIMAL_QUERY = gql`
       age
       color
       size
+      viewerCanEdit
+      organization {
+        id
+        name
+        slug
+        type
+        city
+        state
+        status
+        isAlly
+        whatsapp
+        logo {
+          url
+        }
+      }
       user {
         id
         name

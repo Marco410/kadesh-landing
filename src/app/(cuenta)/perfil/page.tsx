@@ -16,10 +16,11 @@ import {
 import { UserAppointmentsSection } from "kadesh/components/veterinaries";
 import { MyPetsSection } from "kadesh/components/pets";
 import { MyEventsSection } from "kadesh/components/events";
+import RescueSection from "kadesh/components/rescue/RescueSection";
 import { useUser } from "kadesh/utils/UserContext";
 import { cn } from "kadesh/utils/cn";
 
-/** Ancho de cada vista: los formularios conservan su medida; Inicio y Clínicas usan más. */
+/** Ancho de cada vista: los formularios conservan su medida; Inicio, Rescate y Clínicas usan más. */
 const VIEW_WIDTH: Record<ProfileTabKey, string> = {
   inicio: "",
   profile: "max-w-3xl",
@@ -28,6 +29,7 @@ const VIEW_WIDTH: Record<ProfileTabKey, string> = {
   animals: "max-w-4xl",
   events: "max-w-4xl",
   appointments: "max-w-4xl",
+  rescate: "max-w-6xl",
   clinics: "max-w-6xl",
 };
 
@@ -54,8 +56,8 @@ export default function ProfilePage() {
 
   return (
     <div key={view} className={cn("w-full", VIEW_WIDTH[view])}>
-      {/* Clínicas pinta su propio encabezado: en el detalle, el título es la clínica. */}
-      {view !== "clinics" ? (
+      {/* Clínicas y Rescate pintan su propio encabezado: en el detalle, el título es la clínica o el espacio. */}
+      {view !== "clinics" && view !== "rescate" ? (
         <AppPageHeader eyebrow={eyebrow} title={config.label} description={config.description} />
       ) : null}
 
@@ -66,6 +68,7 @@ export default function ProfilePage() {
       {view === "animals" ? <UserAnimalsSection userId={user.id} /> : null}
       {view === "events" ? <MyEventsSection userId={user.id} /> : null}
       {view === "appointments" ? <UserAppointmentsSection /> : null}
+      {view === "rescate" ? <RescueSection userId={user.id} /> : null}
       {view === "clinics" ? <UserVeterinariesSection userId={user.id} /> : null}
     </div>
   );

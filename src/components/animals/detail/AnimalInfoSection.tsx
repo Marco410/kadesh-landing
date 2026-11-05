@@ -5,6 +5,7 @@ import { ANIMAL_TYPE_LABELS } from "../constants";
 import { TypeGlyph } from "../TypeGlyph";
 import { formatDate } from "kadesh/utils/format-date";
 import Avatar from "kadesh/components/shared/Avatar";
+import RescueByline from "kadesh/components/rescue/RescueByline";
 
 interface AnimalInfoSectionProps {
   animal: AnimalDetail;
@@ -45,7 +46,7 @@ export default function AnimalInfoSection({ animal }: AnimalInfoSectionProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      {animal.reportedBy === "volunteer" ? (
+      {animal.reportedBy === "volunteer" && !animal.organization ? (
         <p className="rounded-xl bg-kadesh-50 px-3 py-2 text-sm text-[#121212] dark:bg-kadesh/15 dark:text-[#eef1f6]">
           Reportado por la comunidad. Contacta directamente al dueño.
         </p>
@@ -94,6 +95,14 @@ export default function AnimalInfoSection({ animal }: AnimalInfoSectionProps) {
         </div>
       ) : null}
 
+      {animal.organization ? (
+        <RescueByline
+          org={animal.organization}
+          animalName={animal.name}
+          publishedBy={animal.user ? `${animal.user.name} ${animal.user.lastName || ""}`.trim() : null}
+          publishedAt={`Publicado ${formatDate(animal.createdAt)}`}
+        />
+      ) : (
       <div className="flex items-center gap-3 border-t border-[#ececec] pt-3 dark:border-white/10">
         {animal.user ? (
           <Avatar
@@ -122,6 +131,7 @@ export default function AnimalInfoSection({ animal }: AnimalInfoSectionProps) {
           </p>
         </div>
       </div>
+      )}
     </div>
   );
 }

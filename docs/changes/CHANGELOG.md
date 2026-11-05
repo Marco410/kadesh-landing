@@ -15,6 +15,22 @@ Formato:
 
 ---
 
+## 2026-11-05 · fix: SEO y GEO de animales y veterinarias (el blog ya estaba bien)
+- Rama: feat/eventos
+- Qué cambió y por qué (revisión con el HTML real de producción):
+  - **Blog**: bien. Lista y posts llegan completos del servidor con título, descripción, canonical, OG y JSON-LD. Sin cambios.
+  - **Fichas de animal y de veterinaria**: tenían buenos metadatos, pero el HTML llegaba vacío (se pintan en el navegador): sin texto ni JSON-LD para buscadores e IA que no ejecutan JavaScript. Ahora el `layout` de servidor agrega:
+    - Veterinaria: JSON-LD `VeterinaryCare` (dirección, CP, coordenadas, teléfono y, solo con reseñas de KADESH, `aggregateRating`) + migas, y un resumen visible «Datos de la veterinaria».
+    - Animal: JSON-LD `WebPage` (foto, fecha) + migas, y un resumen visible «Resumen del reporte» (especie, raza, rasgos, estado y desde cuándo, última ubicación; sin teléfono ni dirección exacta).
+  - **Sitemap**: no tenía ninguna ficha de animal (87 en producción) ni de veterinaria (593). Ahora entran todas (menos los reportes unidos a otro), más `/animales/nuevo` y `/veterinarias/registro`.
+  - **`/animales` y `/veterinarias`**: usaban el título y la descripción genéricos de la portada y no tenían canonical. Ahora tienen los suyos y JSON-LD (`CollectionPage` + migas): los directorios de cliente se movieron a `AnimalsDirectory.tsx` / `VeterinariesDirectory.tsx` y `page.tsx` quedó como envoltorio de servidor. `/animales/nuevo` («Reporta gratis una mascota perdida o encontrada») y `/veterinarias/registro` («Registra tu veterinaria gratis») tienen metadatos propios.
+  - **Descripción en inglés** de las veterinarias importadas de Google («Place located at… Rating: 4.2/5»): ya no se usa en metadatos; el backend ahora la escribe en español («Ubicada en …», kadesh-back `utils/helpers/nearby_petplaces.ts`).
+- Archivos: src/app/animales/{page.tsx (envoltorio nuevo),[slug]/layout.tsx,nuevo/layout.tsx (nuevo)}, src/app/veterinarias/{page.tsx (envoltorio nuevo),[slug]/layout.tsx,registro/layout.tsx (nuevo)}, src/components/animals/{AnimalsDirectory.tsx (movido desde app/animales/page.tsx),animal-seo.ts,server.ts,README.md}, src/components/veterinaries/{VeterinariesDirectory.tsx (movido desde app/veterinarias/page.tsx),pet-place-seo.ts,server.ts,README.md}, src/components/shared/PageSummary.tsx (nuevo), src/app/sitemap.ts
+- GraphQL: queries de servidor nuevas `AnimalsForSitemap` y `PetPlacesForSitemap`; `GetPetPlaceForShare` pide además `website`, `cp`, `lat` y `lng`.
+- Móvil: no aplica (SEO; la app no usa estas páginas).
+
+---
+
 ## 2026-11-05 · feat: SEO de eventos — títulos buscables, páginas por estado y municipio, IndexNow
 - Rama: feat/eventos
 - Qué cambió y por qué:

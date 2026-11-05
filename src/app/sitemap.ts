@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { fetchPublishedPostsForSitemap } from 'kadesh/components/blog/server';
 import { fetchEventFacets, fetchEventsForSitemap } from 'kadesh/components/events/server';
+import { fetchAnimalsForSitemap } from 'kadesh/components/animals/server';
+import { fetchPetPlacesForSitemap } from 'kadesh/components/veterinaries/server';
 import { Routes } from 'kadesh/core/routes';
 import { SITE_URL } from 'kadesh/core/site';
 
@@ -17,8 +19,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/',
     Routes.blog.index,
     Routes.animals.index,
+    Routes.animals.new,
     Routes.events.index,
     Routes.veterinaries.index,
+    Routes.veterinaries.register,
     Routes.conocenos,
     Routes.contact,
     Routes.novedades,
@@ -74,5 +78,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ]);
 
-  return [...staticEntries, ...postEntries, ...eventEntries, ...placeEntries];
+  // Fichas de animales (sin los unidos a otro reporte) y de veterinarias.
+  const [animals, petPlaces] = await Promise.all([fetchAnimalsForSitemap(), fetchPetPlacesForSitemap()]);
+  const animalEntries: MetadataRoute.Sitemap = animals.map((animal) => ({
+    url: `${SITE_URL}${animal.path}`,
+    lastModified: toLastModified(animal.createdAt),
+    changeFrequency: 'weekly',
+    priority: 0.6,
+  }));
+  const petPlaceEntries: MetadataRoute.Sitemap = petPlaces.map((place) => ({
+    url: `${SITE_URL}${Routes.veterinaries.detail(place.slug)}`,
+    changeFrequency: 'monthly',
+    priority: place.verified ? 0.6 : 0.5,
+  }));
+
+  return [...staticEntries, ...postEntries, ...eventEntries, ...placeEntries, ...animalEntries, ...petPlaceEntries];
 }

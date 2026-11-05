@@ -15,6 +15,10 @@ const PET_PLACE_SHARE_QUERY = `
       state
       country
       phone
+      website
+      cp
+      lat
+      lng
       emergencies
       verified
       averageRating
@@ -38,6 +42,10 @@ export type PetPlaceShareData = {
   state?: string | null;
   country?: string | null;
   phone?: string | null;
+  website?: string | null;
+  cp?: string | null;
+  lat?: string | null;
+  lng?: string | null;
   emergencies?: boolean | null;
   verified?: boolean | null;
   averageRating?: number | null;
@@ -87,4 +95,45 @@ export async function fetchPetPlaceForShare(
     console.error('PetPlace GraphQL fetch failed:', error);
     return null;
   }
+}
+
+const SITEMAP_PLACES_QUERY = `
+  query PetPlacesForSitemap($take: Int!, $skip: Int!) {
+    petPlaces(where: { slug: { not: null } }, orderBy: [{ createdAt: desc }], take: $take, skip: $skip) {
+      slug
+      verified
+    }
+  }
+`;
+
+const SITEMAP_PAGE = 1000;
+const SITEMAP_MAX = 20000;
+
+export type SitemapPetPlace = { slug: string; verified: boolean };
+
+/** Fichas de veterinarias para el sitemap. Solo servidor. */
+export async function fetchPetPlacesForSitemap(): Promise<SitemapPetPlace[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return [];
+  const out: SitemapPetPlace[] = [];
+  try {
+    for (let skip = 0; skip < SITEMAP_MAX; skip += SITEMAP_PAGE) {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: SITEMAP_PLACES_QUERY, variables: { take: SITEMAP_PAGE, skip } }),
+        next: { revalidate: 60 * 60 },
+      });
+      if (!response.ok) break;
+      const payload = (await response.json()) as {
+        data?: { petPlaces: Array<{ slug: string | null; verified: boolean | null }> | null };
+      };
+      const rows = payload.data?.petPlaces ?? [];
+      out.push(...rows.filter((row) => row.slug).map((row) => ({ slug: row.slug as string, verified: Boolean(row.verified) })));
+      if (rows.length < SITEMAP_PAGE) break;
+    }
+  } catch (error) {
+    console.error('Pet places sitemap fetch failed:', error);
+  }
+  return out;
 }

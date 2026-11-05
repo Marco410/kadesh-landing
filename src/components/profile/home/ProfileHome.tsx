@@ -8,6 +8,7 @@ import {
   ArrowRight01Icon,
   Bone01Icon,
   Calendar03Icon,
+  Calendar04Icon,
   CheckmarkCircle02Icon,
   HospitalLocationIcon,
   Megaphone01Icon,
@@ -34,6 +35,7 @@ import { cn } from "kadesh/utils/cn";
 import type { User } from "kadesh/utils/types";
 import { appointmentWhen, pendingCount, type AttentionItem, type AttentionSeverity } from "./homeModel";
 import { useProfileHome, type ProfileHomeModel } from "./useProfileHome";
+import WeekStrip from "./WeekStrip";
 
 /** Filas visibles de "Requiere atención" antes de "Ver N más". */
 const ATTENTION_PREVIEW = 5;
@@ -46,8 +48,8 @@ function joinEs(parts: string[]): string {
 }
 
 /**
- * Inicio del perfil: saludo con el resumen en una frase, "Requiere atención" y KPIs (oscuro =
- * mascotas, tintado = próximas citas). Con una clínica verificada suma la fila "Mi veterinaria".
+ * Inicio del perfil: saludo con el resumen en una frase, "Los próximos 7 días" (citas, eventos y
+ * eventos cerca), "Requiere atención" y KPIs (oscuro = mascotas, tintado = próximas citas). Con una clínica verificada suma la fila "Mi veterinaria".
  * Las reglas viven en `homeModel.ts`.
  */
 export default function ProfileHome({ user }: { user: User }) {
@@ -75,7 +77,7 @@ export default function ProfileHome({ user }: { user: User }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <GreetingCard firstName={user.name?.trim() || "hola"} model={model} />
+        <GreetingCard firstName={user.name?.trim() || "hola"} model={model} userId={user.id} />
         <AttentionCard items={model.attention} />
       </div>
 
@@ -137,7 +139,7 @@ export default function ProfileHome({ user }: { user: User }) {
   );
 }
 
-function GreetingCard({ firstName, model }: { firstName: string; model: ProfileHomeModel }) {
+function GreetingCard({ firstName, model, userId }: { firstName: string; model: ProfileHomeModel; userId: string }) {
   const parts: string[] = [];
   if (model.petsCount) parts.push(plural(model.petsCount, "mascota", "mascotas"));
   if (model.upcomingCount) parts.push(plural(model.upcomingCount, "cita próxima", "citas próximas"));
@@ -166,6 +168,13 @@ function GreetingCard({ firstName, model }: { firstName: string; model: ProfileH
       detail: model.alertsEnabled ? "Activas" : "Apagadas",
     },
     {
+      id: "events",
+      href: Routes.events.index,
+      icon: Calendar04Icon,
+      label: "Eventos",
+      detail: "Campañas y jornadas",
+    },
+    {
       id: "report",
       href: Routes.animals.new,
       icon: Megaphone01Icon,
@@ -189,11 +198,16 @@ function GreetingCard({ firstName, model }: { firstName: string; model: ProfileH
           <strong className="font-semibold text-green-700 dark:text-green-300">Todo en orden.</strong>
         )}
       </p>
+      <WeekStrip userId={userId} now={model.now} />
       <nav aria-label="Atajos" className="mt-6 xl:mt-auto xl:pt-8">
         <p className="mb-2 text-[13px] font-semibold text-dash-muted">Atajos</p>
-        <ul className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-          {shortcuts.map((item) => (
-            <li key={item.id}>
+        <ul className="grid grid-cols-2 gap-2 lg:grid-cols-5">
+          {shortcuts.map((item, index) => (
+            // Con un número impar, el último ocupa la fila completa en móvil (sin hueco).
+            <li
+              key={item.id}
+              className={index === shortcuts.length - 1 && shortcuts.length % 2 === 1 ? "col-span-2 lg:col-span-1" : undefined}
+            >
               <Link
                 href={item.href}
                 className="flex h-full flex-col gap-2.5 rounded-[18px] bg-dash-surface-2 p-3.5 transition-[transform,box-shadow] duration-200 ease-[cubic-bezier(0.16,0.84,0.44,1)] hover:-translate-y-0.5 hover:shadow-dash focus:outline-none focus-visible:ring-2 focus-visible:ring-kadesh-400"

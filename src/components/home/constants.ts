@@ -63,6 +63,11 @@ export const HOME_FAQS = [
     answer: `Activa las alertas de zona: eliges un punto en el mapa y un radio de ${MIN_ALERT_RADIUS_KM} a ${MAX_ALERT_RADIUS_KM} km. Cada vez que alguien reporta una mascota perdida o encontrada en esa zona, te avisamos en tus notificaciones y, si quieres, por WhatsApp. Son gratis y llegan máximo ${MAX_DAILY_ALERTS} al día.`,
   },
   {
+    question: '¿Dónde encuentro campañas de esterilización o vacunación?',
+    answer:
+      'En la sección Eventos de Kadesh Pet: campañas de esterilización, jornadas de vacunación, ferias de adopción y más, de todo México, con fecha, lugar, costo y requisitos. Filtra por tu estado o mira las que hay cerca de ti; si activas tus alertas de zona, te avisamos de las nuevas.',
+  },
+  {
     question: '¿Se muestra mi teléfono?',
     answer:
       'Sí. El teléfono que pongas en el reporte aparece en la ficha de tu mascota con un botón para llamarte, para que quien la vea te avise de inmediato. Puedes usar un número distinto al de tu cuenta.',

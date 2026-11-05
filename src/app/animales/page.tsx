@@ -1,457 +1,60 @@
-"use client";
-
-import { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Navigation } from 'kadesh/components/layout';
-import {
-  AnimalCard,
-  AnimalCardSkeleton,
-  AnimalFilters,
-  AnimalsMap,
-  useLostAnimals,
-  LostAnimal,
-} from 'kadesh/components/animals';
-import { ANIMAL_LOGS_OPTIONS, emptyDirectoryHeadline } from 'kadesh/components/animals/constants';
-import { useUser } from 'kadesh/utils/UserContext';
-import {
-  DirectoryPagination,
-  DirectoryRadiusChips,
-} from 'kadesh/components/shared';
-import AuthGateModal from 'kadesh/components/auth/AuthGateModal';
-import { reportAuthCopy } from 'kadesh/components/animals/reportAuthCopy';
+import type { Metadata } from 'next';
+import AnimalsDirectory from 'kadesh/components/animals/AnimalsDirectory';
+import JsonLd from 'kadesh/components/blog/JsonLd';
 import { Routes } from 'kadesh/core/routes';
-import { GEO_OPTIONS_FRESH } from 'kadesh/utils/geolocation';
-import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
-import { HugeiconsIcon } from '@hugeicons/react';
-import {
-  Add01Icon,
-  Location01Icon,
-  Search01Icon,
-} from '@hugeicons/core-free-icons';
-import {
-  DEFAULT_RADIUS,
-  RADIUS_OPTIONS_ANIMALS,
-  parseRadiusOption,
-} from 'kadesh/constants/constans';
-import { useUiMotion } from 'kadesh/components/shared/motion';
-import { Bone, LoadingBar, SkeletonRegion } from 'kadesh/components/ui/skeleton';
+import { SITE_URL } from 'kadesh/core/site';
 
-function LostAnimalsPageContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const motionPrefs = useUiMotion();
-  const statusFromQuery = searchParams.get('status');
-  const initialStatus =
-    statusFromQuery && ANIMAL_LOGS_OPTIONS.some((option) => option.value === statusFromQuery)
-      ? statusFromQuery
-      : undefined;
-  const radiusKm = parseRadiusOption(
-    searchParams.get('radius'),
-    RADIUS_OPTIONS_ANIMALS,
-    DEFAULT_RADIUS
-  );
-  const { user, loading: userLoading } = useUser();
-  const [selectedAnimal, setSelectedAnimal] = useState<LostAnimal | null>(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const {
-    coords,
-    error: locationError,
-    isLocating: locationLoading,
-    request: requestLocation,
-  } = useRememberedLocation(GEO_OPTIONS_FRESH);
-  const userLocation = coords ?? { lat: null, lng: null };
+const TITLE = 'Mascotas perdidas y en adopción en México';
+const DESCRIPTION =
+  'Mapa de mascotas perdidas, encontradas y en adopción en México. Busca cerca de ti, reporta gratis y avisa a quien la reportó.';
 
-  const {
-    animals,
-    allAnimals,
-    currentPage,
-    totalPages,
-    totalAnimals,
-    goToPage,
-    nextPage,
-    previousPage,
-    updateFilters,
-    clearFilters,
-    filters,
-    hasNextPage,
-    hasPreviousPage,
-    loading: animalsLoading,
-  } = useLostAnimals(
-    initialStatus ? { status: initialStatus } : undefined,
-    undefined,
-    userLocation,
-    radiusKm
-  );
+// El directorio es de cliente (mapa, filtros, ubicación): los metadatos van aquí, en servidor.
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: Routes.animals.index },
+  openGraph: {
+    title: `${TITLE} | KADESH`,
+    description: DESCRIPTION,
+    url: Routes.animals.index,
+    siteName: 'KADESH',
+    locale: 'es_MX',
+    type: 'website',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: TITLE }],
+  },
+  twitter: { card: 'summary_large_image', title: `${TITLE} | KADESH`, description: DESCRIPTION, images: ['/og-image.png'] },
+};
 
-  const hasLocation =
-    userLocation != null && userLocation.lat != null && userLocation.lng != null;
-  const nextRadius = RADIUS_OPTIONS_ANIMALS.find((km) => km > radiusKm);
-  const hasActiveFilters = Boolean(filters.type || filters.status);
-  const isFirstLoad = (locationLoading || animalsLoading) && animals.length === 0;
-  const isRefreshing = animalsLoading && animals.length > 0;
+const url = `${SITE_URL}${Routes.animals.index}`;
 
-  useEffect(() => {
-    if (selectedAnimal && !allAnimals.some((animal) => animal.id === selectedAnimal.id)) {
-      setSelectedAnimal(null);
-    }
-  }, [allAnimals, selectedAnimal]);
-
-  useEffect(() => {
-    const urlStatus =
-      statusFromQuery && ANIMAL_LOGS_OPTIONS.some((option) => option.value === statusFromQuery)
-        ? statusFromQuery
-        : null;
-    if ((filters.status ?? null) === urlStatus) return;
-    updateFilters({ status: urlStatus });
-  }, [statusFromQuery]);
-
-  const handleAnimalClick = (animal: LostAnimal | null) => {
-    setSelectedAnimal(animal);
-    if (animal) {
-      const element = document.getElementById(`animal-${animal.id}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  };
-
-  const replaceDirectoryQuery = (mutate: (params: URLSearchParams) => void) => {
-    const params = new URLSearchParams(searchParams.toString());
-    mutate(params);
-    const next = params.toString();
-    router.replace(`/animales${next ? `?${next}` : ''}`, { scroll: false });
-  };
-
-  const handleRadiusChange = (km: number) => {
-    replaceDirectoryQuery((params) => {
-      if (km === DEFAULT_RADIUS) params.delete('radius');
-      else params.set('radius', String(km));
-    });
-    goToPage(1);
-    setSelectedAnimal(null);
-  };
-
-  const handleFiltersChange = (next: Parameters<typeof updateFilters>[0]) => {
-    updateFilters(next);
-    replaceDirectoryQuery((params) => {
-      const status = next.status !== undefined ? next.status : filters.status;
-      if (status) params.set('status', status);
-      else params.delete('status');
-    });
-  };
-
-  const handleClearFilters = () => {
-    clearFilters();
-    replaceDirectoryQuery((params) => {
-      params.delete('status');
-    });
-  };
-
-  const handleReportAnimalClick = () => {
-    if (userLoading) return;
-    if (!user) {
-      setShowLoginModal(true);
-      return;
-    }
-    router.push(Routes.animals.new);
-  };
-
+export default function AnimalsPage() {
   return (
-    <main className="min-h-dvh bg-white pt-[72px] dark:bg-night">
-      <Navigation />
-
-      <div className="flex flex-col md:h-[calc(100dvh-72px)] md:flex-row md:overflow-hidden">
-        <motion.div
-          className="relative h-[42dvh] min-h-[280px] w-full min-w-0 flex-shrink-0 md:order-2 md:h-full md:min-h-0 md:flex-1"
-          initial={motionPrefs.reduce ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={motionPrefs.transition}
-        >
-          <AnimalsMap
-            animals={allAnimals}
-            selectedAnimal={selectedAnimal}
-            onAnimalClick={handleAnimalClick}
-            height="100%"
-          />
-          <motion.button
-            type="button"
-            onClick={handleReportAnimalClick}
-            disabled={userLoading}
-            whileTap={userLoading ? undefined : motionPrefs.tap}
-            className="absolute right-3 top-3 z-10 inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(15,35,80,0.18)] transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:hidden"
-          >
-            <HugeiconsIcon icon={Add01Icon} size={18} strokeWidth={1.5} />
-            Reportar
-          </motion.button>
-        </motion.div>
-
-        <aside className="flex w-full flex-col border-t border-[#ececec] bg-white md:order-1 md:h-full md:w-[400px] md:flex-shrink-0 md:border-t-0 md:border-r xl:w-[440px] dark:border-white/10 dark:bg-night-raised">
-          <motion.header
-            className="flex-shrink-0 border-b border-[#ececec] px-5 py-5 dark:border-white/10"
-            variants={motionPrefs.panel}
-            initial={motionPrefs.panel ? "hidden" : false}
-            animate="show"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h1 className="text-2xl font-black tracking-[-0.03em] text-[#121212] dark:text-white">
-                  Animales
-                </h1>
-                <p className="mt-1 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
-                  {hasLocation
-                    ? isFirstLoad
-                      ? <Bone kind="line" slot={20} width={150} />
-                      : `${totalAnimals} cerca de ti`
-                    : 'Perdidos, encontrados y en adopción'}
-                </p>
-              </div>
-              <motion.button
-                type="button"
-                onClick={handleReportAnimalClick}
-                disabled={userLoading}
-                whileTap={userLoading ? undefined : motionPrefs.tap}
-                className="hidden min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh md:inline-flex"
-              >
-                <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
-                Reportar
-              </motion.button>
-            </div>
-
-            {locationLoading && (
-              <p className="mt-3 text-sm font-medium text-kadesh" aria-live="polite">
-                Obteniendo tu ubicación…
-              </p>
-            )}
-            {!hasLocation && !locationLoading && !locationError && (
-              <motion.button
-                type="button"
-                onClick={requestLocation}
-                whileTap={motionPrefs.tap}
-                className="mt-3 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
-              >
-                <HugeiconsIcon icon={Location01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
-                Usar mi ubicación
-              </motion.button>
-            )}
-            {locationError && (
-              <div className="mt-3 space-y-2">
-                <p className="flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
-                  <HugeiconsIcon
-                    icon={Location01Icon}
-                    size={16}
-                    className="mt-0.5 flex-shrink-0"
-                    strokeWidth={1.5}
-                    aria-hidden="true"
-                  />
-                  <span>{locationError}</span>
-                </p>
-                <motion.button
-                  type="button"
-                  onClick={requestLocation}
-                  whileTap={motionPrefs.tap}
-                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-kadesh px-4 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white"
-                >
-                  <HugeiconsIcon icon={Location01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
-                  Reintentar ubicación
-                </motion.button>
-              </div>
-            )}
-
-            {hasLocation && !locationError && (
-              <DirectoryRadiusChips
-                options={RADIUS_OPTIONS_ANIMALS}
-                value={radiusKm}
-                onChange={handleRadiusChange}
-              />
-            )}
-
-            <div className="mt-4">
-              <AnimalFilters
-                filters={filters}
-                onFiltersChange={handleFiltersChange}
-                onClearFilters={handleClearFilters}
-              />
-            </div>
-            <LoadingBar active={isRefreshing} className="mt-3" />
-          </motion.header>
-
-          <div className="flex-1 overflow-y-auto p-4" aria-busy={locationLoading || animalsLoading}>
-            <AnimatePresence mode="wait">
-            {isFirstLoad ? (
-              <motion.div
-                key="loading"
-                variants={motionPrefs.panel}
-                initial={motionPrefs.panel ? "hidden" : false}
-                animate="show"
-                exit="exit"
-              >
-                <SkeletonRegion label="Cargando reportes" className="space-y-3">
-                  {[0, 1, 2, 3].map((i) => (
-                    <AnimalCardSkeleton key={i} index={i} />
-                  ))}
-                </SkeletonRegion>
-              </motion.div>
-            ) : animals.length === 0 ? (
-              <motion.div
-                key="empty"
-                className="flex flex-col items-center px-4 py-12 text-center"
-                variants={motionPrefs.panel}
-                initial={motionPrefs.panel ? "hidden" : false}
-                animate="show"
-                exit="exit"
-              >
-                <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
-                  <HugeiconsIcon icon={Search01Icon} size={28} strokeWidth={1.5} aria-hidden="true" />
-                </span>
-                <p className="text-base font-semibold text-[#121212] dark:text-white">
-                  {locationError
-                    ? 'Sin ubicación no podemos ordenar por distancia'
-                    : emptyDirectoryHeadline(filters, radiusKm)}
-                </p>
-                <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#5a5a5a] dark:text-[#b0b0b0]">
-                  {locationError
-                    ? 'Activa la ubicación en el navegador para ver animales cerca de ti.'
-                    : hasActiveFilters && nextRadius
-                      ? 'Amplía el radio o quita un filtro para ver más reportes.'
-                      : hasActiveFilters
-                        ? 'Quita un filtro para ver más reportes.'
-                        : nextRadius
-                          ? 'Amplía el radio: en esta zona los reportes suelen aparecer más lejos.'
-                          : 'No encontramos reportes en el radio máximo. Publica el tuyo para que otros lo vean.'}
-                </p>
-                {locationError ? (
-                  hasActiveFilters ? (
-                    <motion.button
-                      type="button"
-                      onClick={handleClearFilters}
-                      whileTap={motionPrefs.tap}
-                      className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
-                    >
-                      Quitar filtros
-                    </motion.button>
-                  ) : (
-                    <motion.button
-                      type="button"
-                      onClick={handleReportAnimalClick}
-                      disabled={userLoading}
-                      whileTap={userLoading ? undefined : motionPrefs.tap}
-                      className="mt-5 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:opacity-50"
-                    >
-                      <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
-                      Reportar un animal
-                    </motion.button>
-                  )
-                ) : hasActiveFilters && nextRadius ? (
-                  <div className="mt-5 flex flex-col items-center gap-2">
-                    <motion.button
-                      type="button"
-                      onClick={() => handleRadiusChange(nextRadius)}
-                      whileTap={motionPrefs.tap}
-                      className="inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
-                    >
-                      Buscar en {nextRadius} km
-                    </motion.button>
-                    <motion.button
-                      type="button"
-                      onClick={handleClearFilters}
-                      whileTap={motionPrefs.tap}
-                      className="inline-flex min-h-11 items-center text-sm font-semibold text-kadesh hover:text-kadesh-600"
-                    >
-                      Quitar filtros
-                    </motion.button>
-                  </div>
-                ) : hasActiveFilters ? (
-                  <motion.button
-                    type="button"
-                    onClick={handleClearFilters}
-                    whileTap={motionPrefs.tap}
-                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
-                  >
-                    Quitar filtros
-                  </motion.button>
-                ) : hasLocation && nextRadius ? (
-                  <motion.button
-                    type="button"
-                    onClick={() => handleRadiusChange(nextRadius)}
-                    whileTap={motionPrefs.tap}
-                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
-                  >
-                    Buscar en {nextRadius} km
-                  </motion.button>
-                ) : (
-                  <motion.button
-                    type="button"
-                    onClick={handleReportAnimalClick}
-                    disabled={userLoading}
-                    whileTap={userLoading ? undefined : motionPrefs.tap}
-                    className="mt-5 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:opacity-50"
-                  >
-                    <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} aria-hidden="true" />
-                    Reportar un animal
-                  </motion.button>
-                )}
-              </motion.div>
-            ) : (
-              <motion.div
-                key={`${radiusKm}-${filters.type ?? ""}-${filters.status ?? ""}-${currentPage}`}
-                variants={motionPrefs.panel}
-                initial={motionPrefs.panel ? "hidden" : false}
-                animate="show"
-                exit="exit"
-              >
-                <motion.div
-                  className={`space-y-3 transition-opacity duration-200 ${isRefreshing ? 'opacity-50' : ''}`}
-                  variants={motionPrefs.list}
-                  initial={motionPrefs.list ? "hidden" : false}
-                  animate="show"
-                >
-                  {animals.map((animal) => (
-                    <AnimalCard
-                      key={animal.id}
-                      animal={animal}
-                      variant="horizontal"
-                      isSelected={selectedAnimal?.id === animal.id}
-                      onClick={() => handleAnimalClick(animal)}
-                    />
-                  ))}
-                </motion.div>
-                <DirectoryPagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPage={goToPage}
-                  onPrevious={previousPage}
-                  onNext={nextPage}
-                  hasPreviousPage={hasPreviousPage}
-                  hasNextPage={hasNextPage}
-                />
-              </motion.div>
-            )}
-            </AnimatePresence>
-          </div>
-        </aside>
-      </div>
-
-      <AuthGateModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        redirectTo={Routes.animals.new}
-        {...reportAuthCopy(null)}
+    <>
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            {
+              '@type': 'CollectionPage',
+              '@id': `${url}#page`,
+              name: TITLE,
+              description: DESCRIPTION,
+              url,
+              inLanguage: 'es-MX',
+              isPartOf: { '@id': `${SITE_URL}/#website` },
+            },
+            {
+              '@type': 'BreadcrumbList',
+              '@id': `${url}#breadcrumb`,
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${SITE_URL}/` },
+                { '@type': 'ListItem', position: 2, name: 'Animales', item: url },
+              ],
+            },
+          ],
+        }}
       />
-    </main>
-  );
-}
-
-export default function LostAnimalsPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="min-h-dvh bg-white pt-[72px] dark:bg-night">
-          <Navigation />
-        </main>
-      }
-    >
-      <LostAnimalsPageContent />
-    </Suspense>
+      <AnimalsDirectory />
+    </>
   );
 }

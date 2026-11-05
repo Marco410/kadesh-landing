@@ -28,6 +28,8 @@ export function useAlertSettings(userId: string | undefined) {
       enabled: Boolean(user.petAlertsEnabled) && hasCenter,
       center: hasCenter ? { lat: user.alertLat as number, lng: user.alertLng as number } : null,
       radiusKm: user.alertRadiusKm ?? DEFAULT_ALERT_RADIUS_KM,
+      eventsEnabled: user.eventAlertsEnabled !== false,
+      region: hasCenter ? { city: user.alertCity ?? null, stateCode: user.alertStateCode ?? null } : null,
     };
   }, [data]);
 
@@ -49,6 +51,7 @@ export function useAlertSettings(userId: string | undefined) {
             alertLat: next.center?.lat ?? null,
             alertLng: next.center?.lng ?? null,
             alertRadiusKm: next.radiusKm,
+            eventAlertsEnabled: next.eventsEnabled,
           },
         },
       });

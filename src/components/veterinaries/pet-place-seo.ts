@@ -22,6 +22,15 @@ function truncate(text: string, max: number): string {
   return `${text.slice(0, max - 1).trim()}…`;
 }
 
+/**
+ * Las fichas importadas de Google traían una descripción automática en inglés («Place located at
+ * …. Rating: 4.2/5») o la de ahora («Ubicada en …»): no describen nada, así que no se usan.
+ */
+export function isImportedDescription(text: string | null | undefined): boolean {
+  const value = text?.trim() ?? '';
+  return /^place located at /i.test(value) || /^ubicada en [^.]*\.?$/i.test(value);
+}
+
 /** Datos públicos para título, descripción y tarjeta OG. */
 export function petPlaceShareFacts(place: PetPlaceShareData): PetPlaceShareFacts {
   const typeLabel = formatPetPlaceTypeLabels(place.types) || 'Veterinaria';
@@ -38,7 +47,9 @@ export function petPlaceShareFacts(place: PetPlaceShareData): PetPlaceShareFacts
       : reviews > 0
         ? `${reviews} reseña${reviews === 1 ? '' : 's'}`
         : '';
-  const descriptionSnippet = place.description?.trim().replace(/\s+/g, ' ') || '';
+  const descriptionSnippet = isImportedDescription(place.description)
+    ? ''
+    : place.description?.trim().replace(/\s+/g, ' ') || '';
 
   return {
     name: place.name?.trim() || typeLabel,
@@ -128,4 +139,87 @@ export function buildPetPlaceMetadata(place: PetPlaceShareData): Metadata {
       images: [imageUrl],
     },
   };
+}
+
+type JsonLd = Record<string, unknown>;
+
+function streetAddress(place: PetPlaceShareData): string | undefined {
+  const value = place.street?.trim() || place.address?.split(',')[0]?.trim();
+  return value || undefined;
+}
+
+/**
+ * JSON-LD de la ficha: `VeterinaryCare` (negocio local) con dirección, coordenadas, teléfono y,
+ * si tiene reseñas en KADESH, su calificación (nunca la de Google), más las migas.
+ */
+export function buildPetPlaceJsonLd(place: PetPlaceShareData): JsonLd {
+  const facts = petPlaceShareFacts(place);
+  const url = `${SITE_URL}${petPlaceCanonicalPath(place)}`;
+  const lat = Number(place.lat);
+  const lng = Number(place.lng);
+  const reviews = place.reviewsCount ?? 0;
+  const rating = place.averageRating;
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'VeterinaryCare',
+        '@id': `${url}#lugar`,
+        name: facts.name,
+        url,
+        image: petPlaceShareImageUrl(place),
+        description: petPlaceSummary(place),
+        telephone: place.phone?.trim() ? `+52${place.phone.replace(/\D/g, '').slice(-10)}` : undefined,
+        sameAs: place.website?.trim() ? [place.website.trim()] : undefined,
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: streetAddress(place),
+          addressLocality: place.municipality?.trim() || undefined,
+          addressRegion: place.state?.trim() || undefined,
+          postalCode: place.cp?.trim() || undefined,
+          addressCountry: 'MX',
+        },
+        geo:
+          Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0)
+            ? { '@type': 'GeoCoordinates', latitude: lat, longitude: lng }
+            : undefined,
+        aggregateRating:
+          reviews > 0 && rating != null && !Number.isNaN(rating)
+            ? { '@type': 'AggregateRating', ratingValue: Number(rating.toFixed(1)), reviewCount: reviews, bestRating: 5, worstRating: 1 }
+            : undefined,
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${url}#breadcrumb`,
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${SITE_URL}/` },
+          { '@type': 'ListItem', position: 2, name: 'Veterinarias', item: `${SITE_URL}${Routes.veterinaries.index}` },
+          { '@type': 'ListItem', position: 3, name: facts.name, item: url },
+        ],
+      },
+    ],
+  };
+}
+
+/**
+ * Resumen que se entiende solo (lo citan buscadores e IA y llega en el HTML aunque la ficha se
+ * pinte en el navegador): «Veterinaria Durango: veterinaria en Francisco I. Madero 505, Zona
+ * Centro, Durango, Durango. Teléfono 618 123 4567. Atiende urgencias 24/7.»
+ */
+export function petPlaceSummary(place: PetPlaceShareData): string {
+  const facts = petPlaceShareFacts(place);
+  const where = [streetAddress(place), place.municipality?.trim(), place.state?.trim()]
+    .filter((part, index, all) => part && all.indexOf(part) === index)
+    .join(', ');
+  const phone = place.phone?.replace(/\D/g, '').slice(-10) ?? '';
+  const parts = [
+    `${facts.name}: ${facts.typeLabel.toLowerCase()}${where ? ` en ${where}` : ''}.`,
+    phone.length === 10 ? `Teléfono ${phone.slice(0, 3)} ${phone.slice(3, 6)} ${phone.slice(6)}.` : '',
+    facts.emergencies ? 'Atiende urgencias 24/7.' : '',
+    (place.reviewsCount ?? 0) > 0 && place.averageRating != null
+      ? `Calificación en KADESH: ${place.averageRating.toFixed(1)} de 5 (${place.reviewsCount} ${place.reviewsCount === 1 ? 'reseña' : 'reseñas'}).`
+      : '',
+    facts.descriptionSnippet ? truncate(facts.descriptionSnippet, 280) : '',
+  ];
+  return parts.filter(Boolean).join(' ');
 }

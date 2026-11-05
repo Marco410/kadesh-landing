@@ -2,7 +2,7 @@
 estado: pendiente
 fecha: YYYY-MM-DD
 origen: kadesh-landing@<rama> (<commit, si existe>)
-feature: animals | veterinaries | blog | profile | auth | notifications | shared
+feature: animals | veterinaries | blog | events | profile | auth | notifications | shared
 ---
 
 # Prompt para kadesh-pet-mobile: <título>

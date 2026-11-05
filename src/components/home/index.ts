@@ -1,6 +1,7 @@
 export { default as HeroSection } from './HeroSection';
 export { default as RecentReportsSection } from './RecentReportsSection';
 export { default as ZoneAlertsSection } from './ZoneAlertsSection';
+export { default as UpcomingEventsSection } from './UpcomingEventsSection';
 export { default as HowItWorksSection } from './HowItWorksSection';
 export { default as FirstHoursSection } from './FirstHoursSection';
 export { default as StoriesSection } from './StoriesSection';

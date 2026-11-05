@@ -2,6 +2,7 @@ import {
   BookOpen01Icon,
   Bone01Icon,
   Calendar03Icon,
+  Calendar04Icon,
   DashboardSquare01Icon,
   FlashIcon,
   HospitalLocationIcon,
@@ -25,7 +26,7 @@ import { Routes } from "kadesh/core/routes";
  */
 
 /** Claves de `?tab=` en `/perfil`. `inicio` es la vista sin `tab`. */
-export const PROFILE_TAB_KEYS = ["inicio", "profile", "pets", "posts", "animals", "appointments", "clinics"] as const;
+export const PROFILE_TAB_KEYS = ["inicio", "profile", "pets", "posts", "animals", "events", "appointments", "clinics"] as const;
 export type ProfileTabKey = (typeof PROFILE_TAB_KEYS)[number];
 
 export function isProfileTabKey(value: string | null | undefined): value is ProfileTabKey {
@@ -81,7 +82,7 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
     icon: RadarIcon,
     group: "cuenta",
     href: Routes.notifications.alerts,
-    description: "Elige una zona y te avisamos cuando reporten una mascota perdida o encontrada ahí: en la campana y, si quieres, por WhatsApp.",
+    description: "Elige una zona y te avisamos cuando reporten una mascota perdida o encontrada ahí, y de eventos cercanos: en la campana y, si quieres, por WhatsApp.",
   },
   pets: {
     label: "Mascotas",
@@ -104,6 +105,13 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
     href: Routes.profileTab("animals"),
     description: "Los animales que reportaste: perdidos, encontrados y en adopción.",
   },
+  events: {
+    label: "Eventos",
+    icon: Calendar04Icon,
+    group: "publicaciones",
+    href: Routes.events.mine,
+    description: "Las campañas y jornadas que publicaste: si ya se aprobaron, quién asistirá y cómo editarlas.",
+  },
   posts: {
     label: "Publicaciones",
     icon: BookOpen01Icon,
@@ -123,7 +131,7 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
 const GROUP_ORDER: Array<[GroupId, ProfileViewKey[]]> = [
   ["cuenta", ["inicio", "profile", "notifications", "alerts"]],
   ["animales", ["pets", "appointments", "animals"]],
-  ["publicaciones", ["posts"]],
+  ["publicaciones", ["events", "posts"]],
   ["veterinarias", ["clinics"]],
 ];
 
@@ -131,6 +139,7 @@ const GROUP_ORDER: Array<[GroupId, ProfileViewKey[]]> = [
 const KADESH_LINKS = [
   { id: "site-veterinarias", label: "Veterinarias", icon: HospitalLocationIcon, href: Routes.veterinaries.index },
   { id: "site-animales", label: "Animales", icon: MapsLocation01Icon, href: Routes.animals.index },
+  { id: "site-eventos", label: "Eventos", icon: Calendar04Icon, href: Routes.events.index },
   { id: "site-novedades", label: "Novedades", icon: FlashIcon, href: Routes.novedades },
 ];
 

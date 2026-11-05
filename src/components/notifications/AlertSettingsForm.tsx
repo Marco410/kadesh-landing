@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Location01Icon, Notification03Icon, Tick02Icon, WhatsappIcon } from '@hugeicons/core-free-icons';
+import { EVENT_ALERTS } from 'kadesh/components/events/constants';
+import { stateByCode } from 'kadesh/components/events/mexicoStates';
 import { sileo } from 'sileo';
 import { DashFilterChips, DashSwitch, dashButtonClass, dashSurfaceClass } from 'kadesh/components/app-shell';
 import { Routes } from 'kadesh/core/routes';
@@ -27,6 +29,8 @@ const EMPTY_SETTINGS: AlertSettings = {
   enabled: false,
   center: null,
   radiusKm: DEFAULT_ALERT_RADIUS_KM,
+  eventsEnabled: true,
+  region: null,
 };
 
 function AlertSettingsSkeleton() {
@@ -72,6 +76,12 @@ export default function AlertSettingsForm() {
   };
 
   const needsCenter = form.enabled && !form.center;
+  const centerChanged =
+    Boolean(form.center) &&
+    (form.center?.lat !== settings?.center?.lat || form.center?.lng !== settings?.center?.lng);
+  const regionLabel = form.region
+    ? [form.region.city, stateByCode(form.region.stateCode)?.name].filter(Boolean).join(', ')
+    : '';
   const whatsappOn = whatsappDraft ?? whatsapp.zoneOn;
   const whatsappChanged = whatsappDraft !== null && whatsappDraft !== whatsapp.zoneOn;
   const canWhatsapp = Boolean(whatsapp.phoneLabel);
@@ -101,13 +111,14 @@ export default function AlertSettingsForm() {
       setDirty(false);
       setWhatsappDraft(null);
       const channels = whatsappOn ? 'en la campana y por WhatsApp' : 'en la campana';
+      const events = form.eventsEnabled && form.center ? ' También te avisaremos de eventos en tu zona.' : '';
       sileo.success({
         title: form.enabled ? 'Alertas activadas' : 'Alertas guardadas',
         description: form.enabled
-          ? `Te avisaremos ${channels} de mascotas perdidas o encontradas a ${form.radiusKm} km.${
+          ? `Te avisaremos ${channels} de mascotas perdidas o encontradas a ${form.radiusKm} km.${events}${
               onlyZone ? ' Los demás avisos por WhatsApp los eliges en Ajustes de avisos.' : ''
             }`
-          : 'No te enviaremos alertas de zona.',
+          : `No te enviaremos alertas de mascotas.${events}`,
       });
     } catch (err) {
       sileo.error({
@@ -146,6 +157,25 @@ export default function AlertSettingsForm() {
         />
       </div>
 
+      <div className={cn(dashSurfaceClass, 'flex items-center justify-between gap-4 p-4 sm:p-5')}>
+        <div>
+          <p id="events-switch-label" className="text-[17px] font-semibold tracking-[-0.02em] text-dash-ink">
+            Avisos de eventos
+          </p>
+          <p id="events-switch-hint" className="mt-0.5 text-sm text-dash-muted">
+            Campañas de esterilización, vacunación y ferias de adopción en tu zona, tu municipio o tu estado. Como
+            máximo {EVENT_ALERTS.MAX_PER_DAY} al día.
+            {form.eventsEnabled && !form.center ? ' Para recibirlos, elige el centro de tu zona en el mapa.' : ''}
+          </p>
+        </div>
+        <DashSwitch
+          checked={form.eventsEnabled}
+          onChange={(eventsEnabled) => update({ eventsEnabled })}
+          labelledBy="events-switch-label"
+          describedBy="events-switch-hint"
+        />
+      </div>
+
       <section aria-labelledby="alerts-zone-heading" className="space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -168,6 +198,14 @@ export default function AlertSettingsForm() {
         </div>
         {locationError ? (
           <p className="text-sm text-red-600 dark:text-red-400">{locationError}</p>
+        ) : null}
+        {centerChanged ? (
+          <p className="text-sm text-dash-muted">Al guardar ubicamos el municipio y el estado de este punto.</p>
+        ) : regionLabel ? (
+          <p className="text-sm text-dash-muted">
+            Tu zona está en <strong className="font-semibold text-dash-ink">{regionLabel}</strong>: ahí te avisamos de
+            eventos de municipio y de estado.
+          </p>
         ) : null}
 
         <AlertZoneMap

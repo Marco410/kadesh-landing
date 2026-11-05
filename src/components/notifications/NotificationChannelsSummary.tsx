@@ -37,8 +37,14 @@ function useChannelsStatus() {
         ? { tone: 'off' as const, text: 'Apagado' }
         : { tone: 'pending' as const, text: 'Falta tu teléfono' },
     zone: zone?.enabled
-      ? { tone: 'on' as const, text: `A ${zone.radiusKm} km de tu zona`, action: 'Cambiar zona' }
-      : { tone: 'pending' as const, text: 'Te falta configurar tu zona', action: 'Configurar zona' },
+      ? {
+          tone: 'on' as const,
+          text: `A ${zone.radiusKm} km de tu zona${zone.eventsEnabled ? ', también eventos' : ''}`,
+          action: 'Cambiar zona',
+        }
+      : zone?.center && zone.eventsEnabled
+        ? { tone: 'on' as const, text: 'Solo eventos de tu zona', action: 'Cambiar zona' }
+        : { tone: 'pending' as const, text: 'Te falta configurar tu zona', action: 'Configurar zona' },
   };
 }
 

@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-05 · fix: tarjeta para compartir de organizaciones en la zona segura
+- Rama: feat/espacios-de-rescate
+- Qué cambió y por qué: la tarjeta de `/organizaciones/<slug>` pasa a las piezas comunes de `kadesh/core/og-card`, igual que las de animales, veterinarias y eventos en el hotfix `fix/ficha-animal-og-y-lint`. El contenido va centrado en la columna de 760 px (Facebook en móvil recorta los lados): logo arriba, nombre (máx. 2 líneas), «Verificado» con la ciudad y las cifras, y el pie «KADESH · pet.kadesh.com.mx». WhatsApp recibe la variante de 600×315 (94–255 KB) y la tarjeta queda 10 min en la caché del edge. `?formato=logo` (512×512 para el JSON-LD) sigue igual.
+- Archivos: src/app/organizaciones/[slug]/og/route.tsx
+- GraphQL: ninguna.
+- Móvil: no aplica (imagen OG para compartir).
+
 ## 2026-11-05 · chore: ESLint instalado y en verde (el CI ya lo pedía)
 - Rama: fix/ficha-animal-og-y-lint (hotfix)
 - Qué cambió y por qué: el CI corre `pnpm lint` en cada PR, pero ESLint nunca estuvo instalado ni configurado: `next lint` no revisaba nada. Ahora:

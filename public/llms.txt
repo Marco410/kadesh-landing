@@ -6,7 +6,8 @@ KADESH (Kadesh Pet) conecta adoptantes, rescatistas, veterinarias y refugios. Fu
 
 ## Páginas
 
-- [Inicio](https://pet.kadesh.com.mx/): Qué es KADESH, animales, veterinarias, donaciones y FAQ
+- [Inicio](https://pet.kadesh.com.mx/): Qué es KADESH, reportes recientes, alertas de zona, veterinarias, donaciones y FAQ
+- [Alertas de zona](https://pet.kadesh.com.mx/#alertas): Avisos gratis cuando reportan una mascota perdida o encontrada cerca de ti. Eliges un punto en el mapa y un radio de 1 a 50 km; llegan a las notificaciones de Kadesh Pet, a la app y, si se activa, por WhatsApp. Máximo 5 al día
 - [Animales](https://pet.kadesh.com.mx/animales): Reportes de animales perdidos y en adopción
 - [Veterinarias](https://pet.kadesh.com.mx/veterinarias): Directorio de veterinarias cercanas
 - [Blog](https://pet.kadesh.com.mx/blog): Historias y notas de la comunidad

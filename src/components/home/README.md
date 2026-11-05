@@ -6,14 +6,15 @@ La portada le habla primero a **quien perdió a su mascota**. Los demás públic
 
 1. Hero (`HeroSection`)
 2. Reportes recientes (`RecentReportsSection`, `#animales`)
-3. Cómo funciona (`HowItWorksSection`, `#como-funciona`)
-4. Primeras 24 horas (`FirstHoursSection`, `#primeras-24-horas`)
-5. Historias (`StoriesSection`, `#historias`)
-6. Veterinarias cerca (`VeterinariansSection`, `#veterinarias`)
-7. Donaciones (`DonationsSection`, `#donaciones`)
-8. Franja para negocios (`BusinessStrip`) → el detalle vive en `/anunciate` (`components/advertise`)
-9. Preguntas frecuentes (`FaqSection`, `#preguntas-frecuentes`)
-10. Cierre (`ClosingSection`), suscripción al blog y pie
+3. Alertas de zona (`ZoneAlertsSection`, `#alertas`)
+4. Cómo funciona (`HowItWorksSection`, `#como-funciona`)
+5. Primeras 24 horas (`FirstHoursSection`, `#primeras-24-horas`)
+6. Historias (`StoriesSection`, `#historias`)
+7. Veterinarias cerca (`VeterinariansSection`, `#veterinarias`)
+8. Donaciones (`DonationsSection`, `#donaciones`)
+9. Franja para negocios (`BusinessStrip`) → el detalle vive en `/anunciate` (`components/advertise`)
+10. Preguntas frecuentes (`FaqSection`, `#preguntas-frecuentes`)
+11. Cierre (`ClosingSection`), suscripción al blog y pie
 
 Fuera de la portada: el roadmap vive en `/novedades#roadmap` (`components/changelog/RoadmapSection`), Kadesh Business y FOOD en el pie (columna Familia Kadesh), y «¿Qué es KADESH?» con la frase «Tecnología moderna. Corazón compasivo. Misión espiritual.» en Conócenos (`WhatIsKadesh` se sigue exportando para esa página).
 
@@ -28,6 +29,19 @@ Prueba social: solo veterinarias y ciudades (de `petLandingStats`, redondeadas h
 `hooks/useRecentReports` pide solo 6 reportes. Con ubicación, los de la zona (radio `DEFAULT_RADIUS`); si no hay ubicación o no hay nada cerca, los 6 más recientes del país, nunca una sección vacía. Filtros: Perdidos, Encontrados, En adopción. La geolocalización **no** se pide sola: el botón es **Ver los de mi zona** (misma regla que el resto del sitio con `useRememberedLocation`).
 
 Ojo con `getNearbyAnimals`: mandar `lat: null` filtra todo. Sin ubicación hay que **omitir** lat/lng para recibir los más recientes.
+
+## Alertas de zona
+
+Va después de los reportes: quien no encontró a su mascota en la lista sigue con «te avisamos cuando aparezca una cerca». Para quien la perdió, lo que más sirve es la alerta de un animal **encontrado** en su zona; el texto bajo el botón lo dice. Reemplaza a la invitación `ZoneAlertsInvite` (solo la veía quien tenía sesión sin alertas; se borró).
+
+- **Servidor** (`ZoneAlertsSection`): el texto, las reglas y la lista inicial llegan en el HTML. Bajo el H2 va una respuesta directa que se entiende sola (`ZONE_ALERTS_ANSWER`, GEO). Las cifras salen de `ALERT_RADIUS_OPTIONS` y `MAX_DAILY_ALERTS` (`notifications/constants`), las mismas reglas del back (`nearbyAnimalAlerts.ts`). La pregunta «¿Cómo me entero si se pierde una mascota cerca de mí?» está en la FAQ y en su JSON-LD.
+- **Lista inicial** (`server.ts` → `fetchRecentZoneAlerts`, revalida cada 10 min): las 5 alertas más recientes de México. Lee `animalLogs` perdidos y encontrados por `date_status` y solo cuenta la bitácora más reciente de cada animal: el que ya volvió a casa no es alerta. Sin repetidos ni unidos (`duplicateOf: null`), y el mismo nombre y lugar se muestra una vez. Cada fila enlaza a la ficha y lleva `<time dateTime>`.
+- **En el navegador** (`useZoneAlerts`): con sesión y alertas activas, las de **su** zona y radio; si no, con la ubicación ya compartida, las de `DEFAULT_RADIUS` km; si no, el botón **Ver las de mi zona** (la ubicación no se pide sola). Arriba, cuántos perdidos y encontrados hay en esa zona (`total` de `getNearbyAnimals`). Sin nada cerca, se dice y se quedan las del país.
+  - `getNearbyAnimals` ordena por distancia antes de paginar: se piden 40 por estado y se ordenan por fecha aquí. Su `createdAt` viene sin zona y en UTC (`toIsoDate` lo lee así).
+- **Fechas**: el HTML trae el día fijo («4 nov», hora de México) porque la portada sale de caché; al hidratar pasa a «Hace 3 h».
+- **Botón** (`ZoneAlertsCta`): sin sesión abre el modal de cuenta y luego lleva a `/notificaciones/alertas`; con alertas activas dice el radio y ofrece **Cambiar zona**.
+- `useAlertSettings` y las constantes se importan por archivo, no por el barril de notificaciones (el barril exporta el shell del panel).
+- Las fotos son URLs firmadas que vencen en 1 h: si la caché trae una vencida, la fila muestra el ícono.
 
 ## Cómo funciona
 

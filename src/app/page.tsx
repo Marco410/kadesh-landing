@@ -1,6 +1,7 @@
 import {
   HeroSection,
   RecentReportsSection,
+  ZoneAlertsSection,
   HowItWorksSection,
   FirstHoursSection,
   StoriesSection,
@@ -11,11 +12,10 @@ import {
 } from "kadesh/components/home";
 import FaqSection from "kadesh/components/home/FaqSection";
 import HomeJsonLd from "kadesh/components/home/HomeJsonLd";
-import { fetchPetLandingStats } from "kadesh/components/home/server";
+import { fetchPetLandingStats, fetchRecentZoneAlerts } from "kadesh/components/home/server";
 import { HOME_DEFINITION } from "kadesh/components/home/constants";
 import { Footer, Navigation } from "kadesh/components/layout";
 import { NewsletterSubscription } from "kadesh/components/newsletter";
-import { ZoneAlertsInvite } from "kadesh/components/notifications";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const stats = await fetchPetLandingStats();
+  const [stats, zoneAlerts] = await Promise.all([fetchPetLandingStats(), fetchRecentZoneAlerts()]);
 
   return (
     <>
@@ -34,8 +34,8 @@ export default async function HomePage() {
       <main className="min-h-screen">
         <Navigation overDarkHero />
         <HeroSection stats={stats} />
-        <ZoneAlertsInvite />
         <RecentReportsSection />
+        <ZoneAlertsSection alerts={zoneAlerts} />
         <HowItWorksSection />
         <FirstHoursSection />
         <StoriesSection />

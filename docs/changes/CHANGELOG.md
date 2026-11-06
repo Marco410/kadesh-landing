@@ -15,6 +15,25 @@ Formato:
 
 ---
 
+## 2026-11-05 · feat: fichas de rescate con cartilla, «Se quedó conmigo» y adopción
+- Rama: feat/espacios-de-rescate
+- Qué cambió y por qué: Fase 2 de los espacios de rescate. El equipo de un espacio lleva la cartilla de cada animal a su cargo y, al adoptarse, la cartilla pasa a la familia.
+  - **Fichas** (`/perfil?tab=rescate&org=<id>&vista=fichas`):
+    - Cada ficha es la cartilla de siempre (fotos, vacunas y demás registros, recordatorios) sin dueños: la ve el equipo, y quien es hogar temporal solo ve las suyas.
+    - Lista con etapa, hogar temporal, estado de su reporte y próximo recordatorio. Filtro por etapa y «Nueva ficha».
+    - En la ficha se cambian la etapa, la fecha de llegada y el hogar temporal, se publica en adopción o como rescatado, y se completa la adopción.
+    - La sección «Animales» se renombró «Publicados»; cada reporte ahí tiene «Crear ficha» o «Ver ficha».
+  - **Publicar desde la ficha**: si ya tiene reporte, solo le agrega la bitácora; si no, pide la zona y crea el reporte a nombre del espacio con los datos y fotos de la ficha.
+  - **Completar adopción**: por correo de una cuenta existente. La cartilla, con vacunas y recordatorios, pasa a quien adopta como dueño principal, sale del espacio y el reporte queda «Adoptado». En su cartilla se ve «Adoptado con <espacio>» y le llega `pet.adoption_completed`.
+  - **«Se quedó conmigo»** en la ficha pública: quien publicó un reporte sin espacio lo pasa a su cartilla y el reporte se cierra «En familia».
+  - Los recordatorios de una ficha les llegan a admin, coordinación y al hogar temporal, con enlace a la ficha.
+- Archivos: src/components/rescue/{RescuePetsView.tsx,RescuePetPanel.tsx,PublishRescuePetModal.tsx,CompleteAdoptionModal.tsx (nuevos),RescueManagePanel.tsx,RescueAnimalsView.tsx,RescueSummaryView.tsx,constants.ts,queries.ts,types.ts,README.md}, src/components/pets/{PetDetail.tsx,PetFormModal.tsx,queries.ts,types.ts,index.ts,README.md}, src/components/animals/{queries.ts,detail/KeepAnimalButton.tsx (nuevo),detail/index.ts,detail/hooks/useAnimalDetail.ts}, src/app/animales/[slug]/page.tsx, src/components/notifications/{constants.ts,inbox.ts,NotificationList.tsx}, src/core/routes.ts
+- GraphQL (kadesh-back, requiere `yarn migrate`):
+  - `Pet` gana `organization`, `stage`, `intakeDate`, `fosterMember`, `publicReport`, `adoptedFromOrganization`, `adoptedAt` y `viewerRole`; `RescueOrganization.pets`.
+  - Mutaciones nuevas: `convertAnimalToPet`, `publishRescuePet` y `completeRescueAdoption`.
+  - En el front, queries y mutaciones nuevas: `RescuePets`, `ConvertAnimalToPet`, `KeepAnimal`, `PublishRescuePet` y `CompleteRescueAdoption`. `PetDetail` pide los campos de la ficha; `GetAnimal` y `RescueOrganizationAnimals` piden `pet { id }`.
+- Móvil: [prompt](../mobile-sync/2026-11-05-fichas-de-rescate-y-adopcion.md)
+
 ## 2026-11-05 · fix: tarjeta para compartir de organizaciones en la zona segura
 - Rama: feat/espacios-de-rescate
 - Qué cambió y por qué: la tarjeta de `/organizaciones/<slug>` pasa a las piezas comunes de `kadesh/core/og-card`, igual que las de animales, veterinarias y eventos en el hotfix `fix/ficha-animal-og-y-lint`. El contenido va centrado en la columna de 760 px (Facebook en móvil recorta los lados): logo arriba, nombre (máx. 2 líneas), «Verificado» con la ciudad y las cifras, y el pie «KADESH · pet.kadesh.com.mx». WhatsApp recibe la variante de 600×315 (94–255 KB) y la tarjeta queda 10 min en la caché del edge. `?formato=logo` (512×512 para el JSON-LD) sigue igual.

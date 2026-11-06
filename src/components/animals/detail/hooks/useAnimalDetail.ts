@@ -67,6 +67,8 @@ export interface AnimalDetail {
   }>;
   /** ¿Quien consulta puede editarlo? (autor, equipo de su espacio de rescate o admin). */
   viewerCanEdit?: boolean | null;
+  /** Cartilla ligada al reporte. Solo llega si quien consulta puede verla (dueño o equipo). */
+  pet?: { id: string } | null;
   /**
    * Espacio de rescate a cuyo nombre se publicó. Al público solo le llega si ya está verificado
    * (si no, null y la ficha muestra al autor como siempre).

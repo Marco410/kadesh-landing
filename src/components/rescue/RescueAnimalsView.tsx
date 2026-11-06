@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useQuery } from "@apollo/client";
+import { useRouter } from "next/navigation";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { sileo } from "sileo";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon, Image01Icon, Megaphone01Icon } from "@hugeicons/core-free-icons";
 import {
@@ -19,7 +21,13 @@ import { getStatusColor, getStatusLabel } from "kadesh/components/animals/consta
 import { Routes } from "kadesh/core/routes";
 import { formatDateShort } from "kadesh/utils/format-date";
 import { RESCUE_ORG_STATUS, canPublishForRescue } from "./constants";
-import { RESCUE_ORG_ANIMALS_QUERY, rescueAnimalsWhere, type RescueOrgAnimalsResponse } from "./queries";
+import {
+  CONVERT_ANIMAL_TO_PET_MUTATION,
+  RESCUE_ORG_ANIMALS_QUERY,
+  rescueAnimalsWhere,
+  type ConvertAnimalToPetResponse,
+  type RescueOrgAnimalsResponse,
+} from "./queries";
 import type { RescueAnimalRow, RescueOrganization } from "./types";
 
 const PAGE_SIZE = 30;
@@ -46,7 +54,11 @@ function matches(filter: Filter, status: string): boolean {
  * backend deja editar al equipo (admin, coordinador y voluntario).
  */
 export default function RescueAnimalsView({ org }: { org: RescueOrganization }) {
+  const router = useRouter();
+  const client = useApolloClient();
   const [filter, setFilter] = useState<Filter>("all");
+  const [convertingId, setConvertingId] = useState<string | null>(null);
+  const [convert] = useMutation<ConvertAnimalToPetResponse>(CONVERT_ANIMAL_TO_PET_MUTATION);
   const where = useMemo(() => rescueAnimalsWhere(org.id), [org.id]);
   const { data, loading, error, fetchMore, refetch } = useQuery<RescueOrgAnimalsResponse>(RESCUE_ORG_ANIMALS_QUERY, {
     variables: { where, take: PAGE_SIZE, skip: 0 },
@@ -55,7 +67,7 @@ export default function RescueAnimalsView({ org }: { org: RescueOrganization }) 
   });
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const animals = data?.animals ?? [];
+  const animals = useMemo(() => data?.animals ?? [], [data?.animals]);
   const total = data?.animalsCount ?? 0;
   const closed = org.status === RESCUE_ORG_STATUS.REJECTED || org.status === RESCUE_ORG_STATUS.SUSPENDED;
   const canPublish = canPublishForRescue(org.viewerRole) && !closed;
@@ -83,6 +95,26 @@ export default function RescueAnimalsView({ org }: { org: RescueOrganization }) 
       });
     } finally {
       setLoadingMore(false);
+    }
+  };
+
+  /** «Crear ficha»: la cartilla interna del animal, con sus datos y fotos del reporte. */
+  const createPet = async (animal: RescueAnimalRow) => {
+    setConvertingId(animal.id);
+    try {
+      const result = await convert({ variables: { animalId: animal.id, organizationId: org.id } });
+      const payload = result.data?.convertAnimalToPet;
+      if (!payload?.success || !payload.petId) {
+        sileo.error({ title: "No se pudo crear la ficha", description: payload?.message });
+        return;
+      }
+      sileo.success({ title: payload.message, description: "Ya puedes llevar sus vacunas y recordatorios." });
+      await client.refetchQueries({ include: ["RescueOrganizationAnimals"] });
+      router.replace(Routes.profileRescuePet(org.id, payload.petId), { scroll: false });
+    } catch {
+      sileo.error({ title: "No se pudo crear la ficha", description: "Revisa tu conexión e intenta de nuevo." });
+    } finally {
+      setConvertingId(null);
     }
   };
 
@@ -182,13 +214,34 @@ export default function RescueAnimalsView({ org }: { org: RescueOrganization }) 
                   </p>
                 </div>
                 {canPublish ? (
-                  <Link
-                    href={Routes.animals.edit(animal.slug || animal.id)}
-                    className={dashButtonClass({ variant: "outline", size: "sm" })}
-                    aria-label={`Actualizar a ${animal.name}`}
-                  >
-                    Actualizar
-                  </Link>
+                  <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                    {animal.pet ? (
+                      <Link
+                        href={Routes.profileRescuePet(org.id, animal.pet.id)}
+                        className={dashButtonClass({ variant: "ghost", size: "sm" })}
+                        aria-label={`Ver la ficha de ${animal.name}`}
+                      >
+                        Ver ficha
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => createPet(animal)}
+                        disabled={convertingId !== null}
+                        className={dashButtonClass({ variant: "ghost", size: "sm" })}
+                        aria-label={`Crear la ficha de ${animal.name}`}
+                      >
+                        {convertingId === animal.id ? "Creando…" : "Crear ficha"}
+                      </button>
+                    )}
+                    <Link
+                      href={Routes.animals.edit(animal.slug || animal.id)}
+                      className={dashButtonClass({ variant: "outline", size: "sm" })}
+                      aria-label={`Actualizar a ${animal.name}`}
+                    >
+                      Actualizar
+                    </Link>
+                  </div>
                 ) : null}
               </li>
             );

@@ -41,13 +41,14 @@ export function groupNotifications(
 
 /**
  * Verde si es una alerta de zona de un animal encontrado, una posible coincidencia (perdido ↔
- * encontrado), un evento aprobado o un espacio de rescate verificado; rojo si es otra alerta de
+ * encontrado), un evento aprobado, un espacio de rescate verificado o una adopción completada; rojo si es otra alerta de
  * zona, un evento cancelado o rechazado, o un espacio de rescate rechazado; azul el resto.
  */
 export function notificationTone(notification: AppNotification): NotificationTone {
   if (notification.type === ANIMAL_REPORT_NOTIFICATION_TYPE.POSSIBLE_MATCH) return 'found';
   if (notification.type === EVENT_NOTIFICATION_TYPE.APPROVED) return 'found';
   if (notification.type === RESCUE_NOTIFICATION_TYPE.VERIFIED) return 'found';
+  if (notification.type === RESCUE_NOTIFICATION_TYPE.ADOPTION_COMPLETED) return 'found';
   if (notification.type === RESCUE_NOTIFICATION_TYPE.REJECTED) return 'lost';
   if (notification.type === EVENT_NOTIFICATION_TYPE.CANCELLED || notification.type === EVENT_NOTIFICATION_TYPE.REJECTED) {
     return 'lost';

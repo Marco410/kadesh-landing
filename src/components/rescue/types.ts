@@ -58,6 +58,24 @@ export interface RescueAnimalRow {
   animal_type?: { name?: string | null } | null;
   logs: Array<{ status: string; date_status?: string | null; city?: string | null }>;
   multimedia: Array<{ image?: { url?: string | null } | null }>;
+  /** Ficha interna ligada (null si no tiene o si no la puedes ver). */
+  pet?: { id: string } | null;
+}
+
+/** Ficha interna de un animal del espacio (`Pet` con `organization`), para la lista «Fichas». */
+export interface RescuePetRow {
+  id: string;
+  name: string;
+  status: string;
+  stage?: string | null;
+  /** "AAAA-MM-DD" */
+  intakeDate?: string | null;
+  animal_type?: { name?: string | null } | null;
+  animal_breed?: { breed?: string | null } | null;
+  multimedia: Array<{ image?: { url?: string | null } | null }>;
+  fosterMember?: { id: string; userName?: string | null } | null;
+  publicReport?: { id: string; slug?: string | null; logs: Array<{ status: string }> } | null;
+  reminders: Array<{ id: string; title: string; dueDate: string }>;
 }
 
 /** Aliado de la portada (`rescueAllies`). Público, sin datos de contacto. */

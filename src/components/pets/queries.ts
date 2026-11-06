@@ -80,6 +80,30 @@ export const PET_DETAIL_QUERY = gql`
         id
         slug
       }
+      viewerRole
+      organization {
+        id
+        name
+      }
+      stage
+      intakeDate
+      fosterMember {
+        id
+        userName
+      }
+      publicReport {
+        id
+        slug
+        logs(orderBy: [{ date_status: desc }], take: 1) {
+          status
+        }
+      }
+      adoptedFromOrganization {
+        id
+        name
+        slug
+      }
+      adoptedAt
       owners(orderBy: [{ createdAt: asc }]) {
         id
         role
@@ -129,8 +153,11 @@ export interface PetDetailResponse {
   pet: PetDetail | null;
 }
 
-/** Las listas que se recargan después de cualquier cambio en la cartilla. */
-export const PET_REFETCH = ['MyPets', 'PetDetail'];
+/**
+ * Las listas que se recargan después de cualquier cambio en la cartilla (las de un espacio de
+ * rescate solo existen si su panel está abierto; Apollo ignora las que no están activas).
+ */
+export const PET_REFETCH = ['MyPets', 'PetDetail', 'RescuePets', 'RescueOrganizationAnimals'];
 
 export const CREATE_PET_MUTATION = gql`
   mutation CreatePet($data: PetCreateInput!) {

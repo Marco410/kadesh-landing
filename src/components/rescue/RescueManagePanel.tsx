@@ -3,13 +3,14 @@
 import { DashSectionCard, DashSegmented } from "kadesh/components/app-shell";
 import { RESCUE_VIEWS, type RescueViewKey } from "./constants";
 import RescueAnimalsView from "./RescueAnimalsView";
+import RescuePetsView from "./RescuePetsView";
 import RescueProfileForm from "./RescueProfileForm";
 import RescueSummaryView from "./RescueSummaryView";
 import RescueTeamView from "./RescueTeamView";
 import type { RescueOrganization } from "./types";
 
 /**
- * Administrar un espacio de rescate: segmentado con sus cuatro vistas y una tarjeta con la elegida.
+ * Administrar un espacio de rescate: segmentado con sus vistas y una tarjeta con la elegida.
  * La vista la controla la URL (`view`/`onViewChange`), igual que Clínicas.
  */
 export default function RescueManagePanel({
@@ -39,6 +40,7 @@ export default function RescueManagePanel({
       ) : (
         // `key`: al cambiar de vista la tarjeta se remonta y repite su entrada.
         <DashSectionCard key={current.key} title={current.title} description={current.hint}>
+          {current.key === "fichas" ? <RescuePetsView org={org} /> : null}
           {current.key === "animales" ? <RescueAnimalsView org={org} /> : null}
           {current.key === "equipo" ? <RescueTeamView org={org} onChanged={onChanged} /> : null}
           {current.key === "perfil" ? <RescueProfileForm org={org} onSaved={onChanged} /> : null}

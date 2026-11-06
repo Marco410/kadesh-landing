@@ -56,6 +56,9 @@ export const Routes = {
     orgId
       ? `/perfil?tab=rescate&org=${encodeURIComponent(orgId)}${vista ? `&vista=${vista}` : ''}`
       : '/perfil?tab=rescate',
+  /** Ficha interna (cartilla) de un animal en el panel de su espacio de rescate. */
+  profileRescuePet: (orgId: string, petId: string): string =>
+    `/perfil?tab=rescate&org=${encodeURIComponent(orgId)}&vista=fichas&pet=${encodeURIComponent(petId)}`,
   /** Activar un espacio de rescate (asistente dentro del panel). */
   rescueActivate: '/perfil/rescate/activar',
   profileLead: (id: string): string => `/perfil/ventas/lead/${id}`,

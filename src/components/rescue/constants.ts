@@ -66,8 +66,8 @@ export type RescueMemberRole = (typeof RESCUE_MEMBER_ROLE)[keyof typeof RESCUE_M
 export const RESCUE_MEMBER_ROLE_OPTIONS: Array<{ value: RescueMemberRole; label: string; hint: string }> = [
   { value: 'admin', label: 'Administrador', hint: 'Todo: perfil, equipo y animales.' },
   { value: 'coordinator', label: 'Coordinador', hint: 'Perfil y animales. No cambia el equipo.' },
-  { value: 'volunteer', label: 'Voluntario', hint: 'Publica y actualiza animales; no los borra.' },
-  { value: 'foster', label: 'Hogar temporal', hint: 'Forma parte del equipo y ve el espacio.' },
+  { value: 'volunteer', label: 'Voluntario', hint: 'Publica y actualiza animales y sus fichas; no los borra.' },
+  { value: 'foster', label: 'Hogar temporal', hint: 'Ve y actualiza la ficha de los animales que tiene en casa.' },
 ];
 
 export function rescueRoleLabel(value: string | null | undefined): string {
@@ -90,6 +90,47 @@ export function canPublishForRescue(role: string | null | undefined): boolean {
 export function canManageRescueTeam(role: string | null | undefined): boolean {
   return role === RESCUE_MEMBER_ROLE.ADMIN;
 }
+
+/** Borran fichas, asignan hogar temporal y completan adopciones (igual que el backend). */
+export const RESCUE_ANIMAL_MANAGER_ROLES: string[] = ['admin', 'coordinator'];
+
+export function canManageRescueAnimals(role: string | null | undefined): boolean {
+  return Boolean(role && RESCUE_ANIMAL_MANAGER_ROLES.includes(role));
+}
+
+/** Etapa de un animal en la ficha interna del espacio. Mismos valores que el backend (`Pet.stage`). */
+export const PET_RESCUE_STAGE = {
+  INTAKE: 'intake',
+  TREATMENT: 'treatment',
+  FOSTER: 'foster',
+  AVAILABLE: 'available',
+  RESERVED: 'reserved',
+  SANCTUARY: 'sanctuary',
+} as const;
+
+export const PET_RESCUE_STAGE_OPTIONS: Array<{ value: string; label: string; tone: string }> = [
+  { value: 'intake', label: 'Recién llegado', tone: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-200' },
+  { value: 'treatment', label: 'En tratamiento', tone: 'bg-amber-100 text-amber-900 dark:bg-amber-500/15 dark:text-amber-200' },
+  { value: 'foster', label: 'En hogar temporal', tone: 'bg-violet-100 text-violet-800 dark:bg-violet-500/15 dark:text-violet-200' },
+  { value: 'available', label: 'Listo para adopción', tone: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200' },
+  { value: 'reserved', label: 'Apartado', tone: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-200' },
+  { value: 'sanctuary', label: 'Se queda en el espacio', tone: 'bg-dash-surface-2 text-dash-soft' },
+];
+
+export function rescueStage(value: string | null | undefined) {
+  return PET_RESCUE_STAGE_OPTIONS.find((option) => option.value === value) ?? null;
+}
+
+/** Con qué estado se publica una ficha (`publishRescuePet`). */
+export const RESCUE_PUBLISH_STATUS_OPTIONS = [
+  { value: 'in_adoption', label: 'En adopción', hint: 'Busca familia: aparece en adopciones y en tu perfil.' },
+  { value: 'rescued', label: 'Rescatado', hint: 'Avisa que lo rescataron; aún no está listo para adopción.' },
+] as const;
+
+export type RescuePublishStatus = (typeof RESCUE_PUBLISH_STATUS_OPTIONS)[number]['value'];
+
+/** `code` de `completeRescueAdoption` cuando el correo no tiene cuenta. */
+export const RESCUE_ADOPTER_NOT_FOUND = 'RESCUE_ADOPTER_NOT_FOUND';
 
 /**
  * Qué animales rescata, en minúsculas y en el orden de `ANIMAL_TYPE_OPTIONS` (los mismos tipos que un
@@ -123,10 +164,16 @@ export const RESCUE_VIEWS = [
     hint: 'Cómo va tu espacio y lo que necesita tu atención.',
   },
   {
+    key: 'fichas',
+    label: 'Fichas',
+    title: 'Fichas de los animales',
+    hint: 'La cartilla de cada animal que tienen a su cargo: vacunas, recordatorios, etapa y hogar temporal. Solo la ve tu equipo.',
+  },
+  {
     key: 'animales',
-    label: 'Animales',
-    title: 'Animales del espacio',
-    hint: 'Los animales que publicaste a nombre de tu organización. Tu equipo puede actualizarlos.',
+    label: 'Publicados',
+    title: 'Animales publicados',
+    hint: 'Los reportes públicos a nombre de tu organización. Tu equipo puede actualizarlos.',
   },
   {
     key: 'equipo',

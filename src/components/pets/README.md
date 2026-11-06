@@ -20,7 +20,7 @@ Las altas y ediciones se hacen en una hoja modal (`PetSheet`, mismo marco que el
 
 ## Reglas
 
-- Solo los dueños ven una mascota. El backend filtra; la web no pide nada a nombre de otro.
+- Solo los dueños ven una mascota (o el equipo del espacio, si es su ficha). El backend filtra; la web no pide nada a nombre de otro.
 - Especie y raza son los mismos catálogos que un reporte (`AnimalTypeSelector`, `AnimalBreedPicker`). La especie es obligatoria: sin ella no se puede reportar como perdida.
 - Edad: fecha de nacimiento **o** edad aproximada (texto). Nunca las dos.
 - Fotos: hasta 3 (las que se copian al reporte si se pierde), JPG/PNG/WEBP de 5 MB o menos; HEIC se convierte a JPG (`toUploadableImage`). Adjuntos de un registro: hasta 3.
@@ -29,6 +29,12 @@ Las altas y ediciones se hacen en una hoja modal (`PetSheet`, mismo marco que el
 - Un registro con **próxima fecha** crea su recordatorio solo (3 días antes, notificación y correo). Ese recordatorio no se borra ni se le cambia la fecha desde Recordatorios: se cambia la próxima fecha del registro.
 - Canales que ofrece la web: notificación (campana + push de la app y, a quien activó los avisos por WhatsApp en `/notificaciones`, también WhatsApp) y correo. WhatsApp no se ofrece como canal aparte; si un recordatorio ya lo trae, se conserva al guardar.
 - La veterinaria de un registro es opcional y se busca en el directorio por nombre (`PetPlace` con tipo `veterinary`).
+
+## Fichas de un espacio de rescate
+
+La misma cartilla es la **ficha interna** de un animal de un espacio de rescate (`pet.organization`, ver `components/rescue/README.md`). `PetDetail` lo detecta: oculta Familia y «Marcar como perdida», deja borrar a admin y coordinación (`viewerRole`) y pinta el panel del espacio que le pasa `renderRescuePanel`. `PetFormModal` con `organization` crea la ficha a nombre del espacio. La lista **Mis mascotas** filtra por dueños, así que las fichas no salen ahí.
+
+Cuando un espacio completa la adopción, la cartilla llega a la familia como cualquier otra, con «Adoptado con <espacio>» bajo el nombre. Si alguien publicó un reporte y se quedó con el animal, **Se quedó conmigo** en la ficha pública crea su cartilla desde el reporte.
 
 ## Qué no va aquí
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useApolloClient, useMutation, useQuery } from '@apollo/client';
@@ -41,7 +41,10 @@ import {
   PET_STERILIZED_LABELS,
 } from './constants';
 import { formatDay, petErrorMessage, petAgeText, sexLabel, speciesLabel } from './utils';
-import type { PetHealthRecord, PetReminder } from './types';
+import type { PetDetail as PetDetailData, PetHealthRecord, PetReminder } from './types';
+
+/** Roles del equipo de un espacio que pueden borrar una ficha (igual que el backend). */
+const RESCUE_DELETE_ROLES = ['admin', 'coordinator'];
 
 type Editing<T> = { item: T | null } | null;
 
@@ -55,14 +58,24 @@ function DataItem({ label, value, wide }: { label: string; value: string; wide?:
   );
 }
 
+/**
+ * Cartilla de una mascota: datos, registros de salud, recordatorios y familia. También es la ficha
+ * interna de un animal de un espacio de rescate (`pet.organization`): ahí no hay familia ni «Marcar
+ * como perdida», y `renderRescuePanel` agrega lo del espacio (etapa, hogar temporal, publicar,
+ * adopción).
+ */
 export default function PetDetail({
   petId,
   userId,
   onBack,
+  backLabel = 'Mis mascotas',
+  renderRescuePanel,
 }: {
   petId: string;
   userId: string;
   onBack: () => void;
+  backLabel?: string;
+  renderRescuePanel?: (pet: PetDetailData) => ReactNode;
 }) {
   const client = useApolloClient();
   const motionPrefs = useProfileMotion();
@@ -98,7 +111,7 @@ export default function PetDetail({
       className="mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-sm font-semibold text-dash-soft hover:bg-dash-hover"
     >
       <HugeiconsIcon icon={ArrowLeft01Icon} size={18} strokeWidth={1.6} aria-hidden="true" />
-      Mis mascotas
+      {backLabel}
     </button>
   );
 
@@ -111,15 +124,20 @@ export default function PetDetail({
             {error ? 'No pudimos cargar esta mascota' : 'No encontramos esta mascota'}
           </p>
           <p className="mt-1 text-sm text-dash-muted">
-            {error ? 'Revisa tu conexión e intenta de nuevo.' : 'Puede que la hayan borrado o que ya no estés en su cartilla.'}
+            {error
+              ? 'Revisa tu conexión e intenta de nuevo.'
+              : 'Puede que la hayan borrado, que ya la hayan adoptado o que ya no estés en su cartilla.'}
           </p>
         </div>
       </div>
     );
   }
 
-  const myRole = pet.owners.find((owner) => owner.user?.id === userId)?.role;
+  const isRescue = Boolean(pet.organization);
+  const myRole = pet.owners.find((owner) => owner.user?.id === userId)?.role ?? pet.viewerRole;
   const isPrincipal = myRole === PET_OWNER_ROLE.PRINCIPAL;
+  const canDelete = isPrincipal || (isRescue && RESCUE_DELETE_ROLES.includes(pet.viewerRole ?? ''));
+  const adoptedFrom = pet.adoptedFromOrganization;
   const isLost = pet.status === PET_STATUS.LOST;
   const cover = pet.multimedia[0]?.image?.url;
   const subtitle = [speciesLabel(pet.animal_type?.name), pet.animal_breed?.breed].filter(Boolean).join(' · ');
@@ -140,9 +158,9 @@ export default function PetDetail({
     try {
       await deletePet({ variables: { id: pet.id } });
       setConfirmDelete(false);
-      sileo.success({ title: `Borramos a ${pet.name} de tu cartilla` });
+      sileo.success({ title: isRescue ? `Borramos la ficha de ${pet.name}` : `Borramos a ${pet.name} de tu cartilla` });
       onBack();
-      await client.refetchQueries({ include: ['MyPets'] });
+      await client.refetchQueries({ include: isRescue ? ['RescuePets'] : ['MyPets'] });
     } catch (err) {
       sileo.error({ title: 'No se pudo borrar', description: petErrorMessage(err) });
     }
@@ -182,6 +200,18 @@ export default function PetDetail({
                 </span>
               </div>
               {subtitle ? <p className="mt-0.5 text-sm text-dash-muted">{subtitle}</p> : null}
+              {adoptedFrom ? (
+                <p className="mt-0.5 text-sm text-dash-muted">
+                  Adoptado con{' '}
+                  {adoptedFrom.slug ? (
+                    <Link href={Routes.organizations.detail(adoptedFrom.slug)} className="font-semibold text-dash-ink hover:underline">
+                      {adoptedFrom.name}
+                    </Link>
+                  ) : (
+                    <span className="font-semibold text-dash-ink">{adoptedFrom.name}</span>
+                  )}
+                </p>
+              ) : null}
               {pet.multimedia.length > 1 ? (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {pet.multimedia.slice(1).map((photo) =>
@@ -202,7 +232,7 @@ export default function PetDetail({
                   <HugeiconsIcon icon={PencilEdit01Icon} size={16} strokeWidth={1.6} aria-hidden="true" />
                   Editar
                 </button>
-                {pet.status === PET_STATUS.ACTIVE ? (
+                {pet.status === PET_STATUS.ACTIVE && !isRescue ? (
                   <button
                     type="button"
                     onClick={() => setMarkingLost(true)}
@@ -212,7 +242,7 @@ export default function PetDetail({
                     Marcar como perdida
                   </button>
                 ) : null}
-                {isPrincipal ? (
+                {canDelete ? (
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(true)}
@@ -272,6 +302,10 @@ export default function PetDetail({
           </dl>
         </motion.section>
 
+        {isRescue && renderRescuePanel ? (
+          <motion.div variants={motionPrefs.item}>{renderRescuePanel(pet)}</motion.div>
+        ) : null}
+
         <motion.div variants={motionPrefs.item}>
           <HealthRecordList
             records={pet.healthRecords}
@@ -288,9 +322,11 @@ export default function PetDetail({
           />
         </motion.div>
 
-        <motion.div variants={motionPrefs.item}>
-          <FamilySection petId={pet.id} petName={pet.name} owners={pet.owners} userId={userId} onLeft={onBack} />
-        </motion.div>
+        {isRescue ? null : (
+          <motion.div variants={motionPrefs.item}>
+            <FamilySection petId={pet.id} petName={pet.name} owners={pet.owners} userId={userId} onLeft={onBack} />
+          </motion.div>
+        )}
       </motion.div>
 
       <PetFormModal isOpen={editingPet} onClose={() => setEditingPet(false)} pet={pet} />
@@ -324,7 +360,11 @@ export default function PetDetail({
         onClose={() => setConfirmDelete(false)}
         onConfirm={handleDelete}
         title={`¿Borrar a ${pet.name}?`}
-        message="Se borrarán su cartilla, recordatorios, fotos y familia. Sus reportes y citas se conservan."
+        message={
+          isRescue
+            ? 'Se borrarán su ficha, cartilla, recordatorios y fotos. Sus reportes públicos se conservan.'
+            : 'Se borrarán su cartilla, recordatorios, fotos y familia. Sus reportes y citas se conservan.'
+        }
         confirmText="Borrar"
         isLoading={deleting}
       />

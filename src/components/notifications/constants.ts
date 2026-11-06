@@ -39,6 +39,8 @@ export const RESCUE_NOTIFICATION_TYPE = {
   VERIFIED: 'rescue.verified',
   REJECTED: 'rescue.rejected',
   MEMBER_ADDED: 'rescue.member_added',
+  /** Un espacio completó tu adopción: la mascota ya está en tu cartilla. */
+  ADOPTION_COMPLETED: 'pet.adoption_completed',
 } as const;
 
 export const NOTIFICATION_TONE_COLOR = {

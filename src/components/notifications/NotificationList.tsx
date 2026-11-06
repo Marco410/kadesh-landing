@@ -55,6 +55,7 @@ const TYPE_ICON: Record<string, typeof Notification03Icon> = {
   [EVENT_TYPE.UPDATED]: Calendar03Icon,
   [RESCUE_TYPE.SUBMITTED]: CharityIcon,
   [RESCUE_TYPE.MEMBER_ADDED]: CharityIcon,
+  [RESCUE_TYPE.ADOPTION_COMPLETED]: CharityIcon,
 };
 
 interface NotificationListProps {

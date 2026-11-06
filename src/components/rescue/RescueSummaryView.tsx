@@ -172,8 +172,11 @@ export default function RescueSummaryView({
               Dar en adopción
             </Link>
           ) : null}
+          <button type="button" onClick={() => onGoTo("fichas")} className={dashButtonClass({ variant: "outline", size: "sm" })}>
+            Fichas y vacunas
+          </button>
           <button type="button" onClick={() => onGoTo("animales")} className={dashButtonClass({ variant: "outline", size: "sm" })}>
-            Ver animales
+            Ver publicados
           </button>
           {canManageRescueTeam(role) ? (
             <button type="button" onClick={() => onGoTo("equipo")} className={dashButtonClass({ variant: "outline", size: "sm" })}>

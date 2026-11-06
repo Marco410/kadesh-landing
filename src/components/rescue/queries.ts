@@ -2,6 +2,7 @@ import { gql } from '@apollo/client';
 import type {
   RescueAnimalRow,
   RescueMember,
+  RescuePetRow,
   RescueOrganization,
   RescueOrganizationWithMembers,
 } from './types';
@@ -115,6 +116,9 @@ export const RESCUE_ORG_ANIMALS_QUERY = gql`
           url
         }
       }
+      pet {
+        id
+      }
     }
     animalsCount(where: $where)
   }
@@ -222,3 +226,123 @@ export interface RescueMemberResult {
 
 /** Consultas que se refrescan tras cambiar algo del espacio. */
 export const RESCUE_REFETCH = ['MyRescueOrganizations', 'RescueOrganizationDetail'];
+
+/** Fichas internas del espacio (cartillas), las más recientes primero. */
+export const RESCUE_PETS_QUERY = gql`
+  query RescuePets($where: PetWhereInput!, $take: Int!, $skip: Int!) {
+    pets(where: $where, orderBy: [{ createdAt: desc }], take: $take, skip: $skip) {
+      id
+      name
+      status
+      stage
+      intakeDate
+      animal_type {
+        name
+      }
+      animal_breed {
+        breed
+      }
+      multimedia(orderBy: [{ order: asc }], take: 1) {
+        image {
+          url
+        }
+      }
+      fosterMember {
+        id
+        userName
+      }
+      publicReport {
+        id
+        slug
+        logs(orderBy: [{ date_status: desc }], take: 1) {
+          status
+        }
+      }
+      reminders(where: { status: { equals: "pending" } }, orderBy: [{ dueDate: asc }], take: 1) {
+        id
+        title
+        dueDate
+      }
+    }
+    petsCount(where: $where)
+  }
+`;
+
+export interface RescuePetsResponse {
+  pets: RescuePetRow[];
+  petsCount: number;
+}
+
+/** Fichas del espacio. El backend además recorta por rol (hogar temporal: solo las suyas). */
+export function rescuePetsWhere(organizationId: string) {
+  return { organization: { id: { equals: organizationId } } };
+}
+
+/** «Agregar a fichas» (con `organizationId`) o «Se quedó conmigo» (sin él) a partir de un reporte. */
+export const CONVERT_ANIMAL_TO_PET_MUTATION = gql`
+  mutation ConvertAnimalToPet($animalId: ID!, $organizationId: ID) {
+    convertAnimalToPet(animalId: $animalId, organizationId: $organizationId) {
+      success
+      message
+      petId
+      organizationId
+    }
+  }
+`;
+
+export interface ConvertAnimalToPetResponse {
+  convertAnimalToPet: {
+    success: boolean;
+    message: string;
+    petId?: string | null;
+    organizationId?: string | null;
+  };
+}
+
+/** Publica la ficha en adopción o como rescatado. `location` solo si aún no tiene reporte. */
+export const PUBLISH_RESCUE_PET_MUTATION = gql`
+  mutation PublishRescuePet($petId: ID!, $status: String!, $location: PetLastSeenLocationInput, $notes: String) {
+    publishRescuePet(petId: $petId, status: $status, location: $location, notes: $notes) {
+      success
+      message
+      reportId
+      slug
+      url
+      createdReport
+    }
+  }
+`;
+
+export interface PublishRescuePetResponse {
+  publishRescuePet: {
+    success: boolean;
+    message: string;
+    reportId?: string | null;
+    slug?: string | null;
+    url?: string | null;
+    createdReport: boolean;
+  };
+}
+
+/** La cartilla pasa a la cuenta del adoptante (por correo; la cuenta ya debe existir). */
+export const COMPLETE_RESCUE_ADOPTION_MUTATION = gql`
+  mutation CompleteRescueAdoption($petId: ID!, $email: String!) {
+    completeRescueAdoption(petId: $petId, email: $email) {
+      success
+      message
+      code
+      petId
+      adopterName
+    }
+  }
+`;
+
+export interface CompleteRescueAdoptionResponse {
+  completeRescueAdoption: {
+    success: boolean;
+    message: string;
+    code?: string | null;
+    petId?: string | null;
+    adopterName?: string | null;
+  };
+}

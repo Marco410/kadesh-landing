@@ -14,7 +14,8 @@ El backend es la list `RescueOrganization` de kadesh-back (ver `models/Pet/Rescu
 
 - **`RescueSection`**: la lista de espacios de la persona (estado, rol y botón de WhatsApp si está en revisión). Con `&org=<id>` abre `RescueManagePanel`, con `&vista=`:
   - **Resumen** (`RescueSummaryView`): aviso de revisión o de rechazo, KPIs (publicados, en adopción, con hogar, equipo), acciones rápidas y «Completa tu perfil».
-  - **Animales** (`RescueAnimalsView`): animales con `organization` = el espacio, paginados de 30. Los filtros (todos, buscan hogar, en adopción, con hogar) van sobre lo cargado, porque el estado sale del último log.
+  - **Fichas** (`RescuePetsView`): ver «Fichas internas».
+  - **Publicados** (`RescueAnimalsView`, `vista=animales`): animales con `organization` = el espacio, paginados de 30. Los filtros (todos, buscan hogar, en adopción, con hogar) van sobre lo cargado, porque el estado sale del último log. Cada uno con **Crear ficha** o **Ver ficha**.
   - **Equipo** (`RescueTeamView`): agregar por correo de una cuenta existente, cambiar el rol y quitar (solo admin), o salirse.
   - **Perfil público** (`RescueProfileForm`): logo, portada, datos, redes y «Cómo ayudarles». Solo lo editan admin y coordinador.
 - **Inicio**: «Requiere atención» avisa al admin si su espacio sigue en revisión o lo rechazaron (`homeModel.ts`).
@@ -59,13 +60,27 @@ Componente de servidor. Cada logo es un enlace al perfil con `aria-label` «Nomb
 ## Decisiones
 
 - **Lo público solo con verificación.** El backend solo deja leer organizaciones `verified` a quien no es de su equipo. Por eso `animal.organization` llega en `null` al público mientras siga en revisión. No hay que filtrar nada en el front, ni pedir la organización con sudo.
-- **Equipo solo con cuentas existentes.** No se crean cuentas a nombre de otros (a diferencia de la familia de la cartilla).
+- **Equipo y adoptantes solo con cuentas existentes.** No se crean cuentas a nombre de otros (a diferencia de la familia de la cartilla).
+- **Al adoptarse, el espacio deja de ver la cartilla.** Es privada de la familia; queda `adoptedFromOrganization` («Adoptado con …» en su cartilla).
 - **Imágenes del API**: son URLs firmadas que caducan en 1 h. Las páginas públicas revalidan cada 30 min (`server.ts`).
 - **Estados de animales:** el panel usa los mismos de siempre (`getStatusLabel`/`getStatusColor`).
 
+## Fichas internas (Fase 2)
+
+Vista **Fichas** (`&vista=fichas`, `RescuePetsView`): la cartilla de cada animal del espacio, solo para su equipo. Es una `Pet` con `organization` (sin dueños hasta que se adopta) y reutiliza la cartilla de `components/pets` (`PetDetailView`, `PetFormModal`, registros y recordatorios).
+
+- **Lista**: foto, etapa, estado de su reporte público, especie · raza · fecha de llegada, hogar temporal y el próximo recordatorio. Filtro por etapa sobre lo cargado. **Nueva ficha** (admin, coordinación y voluntariado) abre `PetFormModal` con `organization`.
+- **Ficha** (`&pet=<id>`, `Routes.profileRescuePet`): la cartilla sin Familia ni «Marcar como perdida», más `RescuePetPanel`:
+  - **Etapa** y **Llegó al espacio** (`PET_RESCUE_STAGE_OPTIONS`): admin, coordinación y voluntariado. Se guardan al cambiar.
+  - **Hogar temporal**: admin y coordinación eligen a alguien del equipo. Esa persona ve y actualiza la ficha aunque su rol sea «Hogar temporal».
+  - **Publicación** (`PublishRescuePetModal` → `publishRescuePet`): «En adopción» o «Rescatado». Si aún no tiene reporte, pide la zona y crea el reporte a nombre del espacio con los datos y fotos de la ficha; si ya lo tiene, solo le agrega la bitácora.
+  - **Completar adopción** (`CompleteAdoptionModal` → `completeRescueAdoption`): admin y coordinación escriben el correo de quien adopta (cuenta existente). La cartilla pasa a su cuenta y la ficha sale del espacio.
+- **Desde un publicado**: en **Publicados** cada reporte tiene **Crear ficha** (`convertAnimalToPet` con el espacio) o **Ver ficha**.
+- **«Se quedó conmigo»** (`components/animals/detail/KeepAnimalButton`): en la ficha pública, quien publicó un reporte sin espacio lo pasa a su cartilla y el reporte se cierra «En familia». Abre `/perfil?tab=pets&pet=<id>`.
+- **Recordatorios** de una ficha: le llegan a admin, coordinación y al hogar temporal, con enlace a la ficha en el panel.
+
 ## Pendiente (siguientes fases)
 
-- Ficha interna con cartilla (`Pet.organization`, etapas, hogar temporal asignado).
-- «Se quedó conmigo» (reporte → mascota).
-- Transferir la cartilla al adoptante.
-- Solicitudes de adopción.
+- Solicitudes de adopción con «Quiero adoptarlo» en la ficha pública.
+- Seguimiento después de la adopción.
+- Reportar como perdido un animal de una ficha (hoy solo desde la cartilla familiar).

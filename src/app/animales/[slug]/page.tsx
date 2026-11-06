@@ -33,6 +33,7 @@ import {
   AnimalCommentsSection,
   AnimalClaimsPanel,
   ClaimReportButton,
+  KeepAnimalButton,
   ShareAnimalButton,
   NearbyVeterinariesRow,
 } from "kadesh/components/animals/detail";
@@ -237,6 +238,7 @@ export default function AnimalDetailPage() {
             }}
           />
           <ClaimReportButton animal={animal} status={status} />
+          <KeepAnimalButton animal={animal} status={status} />
 
           {/*
             Escritorio: foto (izq.) y ficha (der.) arriba; historial + mapa ocupan el resto de la

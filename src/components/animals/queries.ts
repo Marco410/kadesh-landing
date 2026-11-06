@@ -339,6 +339,9 @@ export const GET_ANIMAL_QUERY = gql`
       color
       size
       viewerCanEdit
+      pet {
+        id
+      }
       organization {
         id
         name
@@ -831,4 +834,22 @@ export interface CreateAnimalViewResponse {
       id: string;
     } | null;
   };
+}
+
+/**
+ * «Se quedó conmigo»: quien publicó el reporte lo pasa a su cartilla (datos y fotos) y el reporte
+ * se cierra «En familia». Es `convertAnimalToPet` sin espacio de rescate.
+ */
+export const KEEP_ANIMAL_MUTATION = gql`
+  mutation KeepAnimal($animalId: ID!) {
+    convertAnimalToPet(animalId: $animalId) {
+      success
+      message
+      petId
+    }
+  }
+`;
+
+export interface KeepAnimalResponse {
+  convertAnimalToPet: { success: boolean; message: string; petId?: string | null };
 }

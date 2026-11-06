@@ -60,4 +60,22 @@ export interface PetDetail extends Omit<PetSummary, 'reminders'> {
   owners: PetOwner[];
   healthRecords: PetHealthRecord[];
   reminders: PetReminder[];
+  /**
+   * Con qué rol entra quien consulta: `principal` / `family` (dueños) o su rol en el equipo del
+   * espacio de rescate (`admin`, `coordinator`, `volunteer`, `foster`). Lo calcula el backend.
+   */
+  viewerRole?: string | null;
+  /** Ficha interna de un espacio de rescate (sin dueños hasta que se adopta). */
+  organization?: { id: string; name: string } | null;
+  /** Etapa en el espacio (`PET_RESCUE_STAGE`); solo fichas de un espacio. */
+  stage?: string | null;
+  /** "AAAA-MM-DD" */
+  intakeDate?: string | null;
+  /** Hogar temporal: alguien del equipo del espacio. */
+  fosterMember?: { id: string; userName?: string | null } | null;
+  /** Reporte público ligado a la ficha, con su último estado. */
+  publicReport?: { id: string; slug?: string | null; logs: { status: string }[] } | null;
+  /** Espacio del que se adoptó (cartilla de la familia). */
+  adoptedFromOrganization?: { id: string; name: string; slug?: string | null } | null;
+  adoptedAt?: string | null;
 }

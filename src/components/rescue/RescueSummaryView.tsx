@@ -178,6 +178,9 @@ export default function RescueSummaryView({
           <button type="button" onClick={() => onGoTo("animales")} className={dashButtonClass({ variant: "outline", size: "sm" })}>
             Ver publicados
           </button>
+          <button type="button" onClick={() => onGoTo("solicitudes")} className={dashButtonClass({ variant: "outline", size: "sm" })}>
+            Solicitudes de adopción
+          </button>
           {canManageRescueTeam(role) ? (
             <button type="button" onClick={() => onGoTo("equipo")} className={dashButtonClass({ variant: "outline", size: "sm" })}>
               Agregar al equipo

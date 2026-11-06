@@ -15,6 +15,31 @@ Formato:
 
 ---
 
+## 2026-11-05 · feat: solicitudes de adopción y traspaso de mascotas con código
+- Rama: feat/espacios-de-rescate
+- Qué cambió y por qué: Fase 3 de los espacios de rescate, más una forma de pasar una mascota de cuenta que sirve a cualquiera.
+  - **Solicitudes de adopción** (`components/adoption`):
+    - En un animal «En adopción», **Quiero adoptarlo** abre un cuestionario corto: vivienda, si es propia o rentada (y si permiten mascotas), patio, niños, horas solo, otros animales, experiencia y dos compromisos. Sin sesión, pide entrar y vuelve al formulario.
+    - Quien la envió ve su estado en la ficha y puede retirarla.
+    - Quien publicó al animal (o su equipo) las ve en la ficha («Solicitudes de adopción») y en la nueva vista **Solicitudes** del espacio. Las pone en revisión, las aprueba o las rechaza con un mensaje que le llega a la persona, y **completa la adopción**.
+    - Al completar, la cartilla del animal (o una nueva con los datos del reporte) pasa a la cuenta del adoptante, el reporte queda «Adoptado» y las demás solicitudes se cierran con un aviso amable.
+  - **Traspaso con código** (`components/pets`):
+    - El dueño principal (**Traspasar** en la cartilla) o admin/coordinación de un espacio (**Entregar con código** en la ficha) generan un código como «7KQ2-M9XA», que vale 7 días y se usa una vez. Se copia, se manda por WhatsApp o va como enlace.
+    - Quien la recibe usa **Recibir con código** en Mis mascotas (o abre el enlace), ve qué mascota es y quién se la da, y la acepta. La mascota llega con su cartilla completa y deja la cuenta anterior (y su familia, o el espacio).
+    - Así el espacio entrega en adopción sin necesitar el correo de quien adopta. El backend limita los intentos para que nadie adivine códigos.
+  - Avisos nuevos en la campana: `adoption.application_received`, `adoption.application_updated` y `pet.transfer_redeemed`.
+- Archivos:
+  - `src/components/adoption/` (carpeta nueva): `constants.ts`, `types.ts`, `queries.ts`, `format.ts`, `hooks/useAdoptionActions.ts`, `hooks/useMyAdoptionApplication.ts`, `AdoptionApplyBanner.tsx`, `AdoptionApplicationModal.tsx`, `AdoptionApplicationsPanel.tsx`, `AdoptionApplicationList.tsx`, `AdoptionApplicationCard.tsx`, `AdoptionDecisionModal.tsx`, `index.ts` y `README.md`.
+  - `src/components/rescue/`: `RescueApplicationsView.tsx` (nuevo), `RescueManagePanel.tsx`, `RescuePetPanel.tsx`, `RescueSummaryView.tsx`, `constants.ts` y `README.md`.
+  - `src/components/pets/`: `TransferPetModal.tsx`, `ReceivePetModal.tsx` y `transferCode.ts` (nuevos), más `PetDetail.tsx`, `MyPetsSection.tsx`, `queries.ts`, `types.ts`, `index.ts` y `README.md`.
+  - `src/components/notifications/`: `constants.ts`, `inbox.ts` y `NotificationList.tsx`.
+  - Además: `src/app/animales/[slug]/page.tsx` y `src/core/routes.ts`.
+- GraphQL (kadesh-back, requiere `yarn migrate`):
+  - Listas nuevas `AdoptionApplication` y `PetTransfer`.
+  - Mutaciones nuevas: `submitAdoptionApplication`, `reviewAdoptionApplication`, `withdrawAdoptionApplication`, `completeAdoptionApplication`, `createPetTransferCode`, `cancelPetTransferCode`, `previewPetTransferCode` y `redeemPetTransferCode`.
+  - Operaciones del front: `MyAdoptionApplication`, `AnimalAdoptionApplications`, `RescueAdoptionApplications`, `SubmitAdoptionApplication`, `ReviewAdoptionApplication`, `WithdrawAdoptionApplication`, `CompleteAdoptionApplication`, `PetTransferCodes`, `CreatePetTransferCode`, `CancelPetTransferCode`, `PreviewPetTransferCode` y `RedeemPetTransferCode`.
+- Móvil: [solicitudes](../mobile-sync/2026-11-05-solicitudes-de-adopcion.md) · [traspaso con código](../mobile-sync/2026-11-05-traspaso-de-mascotas-con-codigo.md)
+
 ## 2026-11-05 · feat: fichas de rescate con cartilla, «Se quedó conmigo» y adopción
 - Rama: feat/espacios-de-rescate
 - Qué cambió y por qué: Fase 2 de los espacios de rescate. El equipo de un espacio lleva la cartilla de cada animal a su cargo y, al adoptarse, la cartilla pasa a la familia.

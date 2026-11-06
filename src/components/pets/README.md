@@ -8,9 +8,9 @@ Tener la cartilla a la mano y no olvidar una vacuna. Si se pierde, no volver a c
 
 ## Pantallas
 
-- **Lista** (`/perfil?tab=pets`): tarjetas con foto, especie · raza · edad, estado si no está activa y el próximo recordatorio pendiente (rojo si ya pasó, ámbar si es en 7 días o menos). Vacío con siguiente paso: **Registrar mascota**.
+- **Lista** (`/perfil?tab=pets`): tarjetas con foto, especie · raza · edad, estado si no está activa y el próximo recordatorio pendiente (rojo si ya pasó, ámbar si es en 7 días o menos). Vacío con siguiente paso: **Registrar mascota**. Siempre está **Recibir con código**.
 - **Cartilla** (`/perfil?tab=pets&pet=<id>`): el `id` va en la URL para que el enlace del recordatorio (push y correo) abra directo aquí y para que «atrás» regrese a la lista. Bloques:
-  - Encabezado: foto, nombre, estado, datos (sexo, nacimiento o edad, color, peso, esterilizada, microchip, señas). Acciones: **Editar**, **Marcar como perdida** (solo si está activa), **Borrar** (solo el principal).
+  - Encabezado: foto, nombre, estado, datos (sexo, nacimiento o edad, color, peso, esterilizada, microchip, señas). Acciones: **Editar**, **Marcar como perdida** (solo si está activa), **Traspasar** (principal, si está activa), **Borrar** (solo el principal).
   - Si está perdida: aviso rojo con **Ya regresó a casa** y **Ver reporte**.
   - **Cartilla**: registros (vacuna, desparasitación interna/externa, consulta, cirugía, medicamento, otro) con fecha, veterinaria, próxima fecha, notas y fotos.
   - **Recordatorios**: pendientes y avisados arriba; hechos y cancelados en «Ver anteriores».
@@ -29,6 +29,20 @@ Las altas y ediciones se hacen en una hoja modal (`PetSheet`, mismo marco que el
 - Un registro con **próxima fecha** crea su recordatorio solo (3 días antes, notificación y correo). Ese recordatorio no se borra ni se le cambia la fecha desde Recordatorios: se cambia la próxima fecha del registro.
 - Canales que ofrece la web: notificación (campana + push de la app y, a quien activó los avisos por WhatsApp en `/notificaciones`, también WhatsApp) y correo. WhatsApp no se ofrece como canal aparte; si un recordatorio ya lo trae, se conserva al guardar.
 - La veterinaria de un registro es opcional y se busca en el directorio por nombre (`PetPlace` con tipo `veterinary`).
+
+## Traspasar a otra cuenta (código)
+
+Una mascota pasa a otra cuenta con su cartilla completa (fotos, vacunas, registros y recordatorios):
+
+- **Dar** (`TransferPetModal`): el dueño principal usa **Traspasar** en la cartilla (solo si está activa). Si es ficha de un espacio, admin y coordinación usan **Entregar con código** en el panel de la ficha.
+  - Se genera un código de 8 caracteres («7KQ2-M9XA»). Vale 7 días, se usa una vez y lleva un mensaje opcional.
+  - Se copia, se manda por WhatsApp o se comparte como enlace (`/perfil?tab=pets&codigo=…`).
+  - Generar otro cancela el anterior; también se puede cancelar.
+- **Recibir** (`ReceivePetModal`): en Mis mascotas, **Recibir con código**, o desde el enlace, que abre el modal con el código escrito.
+  - Primero se ve qué mascota es y quién la da (`previewPetTransferCode`). Al aceptar (`redeemPetTransferCode`), la persona queda como dueña principal y se abre la cartilla.
+  - Quien la dio deja de verla, y su familia también. Si era de un espacio, sale del espacio.
+- Ver y canjear tienen tope de intentos por hora en el backend. Los mensajes de error (código vencido, cancelado, ya usado, propio) vienen listos del API.
+- Formato y enlaces: `transferCode.ts`.
 
 ## Fichas de un espacio de rescate
 

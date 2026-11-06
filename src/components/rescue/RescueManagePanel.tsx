@@ -3,6 +3,7 @@
 import { DashSectionCard, DashSegmented } from "kadesh/components/app-shell";
 import { RESCUE_VIEWS, type RescueViewKey } from "./constants";
 import RescueAnimalsView from "./RescueAnimalsView";
+import RescueApplicationsView from "./RescueApplicationsView";
 import RescuePetsView from "./RescuePetsView";
 import RescueProfileForm from "./RescueProfileForm";
 import RescueSummaryView from "./RescueSummaryView";
@@ -42,6 +43,7 @@ export default function RescueManagePanel({
         <DashSectionCard key={current.key} title={current.title} description={current.hint}>
           {current.key === "fichas" ? <RescuePetsView org={org} /> : null}
           {current.key === "animales" ? <RescueAnimalsView org={org} /> : null}
+          {current.key === "solicitudes" ? <RescueApplicationsView org={org} /> : null}
           {current.key === "equipo" ? <RescueTeamView org={org} onChanged={onChanged} /> : null}
           {current.key === "perfil" ? <RescueProfileForm org={org} onSaved={onChanged} /> : null}
         </DashSectionCard>

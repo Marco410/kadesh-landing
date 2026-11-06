@@ -9,6 +9,7 @@ import { sileo } from 'sileo';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Alert02Icon,
+  ArrowDataTransferHorizontalIcon,
   ArrowLeft01Icon,
   Delete02Icon,
   Home01Icon,
@@ -23,6 +24,7 @@ import PetFormModal from './PetFormModal';
 import HealthRecordFormModal from './HealthRecordFormModal';
 import ReminderFormModal from './ReminderFormModal';
 import MarkLostModal from './MarkLostModal';
+import TransferPetModal from './TransferPetModal';
 import HealthRecordList from './HealthRecordList';
 import ReminderList from './ReminderList';
 import FamilySection from './FamilySection';
@@ -87,6 +89,7 @@ export default function PetDetail({
   const [record, setRecord] = useState<Editing<PetHealthRecord>>(null);
   const [reminder, setReminder] = useState<Editing<PetReminder>>(null);
   const [markingLost, setMarkingLost] = useState(false);
+  const [transferring, setTransferring] = useState(false);
   const [confirmFound, setConfirmFound] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [markFound, { loading: markingFound }] = useMutation(MARK_PET_AS_FOUND_MUTATION);
@@ -242,6 +245,16 @@ export default function PetDetail({
                     Marcar como perdida
                   </button>
                 ) : null}
+                {isPrincipal && !isRescue && pet.status === PET_STATUS.ACTIVE ? (
+                  <button
+                    type="button"
+                    onClick={() => setTransferring(true)}
+                    className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-dash-surface-2 px-4 text-sm font-semibold text-dash-ink hover:bg-dash-hover"
+                  >
+                    <HugeiconsIcon icon={ArrowDataTransferHorizontalIcon} size={16} strokeWidth={1.6} aria-hidden="true" />
+                    Traspasar
+                  </button>
+                ) : null}
                 {canDelete ? (
                   <button
                     type="button"
@@ -344,6 +357,9 @@ export default function PetDetail({
         reminder={reminder?.item}
       />
       <MarkLostModal isOpen={markingLost} onClose={() => setMarkingLost(false)} petId={pet.id} petName={pet.name} />
+      {isPrincipal && !isRescue ? (
+        <TransferPetModal isOpen={transferring} onClose={() => setTransferring(false)} pet={{ id: pet.id, name: pet.name }} />
+      ) : null}
 
       <ConfirmModal
         isOpen={confirmFound}

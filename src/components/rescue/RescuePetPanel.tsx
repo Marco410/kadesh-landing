@@ -10,6 +10,7 @@ import { dashButtonClass, dashInputClass, dashLabelClass, dashSelectClass } from
 import { getStatusColor, getStatusLabel } from "kadesh/components/animals/constants";
 import {
   PET_REFETCH,
+  TransferPetModal,
   UPDATE_PET_MUTATION,
   formatDay,
   petErrorMessage,
@@ -69,6 +70,7 @@ export default function RescuePetPanel({
   const active = pet.status === "active";
   const [publishing, setPublishing] = useState<RescuePublishStatus | null>(null);
   const [adopting, setAdopting] = useState(false);
+  const [transferring, setTransferring] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
   const [updatePet] = useMutation(UPDATE_PET_MUTATION);
   const { data: detail } = useQuery<RescueOrgDetailResponse>(RESCUE_ORG_DETAIL_QUERY, {
@@ -246,17 +248,27 @@ export default function RescuePetPanel({
           <div>
             <p className="font-semibold text-dash-ink">¿Ya tiene familia?</p>
             <p className="mt-0.5 text-sm text-dash-muted">
-              Su cartilla, con vacunas y recordatorios, pasa a la cuenta de quien lo adopta.
+              Su cartilla, con vacunas y recordatorios, pasa a la cuenta de quien lo adopta: con un código que
+              escribe en su cuenta, o con su correo. Si llegó por una solicitud, complétala en «Solicitudes».
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setAdopting(true)}
-            className={dashButtonClass({ variant: "outline", size: "sm" })}
-          >
-            <HugeiconsIcon icon={FavouriteIcon} size={16} strokeWidth={1.8} aria-hidden />
-            Completar adopción
-          </button>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setTransferring(true)}
+              className={dashButtonClass({ variant: "primary", size: "sm" })}
+            >
+              <HugeiconsIcon icon={FavouriteIcon} size={16} strokeWidth={1.8} aria-hidden />
+              Entregar con código
+            </button>
+            <button
+              type="button"
+              onClick={() => setAdopting(true)}
+              className={dashButtonClass({ variant: "outline", size: "sm" })}
+            >
+              Por correo
+            </button>
+          </div>
         </div>
       ) : null}
 
@@ -266,6 +278,12 @@ export default function RescuePetPanel({
         pet={pet}
         initialStatus={publishing ?? "in_adoption"}
         hasReport={Boolean(report)}
+      />
+      <TransferPetModal
+        isOpen={transferring}
+        onClose={() => setTransferring(false)}
+        pet={{ id: pet.id, name: pet.name }}
+        organizationName={org.name}
       />
       <CompleteAdoptionModal
         isOpen={adopting}

@@ -79,3 +79,29 @@ export interface PetDetail extends Omit<PetSummary, 'reminders'> {
   adoptedFromOrganization?: { id: string; name: string; slug?: string | null } | null;
   adoptedAt?: string | null;
 }
+
+/** Código para traspasar la mascota a otra cuenta (`createPetTransferCode`). */
+export interface PetTransferCode {
+  id: string;
+  /** Sin guion: «7KQ2M9XA». Se muestra «7KQ2-M9XA». */
+  code: string;
+  status: string;
+  expiresAt: string;
+  isExpired?: boolean | null;
+  message?: string | null;
+}
+
+/** Lo que ve quien recibe antes de aceptar (`previewPetTransferCode`). */
+export interface PetTransferPreview {
+  success: boolean;
+  message: string;
+  petName?: string | null;
+  /** Valor de `AnimalType.name` (dog, cat…). */
+  species?: string | null;
+  breed?: string | null;
+  photoUrl?: string | null;
+  fromName?: string | null;
+  fromOrganization?: boolean | null;
+  transferMessage?: string | null;
+  expiresAt?: string | null;
+}

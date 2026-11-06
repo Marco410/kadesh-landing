@@ -49,6 +49,7 @@ export function notificationTone(notification: AppNotification): NotificationTon
   if (notification.type === EVENT_NOTIFICATION_TYPE.APPROVED) return 'found';
   if (notification.type === RESCUE_NOTIFICATION_TYPE.VERIFIED) return 'found';
   if (notification.type === RESCUE_NOTIFICATION_TYPE.ADOPTION_COMPLETED) return 'found';
+  if (notification.type === RESCUE_NOTIFICATION_TYPE.TRANSFER_REDEEMED) return 'found';
   if (notification.type === RESCUE_NOTIFICATION_TYPE.REJECTED) return 'lost';
   if (notification.type === EVENT_NOTIFICATION_TYPE.CANCELLED || notification.type === EVENT_NOTIFICATION_TYPE.REJECTED) {
     return 'lost';

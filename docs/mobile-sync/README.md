@@ -27,3 +27,5 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-05 | [Espacios de rescate: activar, equipo y publicar a nombre de la organización](2026-11-05-espacios-de-rescate.md) | profile | pendiente |
 | 2026-11-05 | [Señas particulares recortadas con «Ver más» en la ficha del animal](2026-11-05-senas-ver-mas.md) | animals | pendiente |
 | 2026-11-05 | [Fichas de rescate, «Se quedó conmigo» y adopción con cartilla](2026-11-05-fichas-de-rescate-y-adopcion.md) | profile | pendiente |
+| 2026-11-05 | [Solicitudes de adopción («Quiero adoptarlo»)](2026-11-05-solicitudes-de-adopcion.md) | animals | pendiente |
+| 2026-11-05 | [Traspasar una mascota a otra cuenta con un código](2026-11-05-traspaso-de-mascotas-con-codigo.md) | profile | pendiente |

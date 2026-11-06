@@ -176,6 +176,12 @@ export const RESCUE_VIEWS = [
     hint: 'Los reportes públicos a nombre de tu organización. Tu equipo puede actualizarlos.',
   },
   {
+    key: 'solicitudes',
+    label: 'Solicitudes',
+    title: 'Solicitudes de adopción',
+    hint: 'Quienes quieren adoptar a los animales de tu espacio. Revísalas, apruébalas y completa la adopción para pasarles su cartilla.',
+  },
+  {
     key: 'equipo',
     label: 'Equipo',
     title: 'Equipo',

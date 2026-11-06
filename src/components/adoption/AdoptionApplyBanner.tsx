@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { FavouriteIcon } from '@hugeicons/core-free-icons';
@@ -16,7 +17,7 @@ import { Routes } from 'kadesh/core/routes';
 import { useUser } from 'kadesh/utils/UserContext';
 import AdoptionApplicationModal from './AdoptionApplicationModal';
 import { ADOPT_PARAM, ADOPTION_STATUS, adoptionStatusMeta, isOpenAdoptionStatus } from './constants';
-import { adoptionAnimalName, adoptionErrorMessage } from './format';
+import { adoptionAnimalName, adoptionApplicantCopy, adoptionErrorMessage } from './format';
 import { useAdoptionActions } from './hooks/useAdoptionActions';
 import { useMyAdoptionApplication } from './hooks/useMyAdoptionApplication';
 
@@ -27,31 +28,12 @@ const primaryButton =
 const quietButton =
   'inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold text-[#3a3a3a] hover:bg-[#f3f5f8] disabled:opacity-50 dark:text-[#d0d0d0] dark:hover:bg-night lg:min-h-9';
 
-/** Qué le decimos a quien ya envió una solicitud, según su estado. */
-function applicantCopy(status: string, name: string): string {
-  switch (status) {
-    case ADOPTION_STATUS.IN_REVIEW:
-      return `Quien cuida a ${name} está revisando tu solicitud. Puede que te llame o te escriba para conocerte.`;
-    case ADOPTION_STATUS.APPROVED:
-      return `¡Aprobaron tu solicitud! Quien cuida a ${name} te contactará para coordinar la adopción.`;
-    case ADOPTION_STATUS.REJECTED:
-      return `Esta vez no aprobaron tu solicitud. Gracias por querer darle un hogar a ${name}.`;
-    case ADOPTION_STATUS.WITHDRAWN:
-      return `Retiraste tu solicitud. Si cambias de opinión, puedes enviar otra.`;
-    case ADOPTION_STATUS.CLOSED:
-      return `Tu solicitud se cerró. Gracias por querer darle un hogar a ${name}.`;
-    case ADOPTION_STATUS.COMPLETED:
-      return `¡Adoptaste a ${name}! Gracias por darle un hogar.`;
-    default:
-      return `Enviaste tu solicitud. Te avisaremos cuando quien cuida a ${name} la revise.`;
-  }
-}
-
 /**
  * «Quiero adoptarlo» en la ficha pública de un animal «En adopción». No lo ve quien puede editar el
  * animal (no puede adoptar el suyo) ni un reporte duplicado. Sin sesión pide cuenta y, al volver con
  * `?adoptar=1`, abre el formulario. Con una solicitud abierta muestra su estado y deja retirarla;
- * si la última se cerró (no aprobada, retirada) deja enviar otra.
+ * si la última se cerró (no aprobada, retirada) deja enviar otra. «Ver solicitud» abre su detalle en
+ * el perfil («Adopciones»): el proceso, sus respuestas y, mientras siga «Enviada», editarla.
  */
 export default function AdoptionApplyBanner({ animal, status }: { animal: AnimalDetail; status: string }) {
   const { user } = useUser();
@@ -117,7 +99,7 @@ export default function AdoptionApplyBanner({ animal, status }: { animal: Animal
               <span className="font-semibold text-[#121212] dark:text-[#eef1f6]">Tu solicitud:</span>
               <DashStatusBadge label={meta.label} tone={meta.tone} />
             </p>
-            <p className="mt-1">{applicantCopy(application.status, name)}</p>
+            <p className="mt-1">{adoptionApplicantCopy(application.status, name)}</p>
             {showNote ? (
               <p className="mt-1 whitespace-pre-wrap text-[#5a5a5a] dark:text-[#9aa3b2]">
                 <span className="font-semibold">Te dejaron un mensaje:</span> {note}
@@ -132,6 +114,11 @@ export default function AdoptionApplyBanner({ animal, status }: { animal: Animal
         )}
       </div>
 
+      {application ? (
+        <Link href={Routes.profileAdoption(application.id)} className={quietButton}>
+          Ver solicitud
+        </Link>
+      ) : null}
       {open ? (
         <button
           type="button"

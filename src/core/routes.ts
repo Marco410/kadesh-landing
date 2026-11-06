@@ -51,6 +51,10 @@ export const Routes = {
   profileClinic: (clinicId: string, vista?: string): string =>
     `/perfil?tab=clinics&clinic=${encodeURIComponent(clinicId)}${vista ? `&vista=${vista}` : ''}`,
   profilePet: (petId: string): string => `/perfil?tab=pets&pet=${encodeURIComponent(petId)}`,
+  /** Solicitudes de adopción que envió la persona; con `applicationId`, el detalle de una. */
+  profileAdoptions: '/perfil?tab=adopciones',
+  profileAdoption: (applicationId: string): string =>
+    `/perfil?tab=adopciones&solicitud=${encodeURIComponent(applicationId)}`,
   /** Recibir una mascota con su código de traspaso (abre «Recibir con código» ya escrito). */
   profilePetsReceive: (code: string): string => `/perfil?tab=pets&codigo=${encodeURIComponent(code)}`,
   /** Espacio de rescate en el panel: sin `orgId` abre la lista; con él, la vista (`resumen` por defecto). */

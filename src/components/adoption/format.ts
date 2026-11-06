@@ -1,6 +1,6 @@
 import { petErrorMessage } from 'kadesh/components/pets/utils';
 import { normalizeMxPhone } from 'kadesh/utils/phone';
-import { ADOPTION_HOUSING_OPTIONS, ADOPTION_OWNERSHIP_OPTIONS } from './constants';
+import { ADOPTION_HOUSING_OPTIONS, ADOPTION_OWNERSHIP_OPTIONS, ADOPTION_STATUS } from './constants';
 import type { AdoptionAnswers, AdoptionApplication } from './types';
 
 /** `answers` es un JSON: normalmente llega como objeto, pero se acepta texto por si acaso. */
@@ -98,4 +98,107 @@ export function adoptionAnimalName(name: string | null | undefined): string {
  */
 export function adoptionErrorMessage(error: unknown, fallback: string): string {
   return petErrorMessage(error, fallback);
+}
+
+/** Qué le decimos a quien envió la solicitud, según su estado (aviso de la ficha y su detalle). */
+export function adoptionApplicantCopy(status: string, name: string): string {
+  switch (status) {
+    case ADOPTION_STATUS.IN_REVIEW:
+      return `Quien cuida a ${name} está revisando tu solicitud. Puede que te llame o te escriba para conocerte.`;
+    case ADOPTION_STATUS.APPROVED:
+      return `¡Aprobaron tu solicitud! Quien cuida a ${name} te contactará para coordinar la adopción.`;
+    case ADOPTION_STATUS.REJECTED:
+      return `Esta vez no aprobaron tu solicitud. Gracias por querer darle un hogar a ${name}.`;
+    case ADOPTION_STATUS.WITHDRAWN:
+      return `Retiraste tu solicitud. Si cambias de opinión, puedes enviar otra.`;
+    case ADOPTION_STATUS.CLOSED:
+      return `Tu solicitud se cerró. Gracias por querer darle un hogar a ${name}.`;
+    case ADOPTION_STATUS.COMPLETED:
+      return `¡Adoptaste a ${name}! Gracias por darle un hogar.`;
+    default:
+      return `Enviaste tu solicitud. Te avisaremos cuando quien cuida a ${name} la revise.`;
+  }
+}
+
+/** «6 nov 2026». */
+export function adoptionShortDate(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+/** Se editó después de enviarla (más de un minuto entre `createdAt` y `updatedAt`). */
+export function adoptionWasEdited(createdAt: string | null | undefined, updatedAt: string | null | undefined): boolean {
+  if (!createdAt || !updatedAt) return false;
+  return new Date(updatedAt).getTime() - new Date(createdAt).getTime() > 60_000;
+}
+
+export type AdoptionStepState = 'done' | 'current' | 'upcoming' | 'stopped';
+
+export interface AdoptionStep {
+  key: string;
+  title: string;
+  detail: string;
+  state: AdoptionStepState;
+  date?: string | null;
+}
+
+/**
+ * Pasos del proceso para quien envió la solicitud: Enviada → En revisión → Aprobada → Adopción.
+ * Solo hay fecha de envío y de la última decisión (`decidedAt`); los pasos intermedios ya pasados
+ * van sin fecha. Si terminó sin adopción (no aprobada, retirada, cerrada), el último paso lo dice.
+ */
+export function adoptionSteps(
+  application: { status: string; createdAt: string; decidedAt?: string | null },
+  name: string,
+): AdoptionStep[] {
+  const { status, createdAt, decidedAt } = application;
+  const sent: AdoptionStep = {
+    key: 'sent',
+    title: 'Enviaste tu solicitud',
+    detail: 'Mientras nadie la revise, la puedes editar.',
+    state: 'done',
+    date: createdAt,
+  };
+  const stopped: Record<string, Omit<AdoptionStep, 'key' | 'state' | 'date'>> = {
+    [ADOPTION_STATUS.REJECTED]: {
+      title: 'No la aprobaron',
+      detail: `Gracias por querer darle un hogar a ${name}. Hay más animales esperando familia.`,
+    },
+    [ADOPTION_STATUS.WITHDRAWN]: { title: 'La retiraste', detail: 'Si cambias de opinión, puedes enviar otra mientras siga en adopción.' },
+    [ADOPTION_STATUS.CLOSED]: { title: 'Se cerró', detail: `${name.charAt(0).toUpperCase()}${name.slice(1)} encontró familia por otra vía.` },
+  };
+  if (stopped[status]) {
+    return [{ ...sent, detail: '' }, { key: 'end', ...stopped[status], state: 'stopped', date: decidedAt }];
+  }
+
+  const order = [ADOPTION_STATUS.SUBMITTED, ADOPTION_STATUS.IN_REVIEW, ADOPTION_STATUS.APPROVED, ADOPTION_STATUS.COMPLETED];
+  const reached = Math.max(0, order.indexOf(status as (typeof order)[number]));
+  const stateFor = (index: number): AdoptionStepState =>
+    index <= reached ? 'done' : index === reached + 1 ? 'current' : 'upcoming';
+  return [
+    { ...sent, detail: status === ADOPTION_STATUS.SUBMITTED ? sent.detail : '' },
+    {
+      key: 'review',
+      title: 'En revisión',
+      detail: `Quien cuida a ${name} lee tu solicitud y puede llamarte o escribirte para conocerte.`,
+      state: stateFor(1),
+      date: status === ADOPTION_STATUS.IN_REVIEW ? decidedAt : null,
+    },
+    {
+      key: 'approved',
+      title: 'Aprobada',
+      detail: 'Te contactan para coordinar la entrega.',
+      state: stateFor(2),
+      date: status === ADOPTION_STATUS.APPROVED ? decidedAt : null,
+    },
+    {
+      key: 'adopted',
+      title: 'Llega a casa',
+      detail: 'Al entregártelo, su cartilla pasa a tu cuenta.',
+      state: stateFor(3),
+      date: status === ADOPTION_STATUS.COMPLETED ? decidedAt : null,
+    },
+  ];
 }

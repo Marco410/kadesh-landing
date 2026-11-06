@@ -4,6 +4,8 @@ import type {
   AdoptionApplicationInput,
   AdoptionReviewStatus,
   MyAdoptionApplication,
+  MyAdoptionApplicationDetail,
+  MyAdoptionApplicationRow,
 } from './types';
 
 /**
@@ -58,6 +60,92 @@ export const MY_ADOPTION_APPLICATION_QUERY = gql`
 
 export interface MyAdoptionApplicationResponse {
   adoptionApplications: MyAdoptionApplication[];
+}
+
+/** Animal de una solicitud propia: foto, sexo (para «adoptarla») y el espacio que lo cuida. */
+const MY_APPLICATION_ANIMAL_FIELDS = `
+  animal {
+    id
+    name
+    slug
+    sex
+    multimedia(orderBy: [{ order: asc }], take: 1) {
+      image {
+        url
+      }
+    }
+    organization {
+      id
+      name
+      slug
+    }
+  }
+`;
+
+/**
+ * «Adopciones» del perfil: las solicitudes que envió la persona. `where` es la lista que se pinta
+ * (abiertas o todas); `openWhere` y `allWhere` solo cuentan, para los filtros.
+ */
+export const MY_ADOPTION_APPLICATIONS_QUERY = gql`
+  query MyAdoptionApplications(
+    $where: AdoptionApplicationWhereInput!
+    $openWhere: AdoptionApplicationWhereInput!
+    $allWhere: AdoptionApplicationWhereInput!
+    $take: Int!
+  ) {
+    adoptionApplications(where: $where, orderBy: [{ createdAt: desc }], take: $take) {
+      id
+      status
+      decidedAt
+      createdAt
+      updatedAt
+      ${MY_APPLICATION_ANIMAL_FIELDS}
+    }
+    openCount: adoptionApplicationsCount(where: $openWhere)
+    allCount: adoptionApplicationsCount(where: $allWhere)
+  }
+`;
+
+export interface MyAdoptionApplicationsResponse {
+  adoptionApplications: MyAdoptionApplicationRow[];
+  openCount: number;
+  allCount: number;
+}
+
+/** `where` de las solicitudes que envió `userId`; con `statuses`, solo esas. */
+export function myAdoptionWhere(userId: string, statuses?: string[]) {
+  return {
+    applicant: { id: { equals: userId } },
+    ...(statuses ? { status: { in: statuses } } : {}),
+  };
+}
+
+/** Una solicitud propia completa: lo que respondió, el mensaje de quien revisa y su cartilla al adoptar. */
+export const MY_ADOPTION_APPLICATION_DETAIL_QUERY = gql`
+  query MyAdoptionApplicationDetail($id: ID!) {
+    adoptionApplication(where: { id: $id }) {
+      id
+      status
+      phone
+      message
+      answers
+      decisionNote
+      decidedAt
+      createdAt
+      updatedAt
+      applicant {
+        id
+      }
+      pet {
+        id
+      }
+      ${MY_APPLICATION_ANIMAL_FIELDS}
+    }
+  }
+`;
+
+export interface MyAdoptionApplicationDetailResponse {
+  adoptionApplication: MyAdoptionApplicationDetail | null;
 }
 
 /** Solicitudes de un animal, de la más nueva a la más vieja (panel de la ficha pública). */
@@ -150,6 +238,24 @@ export interface SubmitAdoptionApplicationVariables {
 }
 
 /** `status`: `in_review`, `approved` o `rejected`. `note` le llega a quien la envió. */
+/** Solo quien la envió, y solo mientras siga «Enviada» (`submitted`). Mismas reglas que al enviarla. */
+export const EDIT_ADOPTION_APPLICATION_MUTATION = gql`
+  mutation EditAdoptionApplication($applicationId: ID!, $input: AdoptionApplicationInput!) {
+    editAdoptionApplication(applicationId: $applicationId, input: $input) {
+      ${ADOPTION_RESULT_FIELDS}
+    }
+  }
+`;
+
+export interface EditAdoptionApplicationResponse {
+  editAdoptionApplication: AdoptionApplicationResult;
+}
+
+export interface EditAdoptionApplicationVariables {
+  applicationId: string;
+  input: AdoptionApplicationInput;
+}
+
 export const REVIEW_ADOPTION_APPLICATION_MUTATION = gql`
   mutation ReviewAdoptionApplication($applicationId: ID!, $status: String!, $note: String) {
     reviewAdoptionApplication(applicationId: $applicationId, status: $status, note: $note) {

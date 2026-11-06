@@ -12,9 +12,9 @@ import {
   ADOPTION_LIMITS,
   ADOPTION_OWNERSHIP_OPTIONS,
 } from './constants';
-import { adoptionAnimalName, adoptionErrorMessage } from './format';
+import { adoptionAnimalName, adoptionErrorMessage, parseAdoptionAnswers } from './format';
 import { useAdoptionActions } from './hooks/useAdoptionActions';
-import type { AdoptionHousing, AdoptionHousingOwnership } from './types';
+import type { AdoptionAnswers, AdoptionHousing, AdoptionHousingOwnership } from './types';
 
 const fieldClass =
   'w-full rounded-xl border border-[#d8dee8] bg-white px-4 py-3 text-sm text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh dark:border-white/18 dark:bg-night dark:text-[#eef1f6] dark:placeholder:text-[#9aa3b2]';
@@ -71,6 +71,27 @@ function emptyDraft(phone: string): Draft {
   };
 }
 
+/** Lo que ya envió, para editarlo. Los compromisos ya los aceptó (el backend los exige). */
+function draftFromApplication(application: EditableApplication, fallbackPhone: string): Draft {
+  const answers = parseAdoptionAnswers(application.answers);
+  const housing = ADOPTION_HOUSING_OPTIONS.find((option) => option.value === answers.housing)?.value ?? '';
+  const ownership = ADOPTION_OWNERSHIP_OPTIONS.find((option) => option.value === answers.housingOwnership)?.value ?? '';
+  return {
+    message: application.message ?? '',
+    housing,
+    ownership,
+    petsAllowed: answers.petsAllowed ?? null,
+    hasYard: answers.hasYard ?? null,
+    hasChildren: answers.hasChildren ?? null,
+    hoursAlone: typeof answers.hoursAlone === 'number' ? String(answers.hoursAlone) : '',
+    otherPets: answers.otherPets ?? '',
+    experience: answers.experience ?? '',
+    phone: application.phone || fallbackPhone,
+    commitSterilization: true,
+    acceptsFollowUp: true,
+  };
+}
+
 function YesNo({ value, onChange }: { value: boolean | null; onChange: (value: boolean) => void }) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -109,6 +130,14 @@ function ChoiceField({
   );
 }
 
+/** Solicitud propia que se va a editar (solo mientras siga «Enviada»). */
+export interface EditableApplication {
+  id: string;
+  phone?: string | null;
+  message?: string | null;
+  answers?: AdoptionAnswers | string | null;
+}
+
 interface AdoptionApplicationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -117,7 +146,9 @@ interface AdoptionApplicationModalProps {
   /** `female` para decir «adoptarla», «sola»… */
   animalSex?: string | null;
   defaultPhone?: string | null;
-  /** Ya se envió: refresca el aviso de la ficha. */
+  /** Con una solicitud, el formulario la edita (`editAdoptionApplication`) en vez de enviar otra. */
+  application?: EditableApplication | null;
+  /** Ya se envió (o se guardó): refresca el aviso de la ficha o el detalle. */
   onSubmitted: () => void;
 }
 
@@ -125,6 +156,9 @@ interface AdoptionApplicationModalProps {
  * Formulario «Quiero adoptarlo» (`submitAdoptionApplication`). Lo que escribe se conserva si cierra
  * la hoja sin querer; se limpia al enviarse. Los errores de negocio (ya tiene una abierta, ya no
  * está en adopción, límite del día) llegan como `message` y se muestran arriba.
+ *
+ * Con `application` edita esa solicitud (`editAdoptionApplication`): arranca con lo que envió y
+ * solo se puede mientras siga «Enviada»; si ya la revisan, el backend lo dice en `message`.
  */
 export default function AdoptionApplicationModal({
   isOpen,
@@ -133,6 +167,7 @@ export default function AdoptionApplicationModal({
   animalName,
   animalSex,
   defaultPhone,
+  application,
   onSubmitted,
 }: AdoptionApplicationModalProps) {
   const motionPrefs = useUiMotion();
@@ -140,8 +175,12 @@ export default function AdoptionApplicationModal({
   const formId = `${baseId}-form`;
   const fieldId = (field: Field) => `${baseId}-${field}`;
   const alertRef = useRef<HTMLDivElement>(null);
-  const { submit, submitting } = useAdoptionActions();
-  const [draft, setDraft] = useState<Draft>(() => emptyDraft(defaultPhone ?? ''));
+  const { submit, submitting: sending, edit, editing: saving } = useAdoptionActions();
+  const submitting = sending || saving;
+  const editing = Boolean(application);
+  const [draft, setDraft] = useState<Draft>(() =>
+    application ? draftFromApplication(application, defaultPhone ?? '') : emptyDraft(defaultPhone ?? ''),
+  );
   const [errors, setErrors] = useState<Errors>({});
   const name = adoptionAnimalName(animalName);
   const female = animalSex === 'female';
@@ -203,7 +242,7 @@ export default function AdoptionApplicationModal({
     if (!phone.ok || !draft.housing || !draft.ownership || draft.hasYard == null || draft.hasChildren == null) return;
 
     try {
-      const result = await submit(animalId, {
+      const input = {
         phone: phone.digits,
         message: draft.message.trim(),
         housing: draft.housing,
@@ -216,23 +255,37 @@ export default function AdoptionApplicationModal({
         experience: draft.experience.trim() || null,
         commitSterilization: draft.commitSterilization,
         acceptsFollowUp: draft.acceptsFollowUp,
-      });
+      };
+      const result = application ? await edit(application.id, input) : await submit(animalId, input);
       if (!result?.success) {
-        setErrors({ form: result?.message || 'No se pudo enviar tu solicitud. Inténtalo de nuevo.' });
+        setErrors({
+          form:
+            result?.message ||
+            (editing ? 'No se pudieron guardar los cambios. Inténtalo de nuevo.' : 'No se pudo enviar tu solicitud. Inténtalo de nuevo.'),
+        });
         return;
       }
-      sileo.success({
-        title: 'Enviamos tu solicitud',
-        description: `Quien cuida a ${name} la revisará. Te avisaremos cuando responda.`,
-      });
-      setDraft(emptyDraft(defaultPhone ?? ''));
+      if (editing) {
+        sileo.success({ title: 'Guardamos los cambios', description: `Quien cuida a ${name} verá tu solicitud actualizada.` });
+      } else {
+        sileo.success({
+          title: 'Enviamos tu solicitud',
+          description: `Quien cuida a ${name} la revisará. Te avisaremos cuando responda.`,
+        });
+        setDraft(emptyDraft(defaultPhone ?? ''));
+      }
       setErrors({});
       onClose();
       onSubmitted();
     } catch (error) {
-      console.error('[adopcion] no se pudo enviar la solicitud', error);
+      console.error('[adopcion] no se pudo guardar la solicitud', error);
       setErrors({
-        form: adoptionErrorMessage(error, 'No se pudo enviar tu solicitud. Revisa tu conexión e inténtalo de nuevo.'),
+        form: adoptionErrorMessage(
+          error,
+          editing
+            ? 'No se pudieron guardar los cambios. Revisa tu conexión e inténtalo de nuevo.'
+            : 'No se pudo enviar tu solicitud. Revisa tu conexión e inténtalo de nuevo.',
+        ),
       });
     }
   };
@@ -243,7 +296,7 @@ export default function AdoptionApplicationModal({
   return (
     <Sheet
       isOpen={isOpen}
-      title={`Adoptar a ${name}`}
+      title={editing ? 'Editar tu solicitud' : `Adoptar a ${name}`}
       onClose={onClose}
       busy={submitting}
       footer={
@@ -264,15 +317,16 @@ export default function AdoptionApplicationModal({
             whileTap={submitting ? undefined : motionPrefs.tap}
             className="min-h-11 flex-1 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {submitting ? 'Enviando…' : 'Enviar solicitud'}
+            {editing ? (submitting ? 'Guardando…' : 'Guardar cambios') : submitting ? 'Enviando…' : 'Enviar solicitud'}
           </motion.button>
         </div>
       }
     >
       <form id={formId} onSubmit={handleSubmit} noValidate className="space-y-6">
         <p className="text-sm leading-relaxed text-[#5a5a5a] dark:text-[#9aa3b2]">
-          Cuéntale a quien cuida a {name} sobre ti y tu hogar. Con esto te conoce un poco antes de llamarte o
-          escribirte. Te toma unos 3 minutos.
+          {editing
+            ? `Corrige lo que necesites. Quien cuida a ${name} verá la versión nueva y le avisamos que la actualizaste.`
+            : `Cuéntale a quien cuida a ${name} sobre ti y tu hogar. Con esto te conoce un poco antes de llamarte o escribirte. Te toma unos 3 minutos.`}
         </p>
 
         {errors.form ? (

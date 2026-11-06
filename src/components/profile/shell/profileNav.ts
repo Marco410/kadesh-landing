@@ -5,6 +5,7 @@ import {
   Calendar04Icon,
   CharityIcon,
   DashboardSquare01Icon,
+  FavouriteIcon,
   FlashIcon,
   HospitalLocationIcon,
   MapsLocation01Icon,
@@ -35,6 +36,7 @@ export const PROFILE_TAB_KEYS = [
   "animals",
   "events",
   "appointments",
+  "adopciones",
   "rescate",
   "clinics",
 ] as const;
@@ -117,6 +119,13 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
     href: Routes.profileTab("animals"),
     description: "Los animales que reportaste: perdidos, encontrados y en adopción.",
   },
+  adopciones: {
+    label: "Adopciones",
+    icon: FavouriteIcon,
+    group: "animales",
+    href: Routes.profileAdoptions,
+    description: "Las solicitudes que enviaste para adoptar: en qué van, qué te respondieron y cómo editarlas.",
+  },
   events: {
     label: "Eventos",
     icon: Calendar04Icon,
@@ -149,7 +158,7 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
 
 const GROUP_ORDER: Array<[GroupId, ProfileViewKey[]]> = [
   ["cuenta", ["inicio", "profile", "notifications", "alerts"]],
-  ["animales", ["pets", "appointments", "animals"]],
+  ["animales", ["pets", "appointments", "animals", "adopciones"]],
   ["publicaciones", ["events", "posts"]],
   ["rescate", ["rescate"]],
   ["veterinarias", ["clinics"]],

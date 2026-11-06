@@ -17,6 +17,7 @@ import { UserAppointmentsSection } from "kadesh/components/veterinaries";
 import { MyPetsSection } from "kadesh/components/pets";
 import { MyEventsSection } from "kadesh/components/events";
 import RescueSection from "kadesh/components/rescue/RescueSection";
+import { MyAdoptionApplicationsSection } from "kadesh/components/adoption";
 import { useUser } from "kadesh/utils/UserContext";
 import { cn } from "kadesh/utils/cn";
 
@@ -29,6 +30,7 @@ const VIEW_WIDTH: Record<ProfileTabKey, string> = {
   animals: "max-w-4xl",
   events: "max-w-4xl",
   appointments: "max-w-4xl",
+  adopciones: "max-w-4xl",
   rescate: "max-w-6xl",
   clinics: "max-w-6xl",
 };
@@ -68,6 +70,7 @@ export default function ProfilePage() {
       {view === "animals" ? <UserAnimalsSection userId={user.id} /> : null}
       {view === "events" ? <MyEventsSection userId={user.id} /> : null}
       {view === "appointments" ? <UserAppointmentsSection /> : null}
+      {view === "adopciones" ? <MyAdoptionApplicationsSection userId={user.id} /> : null}
       {view === "rescate" ? <RescueSection userId={user.id} /> : null}
       {view === "clinics" ? <UserVeterinariesSection userId={user.id} /> : null}
     </div>

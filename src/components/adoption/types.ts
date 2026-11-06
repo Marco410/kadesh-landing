@@ -56,6 +56,37 @@ export interface MyAdoptionApplication {
   createdAt: string;
 }
 
+/** Animal de una solicitud propia (perfil «Adopciones»). `organization` solo si es de un espacio verificado. */
+export interface MyAdoptionApplicationAnimal {
+  id: string;
+  name: string;
+  slug?: string | null;
+  sex?: string | null;
+  multimedia?: Array<{ image?: { url?: string | null } | null }> | null;
+  organization?: { id: string; name: string; slug?: string | null } | null;
+}
+
+/** Fila de «Adopciones» en el perfil. */
+export interface MyAdoptionApplicationRow {
+  id: string;
+  status: AdoptionApplicationStatus | string;
+  decidedAt?: string | null;
+  createdAt: string;
+  updatedAt?: string | null;
+  animal?: MyAdoptionApplicationAnimal | null;
+}
+
+/** Detalle de una solicitud propia: lo que respondió y cómo va. */
+export interface MyAdoptionApplicationDetail extends MyAdoptionApplicationRow {
+  phone?: string | null;
+  message?: string | null;
+  answers?: AdoptionAnswers | string | null;
+  decisionNote?: string | null;
+  applicant?: { id: string } | null;
+  /** Cartilla que recibió al completarse la adopción. */
+  pet?: { id: string } | null;
+}
+
 /** `AdoptionApplicationInput` del backend. */
 export interface AdoptionApplicationInput {
   phone: string;

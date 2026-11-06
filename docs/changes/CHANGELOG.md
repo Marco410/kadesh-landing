@@ -15,6 +15,31 @@ Formato:
 
 ---
 
+## 2026-11-06 · feat: «Adopciones» en el perfil (ver, seguir y editar mis solicitudes)
+- Rama: feat/espacios-de-rescate
+- Qué cambió y por qué: quien enviaba una solicitud de adopción solo veía su estado en la ficha del animal. Ahora tiene dónde seguirla y corregirla.
+  - **Adopciones** en «Mis animales» (`/perfil?tab=adopciones`): sus solicitudes con foto, estado y quién cuida al animal, con filtros Abiertas/Todas.
+  - **Detalle** (`&solicitud=<id>`):
+    - qué sigue;
+    - «Cómo va»: Enviaste tu solicitud → En revisión → Aprobada → Llega a casa, o cómo terminó;
+    - el mensaje de quien cuida al animal;
+    - lo que respondió;
+    - acciones: Editar (solo «Enviada»), Ver ficha, Retirar y Ver su cartilla al adoptar.
+  - **Editar**: es el mismo formulario, prellenado. Solo mientras nadie la ponga en revisión; al guardar se avisa a quien cuida al animal.
+  - En la ficha, el aviso «Tu solicitud» tiene **Ver solicitud**.
+  - Los avisos de su solicitud (`adoption.application_updated`) abren el detalle.
+- Archivos:
+  - Nuevos: `src/components/adoption/MyAdoptionApplicationsSection.tsx` y `MyAdoptionApplicationDetail.tsx`.
+  - Adopción (`src/components/adoption/`): `AdoptionApplicationModal.tsx` (modo edición), `AdoptionApplyBanner.tsx`, `format.ts`, `queries.ts`, `types.ts`, `hooks/useAdoptionActions.ts`, `index.ts` y `README.md`.
+  - Perfil: `src/app/(cuenta)/perfil/page.tsx`, `src/components/profile/shell/profileNav.ts` y `ProfileShell.tsx`.
+  - Además: `src/core/routes.ts` (`profileAdoptions`, `profileAdoption`) y `src/utils/activity/clientContext.ts` (`solicitud`).
+- GraphQL (kadesh-back, sin migración):
+  - Mutación nueva `editAdoptionApplication(applicationId, input)`. No es `updateAdoptionApplication`, que es el CRUD de Keystone.
+  - Regla de límite `adoption_application_edit_user`: 20 ediciones al día.
+  - Los avisos a quien la envió llevan a `/perfil?tab=adopciones&solicitud=<id>`.
+  - Operaciones nuevas del front: `MyAdoptionApplications`, `MyAdoptionApplicationDetail` y `EditAdoptionApplication`.
+- Móvil: [prompt](../mobile-sync/2026-11-06-mis-solicitudes-de-adopcion.md)
+
 ## 2026-11-06 · fix: errores legibles en toda la web y «Guardar perfil» del espacio de rescate
 - Rama: feat/espacios-de-rescate
 - Qué cambió y por qué: al verificar un espacio desde Operaciones salió el error crudo de Keystone («RescueOrganization.name: value must not be empty…»). Al guardar el perfil del espacio salió «'other' is not an accepted option». La causa del primero estaba en el backend, que ya quedó corregido. El segundo era de la web:

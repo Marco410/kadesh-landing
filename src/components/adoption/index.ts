@@ -1,6 +1,6 @@
 /**
- * Solicitudes de adopción: «Quiero adoptarlo» en la ficha pública, el panel de quien cuida al animal
- * y la vista «Solicitudes» del espacio de rescate.
+ * Solicitudes de adopción: «Quiero adoptarlo» en la ficha pública, el panel de quien cuida al animal,
+ * la vista «Solicitudes» del espacio de rescate y «Adopciones» del perfil (las que envió la persona).
  */
 export { default as AdoptionApplyBanner } from './AdoptionApplyBanner';
 export { default as AdoptionApplicationModal } from './AdoptionApplicationModal';
@@ -8,6 +8,8 @@ export { default as AdoptionApplicationsPanel } from './AdoptionApplicationsPane
 export { default as AdoptionApplicationList } from './AdoptionApplicationList';
 export type { AdoptionListChange } from './AdoptionApplicationList';
 export { default as AdoptionApplicationCard } from './AdoptionApplicationCard';
+export { default as MyAdoptionApplicationsSection } from './MyAdoptionApplicationsSection';
+export { default as MyAdoptionApplicationDetail } from './MyAdoptionApplicationDetail';
 export type { AdoptionCardAction } from './AdoptionApplicationCard';
 export { useAdoptionActions } from './hooks/useAdoptionActions';
 export { useMyAdoptionApplication } from './hooks/useMyAdoptionApplication';

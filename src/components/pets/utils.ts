@@ -1,24 +1,15 @@
 import { ANIMAL_SEX_OPTIONS, ANIMAL_TYPE_LABELS } from 'kadesh/components/animals/constants';
+import { friendlyErrorText } from 'kadesh/utils/errorText';
 import type { PetSummary } from './types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Mensaje para la persona. Keystone manda las validaciones como
- * "You provided invalid data…\n  - Pet: <mensaje>"; se queda solo el mensaje.
+ * Mensaje para la persona, nunca el texto crudo de GraphQL: el motivo en español del backend
+ * (también el de una validación de Keystone), uno genérico o `fallback`. Ver `kadesh/utils/errorText`.
  */
 export function petErrorMessage(error: unknown, fallback = 'No se pudo guardar. Intenta de nuevo.'): string {
-  let raw = '';
-  if (error && typeof error === 'object' && 'graphQLErrors' in error) {
-    raw = (error as { graphQLErrors?: { message?: string }[] }).graphQLErrors?.[0]?.message ?? '';
-  }
-  if (!raw && error instanceof Error) raw = error.message;
-  const bullet = raw.split('\n').find((line) => /^\s*-\s/.test(line));
-  const message = (bullet ? bullet.replace(/^\s*-\s*[^:]+:\s*/, '') : raw.split('\n')[0]).trim();
-  if (!message || /prisma|graphql|keystone|access denied|you provided|you cannot|failed to fetch|variable "\$/i.test(message)) {
-    return fallback;
-  }
-  return message;
+  return friendlyErrorText(error, fallback);
 }
 
 /** `extensions.code` del primer error de GraphQL, si viene. */

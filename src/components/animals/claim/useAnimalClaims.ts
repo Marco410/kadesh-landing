@@ -10,21 +10,11 @@ import {
   type CreateAnimalClaimVariables,
   type GetAnimalClaimsResponse,
 } from 'kadesh/components/animals/queries';
+import { friendlyErrorText } from 'kadesh/utils/errorText';
 
 /** Mensaje de Keystone sin el envoltorio («You provided invalid data… - AnimalClaim: …»). */
 export function claimErrorMessage(error: unknown): string {
-  const raw =
-    (error as { graphQLErrors?: Array<{ message?: string }> })?.graphQLErrors?.[0]?.message ||
-    (error instanceof Error ? error.message : '');
-  const detail = raw
-    .split('\n')
-    .map((line) => line.trim())
-    .find((line) => line.startsWith('- '));
-  const text = (detail ? detail.replace(/^-\s*[A-Za-z]+:\s*/, '') : raw.split('\n')[0]).trim();
-  if (!text || /invalid data|access denied/i.test(text)) {
-    return 'No se pudo enviar la solicitud. Inténtalo de nuevo.';
-  }
-  return text;
+  return friendlyErrorText(error, 'No se pudo enviar la solicitud. Inténtalo de nuevo.');
 }
 
 /**

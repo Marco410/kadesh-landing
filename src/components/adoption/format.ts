@@ -1,3 +1,4 @@
+import { petErrorMessage } from 'kadesh/components/pets/utils';
 import { normalizeMxPhone } from 'kadesh/utils/phone';
 import { ADOPTION_HOUSING_OPTIONS, ADOPTION_OWNERSHIP_OPTIONS } from './constants';
 import type { AdoptionAnswers, AdoptionApplication } from './types';
@@ -91,14 +92,10 @@ export function adoptionAnimalName(name: string | null | undefined): string {
   return clean && clean !== 'Sin nombre' ? clean : 'este animal';
 }
 
-/** Mensaje de un error de red o de GraphQL; los técnicos se cambian por `fallback`. */
+/**
+ * Mensaje de un error de red o de GraphQL para la persona: el motivo en español del backend
+ * (también el de una validación de Keystone); lo técnico se cambia por `fallback`.
+ */
 export function adoptionErrorMessage(error: unknown, fallback: string): string {
-  const raw =
-    (error as { graphQLErrors?: Array<{ message?: string }> })?.graphQLErrors?.[0]?.message ||
-    (error instanceof Error ? error.message : '');
-  const text = raw.split('\n')[0]?.trim() ?? '';
-  if (!text || /invalid data|access denied|internal|unexpected|failed to fetch|network|prisma|graphql/i.test(text)) {
-    return fallback;
-  }
-  return text;
+  return petErrorMessage(error, fallback);
 }

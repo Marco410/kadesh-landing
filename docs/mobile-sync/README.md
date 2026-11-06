@@ -29,3 +29,4 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-05 | [Fichas de rescate, «Se quedó conmigo» y adopción con cartilla](2026-11-05-fichas-de-rescate-y-adopcion.md) | profile | pendiente |
 | 2026-11-05 | [Solicitudes de adopción («Quiero adoptarlo»)](2026-11-05-solicitudes-de-adopcion.md) | animals | pendiente |
 | 2026-11-05 | [Traspasar una mascota a otra cuenta con un código](2026-11-05-traspaso-de-mascotas-con-codigo.md) | profile | pendiente |
+| 2026-11-06 | [Mensajes de error legibles (nunca el texto crudo de GraphQL)](2026-11-06-errores-legibles.md) | shared | pendiente |

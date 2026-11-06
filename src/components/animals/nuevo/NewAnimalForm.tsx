@@ -54,6 +54,7 @@ import { normalizeMxPhone } from 'kadesh/utils/phone';
 import { toUploadableImage } from 'kadesh/utils/uploadable-image';
 import { usePublishableRescueOrgs } from 'kadesh/components/rescue/hooks/usePublishableRescueOrgs';
 import { RESCUE_ORG_STATUS } from 'kadesh/components/rescue/constants';
+import { friendlyErrorText } from 'kadesh/utils/errorText';
 
 const STEPS = ['Foto y tipo', 'Cómo reconocerlo', 'Dónde'] as const;
 const MAX_IMAGES = 3;
@@ -160,11 +161,12 @@ function publishErrorMessage(error: unknown): { text: string; step: number; fiel
   } else if (error instanceof Error) {
     raw = error.message;
   }
-  const text = raw.split('\n')[0]?.trim() || '';
+  // El motivo en español (también el de una viñeta de Keystone); vacío si solo hay texto técnico.
+  const text = friendlyErrorText(error, '');
   if (/10 dígitos|teléfono/i.test(text)) {
     return { text: 'El teléfono debe tener 10 dígitos.', step: 2, field: 'contactNumber' };
   }
-  if (/ciudad|ubicación|mapa|invalid data/i.test(text)) {
+  if (/ciudad|ubicación|mapa/i.test(text) || (!text && /invalid data/i.test(raw))) {
     return {
       text: 'Elige una ubicación de la lista o toca el mapa.',
       step: 2,
@@ -177,7 +179,7 @@ function publishErrorMessage(error: unknown): { text: string; step: number; fiel
   if (/raza/i.test(text)) {
     return { text: 'Elige una raza o pulsa No sé.', step: 1, field: 'animalBreedId' };
   }
-  if (text && !/you provided invalid data/i.test(text)) {
+  if (text) {
     return { text, step: 2 };
   }
   return { text: 'Revisa los datos marcados e inténtalo de nuevo.', step: 2 };

@@ -1,3 +1,5 @@
+import { friendlyErrorText } from "kadesh/utils/errorText";
+
 /**
  * Mensajes de auth para la persona. Nunca Prisma, GraphQL ni Keystone.
  */
@@ -66,5 +68,5 @@ export function friendlyAuthError(
     return fallback;
   }
 
-  return raw.split("\n")[0].trim() || fallback;
+  return friendlyErrorText(error, fallback);
 }

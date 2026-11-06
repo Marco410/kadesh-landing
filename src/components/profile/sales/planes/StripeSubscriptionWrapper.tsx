@@ -10,7 +10,8 @@ const stripePromise = loadStripe(
 );
 
 export default function StripeSubscriptionWrapper() {
-  const options = useMemo(() => ({}), []);
+  // En español: los errores de tarjeta de Stripe («Tu tarjeta fue rechazada») se muestran tal cual.
+  const options = useMemo(() => ({ locale: "es" as const }), []);
 
   return (
     <Elements stripe={stripePromise} options={options}>

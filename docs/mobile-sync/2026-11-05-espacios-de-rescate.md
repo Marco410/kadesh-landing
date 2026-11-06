@@ -225,7 +225,7 @@ type RescueMemberResult = { success: boolean; message: string; code?: string | n
   - El espacio nunca se queda sin admin: el backend rechaza quitar, degradar o salirse al último admin, y su `message` lo explica.
   - Hasta 50 personas por espacio.
 - **Activación:** máximo 3 espacios por persona, y 3 activaciones al día.
-- **Especies:** los mismos tipos de animal que un reporte (`ANIMAL_TYPE_OPTIONS` del backend, en este orden): `dog` Perro, `cat` Gato, `bird` Ave, `fish` Pez, `reptil` Reptil, `mammal` Mamífero. Los chips muestran esas etiquetas; en frases van en plural y minúsculas («Rescata: perros, gatos y aves»), y sin ninguna elegida, «todo tipo de animales». El backend descarta valores fuera de la lista.
+- **Especies:** los mismos tipos de animal que un reporte (`ANIMAL_TYPE_OPTIONS` del backend, en este orden): `dog` Perro, `cat` Gato, `bird` Ave, `fish` Pez, `reptil` Reptil, `mammal` Mamífero. Los chips muestran esas etiquetas; en frases van en plural y minúsculas («Rescata: perros, gatos y aves»), y sin ninguna elegida, «todo tipo de animales». **Antes de mandar `species` filtra a esos seis valores**: hay espacios activados con valores viejos (p. ej. `other`), y si `updateRescueOrganization` recibe uno, Keystone rechaza el guardado completo («'other' is not an accepted option»). Al leer, ignora los valores que no estén en la lista.
 - **Mensaje de «Verificar por WhatsApp»:** va al WhatsApp de KADESH (el mismo número de ayuda de la app). Texto:
 
   ```text

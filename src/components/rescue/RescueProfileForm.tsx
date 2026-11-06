@@ -14,20 +14,14 @@ import {
   dashTextareaClass,
 } from "kadesh/components/app-shell";
 import { ANIMAL_TYPE_OPTIONS } from "kadesh/components/animals/constants";
+import { petErrorMessage } from "kadesh/components/pets";
 import { CHIP_CLASS, chipTone } from "kadesh/components/profile/clinics/formStyles";
 import { cn } from "kadesh/utils/cn";
-import { RESCUE_LIMITS, RESCUE_ORG_TYPE_OPTIONS, canEditRescueProfile } from "./constants";
+import { RESCUE_LIMITS, RESCUE_ORG_TYPE_OPTIONS, canEditRescueProfile, knownRescueSpecies } from "./constants";
 import { UPDATE_RESCUE_ORG_MUTATION, type UpdateRescueOrgResponse } from "./queries";
 import type { RescueOrganization } from "./types";
 
 type ImageSlot = "logo" | "cover";
-
-function readableError(error: unknown): string {
-  const message = error instanceof Error ? error.message : "";
-  // Keystone junta los errores de validación del perfil en un solo mensaje.
-  const match = message.match(/- (.+)$/m);
-  return match?.[1] || "No pudimos guardar. Revisa los datos e intenta de nuevo.";
-}
 
 /**
  * Perfil público del espacio. Lo editan admins y coordinadores; el resto lo ve en solo lectura.
@@ -47,7 +41,7 @@ export default function RescueProfileForm({
   const [description, setDescription] = useState(org.description ?? "");
   const [city, setCity] = useState(org.city ?? "");
   const [state, setState] = useState(org.state ?? "");
-  const [species, setSpecies] = useState<string[]>(org.species ?? []);
+  const [species, setSpecies] = useState<string[]>(() => knownRescueSpecies(org.species));
   const [capacity, setCapacity] = useState(org.capacity != null ? String(org.capacity) : "");
   const [whatsapp, setWhatsapp] = useState(org.whatsapp ?? "");
   const [email, setEmail] = useState(org.email ?? "");
@@ -114,7 +108,7 @@ export default function RescueProfileForm({
             description,
             city: city.trim(),
             state: state.trim(),
-            species,
+            species: knownRescueSpecies(species),
             capacity: capacityValue == null ? null : Math.round(capacityValue),
             whatsapp: whatsapp.trim(),
             email: email.trim(),
@@ -134,7 +128,7 @@ export default function RescueProfileForm({
       sileo.success({ title: "Perfil guardado" });
       onSaved();
     } catch (mutationError) {
-      setError(readableError(mutationError));
+      setError(petErrorMessage(mutationError, "No pudimos guardar. Revisa los datos e intenta de nuevo."));
     }
   };
 

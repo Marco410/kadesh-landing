@@ -15,6 +15,33 @@ Formato:
 
 ---
 
+## 2026-11-06 · fix: errores legibles en toda la web y «Guardar perfil» del espacio de rescate
+- Rama: feat/espacios-de-rescate
+- Qué cambió y por qué: al verificar un espacio desde Operaciones salió el error crudo de Keystone («RescueOrganization.name: value must not be empty…»). Al guardar el perfil del espacio salió «'other' is not an accepted option». La causa del primero estaba en el backend, que ya quedó corregido. El segundo era de la web:
+  - **Perfil del espacio**: los espacios activados con los chips viejos tienen `species` con `other`. El formulario ya no lo mostraba, pero lo reenviaba, y Keystone rechaza el guardado entero (valida lo que llega, antes de los hooks). Ahora `knownRescueSpecies` deja solo los tipos de `ANIMAL_TYPE_OPTIONS`, al cargar y al guardar.
+  - **Un solo traductor de errores**, `kadesh/utils/errorText` (`friendlyErrorText`, igual al de kadesh-business):
+    - quita la etiqueta «Lista.campo:» de cada viñeta;
+    - muestra solo mensajes que parezcan español y no sean técnicos;
+    - cambia los de Keystone por uno genérico («Falta un dato obligatorio.», «Una de las opciones elegidas ya no existe…»), y sin red dice «No hay conexión…».
+  - Lo usan `petErrorMessage`, `adoptionErrorMessage`, `claimErrorMessage`, `graphqlErrorMessage` (citas), `friendlyAuthError` (su último caso), los formularios de reporte (nuevo y editar), los eventos, el alta de veterinaria, las bitácoras, los avisos (WhatsApp y zona), el blog, la ubicación recordada y las secciones de ventas que mostraban `err.message`.
+  - Stripe (planes) va con `locale: "es"`: sus errores de tarjeta llegan en español y se muestran tal cual.
+  - El README de rescate dice que la verificación se hace en Operaciones de kadesh-business.
+- Archivos:
+  - Nuevo: `src/utils/errorText.ts`.
+  - Rescate: `src/components/rescue/RescueProfileForm.tsx`, `src/components/rescue/constants.ts` y `src/components/rescue/README.md`.
+  - Mascotas y adopción: `src/components/pets/utils.ts` y `src/components/adoption/format.ts`.
+  - Auth: `src/components/auth/authErrors.ts`.
+  - Animales: `src/components/animals/nuevo/NewAnimalForm.tsx`, `EditAnimalForm.tsx`, `claim/useAnimalClaims.ts`, `detail/AddLogModal.tsx` y `hooks/useLostAnimals.ts`.
+  - Veterinarias: `src/components/veterinaries/appointments.ts` y `RegisterVeterinaryForm.tsx`.
+  - Eventos: `src/components/events/form/EventForm.tsx`.
+  - Avisos: `src/components/notifications/WhatsappNotificationsCard.tsx` y `AlertSettingsForm.tsx`.
+  - Blog: `src/components/blog/BlogSection.tsx` y `CategorySection.tsx`.
+  - Ubicación: `src/utils/useRememberedLocation.ts`.
+  - Ventas: `src/components/profile/sales/SalesSection.tsx`, `agregar-vendedor/AgregarVendedorSection.tsx`, `obtener-clientes/ObtenerClientesSection.tsx`, `planes/hooks/useSubscriptionPayment.ts` y `planes/StripeSubscriptionWrapper.tsx`.
+  - Docs móvil: `docs/mobile-sync/2026-11-05-espacios-de-rescate.md` (regla de `species`).
+- GraphQL: ninguna
+- Móvil: [prompt](../mobile-sync/2026-11-06-errores-legibles.md)
+
 ## 2026-11-05 · feat: solicitudes de adopción y traspaso de mascotas con código
 - Rama: feat/espacios-de-rescate
 - Qué cambió y por qué: Fase 3 de los espacios de rescate, más una forma de pasar una mascota de cuenta que sirve a cualquiera.

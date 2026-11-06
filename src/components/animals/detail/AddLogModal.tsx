@@ -9,6 +9,7 @@ import LocationPicker from '../nuevo/LocationPicker';
 import StatusDatePicker from 'kadesh/components/shared/StatusDatePicker';
 import { useCreateLog } from './hooks/useCreateLog';
 import { useUiMotion } from 'kadesh/components/shared/motion';
+import { friendlyErrorText } from 'kadesh/utils/errorText';
 
 interface AddLogModalProps {
   isOpen: boolean;
@@ -49,7 +50,7 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
       onClose();
     },
     onError: (error) => {
-      setErrors({ submit: error?.message || 'Error al guardar el registro' });
+      setErrors({ submit: friendlyErrorText(error, 'No se pudo guardar el registro. Intenta de nuevo.') });
     },
   });
 

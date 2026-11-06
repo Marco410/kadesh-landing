@@ -136,6 +136,15 @@ export const RESCUE_ADOPTER_NOT_FOUND = 'RESCUE_ADOPTER_NOT_FOUND';
  * Qué animales rescata, en minúsculas y en el orden de `ANIMAL_TYPE_OPTIONS` (los mismos tipos que un
  * reporte): «perros, gatos y aves». Vacío si no eligió ninguno (rescata de todo).
  */
+/**
+ * Solo los tipos que acepta el backend (`ANIMAL_TYPE_OPTIONS`). Hay espacios activados con valores
+ * viejos (p. ej. «other»): Keystone rechaza el guardado entero si se reenvían.
+ */
+export function knownRescueSpecies(values: readonly string[] | null | undefined): string[] {
+  const known = new Set<string>(ANIMAL_TYPE_OPTIONS.map((option) => option.value));
+  return [...new Set((values ?? []).filter((value) => known.has(value)))];
+}
+
 export function rescueSpeciesPhrase(values: string[] | null | undefined): string {
   const chosen = new Set(values ?? []);
   const labels = ANIMAL_TYPE_OPTIONS.filter((option) => chosen.has(option.value))

@@ -10,6 +10,7 @@ import { Image01Icon } from '@hugeicons/core-free-icons';
 import { getCategoryLabel, getCategoryColors } from './constants';
 import { Routes } from 'kadesh/core/routes';
 import { Bone, SkeletonRegion } from 'kadesh/components/ui/skeleton';
+import { friendlyErrorText } from 'kadesh/utils/errorText';
 
 const CATEGORY_SKELETON_WIDTHS = [88, 72, 96, 64, 80] as const;
 
@@ -43,7 +44,7 @@ export default function CategorySection() {
       <section className="bg-[#ffffff] dark:bg-[#121212] py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <ErrorState 
-            message={error?.message || 'Error desconocido al cargar las categorías'}
+            message={friendlyErrorText(error, 'No se pudieron cargar las categorías. Intenta de nuevo.')}
             title="Error al cargar las categorías"
           />
         </div>

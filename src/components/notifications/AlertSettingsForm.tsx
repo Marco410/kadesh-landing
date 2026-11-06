@@ -24,6 +24,7 @@ import { useWhatsappNotifications } from './hooks/useWhatsappNotifications';
 import { ALERT_RADIUS_OPTIONS, DEFAULT_ALERT_RADIUS_KM, MAX_DAILY_ALERTS } from './constants';
 import AlertZoneMap from './AlertZoneMap';
 import type { AlertSettings } from './types';
+import { friendlyErrorText } from 'kadesh/utils/errorText';
 
 const EMPTY_SETTINGS: AlertSettings = {
   enabled: false,
@@ -123,7 +124,7 @@ export default function AlertSettingsForm() {
     } catch (err) {
       sileo.error({
         title: 'No pudimos guardar',
-        description: err instanceof Error ? err.message : 'Intenta de nuevo en un momento.',
+        description: friendlyErrorText(err, 'Intenta de nuevo en un momento.'),
       });
     }
   };

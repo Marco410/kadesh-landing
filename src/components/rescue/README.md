@@ -7,7 +7,7 @@ El backend es la list `RescueOrganization` de kadesh-back (ver `models/Pet/Rescu
 ## Ciclo
 
 1. **Activar** (`/perfil/rescate/activar`, `RescueOnboardingForm`): un asistente de 3 pasos que llama a `activateRescueOrganization`. El espacio queda **En revisión** con la persona como admin. Si eligió logo, se sube enseguida con `updateRescueOrganization`.
-2. **Verificar**: la persona escribe por WhatsApp (`rescueVerificationWhatsAppUrl`) y un admin cambia `status` en el admin de Keystone. Avisa a sus admins con `rescue.verified` o `rescue.rejected`.
+2. **Verificar**: la persona escribe por WhatsApp (`rescueVerificationWhatsAppUrl`) y un admin lo revisa en Operaciones de kadesh-business (Kadesh Pet → Espacios de rescate): verifica, rechaza o suspende con un mensaje que el espacio ve en su panel (`statusNote`). Avisa a sus admins con `rescue.verified` o `rescue.rejected`.
 3. **Aliado**: un admin marca `isAlly` (y si quiere, `allyOrder`). Sale en la portada y en `/aliados`.
 
 ## Panel (`/perfil?tab=rescate`)

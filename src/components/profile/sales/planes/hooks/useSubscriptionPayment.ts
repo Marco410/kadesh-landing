@@ -14,6 +14,7 @@ import {
   type SaasPlanItem,
 } from "kadesh/components/profile/sales/queries";
 import { Routes } from "kadesh/core/routes";
+import { friendlyErrorText } from "kadesh/utils/errorText";
 
 /** Tarjeta guardada en Stripe, solo con lo que se compara para no duplicarla. */
 type StripeCardMethod = {
@@ -199,7 +200,7 @@ export function useSubscriptionPayment(
       }
     } catch (err) {
       setLoadingPayment(false);
-      const message = err instanceof Error ? err.message : "Error de conexión. Intenta de nuevo.";
+      const message = friendlyErrorText(err, "Error de conexión. Intenta de nuevo.");
       sileo.error({ title: message });
     }
   };

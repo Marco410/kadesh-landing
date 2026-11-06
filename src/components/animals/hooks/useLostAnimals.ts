@@ -6,6 +6,7 @@ import { GET_NEARBY_ANIMALS_QUERY, GET_ANIMAL_TYPES_QUERY } from '../queries';
 import { LostAnimal, AnimalFilters, AnimalType } from '../types';
 import { DEFAULT_ANIMALS_PER_PAGE, DEFAULT_RADIUS } from 'kadesh/constants/constans';
 import { sortMultimediaByOrder } from '../sortMultimedia';
+import { friendlyErrorText } from 'kadesh/utils/errorText';
 
 
 // Function to normalize text by removing accents
@@ -337,7 +338,7 @@ export function useLostAnimals(
     animals: paginatedAnimals,
     allAnimals, // For map markers
     loading,
-    error: error?.message || null,
+    error: error ? friendlyErrorText(error, 'No se pudieron cargar los reportes. Intenta de nuevo.') : null,
     currentPage,
     totalPages,
     totalAnimals,

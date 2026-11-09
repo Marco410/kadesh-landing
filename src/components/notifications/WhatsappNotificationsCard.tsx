@@ -24,6 +24,7 @@ import { useUser } from 'kadesh/utils/UserContext';
 import { WHATSAPP_CATEGORIES, type WhatsappCategory } from './constants';
 import { useAlertSettings } from './hooks/useAlertSettings';
 import { isCategoryOn, useWhatsappNotifications } from './hooks/useWhatsappNotifications';
+import { friendlyErrorText } from 'kadesh/utils/errorText';
 
 /** Lo que llega por WhatsApp (los avisos de Pet con plantilla en kadesh-back). */
 export const WHATSAPP_NOTIFICATION_KINDS =
@@ -78,7 +79,7 @@ export default function WhatsappNotificationsCard() {
     } catch (err) {
       sileo.error({
         title: 'No pudimos guardar',
-        description: err instanceof Error ? err.message : 'Intenta de nuevo en un momento.',
+        description: friendlyErrorText(err, 'Intenta de nuevo en un momento.'),
       });
     }
   };
@@ -90,7 +91,7 @@ export default function WhatsappNotificationsCard() {
     } catch (err) {
       sileo.error({
         title: 'No pudimos guardar',
-        description: err instanceof Error ? err.message : 'Intenta de nuevo en un momento.',
+        description: friendlyErrorText(err, 'Intenta de nuevo en un momento.'),
       });
     }
   };

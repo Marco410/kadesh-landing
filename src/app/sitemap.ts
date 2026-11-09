@@ -3,6 +3,7 @@ import { fetchPublishedPostsForSitemap } from 'kadesh/components/blog/server';
 import { fetchEventFacets, fetchEventsForSitemap } from 'kadesh/components/events/server';
 import { fetchAnimalsForSitemap } from 'kadesh/components/animals/server';
 import { fetchPetPlacesForSitemap } from 'kadesh/components/veterinaries/server';
+import { fetchRescueOrgsForSitemap } from 'kadesh/components/rescue/server';
 import { Routes } from 'kadesh/core/routes';
 import { SITE_URL } from 'kadesh/core/site';
 
@@ -23,6 +24,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     Routes.events.index,
     Routes.veterinaries.index,
     Routes.veterinaries.register,
+    Routes.organizations.index,
+    Routes.allies,
     Routes.conocenos,
     Routes.contact,
     Routes.novedades,
@@ -78,8 +81,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ]);
 
-  // Fichas de animales (sin los unidos a otro reporte) y de veterinarias.
-  const [animals, petPlaces] = await Promise.all([fetchAnimalsForSitemap(), fetchPetPlacesForSitemap()]);
+  // Fichas de animales (sin los unidos a otro reporte), de veterinarias y de espacios de rescate verificados.
+  const [animals, petPlaces, rescueOrgs] = await Promise.all([
+    fetchAnimalsForSitemap(),
+    fetchPetPlacesForSitemap(),
+    fetchRescueOrgsForSitemap(),
+  ]);
   const animalEntries: MetadataRoute.Sitemap = animals.map((animal) => ({
     url: `${SITE_URL}${animal.path}`,
     lastModified: toLastModified(animal.createdAt),
@@ -92,5 +99,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: place.verified ? 0.6 : 0.5,
   }));
 
-  return [...staticEntries, ...postEntries, ...eventEntries, ...placeEntries, ...animalEntries, ...petPlaceEntries];
+  const rescueOrgEntries: MetadataRoute.Sitemap = rescueOrgs.map((org) => ({
+    url: `${SITE_URL}${Routes.organizations.detail(org.slug)}`,
+    lastModified: toLastModified(org.updatedAt),
+    changeFrequency: 'weekly',
+    priority: 0.6,
+  }));
+
+  return [
+    ...staticEntries,
+    ...postEntries,
+    ...eventEntries,
+    ...placeEntries,
+    ...animalEntries,
+    ...petPlaceEntries,
+    ...rescueOrgEntries,
+  ];
 }

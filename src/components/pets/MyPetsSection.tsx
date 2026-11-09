@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@apollo/client';
@@ -10,6 +10,7 @@ import { Add01Icon, Image01Icon, Notification01Icon } from '@hugeicons/core-free
 import { useProfileMotion } from 'kadesh/components/profile/motion';
 import PetDetail from './PetDetail';
 import PetFormModal from './PetFormModal';
+import ReceivePetModal from './ReceivePetModal';
 import { MY_PETS_QUERY, type MyPetsResponse, type MyPetsVariables } from './queries';
 import { PET_STATUS, PET_STATUS_BADGE, PET_STATUS_LABELS } from './constants';
 import { DUE_TONE_CLASS, dueTone, formatDay, petSubtitle, relativeDueLabel } from './utils';
@@ -17,6 +18,20 @@ import type { PetSummary } from './types';
 
 /** Parámetro de la URL con la mascota abierta: `/perfil?tab=pets&pet=<id>`. */
 export const PET_SEARCH_PARAM = 'pet';
+/** Enlace para recibir una mascota con su código: `/perfil?tab=pets&codigo=7KQ2-M9XA`. */
+export const PET_TRANSFER_CODE_PARAM = 'codigo';
+
+function ReceiveButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-dash-line px-4 text-sm font-semibold text-dash-ink transition-colors hover:bg-dash-hover"
+    >
+      Recibir con código
+    </button>
+  );
+}
 
 function RegisterButton({ onClick }: { onClick: () => void }) {
   const motionPrefs = useProfileMotion();
@@ -84,7 +99,21 @@ export default function MyPetsSection({ userId }: { userId: string }) {
   const searchParams = useSearchParams();
   const motionPrefs = useProfileMotion();
   const [registering, setRegistering] = useState(false);
+  const [receiving, setReceiving] = useState(false);
+  const [receiveCode, setReceiveCode] = useState<string | null>(null);
   const openPetId = searchParams.get(PET_SEARCH_PARAM);
+  const codeParam = searchParams.get(PET_TRANSFER_CODE_PARAM);
+
+  // El enlace compartido abre «Recibir con código» con el código escrito; se quita de la URL para
+  // que al recargar no se vuelva a abrir.
+  useEffect(() => {
+    if (!codeParam) return;
+    setReceiveCode(codeParam);
+    setReceiving(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete(PET_TRANSFER_CODE_PARAM);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [codeParam, pathname, router, searchParams]);
 
   const { data, loading, error } = useQuery<MyPetsResponse, MyPetsVariables>(MY_PETS_QUERY, {
     variables: { where: { owners: { some: { user: { id: { equals: userId } } } } } },
@@ -105,8 +134,23 @@ export default function MyPetsSection({ userId }: { userId: string }) {
 
   const pets = data?.pets ?? [];
   const registerModal = (
-    <PetFormModal isOpen={registering} onClose={() => setRegistering(false)} onSaved={(id) => openPet(id)} />
+    <>
+      <PetFormModal isOpen={registering} onClose={() => setRegistering(false)} onSaved={(id) => openPet(id)} />
+      <ReceivePetModal
+        isOpen={receiving}
+        onClose={() => {
+          setReceiving(false);
+          setReceiveCode(null);
+        }}
+        initialCode={receiveCode}
+        onReceived={(id) => openPet(id)}
+      />
+    </>
   );
+  const openReceive = () => {
+    setReceiveCode(null);
+    setReceiving(true);
+  };
 
   if (loading && pets.length === 0) {
     return (
@@ -141,7 +185,10 @@ export default function MyPetsSection({ userId }: { userId: string }) {
             Lleva su cartilla de vacunas y desparasitaciones, y te avisamos antes de cada fecha. Si un día se
             pierde, publicas su reporte en un paso con sus fotos y señas.
           </p>
-          <RegisterButton onClick={() => setRegistering(true)} />
+          <div className="flex flex-wrap gap-2">
+            <RegisterButton onClick={() => setRegistering(true)} />
+            <ReceiveButton onClick={openReceive} />
+          </div>
         </motion.div>
         {registerModal}
       </>
@@ -150,7 +197,8 @@ export default function MyPetsSection({ userId }: { userId: string }) {
 
   return (
     <div>
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex flex-wrap justify-end gap-2">
+        <ReceiveButton onClick={openReceive} />
         <RegisterButton onClick={() => setRegistering(true)} />
       </div>
       <motion.ul

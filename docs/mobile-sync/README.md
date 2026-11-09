@@ -24,5 +24,11 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-04 | [App y pantalla en cada petición, reporte de errores, actividad y límites contra abuso](2026-11-04-errores-contexto-y-abuso.md) | shared | pendiente |
 | 2026-11-04 | [Eventos: ver, «Me interesa / Asistiré» y avisos](2026-11-04-eventos-ver-y-asistir.md) | events | pendiente |
 | 2026-11-04 | [Eventos: publicar, «Mis eventos», editar y cancelar](2026-11-04-eventos-publicar.md) | events | pendiente |
+| 2026-11-05 | [Espacios de rescate: activar, equipo y publicar a nombre de la organización](2026-11-05-espacios-de-rescate.md) | profile | pendiente |
 | 2026-11-05 | [Señas particulares recortadas con «Ver más» en la ficha del animal](2026-11-05-senas-ver-mas.md) | animals | pendiente |
+| 2026-11-05 | [Fichas de rescate, «Se quedó conmigo» y adopción con cartilla](2026-11-05-fichas-de-rescate-y-adopcion.md) | profile | pendiente |
+| 2026-11-05 | [Solicitudes de adopción («Quiero adoptarlo»)](2026-11-05-solicitudes-de-adopcion.md) | animals | pendiente |
+| 2026-11-05 | [Traspasar una mascota a otra cuenta con un código](2026-11-05-traspaso-de-mascotas-con-codigo.md) | profile | pendiente |
+| 2026-11-06 | [Mensajes de error legibles (nunca el texto crudo de GraphQL)](2026-11-06-errores-legibles.md) | shared | pendiente |
+| 2026-11-06 | [«Adopciones» en el perfil: ver, seguir y editar mis solicitudes](2026-11-06-mis-solicitudes-de-adopcion.md) | profile | pendiente |
 | 2026-11-09 | [Difusión pagada del reporte en Facebook e Instagram (por WhatsApp)](2026-11-09-difusion-pagada.md) | animals | pendiente |

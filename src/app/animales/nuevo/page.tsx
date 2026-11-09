@@ -18,11 +18,14 @@ function NewAnimalPageContent() {
   const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
   const requestedStatus = searchParams.get("status");
+  const requestedOrg = searchParams.get("org");
 
   if (userLoading || !user) {
-    const here = requestedStatus
-      ? `${Routes.animals.new}?status=${encodeURIComponent(requestedStatus)}`
-      : Routes.animals.new;
+    const query = new URLSearchParams();
+    if (requestedStatus) query.set("status", requestedStatus);
+    if (requestedOrg) query.set("org", requestedOrg);
+    const search = query.toString();
+    const here = search ? `${Routes.animals.new}?${search}` : Routes.animals.new;
     // Sin sesión no se manda a /auth/login: el modal pide la cuenta aquí mismo y, al crearla o
     // entrar, el formulario aparece en esta misma página.
     return (
@@ -45,7 +48,7 @@ function NewAnimalPageContent() {
   return (
     <main className={PAGE_SHELL}>
       <Navigation />
-      <NewAnimalForm initialStatus={requestedStatus} />
+      <NewAnimalForm initialStatus={requestedStatus} initialOrganizationId={requestedOrg} />
     </main>
   );
 }

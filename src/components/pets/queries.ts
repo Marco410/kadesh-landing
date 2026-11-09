@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import type { PetDetail, PetSummary } from './types';
+import type { PetDetail, PetSummary, PetTransferCode, PetTransferPreview } from './types';
 
 /** Mascotas de la persona con su próximo recordatorio pendiente. */
 export const MY_PETS_QUERY = gql`
@@ -80,6 +80,30 @@ export const PET_DETAIL_QUERY = gql`
         id
         slug
       }
+      viewerRole
+      organization {
+        id
+        name
+      }
+      stage
+      intakeDate
+      fosterMember {
+        id
+        userName
+      }
+      publicReport {
+        id
+        slug
+        logs(orderBy: [{ date_status: desc }], take: 1) {
+          status
+        }
+      }
+      adoptedFromOrganization {
+        id
+        name
+        slug
+      }
+      adoptedAt
       owners(orderBy: [{ createdAt: asc }]) {
         id
         role
@@ -129,8 +153,11 @@ export interface PetDetailResponse {
   pet: PetDetail | null;
 }
 
-/** Las listas que se recargan después de cualquier cambio en la cartilla. */
-export const PET_REFETCH = ['MyPets', 'PetDetail'];
+/**
+ * Las listas que se recargan después de cualquier cambio en la cartilla (las de un espacio de
+ * rescate solo existen si su panel está abierto; Apollo ignora las que no están activas).
+ */
+export const PET_REFETCH = ['MyPets', 'PetDetail', 'RescuePets', 'RescueOrganizationAnimals'];
 
 export const CREATE_PET_MUTATION = gql`
   mutation CreatePet($data: PetCreateInput!) {
@@ -329,4 +356,97 @@ export const SEARCH_VETERINARIES_QUERY = gql`
 
 export interface SearchVeterinariesResponse {
   petPlaces: { id: string; name: string; municipality?: string | null }[];
+}
+
+/** Código de traspaso sin usar de la mascota (solo lo ve quien puede darla). */
+export const PET_TRANSFER_CODES_QUERY = gql`
+  query PetTransferCodes($petId: ID!) {
+    petTransfers(
+      where: { pet: { id: { equals: $petId } }, status: { equals: "pending" } }
+      orderBy: [{ createdAt: desc }]
+      take: 1
+    ) {
+      id
+      code
+      status
+      expiresAt
+      isExpired
+      message
+    }
+  }
+`;
+
+export interface PetTransferCodesResponse {
+  petTransfers: PetTransferCode[];
+}
+
+/** Genera el código (cancela el anterior). Lo hacen el principal o admin/coordinación del espacio. */
+export const CREATE_PET_TRANSFER_CODE_MUTATION = gql`
+  mutation CreatePetTransferCode($petId: ID!, $message: String) {
+    createPetTransferCode(petId: $petId, message: $message) {
+      success
+      message
+      transfer {
+        id
+        code
+        status
+        expiresAt
+        isExpired
+        message
+      }
+    }
+  }
+`;
+
+export interface CreatePetTransferCodeResponse {
+  createPetTransferCode: { success: boolean; message: string; transfer?: PetTransferCode | null };
+}
+
+export const CANCEL_PET_TRANSFER_CODE_MUTATION = gql`
+  mutation CancelPetTransferCode($transferId: ID!) {
+    cancelPetTransferCode(transferId: $transferId) {
+      success
+      message
+    }
+  }
+`;
+
+export interface CancelPetTransferCodeResponse {
+  cancelPetTransferCode: { success: boolean; message: string };
+}
+
+/** Quien recibe ve qué mascota es y quién se la da. Es mutación para que cuente en el tope de intentos. */
+export const PREVIEW_PET_TRANSFER_CODE_MUTATION = gql`
+  mutation PreviewPetTransferCode($code: String!) {
+    previewPetTransferCode(code: $code) {
+      success
+      message
+      petName
+      species
+      breed
+      photoUrl
+      fromName
+      fromOrganization
+      transferMessage
+      expiresAt
+    }
+  }
+`;
+
+export interface PreviewPetTransferCodeResponse {
+  previewPetTransferCode: PetTransferPreview;
+}
+
+export const REDEEM_PET_TRANSFER_CODE_MUTATION = gql`
+  mutation RedeemPetTransferCode($code: String!) {
+    redeemPetTransferCode(code: $code) {
+      success
+      message
+      petId
+    }
+  }
+`;
+
+export interface RedeemPetTransferCodeResponse {
+  redeemPetTransferCode: { success: boolean; message: string; petId?: string | null };
 }

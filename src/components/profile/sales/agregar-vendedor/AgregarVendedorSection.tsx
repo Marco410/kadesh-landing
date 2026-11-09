@@ -26,6 +26,7 @@ import { useUser } from "kadesh/utils/UserContext";
 import { sileo } from "sileo";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon, Edit02Icon } from "@hugeicons/core-free-icons";
+import { friendlyErrorText } from "kadesh/utils/errorText";
 
 export default function AgregarVendedorSection() {
   const { user } = useUser();
@@ -139,7 +140,7 @@ export default function AgregarVendedorSection() {
       } else {
         sileo.error({
           title: "No se pudo agregar el vendedor",
-          description: msg || "Intenta de nuevo más tarde.",
+          description: friendlyErrorText(err, "Intenta de nuevo más tarde."),
         });
       }
     },
@@ -176,7 +177,7 @@ export default function AgregarVendedorSection() {
       } else {
         sileo.error({
           title: "No se pudieron guardar los cambios",
-          description: msg || "Intenta de nuevo.",
+          description: friendlyErrorText(err, "Intenta de nuevo."),
         });
       }
     },

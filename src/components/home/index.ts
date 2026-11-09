@@ -5,6 +5,7 @@ export { default as UpcomingEventsSection } from './UpcomingEventsSection';
 export { default as HowItWorksSection } from './HowItWorksSection';
 export { default as FirstHoursSection } from './FirstHoursSection';
 export { default as StoriesSection } from './StoriesSection';
+export { default as AlliesSection, HOME_ALLIES_MAX } from './AlliesSection';
 export { default as VeterinariansSection } from './VeterinariansSection';
 export { default as DonationsSection } from './DonationsSection';
 export { default as BusinessStrip } from './BusinessStrip';

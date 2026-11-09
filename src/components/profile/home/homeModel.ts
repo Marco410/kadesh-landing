@@ -3,6 +3,7 @@ import {
   Alert02Icon,
   Calendar03Icon,
   Call02Icon,
+  CharityIcon,
   InjectionIcon,
   RadarIcon,
   Stethoscope02Icon,
@@ -24,6 +25,7 @@ import {
 import type {
   HomeAppointment,
   HomePetPlace,
+  HomeRescueOrg,
   HomeReminder,
   ProfileClinicHomeResponse,
   ProfileClinicHomeVariables,
@@ -186,6 +188,8 @@ export type AttentionInput = {
   pendingClaims: number;
   places: HomePetPlace[];
   clinicPending: number;
+  /** Espacios de rescate de la persona; solo avisa a sus administradores. */
+  rescueOrgs?: HomeRescueOrg[];
   hasPhone: boolean;
   alertsEnabled: boolean | null;
 };
@@ -196,7 +200,8 @@ export type AttentionInput = {
  * 2. Citas por confirmar en sus clínicas verificadas.
  * 3. Su próxima cita, si es en menos de 48 h.
  * 4. Reclamos de sus reportes que Kadesh está revisando.
- * 5. Clínicas en revisión (aún no las puede administrar).
+ * 5. Clínicas en revisión (aún no las puede administrar) y espacios de rescate en revisión o
+ *    rechazados (solo a sus administradores).
  * 6. Sin teléfono en el perfil.
  * 7. Alertas de zona apagadas (sugerencia: no cuenta como "pendiente").
  */
@@ -275,6 +280,28 @@ export function buildAttention(input: AttentionInput): AttentionItem[] {
       href: Routes.profileTab("clinics"),
       icon: Alert02Icon,
     });
+  }
+
+  for (const org of (input.rescueOrgs ?? []).filter((item) => item.viewerRole === "admin")) {
+    if (org.status === "pending") {
+      items.push({
+        id: `rescue-${org.id}`,
+        severity: "info",
+        title: `${org.name} está en revisión`,
+        detail: "Escríbenos por WhatsApp para que tu perfil sea público.",
+        href: Routes.profileRescue(org.id),
+        icon: CharityIcon,
+      });
+    } else if (org.status === "rejected" || org.status === "suspended") {
+      items.push({
+        id: `rescue-${org.id}`,
+        severity: "warning",
+        title: org.status === "suspended" ? `${org.name} está suspendido` : `No pudimos verificar ${org.name}`,
+        detail: "Revisa el motivo en tu espacio de rescate.",
+        href: Routes.profileRescue(org.id),
+        icon: CharityIcon,
+      });
+    }
   }
 
   if (!input.hasPhone) {

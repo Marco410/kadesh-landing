@@ -1,4 +1,5 @@
 import type { PetPlaceType } from "./types";
+import { friendlyErrorText } from "kadesh/utils/errorText";
 
 export const APPOINTMENT_STATUS = {
   PENDING: "pending",
@@ -216,11 +217,5 @@ export function graphqlErrorMessage(
   error: unknown,
   fallback = "No se pudo completar la solicitud.",
 ): string {
-  if (error && typeof error === "object" && "graphQLErrors" in error) {
-    const first = (error as { graphQLErrors?: { message?: string }[] })
-      .graphQLErrors?.[0]?.message;
-    if (first) return first.split("\n")[0];
-  }
-  if (error instanceof Error && error.message) return error.message;
-  return fallback;
+  return friendlyErrorText(error, fallback);
 }

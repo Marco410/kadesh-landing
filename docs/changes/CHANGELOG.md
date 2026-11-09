@@ -35,6 +35,109 @@ Formato:
 - GraphQL: ninguna.
 - Móvil: [prompt](../mobile-sync/2026-11-09-difusion-pagada.md).
 
+## 2026-11-06 · feat: «Adopciones» en el perfil (ver, seguir y editar mis solicitudes)
+- Rama: feat/espacios-de-rescate
+- Qué cambió y por qué: quien enviaba una solicitud de adopción solo veía su estado en la ficha del animal. Ahora tiene dónde seguirla y corregirla.
+  - **Adopciones** en «Mis animales» (`/perfil?tab=adopciones`): sus solicitudes con foto, estado y quién cuida al animal, con filtros Abiertas/Todas.
+  - **Detalle** (`&solicitud=<id>`):
+    - qué sigue;
+    - «Cómo va»: Enviaste tu solicitud → En revisión → Aprobada → Llega a casa, o cómo terminó;
+    - el mensaje de quien cuida al animal;
+    - lo que respondió;
+    - acciones: Editar (solo «Enviada»), Ver ficha, Retirar y Ver su cartilla al adoptar.
+  - **Editar**: es el mismo formulario, prellenado. Solo mientras nadie la ponga en revisión; al guardar se avisa a quien cuida al animal.
+  - En la ficha, el aviso «Tu solicitud» tiene **Ver solicitud**.
+  - Los avisos de su solicitud (`adoption.application_updated`) abren el detalle.
+- Archivos:
+  - Nuevos: `src/components/adoption/MyAdoptionApplicationsSection.tsx` y `MyAdoptionApplicationDetail.tsx`.
+  - Adopción (`src/components/adoption/`): `AdoptionApplicationModal.tsx` (modo edición), `AdoptionApplyBanner.tsx`, `format.ts`, `queries.ts`, `types.ts`, `hooks/useAdoptionActions.ts`, `index.ts` y `README.md`.
+  - Perfil: `src/app/(cuenta)/perfil/page.tsx`, `src/components/profile/shell/profileNav.ts` y `ProfileShell.tsx`.
+  - Además: `src/core/routes.ts` (`profileAdoptions`, `profileAdoption`) y `src/utils/activity/clientContext.ts` (`solicitud`).
+- GraphQL (kadesh-back, sin migración):
+  - Mutación nueva `editAdoptionApplication(applicationId, input)`. No es `updateAdoptionApplication`, que es el CRUD de Keystone.
+  - Regla de límite `adoption_application_edit_user`: 20 ediciones al día.
+  - Los avisos a quien la envió llevan a `/perfil?tab=adopciones&solicitud=<id>`.
+  - Operaciones nuevas del front: `MyAdoptionApplications`, `MyAdoptionApplicationDetail` y `EditAdoptionApplication`.
+- Móvil: [prompt](../mobile-sync/2026-11-06-mis-solicitudes-de-adopcion.md)
+
+## 2026-11-06 · fix: errores legibles en toda la web y «Guardar perfil» del espacio de rescate
+- Rama: feat/espacios-de-rescate
+- Qué cambió y por qué: al verificar un espacio desde Operaciones salió el error crudo de Keystone («RescueOrganization.name: value must not be empty…»). Al guardar el perfil del espacio salió «'other' is not an accepted option». La causa del primero estaba en el backend, que ya quedó corregido. El segundo era de la web:
+  - **Perfil del espacio**: los espacios activados con los chips viejos tienen `species` con `other`. El formulario ya no lo mostraba, pero lo reenviaba, y Keystone rechaza el guardado entero (valida lo que llega, antes de los hooks). Ahora `knownRescueSpecies` deja solo los tipos de `ANIMAL_TYPE_OPTIONS`, al cargar y al guardar.
+  - **Un solo traductor de errores**, `kadesh/utils/errorText` (`friendlyErrorText`, igual al de kadesh-business):
+    - quita la etiqueta «Lista.campo:» de cada viñeta;
+    - muestra solo mensajes que parezcan español y no sean técnicos;
+    - cambia los de Keystone por uno genérico («Falta un dato obligatorio.», «Una de las opciones elegidas ya no existe…»), y sin red dice «No hay conexión…».
+  - Lo usan `petErrorMessage`, `adoptionErrorMessage`, `claimErrorMessage`, `graphqlErrorMessage` (citas), `friendlyAuthError` (su último caso), los formularios de reporte (nuevo y editar), los eventos, el alta de veterinaria, las bitácoras, los avisos (WhatsApp y zona), el blog, la ubicación recordada y las secciones de ventas que mostraban `err.message`.
+  - Stripe (planes) va con `locale: "es"`: sus errores de tarjeta llegan en español y se muestran tal cual.
+  - El README de rescate dice que la verificación se hace en Operaciones de kadesh-business.
+- Archivos:
+  - Nuevo: `src/utils/errorText.ts`.
+  - Rescate: `src/components/rescue/RescueProfileForm.tsx`, `src/components/rescue/constants.ts` y `src/components/rescue/README.md`.
+  - Mascotas y adopción: `src/components/pets/utils.ts` y `src/components/adoption/format.ts`.
+  - Auth: `src/components/auth/authErrors.ts`.
+  - Animales: `src/components/animals/nuevo/NewAnimalForm.tsx`, `EditAnimalForm.tsx`, `claim/useAnimalClaims.ts`, `detail/AddLogModal.tsx` y `hooks/useLostAnimals.ts`.
+  - Veterinarias: `src/components/veterinaries/appointments.ts` y `RegisterVeterinaryForm.tsx`.
+  - Eventos: `src/components/events/form/EventForm.tsx`.
+  - Avisos: `src/components/notifications/WhatsappNotificationsCard.tsx` y `AlertSettingsForm.tsx`.
+  - Blog: `src/components/blog/BlogSection.tsx` y `CategorySection.tsx`.
+  - Ubicación: `src/utils/useRememberedLocation.ts`.
+  - Ventas: `src/components/profile/sales/SalesSection.tsx`, `agregar-vendedor/AgregarVendedorSection.tsx`, `obtener-clientes/ObtenerClientesSection.tsx`, `planes/hooks/useSubscriptionPayment.ts` y `planes/StripeSubscriptionWrapper.tsx`.
+  - Docs móvil: `docs/mobile-sync/2026-11-05-espacios-de-rescate.md` (regla de `species`).
+- GraphQL: ninguna
+- Móvil: [prompt](../mobile-sync/2026-11-06-errores-legibles.md)
+
+## 2026-11-05 · feat: solicitudes de adopción y traspaso de mascotas con código
+- Rama: feat/espacios-de-rescate
+- Qué cambió y por qué: Fase 3 de los espacios de rescate, más una forma de pasar una mascota de cuenta que sirve a cualquiera.
+  - **Solicitudes de adopción** (`components/adoption`):
+    - En un animal «En adopción», **Quiero adoptarlo** abre un cuestionario corto: vivienda, si es propia o rentada (y si permiten mascotas), patio, niños, horas solo, otros animales, experiencia y dos compromisos. Sin sesión, pide entrar y vuelve al formulario.
+    - Quien la envió ve su estado en la ficha y puede retirarla.
+    - Quien publicó al animal (o su equipo) las ve en la ficha («Solicitudes de adopción») y en la nueva vista **Solicitudes** del espacio. Las pone en revisión, las aprueba o las rechaza con un mensaje que le llega a la persona, y **completa la adopción**.
+    - Al completar, la cartilla del animal (o una nueva con los datos del reporte) pasa a la cuenta del adoptante, el reporte queda «Adoptado» y las demás solicitudes se cierran con un aviso amable.
+  - **Traspaso con código** (`components/pets`):
+    - El dueño principal (**Traspasar** en la cartilla) o admin/coordinación de un espacio (**Entregar con código** en la ficha) generan un código como «7KQ2-M9XA», que vale 7 días y se usa una vez. Se copia, se manda por WhatsApp o va como enlace.
+    - Quien la recibe usa **Recibir con código** en Mis mascotas (o abre el enlace), ve qué mascota es y quién se la da, y la acepta. La mascota llega con su cartilla completa y deja la cuenta anterior (y su familia, o el espacio).
+    - Así el espacio entrega en adopción sin necesitar el correo de quien adopta. El backend limita los intentos para que nadie adivine códigos.
+  - Avisos nuevos en la campana: `adoption.application_received`, `adoption.application_updated` y `pet.transfer_redeemed`.
+- Archivos:
+  - `src/components/adoption/` (carpeta nueva): `constants.ts`, `types.ts`, `queries.ts`, `format.ts`, `hooks/useAdoptionActions.ts`, `hooks/useMyAdoptionApplication.ts`, `AdoptionApplyBanner.tsx`, `AdoptionApplicationModal.tsx`, `AdoptionApplicationsPanel.tsx`, `AdoptionApplicationList.tsx`, `AdoptionApplicationCard.tsx`, `AdoptionDecisionModal.tsx`, `index.ts` y `README.md`.
+  - `src/components/rescue/`: `RescueApplicationsView.tsx` (nuevo), `RescueManagePanel.tsx`, `RescuePetPanel.tsx`, `RescueSummaryView.tsx`, `constants.ts` y `README.md`.
+  - `src/components/pets/`: `TransferPetModal.tsx`, `ReceivePetModal.tsx` y `transferCode.ts` (nuevos), más `PetDetail.tsx`, `MyPetsSection.tsx`, `queries.ts`, `types.ts`, `index.ts` y `README.md`.
+  - `src/components/notifications/`: `constants.ts`, `inbox.ts` y `NotificationList.tsx`.
+  - Además: `src/app/animales/[slug]/page.tsx` y `src/core/routes.ts`.
+- GraphQL (kadesh-back, requiere `yarn migrate`):
+  - Listas nuevas `AdoptionApplication` y `PetTransfer`.
+  - Mutaciones nuevas: `submitAdoptionApplication`, `reviewAdoptionApplication`, `withdrawAdoptionApplication`, `completeAdoptionApplication`, `createPetTransferCode`, `cancelPetTransferCode`, `previewPetTransferCode` y `redeemPetTransferCode`.
+  - Operaciones del front: `MyAdoptionApplication`, `AnimalAdoptionApplications`, `RescueAdoptionApplications`, `SubmitAdoptionApplication`, `ReviewAdoptionApplication`, `WithdrawAdoptionApplication`, `CompleteAdoptionApplication`, `PetTransferCodes`, `CreatePetTransferCode`, `CancelPetTransferCode`, `PreviewPetTransferCode` y `RedeemPetTransferCode`.
+- Móvil: [solicitudes](../mobile-sync/2026-11-05-solicitudes-de-adopcion.md) · [traspaso con código](../mobile-sync/2026-11-05-traspaso-de-mascotas-con-codigo.md)
+
+## 2026-11-05 · feat: fichas de rescate con cartilla, «Se quedó conmigo» y adopción
+- Rama: feat/espacios-de-rescate
+- Qué cambió y por qué: Fase 2 de los espacios de rescate. El equipo de un espacio lleva la cartilla de cada animal a su cargo y, al adoptarse, la cartilla pasa a la familia.
+  - **Fichas** (`/perfil?tab=rescate&org=<id>&vista=fichas`):
+    - Cada ficha es la cartilla de siempre (fotos, vacunas y demás registros, recordatorios) sin dueños: la ve el equipo, y quien es hogar temporal solo ve las suyas.
+    - Lista con etapa, hogar temporal, estado de su reporte y próximo recordatorio. Filtro por etapa y «Nueva ficha».
+    - En la ficha se cambian la etapa, la fecha de llegada y el hogar temporal, se publica en adopción o como rescatado, y se completa la adopción.
+    - La sección «Animales» se renombró «Publicados»; cada reporte ahí tiene «Crear ficha» o «Ver ficha».
+  - **Publicar desde la ficha**: si ya tiene reporte, solo le agrega la bitácora; si no, pide la zona y crea el reporte a nombre del espacio con los datos y fotos de la ficha.
+  - **Completar adopción**: por correo de una cuenta existente. La cartilla, con vacunas y recordatorios, pasa a quien adopta como dueño principal, sale del espacio y el reporte queda «Adoptado». En su cartilla se ve «Adoptado con <espacio>» y le llega `pet.adoption_completed`.
+  - **«Se quedó conmigo»** en la ficha pública: quien publicó un reporte sin espacio lo pasa a su cartilla y el reporte se cierra «En familia».
+  - Los recordatorios de una ficha les llegan a admin, coordinación y al hogar temporal, con enlace a la ficha.
+- Archivos: src/components/rescue/{RescuePetsView.tsx,RescuePetPanel.tsx,PublishRescuePetModal.tsx,CompleteAdoptionModal.tsx (nuevos),RescueManagePanel.tsx,RescueAnimalsView.tsx,RescueSummaryView.tsx,constants.ts,queries.ts,types.ts,README.md}, src/components/pets/{PetDetail.tsx,PetFormModal.tsx,queries.ts,types.ts,index.ts,README.md}, src/components/animals/{queries.ts,detail/KeepAnimalButton.tsx (nuevo),detail/index.ts,detail/hooks/useAnimalDetail.ts}, src/app/animales/[slug]/page.tsx, src/components/notifications/{constants.ts,inbox.ts,NotificationList.tsx}, src/core/routes.ts
+- GraphQL (kadesh-back, requiere `yarn migrate`):
+  - `Pet` gana `organization`, `stage`, `intakeDate`, `fosterMember`, `publicReport`, `adoptedFromOrganization`, `adoptedAt` y `viewerRole`; `RescueOrganization.pets`.
+  - Mutaciones nuevas: `convertAnimalToPet`, `publishRescuePet` y `completeRescueAdoption`.
+  - En el front, queries y mutaciones nuevas: `RescuePets`, `ConvertAnimalToPet`, `KeepAnimal`, `PublishRescuePet` y `CompleteRescueAdoption`. `PetDetail` pide los campos de la ficha; `GetAnimal` y `RescueOrganizationAnimals` piden `pet { id }`.
+- Móvil: [prompt](../mobile-sync/2026-11-05-fichas-de-rescate-y-adopcion.md)
+
+## 2026-11-05 · fix: tarjeta para compartir de organizaciones en la zona segura
+- Rama: feat/espacios-de-rescate
+- Qué cambió y por qué: la tarjeta de `/organizaciones/<slug>` pasa a las piezas comunes de `kadesh/core/og-card`, igual que las de animales, veterinarias y eventos en el hotfix `fix/ficha-animal-og-y-lint`. El contenido va centrado en la columna de 760 px (Facebook en móvil recorta los lados): logo arriba, nombre (máx. 2 líneas), «Verificado» con la ciudad y las cifras, y el pie «KADESH · pet.kadesh.com.mx». WhatsApp recibe la variante de 600×315 (94–255 KB) y la tarjeta queda 10 min en la caché del edge. `?formato=logo` (512×512 para el JSON-LD) sigue igual.
+- Archivos: src/app/organizaciones/[slug]/og/route.tsx
+- GraphQL: ninguna.
+- Móvil: no aplica (imagen OG para compartir).
+
 ## 2026-11-05 · chore: ESLint instalado y en verde (el CI ya lo pedía)
 - Rama: fix/ficha-animal-og-y-lint (hotfix)
 - Qué cambió y por qué: el CI corre `pnpm lint` en cada PR, pero ESLint nunca estuvo instalado ni configurado: `next lint` no revisaba nada. Ahora:
@@ -71,6 +174,26 @@ Formato:
 - Archivos: src/app/animales/[slug]/page.tsx, src/components/animals/detail/{AnimalInfoSection.tsx,NearbyVeterinariesRow.tsx (acepta `className`)}, src/app/globals.css
 - GraphQL: ninguna.
 - Móvil: [prompt](../mobile-sync/2026-11-05-senas-ver-mas.md) (solo el «Ver más» de las señas; el reacomodo del grid es exclusivo de escritorio).
+
+## 2026-11-05 · fix: las especies de un espacio de rescate son los tipos de animal
+- Rama: develop
+- Qué cambió y por qué: «¿Qué animales rescatan?» tenía su propia lista (Perros, Gatos, Otros). Ahora usa los tipos de animal de los reportes, `ANIMAL_TYPE_OPTIONS`: Perro, Gato, Ave, Pez, Reptil y Mamífero. El backend también (kadesh-back: `RescueOrganization.species` y su validación usan `ANIMAL_TYPE_OPTIONS`), para que coincidan con los animales que publica. En el perfil público y en la descripción SEO van en plural («Rescata: perros, gatos y aves»).
+- Archivos: src/components/animals/constants.ts (`ANIMAL_TYPE_OPTIONS` y `animalTypePlural`, nuevos), src/components/rescue/{constants.ts (`rescueSpeciesPhrase` reemplaza a `RESCUE_SPECIES_OPTIONS` y `rescueSpeciesLabel`),rescue-seo.ts,RescueProfile.tsx,RescueOnboardingForm.tsx,RescueProfileForm.tsx}, docs/mobile-sync/2026-11-05-espacios-de-rescate.md
+- GraphQL: ninguna (el campo sigue siendo `[String!]`; solo cambian los valores aceptados).
+- Móvil: [prompt](../mobile-sync/2026-11-05-espacios-de-rescate.md) (sigue pendiente; ahí se corrigió la lista de especies).
+
+## 2026-11-05 · feat: espacios de rescate (organizaciones) y Aliados KADESH
+- Rama: develop
+- Qué cambió y por qué: rescatistas, refugios, hogares temporales, colectivos y asociaciones no tenían dónde organizar a sus animales; publicaban como «voluntario» sin equipo ni perfil. Fase 1 del plan:
+  - **Panel** (`/perfil?tab=rescate`, grupo «Rescate»): lista de espacios de la persona, activación en 3 pasos (`/perfil/rescate/activar`) que deja el espacio «En revisión» con la persona como admin, y administración por espacio con Resumen, Animales, Equipo (agregar por correo de una cuenta existente, roles admin/coordinador/voluntario/hogar temporal, quitar o salirse) y Perfil público (logo, portada, contacto, redes, cómo ayudar). Verificación por WhatsApp; la aprueba un admin en Keystone.
+  - **Reportes**: «Publicar como» en el nuevo reporte (`?org=<id>` lo preselecciona) y «Publicado por» en la ficha con «Ver perfil» y WhatsApp. El equipo edita los animales del espacio (`viewerCanEdit` del backend). Mientras el espacio está en revisión el público ve el reporte con el autor, sin la organización.
+  - **Inicio del panel**: «Requiere atención» avisa al admin si su espacio sigue en revisión o lo rechazaron. Notificaciones nuevas `rescue.submitted`, `rescue.verified`, `rescue.rejected`, `rescue.member_added`.
+  - **Público**: directorio `/organizaciones`, perfil `/organizaciones/<slug>` (animales en adopción, rescatados, historias con final feliz, cómo ayudar, contacto) con imagen OG y JSON-LD `NGO`, y `/aliados`. Solo los verificados existen; los demás dan 404.
+  - **Aliados en la portada** (`AlliesSection`, después de Historias): muro de logos al estilo de los contribuidores de GitHub, con etiqueta al pasar o enfocar y burbuja «+N». Los marca un admin (`isAlly`) entre los verificados; sin aliados no se pinta.
+  - «Cómo funciona» ahora invita a rescatistas a activar su espacio. Sitemap con `/organizaciones`, `/aliados` y cada perfil verificado.
+- Archivos: src/components/rescue/ (carpeta nueva: constants.ts, types.ts, queries.ts, server.ts, rescue-seo.ts, rescueWhatsApp.ts, hooks/usePublishableRescueOrgs.ts, RescueSection.tsx, RescueManagePanel.tsx, RescueSummaryView.tsx, RescueAnimalsView.tsx, RescueTeamView.tsx, RescueProfileForm.tsx, RescueOnboardingForm.tsx, RescueByline.tsx, RescueAvatar.tsx, AlliesWall.tsx, AlliesWallFrame.tsx, RescueProfile.tsx, RescueDirectory.tsx, RescueDirectoryFilters.tsx, index.ts, README.md), src/app/(cuenta)/perfil/{page.tsx,rescate/activar/layout.tsx,rescate/activar/page.tsx}, src/app/organizaciones/{page.tsx,[slug]/page.tsx,[slug]/og/route.tsx}, src/app/aliados/page.tsx, src/app/{page.tsx,sitemap.ts}, src/app/animales/nuevo/page.tsx, src/components/home/{AlliesSection.tsx,AlliesWallReveal.tsx,index.ts,HowItWorksSection.tsx,README.md}, src/components/animals/{queries.ts,canEditAnimal.ts,detail/AnimalInfoSection.tsx,detail/hooks/useAnimalDetail.ts,nuevo/NewAnimalForm.tsx}, src/components/notifications/{constants.ts,inbox.ts,NotificationList.tsx}, src/components/profile/{README.md,home/homeModel.ts,home/queries.ts,home/useProfileHome.ts,shell/ProfileShell.tsx,shell/profileNav.ts}, src/core/routes.ts, src/utils/activity/clientContext.ts
+- GraphQL (kadesh-back, requiere `yarn migrate`): listas nuevas `RescueOrganization` y `RescueOrganizationMember`; `Animal.organization` y `Animal.viewerCanEdit`; mutaciones `activateRescueOrganization`, `addRescueOrganizationMember`, `setRescueOrganizationMemberRole`, `removeRescueOrganizationMember` (más `updateRescueOrganization` de Keystone); query `rescueAllies`; `petLandingStats.rescueOrganizations`. Queries del front: `MyRescueOrganizations`, `RescueOrganizationDetail`, `RescueOrganizationAnimals`, y de servidor `PublicRescueOrganization`, `PublicRescueAnimals`, `RescueAllies`, `RescueDirectory`, `RescueOrganizationsForSitemap`; `GetAnimal` pide `viewerCanEdit` y `organization`; `ProfileHome` pide `myRescueOrgs`.
+- Móvil: [prompt](../mobile-sync/2026-11-05-espacios-de-rescate.md) (panel, equipo, «Publicar como», «Publicado por», notificaciones). Las páginas públicas, los aliados de la portada, el SEO y la OG no aplican: la app abre el perfil en el navegador.
 
 ## 2026-11-05 · fix: SEO y GEO de animales y veterinarias (el blog ya estaba bien)
 - Rama: feat/eventos

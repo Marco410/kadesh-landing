@@ -34,11 +34,16 @@ interface PetFormModalProps {
   /** Sin mascota: registrar una nueva. */
   pet?: PetDetail | null;
   onSaved?: (petId: string) => void;
+  /**
+   * Al registrar: la mascota es ficha interna de este espacio de rescate (sin dueños; la ve su
+   * equipo). Al editar no se usa: el espacio de una ficha no cambia desde aquí.
+   */
+  organization?: { id: string; name: string } | null;
 }
 
 type Errors = Partial<Record<'name' | 'animalTypeId' | 'birthday' | 'weightKg', string>>;
 
-export default function PetFormModal({ isOpen, onClose, pet, onSaved }: PetFormModalProps) {
+export default function PetFormModal({ isOpen, onClose, pet, onSaved, organization }: PetFormModalProps) {
   const client = useApolloClient();
   const isEdit = Boolean(pet);
   const [name, setName] = useState('');
@@ -127,6 +132,7 @@ export default function PetFormModal({ isOpen, onClose, pet, onSaved }: PetFormM
     if (animalBreedId) data.animal_breed = { connect: { id: animalBreedId } };
     else if (pet?.animal_breed) data.animal_breed = { disconnect: true };
     if (isEdit && pet?.status !== PET_STATUS.LOST) data.status = status;
+    if (!pet && organization) data.organization = { connect: { id: organization.id } };
 
     let petId = pet?.id ?? '';
     try {
@@ -168,7 +174,13 @@ export default function PetFormModal({ isOpen, onClose, pet, onSaved }: PetFormM
 
     await client.refetchQueries({ include: PET_REFETCH });
     setIsSubmitting(false);
-    sileo.success({ title: pet ? 'Cambios guardados' : `${name.trim()} ya está en tu cartilla` });
+    sileo.success({
+      title: pet
+        ? 'Cambios guardados'
+        : organization
+          ? `${name.trim()} ya tiene ficha en ${organization.name}`
+          : `${name.trim()} ya está en tu cartilla`,
+    });
     onClose();
     if (petId) onSaved?.(petId);
   };
@@ -176,7 +188,7 @@ export default function PetFormModal({ isOpen, onClose, pet, onSaved }: PetFormM
   return (
     <PetSheet
       isOpen={isOpen}
-      title={pet ? `Editar a ${pet.name}` : 'Registrar mascota'}
+      title={pet ? `Editar a ${pet.name}` : organization ? `Nueva ficha en ${organization.name}` : 'Registrar mascota'}
       onClose={onClose}
       onSubmit={handleSubmit}
       submitLabel={pet ? 'Guardar' : 'Registrar'}

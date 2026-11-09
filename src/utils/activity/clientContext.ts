@@ -9,7 +9,7 @@
 
 export const CLIENT_APP = "pet-web";
 
-const PAGE_QUERY_KEYS = ["tab", "vista", "clinic", "pet"] as const;
+const PAGE_QUERY_KEYS = ["tab", "vista", "clinic", "pet", "org", "solicitud"] as const;
 const MAX_PAGE = 200;
 
 /** `/perfil?tab=pets&q=luna` → `/perfil?tab=pets`. Fuera del navegador, `null`. */

@@ -33,6 +33,7 @@ import {
   AnimalCommentsSection,
   AnimalClaimsPanel,
   ClaimReportButton,
+  KeepAnimalButton,
   ShareAnimalButton,
   NearbyVeterinariesRow,
 } from "kadesh/components/animals/detail";
@@ -41,6 +42,10 @@ import {
   getStatusColor,
   getStatusLabel,
 } from "kadesh/components/animals/constants";
+import {
+  AdoptionApplicationsPanel,
+  AdoptionApplyBanner,
+} from "kadesh/components/adoption";
 
 const ANIMAL_DETAIL_AD_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ANIMAL_DETAIL;
 
@@ -237,7 +242,15 @@ export default function AnimalDetailPage() {
               void refetch();
             }}
           />
+          <AdoptionApplicationsPanel
+            animal={animal}
+            onChanged={() => {
+              void refetch();
+            }}
+          />
           <ClaimReportButton animal={animal} status={status} />
+          <KeepAnimalButton animal={animal} status={status} />
+          <AdoptionApplyBanner animal={animal} status={status} />
           <PromoteReportBanner
             animal={animal}
             status={status}

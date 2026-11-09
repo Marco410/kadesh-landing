@@ -46,6 +46,7 @@ import {
 } from './eventFormModel';
 import SessionsEditor from './SessionsEditor';
 import { errorClass, fieldClass, labelClass, sectionClass, textareaClass } from './styles';
+import { friendlyErrorText } from 'kadesh/utils/errorText';
 
 type Stage = 'idle' | 'saving' | 'photos' | 'opening';
 
@@ -57,10 +58,7 @@ const STAGE_LABEL: Record<Stage, string> = {
 };
 
 function apolloMessage(error: unknown): string {
-  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
-    return error.message.replace(/^.*?:\s*/, '') || 'Intenta de nuevo en un momento.';
-  }
-  return 'Intenta de nuevo en un momento.';
+  return friendlyErrorText(error, 'Intenta de nuevo en un momento.');
 }
 
 function FieldError({ id, message }: { id: string; message?: string }) {

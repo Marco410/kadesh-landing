@@ -1,3 +1,4 @@
+import { isWebGLError } from "kadesh/utils/webgl";
 import { currentPage } from "./clientContext";
 import { TRACK_EVENT, trackActivity, type TrackMetadata } from "./track";
 
@@ -35,8 +36,28 @@ function shortStack(stack: string | null | undefined): string | null {
   return stack.split("\n").slice(0, STACK_LINES).join("\n").slice(0, MAX_STACK);
 }
 
+/**
+ * Crawlers y vistas previas de enlaces (Meta, WhatsApp, X, buscadores…) y navegadores headless.
+ * Lo que les falla (p. ej. el mapa sin GPU) no le pasó a una persona. Ojo: el navegador interno
+ * de Facebook/Instagram (`FBAN`, `FB_IAB`, `Instagram`) sí es gente y no entra aquí.
+ * El crawler de Meta también llega con un Chrome de user agent normal: a ese lo descarta el back
+ * por rango de IP (`knownCrawlers` en kadesh-back).
+ */
+const BOT_USER_AGENT =
+  /facebookexternalhit|facebookcatalog|facebot|meta-externalagent|meta-externalfetcher|meta-webindexer|whatsapp|twitterbot|slackbot|telegrambot|linkedinbot|discordbot|pinterestbot|googlebot|google-inspectiontool|adsbot-google|mediapartners-google|storebot-google|bingbot|yandexbot|baiduspider|duckduckbot|applebot|petalbot|ahrefsbot|semrushbot|headlesschrome|chrome-lighthouse/i;
+
+/** Bot conocido o navegador controlado por automatización (`navigator.webdriver`). */
+export function isAutomatedClient(): boolean {
+  if (typeof navigator === "undefined") return false;
+  if (navigator.webdriver) return true;
+  return BOT_USER_AGENT.test(navigator.userAgent ?? "");
+}
+
 export function reportClientError(report: ClientErrorReport) {
   if (typeof window === "undefined") return;
+  // Sin WebGL el mapa muestra su respaldo: no es una falla de Kadesh ni tumba la pantalla.
+  if (isWebGLError(report.message)) return;
+  if (isAutomatedClient()) return;
   const metadata: TrackMetadata = {
     kind: report.kind,
     message: (report.message || "Error desconocido").slice(0, MAX_MESSAGE),

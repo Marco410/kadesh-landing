@@ -8,6 +8,7 @@ export {
 } from "./track";
 export { CLIENT_APP, clientContextHeaders, currentPage } from "./clientContext";
 export {
+  isAutomatedClient,
   isChunkLoadError,
   reportClientError,
   type ClientErrorKind,

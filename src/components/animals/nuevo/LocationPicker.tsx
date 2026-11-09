@@ -12,15 +12,17 @@ import {
 } from 'kadesh/utils/geolocation';
 import {
   applyFreeMapThemeClass,
-  attachFreeMapBaseLayer,
   createBrandPinIcon,
+  createFreeMap,
+  destroyMap,
   getLeaflet,
   isDarkMapTheme,
-  loadLeafletStack,
-  resetLeafletContainer,
+  isMapAlive,
   type LeafletMap,
   type LeafletMarker,
 } from 'kadesh/components/shared/free-map';
+import { useFreeMapStack } from 'kadesh/components/shared/useFreeMapStack';
+import MapFallback from 'kadesh/components/shared/MapFallback';
 import {
   MORELIA_CENTER,
   reverseGeocodeNominatim,
@@ -75,7 +77,7 @@ export default function LocationPicker({
   compact = false,
 }: LocationPickerProps) {
   const { resolvedTheme } = useTheme();
-  const [ready, setReady] = useState(false);
+  const { ready, unavailable, markUnavailable } = useFreeMapStack(isVisible);
   const [mounted, setMounted] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
@@ -137,19 +139,6 @@ export default function LocationPicker({
     if (hasValidCoordinates && !city.trim()) setAskForCity(true);
   }, [compact, isGeocoding, hasValidCoordinates, city]);
 
-  useEffect(() => {
-    if (!isVisible) return;
-    let cancelled = false;
-    loadLeafletStack()
-      .then(() => {
-        if (!cancelled) setReady(true);
-      })
-      .catch((err) => console.error('Leaflet load error', err));
-    return () => {
-      cancelled = true;
-    };
-  }, [isVisible]);
-
   const applyAddress = useCallback((next: ParsedPlace, keepAddress = false) => {
     const nextAddress = keepAddress ? localAddressRef.current : next.address;
     if (!keepAddress) {
@@ -180,7 +169,7 @@ export default function LocationPicker({
   const updateMarker = useCallback((latitude: number, longitude: number) => {
     const L = getLeaflet();
     const map = mapRef.current;
-    if (!L || !map) return;
+    if (!L || !isMapAlive(map)) return;
     if (markerRef.current) {
       markerRef.current.setLatLng([latitude, longitude]);
       return;
@@ -213,8 +202,6 @@ export default function LocationPicker({
     const container = mapContainerRef.current;
     if (!ready || !container || mapRef.current || !L) return;
 
-    resetLeafletContainer(container);
-
     const latNum = parseFloat(lat);
     const lngNum = parseFloat(lng);
     const hasCoords = !Number.isNaN(latNum) && !Number.isNaN(lngNum);
@@ -223,24 +210,32 @@ export default function LocationPicker({
       : [biasRef.current.lat, biasRef.current.lng];
     const zoom = hasCoords ? PIN_ZOOM : DEFAULT_ZOOM;
 
-    const map = L.map(container, { zoomControl: true }).setView(center, zoom);
+    const map = createFreeMap(container, {
+      center,
+      zoom,
+      resolvedTheme,
+      onUnavailable: markUnavailable,
+    });
+    if (!map) return;
     mapRef.current = map;
-    attachFreeMapBaseLayer(map);
-    applyFreeMapThemeClass(container, resolvedTheme);
     map.on('click', handleMapClick);
 
     if (hasCoords) {
       updateMarker(latNum, lngNum);
     }
 
-    requestAnimationFrame(() => map.invalidateSize());
-    const later = window.setTimeout(() => map.invalidateSize(), 250);
-    const again = window.setTimeout(() => map.invalidateSize(), 600);
+    const resize = () => {
+      if (isMapAlive(map)) map.invalidateSize();
+    };
+    const frame = requestAnimationFrame(resize);
+    const later = window.setTimeout(resize, 250);
+    const again = window.setTimeout(resize, 600);
 
     return () => {
+      cancelAnimationFrame(frame);
       window.clearTimeout(later);
       window.clearTimeout(again);
-      map.remove();
+      destroyMap(map);
       mapRef.current = null;
       markerRef.current = null;
     };
@@ -253,9 +248,11 @@ export default function LocationPicker({
   }, [mounted, ready, resolvedTheme]);
 
   useEffect(() => {
-    if (!isVisible || !mapRef.current) return;
     const map = mapRef.current;
-    const kick = () => map.invalidateSize();
+    if (!isVisible || !isMapAlive(map)) return;
+    const kick = () => {
+      if (isMapAlive(map)) map.invalidateSize();
+    };
     const frame = requestAnimationFrame(kick);
     const later = window.setTimeout(kick, 180);
     const again = window.setTimeout(kick, 500);
@@ -273,16 +270,18 @@ export default function LocationPicker({
   useEffect(() => {
     const latNum = parseFloat(lat);
     const lngNum = parseFloat(lng);
-    if (!Number.isNaN(latNum) && !Number.isNaN(lngNum) && mapRef.current) {
+    const map = mapRef.current;
+    if (!Number.isNaN(latNum) && !Number.isNaN(lngNum) && isMapAlive(map)) {
       updateMarker(latNum, lngNum);
-      mapRef.current.setView([latNum, lngNum], mapRef.current.getZoom());
+      map.setView([latNum, lngNum], map.getZoom());
     }
   }, [lat, lng, updateMarker]);
 
   useEffect(() => {
-    if (!mapRef.current || hasValidCoordinates) return;
+    const map = mapRef.current;
+    if (!isMapAlive(map) || hasValidCoordinates) return;
     const center = mapCenter ?? MORELIA_CENTER;
-    mapRef.current.setView([center.lat, center.lng], DEFAULT_ZOOM);
+    map.setView([center.lat, center.lng], DEFAULT_ZOOM);
   }, [mapCenter, hasValidCoordinates]);
 
   useEffect(() => {
@@ -315,7 +314,8 @@ export default function LocationPicker({
       onLocationChangeRef.current(hit.lat.toString(), hit.lng.toString());
       applyAddress(hit);
       updateMarker(hit.lat, hit.lng);
-      mapRef.current?.setView([hit.lat, hit.lng], PIN_ZOOM);
+      const map = mapRef.current;
+      if (isMapAlive(map)) map.setView([hit.lat, hit.lng], PIN_ZOOM);
       setLocationQuery(hit.label);
       setShowSuggestions(false);
       searchInputRef.current?.blur();
@@ -349,7 +349,8 @@ export default function LocationPicker({
       .then(({ lat, lng }) => {
         onLocationChangeRef.current(lat.toString(), lng.toString());
         updateMarker(lat, lng);
-        mapRef.current?.setView([lat, lng], PIN_ZOOM);
+        const map = mapRef.current;
+        if (isMapAlive(map)) map.setView([lat, lng], PIN_ZOOM);
         void doReverseGeocode(lat, lng);
       })
       .catch(() => {
@@ -377,7 +378,7 @@ export default function LocationPicker({
       <button
         type="button"
         onClick={handleUseCurrentLocation}
-        disabled={isLoadingLocation || !ready}
+        disabled={isLoadingLocation || (!ready && !unavailable)}
         className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-kadesh px-4 text-base font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-11 sm:w-auto sm:rounded-full sm:text-sm"
       >
         <HugeiconsIcon
@@ -469,16 +470,27 @@ export default function LocationPicker({
           compact ? 'h-[320px] sm:h-[360px]' : 'h-[360px]'
         }`}
       >
-        <div
-          ref={mapContainerRef}
-          className={`h-full w-full ${
-            isDarkMode ? 'kadesh-free-map--night' : 'kadesh-free-map--standard'
-          }`}
-        />
-        {!ready && (
-          <div className="absolute inset-0 z-[1] flex items-center justify-center bg-[#f7f8fa] dark:bg-night-raised">
-            <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">Cargando mapa…</p>
-          </div>
+        {unavailable ? (
+          <MapFallback
+            title={hasValidCoordinates ? localCity || 'Pin fijado' : null}
+            lat={hasValidCoordinates ? parseFloat(lat) : null}
+            lng={hasValidCoordinates ? parseFloat(lng) : null}
+            hint="Este navegador no puede mostrar el mapa. Usa tu ubicación o busca la calle."
+          />
+        ) : (
+          <>
+            <div
+              ref={mapContainerRef}
+              className={`h-full w-full ${
+                isDarkMode ? 'kadesh-free-map--night' : 'kadesh-free-map--standard'
+              }`}
+            />
+            {!ready && (
+              <div className="absolute inset-0 z-[1] flex items-center justify-center bg-[#f7f8fa] dark:bg-night-raised">
+                <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">Cargando mapa…</p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -582,7 +594,9 @@ export default function LocationPicker({
         </p>
       ) : (
         <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
-          Sin pin todavía. Usa tu ubicación, busca una calle o toca el mapa.
+          {unavailable
+            ? 'Sin pin todavía. Usa tu ubicación o busca una calle.'
+            : 'Sin pin todavía. Usa tu ubicación, busca una calle o toca el mapa.'}
         </p>
       )}
     </div>

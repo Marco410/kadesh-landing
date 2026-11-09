@@ -15,6 +15,20 @@ Formato:
 
 ---
 
+## 2026-11-09 · fix: el mapa sin WebGL ya no tumba la ficha del animal; ciclo de vida de los mapas
+- Rama: develop
+- Qué cambió y por qué: Operaciones registraba «Se cayó la pantalla» en `/animales/[slug]` con `Error: {"requestedAttributes":…}`. Es el `throw` de MapLibre cuando no puede crear el contexto WebGL. Los 22 casos venían de IPs de Meta (crawler de vista previa con Chrome/139 headless, sin GPU ni sesión). Además, en `/veterinarias` salían «reading 'getZoom' / '_leaflet_pos' / 'jumpTo'» por llamadas al mapa después de quitarlo.
+  - **Prueba de WebGL** antes de crear cualquier mapa (`utils/webgl.ts`, con los mismos atributos que pide MapLibre). Sin WebGL no se baja Leaflet/MapLibre ni se crea el mapa: sale `MapFallback` con la zona y «Ver en Google Maps».
+  - **`createFreeMap`** (`components/shared/free-map.ts`) reemplaza el `L.map` + `attachFreeMapBaseLayer` de cada componente: nunca lanza (try/catch) y avisa con `onUnavailable`. La capa de MapLibre es una subclase segura del plugin (`free-map-layer.ts`). Si `new maplibregl.Map()` falla o MapLibre emite después un `error` de WebGL, queda inerte y el componente cambia al respaldo.
+  - **Ciclo de vida**: la capa segura revisa que siga montada en sus callbacks diferidos (throttle, `requestAnimationFrame`, `moveend`), que eran los `getZoom`/`jumpTo` de `null`. `isMapAlive()` protege frames, timeouts, ResizeObserver y efectos; `destroyMap()` cancela el cierre pendiente de la animación de zoom y quita el mapa sin lanzar (el `_leaflet_pos`). Los `requestAnimationFrame` se cancelan en el cleanup.
+  - **Ficha**: `AnimalLocationMap` carga `LogMap` con `next/dynamic` (`ssr: false`) y lo envuelve en `MapErrorBoundary`. Si el mapa truena, solo cae el mapa y fotos, datos, contacto y botones siguen. `LogMap` sale del barrel para no meterlo estático al bundle.
+  - **Los demás mapas** (directorios de animales y veterinarias, ficha de veterinaria, eventos, selector de ubicación, zona de alertas) usan el mismo hook (`useFreeMapStack`), `createFreeMap` y su respaldo. En el selector de ubicación, «Usar mi ubicación» y la búsqueda siguen funcionando sin mapa.
+  - **Reporte de errores**: `reportClientError` ya no manda errores de falta de WebGL ni de bots (UA de crawlers y vistas previas, `HeadlessChrome`, `navigator.webdriver`). El crawler de Meta con UA normal lo descarta kadesh-back por rango de IP (`utils/security/knownCrawlers.ts`, cambio aparte en ese repo).
+  - Verificado con Chrome headless y WebGL desactivado (`--disable-webgl --disable-3d-apis`): la ficha sale completa con el respaldo, sin errores en consola. Con WebGL el mapa se dibuja igual que antes.
+- Archivos: src/utils/webgl.ts (nuevo), src/components/shared/free-map.ts, src/components/shared/free-map-layer.ts (nuevo), src/components/shared/useFreeMapStack.ts (nuevo), src/components/shared/MapFallback.tsx (nuevo), src/components/shared/MapErrorBoundary.tsx (nuevo), src/components/animals/detail/AnimalLocationMap.tsx (nuevo), src/components/animals/detail/LogMap.tsx, src/components/animals/detail/LogTimeline.tsx, src/components/animals/detail/MapModal.tsx, src/components/animals/detail/index.ts, src/components/animals/AnimalsMap.tsx, src/components/animals/nuevo/LocationPicker.tsx, src/components/events/EventMap.tsx, src/components/veterinaries/VeterinariesMap.tsx, src/components/notifications/AlertZoneMap.tsx, src/utils/activity/reportClientError.ts, src/utils/activity/useClientErrorListener.ts, src/utils/activity/index.ts, src/utils/activity/README.md
+- GraphQL: ninguna.
+- Móvil: no aplica (la app dibuja el mapa con `@maplibre/maplibre-react-native`, nativo: sin WebGL de navegador, sin Leaflet y sin crawlers de vista previa).
+
 ## 2026-11-09 · feat: difusión pagada del reporte en Facebook e Instagram (sin lucro, por WhatsApp)
 - Rama: feat/difusion-pagada
 - Qué cambió y por qué: quien reporta una mascota puede pagar un anuncio para que más gente de su zona vea el reporte. Que no parezca negocio ni estafa (a quien pierde una mascota le escriben estafadores pidiendo dinero).

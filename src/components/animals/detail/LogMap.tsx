@@ -1,65 +1,49 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import { getStatusColor } from "../constants";
 import {
   applyFreeMapThemeClass,
-  attachFreeMapBaseLayer,
+  createFreeMap,
   createStatusPinIcon,
+  destroyMap,
   getLeaflet,
   isDarkMapTheme,
-  loadLeafletStack,
-  resetLeafletContainer,
-  type LeafletMap,
+  isMapAlive,
 } from "kadesh/components/shared/free-map";
+import { useFreeMapStack } from "kadesh/components/shared/useFreeMapStack";
+import MapFallback from "kadesh/components/shared/MapFallback";
 
 interface LogMapProps {
   lat: number;
   lng: number;
   status: string;
+  /** Zona del registro (colonia, ciudad) para el respaldo cuando no se puede dibujar el mapa. */
+  label?: string | null;
   className?: string;
 }
 
-export default function LogMap({ lat, lng, status, className }: LogMapProps) {
+function toCoordinate(value: number | string): number | null {
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  return typeof num === "number" && Number.isFinite(num) ? num : null;
+}
+
+/**
+ * Mapa de un registro. Úsalo con `AnimalLocationMap`, que lo carga solo en el navegador y lo
+ * aísla con un error boundary. Sin WebGL no crea el mapa y muestra la zona con "Ver en Google Maps".
+ */
+export default function LogMap({ lat, lng, status, label, className }: LogMapProps) {
   const { resolvedTheme } = useTheme();
-  const [ready, setReady] = useState(false);
+  const { ready, unavailable, markUnavailable } = useFreeMapStack();
   const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<LeafletMap | null>(null);
 
-  const validLat = useMemo(() => {
-    const numLat = typeof lat === "string" ? parseFloat(lat) : lat;
-    return typeof numLat === "number" &&
-      !Number.isNaN(numLat) &&
-      Number.isFinite(numLat)
-      ? numLat
-      : null;
-  }, [lat]);
-
-  const validLng = useMemo(() => {
-    const numLng = typeof lng === "string" ? parseFloat(lng) : lng;
-    return typeof numLng === "number" &&
-      !Number.isNaN(numLng) &&
-      Number.isFinite(numLng)
-      ? numLng
-      : null;
-  }, [lng]);
+  const validLat = toCoordinate(lat);
+  const validLng = toCoordinate(lng);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    loadLeafletStack()
-      .then(() => {
-        if (!cancelled) setReady(true);
-      })
-      .catch((err) => console.error("Leaflet load error", err));
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   useEffect(() => {
@@ -68,33 +52,35 @@ export default function LogMap({ lat, lng, status, className }: LogMapProps) {
     if (!ready || !container || !L || validLat === null || validLng === null)
       return;
 
-    resetLeafletContainer(container);
-
-    const map = L.map(container, {
-      zoomControl: true,
+    const map = createFreeMap(container, {
+      center: [validLat, validLng],
+      zoom: 15,
       attributionControl: false,
-    }).setView([validLat, validLng], 15);
-    mapRef.current = map;
-    attachFreeMapBaseLayer(map);
-    applyFreeMapThemeClass(container, resolvedTheme);
+      resolvedTheme,
+      onUnavailable: markUnavailable,
+    });
+    if (!map) return;
+
     L.marker([validLat, validLng], {
       icon: createStatusPinIcon(L, getStatusColor(status)),
     }).addTo(map);
 
-    requestAnimationFrame(() => map.invalidateSize());
-    const observer = new ResizeObserver(() => {
-      map.invalidateSize();
-    });
-    observer.observe(container);
+    const resize = () => {
+      if (isMapAlive(map)) map.invalidateSize();
+    };
+    const frame = requestAnimationFrame(resize);
+    const observer =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(resize);
+    observer?.observe(container);
 
     return () => {
-      observer.disconnect();
-      map.remove();
-      mapRef.current = null;
+      cancelAnimationFrame(frame);
+      observer?.disconnect();
+      destroyMap(map);
     };
-    // Recreate when the logged point changes.
+    // Recreate when the logged point changes; el tema se aplica aparte.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, validLat, validLng, status]);
+  }, [ready, validLat, validLng, status, markUnavailable]);
 
   useEffect(() => {
     if (!mounted || !ready) return;
@@ -110,6 +96,17 @@ export default function LogMap({ lat, lng, status, className }: LogMapProps) {
           Ubicación no disponible
         </p>
       </div>
+    );
+  }
+
+  if (unavailable) {
+    return (
+      <MapFallback
+        title={label}
+        lat={validLat}
+        lng={validLng}
+        className={className}
+      />
     );
   }
 

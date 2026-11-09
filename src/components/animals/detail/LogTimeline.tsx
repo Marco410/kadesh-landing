@@ -10,7 +10,7 @@ import {
   Delete02Icon,
   Location01Icon,
 } from "@hugeicons/core-free-icons";
-import LogMap from "./LogMap";
+import AnimalLocationMap from "./AnimalLocationMap";
 import AddLogModal from "./AddLogModal";
 import ConfirmModal from "kadesh/components/shared/ConfirmModal";
 import { useUser } from "kadesh/utils/UserContext";
@@ -68,6 +68,11 @@ function placeLabel(log: Log) {
   return [log.address, log.city, log.state, log.country]
     .filter(Boolean)
     .join(", ");
+}
+
+/** Ciudad y estado (o la dirección si no hay): lo que dice el respaldo si no se ve el mapa. */
+function areaLabel(log: Log) {
+  return [log.city, log.state].filter(Boolean).join(", ") || log.address || null;
 }
 
 function directionsUrl(lat: string | number, lng: string | number) {
@@ -323,10 +328,11 @@ export default function LogTimeline({
                 </motion.a>
               </div>
               <div className="min-h-[13.5rem] flex-1 overflow-hidden rounded-xl lg:min-h-0">
-                <LogMap
+                <AnimalLocationMap
                   lat={Number(selectedLogWithCoords.lat)}
                   lng={Number(selectedLogWithCoords.lng)}
                   status={selectedLogWithCoords.status}
+                  label={areaLabel(selectedLogWithCoords)}
                   className="min-h-0"
                 />
               </div>

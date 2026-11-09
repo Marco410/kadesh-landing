@@ -7,7 +7,9 @@ export { default as FullscreenCarousel } from './FullscreenCarousel';
 export type { FullscreenCarouselProps } from './FullscreenCarousel';
 export { default as AnimalInfoSection } from './AnimalInfoSection';
 export { default as LogTimeline } from './LogTimeline';
-export { default as LogMap } from './LogMap';
+// El mapa va por `AnimalLocationMap` (carga solo en el navegador, con respaldo si falla).
+// `LogMap` no se exporta: importarlo directo lo metería al bundle de la página y al render del servidor.
+export { default as AnimalLocationMap } from './AnimalLocationMap';
 export { default as MapModal } from './MapModal';
 export { default as AnimalCommentsSection } from './AnimalCommentsSection';
 export { default as AnimalClaimsPanel } from './AnimalClaimsPanel';

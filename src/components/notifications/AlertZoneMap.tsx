@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import {
   applyFreeMapThemeClass,
-  attachFreeMapBaseLayer,
+  createFreeMap,
+  destroyMap,
   getBrandColor,
   getLeaflet,
-  loadLeafletStack,
-  resetLeafletContainer,
+  isMapAlive,
   type LeafletCircle,
   type LeafletMap,
 } from 'kadesh/components/shared/free-map';
+import { useFreeMapStack } from 'kadesh/components/shared/useFreeMapStack';
+import MapFallback from 'kadesh/components/shared/MapFallback';
 import { Bone } from 'kadesh/components/ui/skeleton';
 
 type LatLng = { lat: number; lng: number };
@@ -42,7 +44,7 @@ export default function AlertZoneMap({
   onCenterChange,
 }: AlertZoneMapProps) {
   const { resolvedTheme } = useTheme();
-  const [ready, setReady] = useState(false);
+  const { ready, unavailable, markUnavailable } = useFreeMapStack();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const circleRef = useRef<LeafletCircle | null>(null);
@@ -53,28 +55,19 @@ export default function AlertZoneMap({
   onCenterChangeRef.current = onCenterChange;
 
   useEffect(() => {
-    let cancelled = false;
-    loadLeafletStack()
-      .then(() => {
-        if (!cancelled) setReady(true);
-      })
-      .catch((err) => console.error('Leaflet load error', err));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
     const L = getLeaflet();
     const container = containerRef.current;
     if (!ready || !container || mapRef.current || !L) return;
 
-    resetLeafletContainer(container);
     const start = centerRef.current ?? fallbackCenter;
-    const map = L.map(container, { zoomControl: true }).setView([start.lat, start.lng], 12);
+    const map = createFreeMap(container, {
+      center: [start.lat, start.lng],
+      zoom: 12,
+      resolvedTheme,
+      onUnavailable: markUnavailable,
+    });
+    if (!map) return;
     mapRef.current = map;
-    attachFreeMapBaseLayer(map);
-    applyFreeMapThemeClass(container, resolvedTheme);
 
     const brand = getBrandColor();
     const circle = L.circle([start.lat, start.lng], {
@@ -114,16 +107,20 @@ export default function AlertZoneMap({
     map.on('zoomend', commitAfterZoom);
     map.on('click', centerOnClick);
 
-    requestAnimationFrame(() => map.invalidateSize());
-    const later = window.setTimeout(() => map.invalidateSize(), 250);
+    const resize = () => {
+      if (isMapAlive(map)) map.invalidateSize();
+    };
+    const frame = requestAnimationFrame(resize);
+    const later = window.setTimeout(resize, 250);
 
     return () => {
+      cancelAnimationFrame(frame);
       window.clearTimeout(later);
       map.off('move', followCenter);
       map.off('dragend', commitCenter);
       map.off('zoomend', commitAfterZoom);
       map.off('click', centerOnClick);
-      map.remove();
+      destroyMap(map);
       mapRef.current = null;
       circleRef.current = null;
     };
@@ -139,17 +136,25 @@ export default function AlertZoneMap({
   useEffect(() => {
     const map = mapRef.current;
     const circle = circleRef.current;
-    if (!map || !circle) return;
+    if (!isMapAlive(map) || !circle) return;
     circle.setRadius(radiusKm * 1000);
     map.fitBounds(circle.getBounds(), { padding: FIT_PADDING });
   }, [radiusKm]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !center) return;
+    if (!isMapAlive(map) || !center) return;
     if (samePoint(map.getCenter(), center)) return;
     map.setView([center.lat, center.lng], map.getZoom());
   }, [center]);
+
+  if (unavailable) {
+    return (
+      <div className="relative h-72 overflow-hidden rounded-3xl border border-dash-line shadow-dash sm:h-80">
+        <MapFallback hint="Este navegador no puede mostrar el mapa. Usa «Mi ubicación» para fijar tu zona." />
+      </div>
+    );
+  }
 
   return (
     <div className="relative h-72 overflow-hidden rounded-3xl border border-dash-line shadow-dash sm:h-80">

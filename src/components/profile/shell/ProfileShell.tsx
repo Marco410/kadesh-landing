@@ -52,7 +52,9 @@ export function useProfileDetailCrumb(label: string | null | undefined) {
  * - Al cambiar de vista el foco va al `h1` de la nueva (`[data-app-title]`), no al inicio.
  */
 export default function ProfileShell({ children }: { children: ReactNode }) {
-  const { user, loading } = useUser();
+  const { user, loading: sessionLoading, sessionPending } = useUser();
+  // Sesión sin confirmar por red: se espera, no se pide la cuenta.
+  const loading = sessionLoading || sessionPending;
   const router = useRouter();
   const pathname = usePathname() ?? Routes.profile;
   const searchParams = useSearchParams();

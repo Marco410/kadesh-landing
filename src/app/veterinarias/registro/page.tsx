@@ -13,7 +13,9 @@ const PAGE_SHELL =
 
 export default function RegisterVeterinaryPage() {
   const router = useRouter();
-  const { user, loading } = useUser();
+  const { user, loading: sessionLoading, sessionPending } = useUser();
+  // Sesión sin confirmar por red: se espera, no se pide la cuenta.
+  const loading = sessionLoading || sessionPending;
 
   useEffect(() => {
     if (!loading && !user) {

@@ -53,7 +53,9 @@ function Shell({ title, description, children }: { title: string; description: s
 /** `/eventos/nuevo`: sin sesión, el modal de cuenta aparece aquí mismo. */
 export function NewEventPage() {
   const router = useRouter();
-  const { user, loading } = useUser();
+  const { user, loading: sessionLoading, sessionPending } = useUser();
+  // Sesión sin confirmar por red: se espera, no se pide la cuenta.
+  const loading = sessionLoading || sessionPending;
   return (
     <Shell
       title="Publica un evento"
@@ -76,7 +78,9 @@ export function NewEventPage() {
 /** `/eventos/<slug>/editar`: solo quien lo publicó (o un admin). */
 export function EditEventPage({ slug }: { slug: string }) {
   const router = useRouter();
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: sessionLoading, sessionPending } = useUser();
+  // Sesión sin confirmar por red: se espera, no se pide la cuenta.
+  const userLoading = sessionLoading || sessionPending;
   const { data, loading } = useQuery<EventBySlugResponse>(EVENT_BY_SLUG_QUERY, {
     variables: { slug },
     skip: !user?.id,

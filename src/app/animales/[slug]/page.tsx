@@ -102,7 +102,8 @@ export default function AnimalDetailPage() {
     );
   }
 
-  if (error || !animal) {
+  // Con datos en caché, un refetch fallido no esconde la ficha: solo sin datos se ve el error.
+  if (!animal) {
     return (
       <DetailShell>
         <div className="mx-auto w-full max-w-[92rem] px-4 py-8">
@@ -118,9 +119,18 @@ export default function AnimalDetailPage() {
           </h1>
           <p className="mt-2 text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
             {error
-              ? "Revisa tu conexión e inténtalo de nuevo."
+              ? "Revisa tu conexión. La ficha se carga sola cuando vuelva la red."
               : "Puede que el reporte se haya eliminado."}
           </p>
+          {error ? (
+            <button
+              type="button"
+              onClick={() => void refetch().catch(() => undefined)}
+              className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-kadesh px-4 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600"
+            >
+              Reintentar
+            </button>
+          ) : null}
         </div>
       </DetailShell>
     );

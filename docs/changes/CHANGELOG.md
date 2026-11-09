@@ -15,6 +15,26 @@ Formato:
 
 ---
 
+## 2026-11-09 · fix: sesión y consultas que aguantan cortes de red; sin ruido de «Error de conexión»
+- Rama: develop
+- Qué cambió y por qué: Operaciones registraba «Error de conexión en AuthenticatedItem» (`Failed to fetch` / Safari `Load failed`) en la ficha y el blog, y lo mismo en GetAnimal, GetPosts, NotificationUnreadCount, ProfileNavCounts… La mayoría eran bots sin sesión que cierran la página a media carga, o celulares que pierden señal. Además, con sesión válida y la red caída al cargar, `/perfil` y otras pantallas **mandaban al login**: el fallo de red se tomaba como "sin sesión".
+  - **Sin token no se pide la sesión**: `UserProvider` no manda `AuthenticatedItem` si no hay `keystonejs-session-token`. La API vive en otro sitio (`*.up.railway.app`), así que su cookie no viaja y sin token la respuesta siempre es `null`. NotificationUnreadCount y ProfileNavCounts ya se saltaban sin usuario; ahora tampoco hay usuario sin token.
+  - **«No se pudo verificar» ≠ «sin sesión»**: `fetchSessionUser` devuelve `ok` o `unreachable`. Con red caída, la sesión queda `sessionPending`: se ve como invitado (o el usuario que ya había) y nadie sale al login. Se reintenta en silencio al volver la red (`online`), al volver la pestaña (`visibilitychange`) y a los 15/30/60 s. Las pantallas con sesión (`ProfileShell`, reportar, eventos, registro de veterinaria) esperan con `loading || sessionPending`.
+  - **Reintentos**: `queryRetryLink` (`RetryLink`) reintenta solo consultas, nunca mutaciones: hasta 3 veces con backoff exponencial y jitter, ante "Failed to fetch" o 502/503/504. Va debajo de `requestErrorLink`, que solo ve el error final.
+  - **Reporte**: no se reportan errores de red cancelados (`AbortError`: pantalla desmontada o cambio de ruta; Apollo + `apollo-upload-client` abortan el fetch al desuscribirse), con la página yéndose (`pagehide`), oculta o sin red. Tampoco los recuperados en un reintento ni los de bots. Solo se reporta si fallan todos los reintentos con la persona en línea y la página visible.
+  - **Recuperación**: al volver la red o la pestaña, `ApolloProviderWrapper` vuelve a pedir solo las consultas activas que quedaron en error de red.
+  - **Ficha**: un refetch fallido ya no esconde la ficha si había datos en caché. Sin datos, sale «No se pudo cargar» con «Reintentar» y se carga sola al volver la red.
+  - Mismo cambio en kadesh-business (cliente Apollo, sesión, reporte y filtro de bots).
+  - Verificado con Chrome headless por DevTools Protocol contra el dev server, simulando un Chrome normal para que el filtro de bots no tape los resultados:
+    - Sin token no sale `AuthenticatedItem`; con token, sí.
+    - Offline a media carga sale «No se pudo cargar», sin reporte, y la ficha se recupera sola al volver la red.
+    - Salir a media carga no reporta nada.
+    - Con red, si fallan los 4 intentos, sí reporta uno; si un reintento sale bien, no reporta.
+    - Con token y la sesión caída por red, `/perfil` no manda al login; con token inválido confirmado, sí.
+- Archivos: src/utils/network.ts (nuevo), src/utils/sessionToken.ts (nuevo), src/providers/queryRetryLink.ts (nuevo), src/providers/apollo-client.ts, src/providers/ApolloProviderWrapper.tsx, src/utils/getAuthUser.ts, src/utils/UserContext.tsx, src/utils/activity/requestErrorLink.ts, src/utils/activity/README.md, src/app/animales/[slug]/page.tsx, src/app/animales/nuevo/page.tsx, src/app/veterinarias/registro/page.tsx, src/components/events/form/EventFormPage.tsx, src/components/profile/shell/ProfileShell.tsx
+- GraphQL: ninguna (misma `AuthenticatedItem`).
+- Móvil: [prompt](../mobile-sync/2026-11-09-sesion-y-red-resilientes.md).
+
 ## 2026-11-09 · fix: el mapa sin WebGL ya no tumba la ficha del animal; ciclo de vida de los mapas
 - Rama: develop
 - Qué cambió y por qué: Operaciones registraba «Se cayó la pantalla» en `/animales/[slug]` con `Error: {"requestedAttributes":…}`. Es el `throw` de MapLibre cuando no puede crear el contexto WebGL. Los 22 casos venían de IPs de Meta (crawler de vista previa con Chrome/139 headless, sin GPU ni sesión). Además, en `/veterinarias` salían «reading 'getZoom' / '_leaflet_pos' / 'jumpTo'» por llamadas al mapa después de quitarlo.

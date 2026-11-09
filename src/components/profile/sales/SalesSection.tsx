@@ -28,6 +28,7 @@ import { SubscriptionProvider } from "./SubscriptionContext";
 import { useUser } from "kadesh/utils/UserContext";
 import { Role } from "kadesh/constants/constans";
 import { sileo } from "sileo";
+import { friendlyErrorText } from "kadesh/utils/errorText";
 
 const LEADS_PAGE_SIZE = 10;
 
@@ -234,7 +235,7 @@ export default function SalesSection({ userId }: SalesSectionProps) {
     } catch (e) {
       sileo.error({
         title: "Error al asignar",
-        description: e instanceof Error ? e.message : "No se pudieron asignar los leads.",
+        description: friendlyErrorText(e, "No se pudieron asignar los leads."),
       });
     }
   }, [assignToVendedorId, selectedLeadIds, updateLead, refetchLeads]);

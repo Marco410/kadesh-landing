@@ -79,6 +79,7 @@ export function useProfileHome({
           pendingClaims: data.pendingClaimsCount ?? 0,
           places,
           clinicPending,
+          rescueOrgs: data.myRescueOrgs ?? [],
           hasPhone,
           alertsEnabled: data.me?.petAlertsEnabled ?? null,
         })

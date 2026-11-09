@@ -5,6 +5,7 @@ import { GOOGLE_PLACE_CATEGORIES } from "kadesh/components/profile/sales/constan
 import { useSyncLeadsArea } from "kadesh/components/profile/sales/obtener-clientes/hooks";
 import CurrentPlanSection from "../CurrentPlanSection";
 import { useUser } from "kadesh/utils/UserContext";
+import { friendlyErrorText } from "kadesh/utils/errorText";
 
 const LEAFLET_CSS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
 const LEAFLET_JS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
@@ -178,7 +179,7 @@ export default function ObtenerClientesSection() {
       });
 
       if (!result) {
-        setMessage({ type: "error", text: syncError?.message ?? "Error al sincronizar" });
+        setMessage({ type: "error", text: friendlyErrorText(syncError, "No se pudo sincronizar. Intenta de nuevo.") });
         return;
       }
 
@@ -202,7 +203,7 @@ export default function ObtenerClientesSection() {
     } catch (e) {
       setMessage({
         type: "error",
-        text: e instanceof Error ? e.message : "Error de red",
+        text: friendlyErrorText(e, "No hay conexión. Revisa tu internet e intenta de nuevo."),
       });
     }
   };

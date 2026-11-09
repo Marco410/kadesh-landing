@@ -6,6 +6,8 @@ import {
   HowItWorksSection,
   FirstHoursSection,
   StoriesSection,
+  AlliesSection,
+  HOME_ALLIES_MAX,
   VeterinariansSection,
   DonationsSection,
   BusinessStrip,
@@ -15,6 +17,7 @@ import FaqSection from "kadesh/components/home/FaqSection";
 import HomeJsonLd from "kadesh/components/home/HomeJsonLd";
 import { fetchPetLandingStats, fetchRecentZoneAlerts } from "kadesh/components/home/server";
 import { fetchHomeEvents } from "kadesh/components/events/server";
+import { fetchRescueAllies } from "kadesh/components/rescue/server";
 import { HOME_DEFINITION } from "kadesh/components/home/constants";
 import { Footer, Navigation } from "kadesh/components/layout";
 import { NewsletterSubscription } from "kadesh/components/newsletter";
@@ -28,10 +31,11 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [stats, zoneAlerts, events] = await Promise.all([
+  const [stats, zoneAlerts, events, allies] = await Promise.all([
     fetchPetLandingStats(),
     fetchRecentZoneAlerts(),
     fetchHomeEvents(),
+    fetchRescueAllies(HOME_ALLIES_MAX),
   ]);
 
   return (
@@ -50,6 +54,7 @@ export default async function HomePage() {
         <HowItWorksSection />
         <FirstHoursSection />
         <StoriesSection />
+        <AlliesSection allies={allies} />
         <DonationsSection />
         <BusinessStrip />
         <FaqSection />

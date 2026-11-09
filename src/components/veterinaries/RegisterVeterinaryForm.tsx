@@ -21,6 +21,7 @@ import {
   PET_PLACE_CLAIM_STATUS,
   type PetPlaceClaimRole,
 } from "./constants";
+import { friendlyErrorText } from "kadesh/utils/errorText";
 
 const fieldClass =
   "w-full rounded-xl border border-[#d8dee8] bg-white px-4 py-3 text-base text-[#121212] placeholder:text-[#5a5a5a] focus:outline-none focus:ring-2 focus:ring-kadesh sm:text-sm dark:border-white/18 dark:bg-night dark:text-[#eef1f6] dark:placeholder:text-[#9aa3b2]";
@@ -147,10 +148,7 @@ export default function RegisterVeterinaryForm() {
       });
       router.push(`${Routes.profile}?tab=clinics`);
     } catch (error) {
-      const message =
-        error instanceof Error && error.message
-          ? error.message.split("\n")[0]
-          : "Intenta de nuevo.";
+      const message = friendlyErrorText(error, "Intenta de nuevo.");
       sileo.error({ title: "No se pudo registrar", description: message });
     }
   };

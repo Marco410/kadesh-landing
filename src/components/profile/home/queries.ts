@@ -57,6 +57,15 @@ export const PROFILE_HOME_QUERY = gql`
       verified
       claimStatus
     }
+    myRescueOrgs: rescueOrganizations(
+      where: { members: { some: { user: { id: { equals: $userId } } } } }
+      orderBy: [{ createdAt: asc }]
+    ) {
+      id
+      name
+      status
+      viewerRole
+    }
     n0: notificationsCount(where: $n0)
     n1: notificationsCount(where: $n1)
     n2: notificationsCount(where: $n2)
@@ -90,6 +99,14 @@ export type HomePetPlace = {
   claimStatus: string | null;
 };
 
+/** Espacio de rescate de la persona (para avisar si sigue en revisión o lo rechazaron). */
+export type HomeRescueOrg = {
+  id: string;
+  name: string;
+  status: string;
+  viewerRole: string | null;
+};
+
 export type ProfileHomeResponse = {
   me: { id: string; petAlertsEnabled: boolean | null } | null;
   petsCount: number | null;
@@ -99,6 +116,7 @@ export type ProfileHomeResponse = {
   upcomingAppointmentsCount: number | null;
   pendingClaimsCount: number | null;
   myPetPlaces: HomePetPlace[] | null;
+  myRescueOrgs: HomeRescueOrg[] | null;
 } & Record<`n${0 | 1 | 2 | 3 | 4 | 5 | 6 | 7}`, number | null>;
 
 export type ProfileHomeVariables = {

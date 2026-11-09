@@ -51,6 +51,22 @@ export const Routes = {
   profileClinic: (clinicId: string, vista?: string): string =>
     `/perfil?tab=clinics&clinic=${encodeURIComponent(clinicId)}${vista ? `&vista=${vista}` : ''}`,
   profilePet: (petId: string): string => `/perfil?tab=pets&pet=${encodeURIComponent(petId)}`,
+  /** Solicitudes de adopción que envió la persona; con `applicationId`, el detalle de una. */
+  profileAdoptions: '/perfil?tab=adopciones',
+  profileAdoption: (applicationId: string): string =>
+    `/perfil?tab=adopciones&solicitud=${encodeURIComponent(applicationId)}`,
+  /** Recibir una mascota con su código de traspaso (abre «Recibir con código» ya escrito). */
+  profilePetsReceive: (code: string): string => `/perfil?tab=pets&codigo=${encodeURIComponent(code)}`,
+  /** Espacio de rescate en el panel: sin `orgId` abre la lista; con él, la vista (`resumen` por defecto). */
+  profileRescue: (orgId?: string, vista?: string): string =>
+    orgId
+      ? `/perfil?tab=rescate&org=${encodeURIComponent(orgId)}${vista ? `&vista=${vista}` : ''}`
+      : '/perfil?tab=rescate',
+  /** Ficha interna (cartilla) de un animal en el panel de su espacio de rescate. */
+  profileRescuePet: (orgId: string, petId: string): string =>
+    `/perfil?tab=rescate&org=${encodeURIComponent(orgId)}&vista=fichas&pet=${encodeURIComponent(petId)}`,
+  /** Activar un espacio de rescate (asistente dentro del panel). */
+  rescueActivate: '/perfil/rescate/activar',
   profileLead: (id: string): string => `/perfil/ventas/lead/${id}`,
   profileSyncLeads: '/perfil/ventas/obtener-clientes',
   profileAddSalesperson: '/perfil/ventas/agregar-vendedor',
@@ -62,6 +78,9 @@ export const Routes = {
   animals: {
     index: '/animales',
     new: '/animales/nuevo',
+    /** Reportar a nombre de un espacio de rescate (el formulario preselecciona la organización). */
+    newForRescue: (orgId: string, status = 'rescued'): string =>
+      `/animales/nuevo?status=${encodeURIComponent(status)}&org=${encodeURIComponent(orgId)}`,
     detail: (slug: string): string => `/animales/${slug}`,
     edit: (slug: string): string => `/animales/${slug}/editar`,
     image: (slug: string): string => `/animales/${slug}/og`,
@@ -90,6 +109,15 @@ export const Routes = {
     /** «Mis eventos» en el panel. */
     mine: '/perfil?tab=events',
   },
+
+  // Espacios de rescate (rescatistas, refugios, hogares temporales, colectivos). Solo los verificados.
+  organizations: {
+    index: '/organizaciones',
+    detail: (slug: string): string => `/organizaciones/${slug}`,
+    image: (slug: string): string => `/organizaciones/${slug}/og`,
+  },
+  /** Aliados KADESH: espacios de rescate que destacamos en la portada. */
+  allies: '/aliados',
 
   // Notifications (campana y alertas de zona)
   notifications: {

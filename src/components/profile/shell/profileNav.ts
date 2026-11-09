@@ -3,7 +3,9 @@ import {
   Bone01Icon,
   Calendar03Icon,
   Calendar04Icon,
+  CharityIcon,
   DashboardSquare01Icon,
+  FavouriteIcon,
   FlashIcon,
   HospitalLocationIcon,
   MapsLocation01Icon,
@@ -26,7 +28,18 @@ import { Routes } from "kadesh/core/routes";
  */
 
 /** Claves de `?tab=` en `/perfil`. `inicio` es la vista sin `tab`. */
-export const PROFILE_TAB_KEYS = ["inicio", "profile", "pets", "posts", "animals", "events", "appointments", "clinics"] as const;
+export const PROFILE_TAB_KEYS = [
+  "inicio",
+  "profile",
+  "pets",
+  "posts",
+  "animals",
+  "events",
+  "appointments",
+  "adopciones",
+  "rescate",
+  "clinics",
+] as const;
 export type ProfileTabKey = (typeof PROFILE_TAB_KEYS)[number];
 
 export function isProfileTabKey(value: string | null | undefined): value is ProfileTabKey {
@@ -36,12 +49,13 @@ export function isProfileTabKey(value: string | null | undefined): value is Prof
 /** Vista del panel: una de `/perfil` o una ruta propia. */
 export type ProfileViewKey = ProfileTabKey | "notifications" | "alerts";
 
-type GroupId = "cuenta" | "animales" | "publicaciones" | "veterinarias" | "kadesh";
+type GroupId = "cuenta" | "animales" | "publicaciones" | "rescate" | "veterinarias" | "kadesh";
 
 export const PROFILE_NAV_GROUPS: Record<GroupId, string> = {
   cuenta: "Mi cuenta",
   animales: "Mis animales",
   publicaciones: "Mis publicaciones",
+  rescate: "Rescate",
   veterinarias: "Mis veterinarias",
   kadesh: "Kadesh",
 };
@@ -105,6 +119,13 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
     href: Routes.profileTab("animals"),
     description: "Los animales que reportaste: perdidos, encontrados y en adopción.",
   },
+  adopciones: {
+    label: "Adopciones",
+    icon: FavouriteIcon,
+    group: "animales",
+    href: Routes.profileAdoptions,
+    description: "Las solicitudes que enviaste para adoptar: en qué van, qué te respondieron y cómo editarlas.",
+  },
   events: {
     label: "Eventos",
     icon: Calendar04Icon,
@@ -119,6 +140,13 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
     href: Routes.profileTab("posts"),
     description: "Lo que guardaste, te gustó y comentaste en el blog.",
   },
+  rescate: {
+    label: "Espacio de rescate",
+    icon: CharityIcon,
+    group: "rescate",
+    href: Routes.profileRescue(),
+    description: "Tu refugio, colectivo u hogar temporal: tu equipo, tus animales y tu perfil público.",
+  },
   clinics: {
     label: "Clínicas",
     icon: Stethoscope02Icon,
@@ -130,8 +158,9 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
 
 const GROUP_ORDER: Array<[GroupId, ProfileViewKey[]]> = [
   ["cuenta", ["inicio", "profile", "notifications", "alerts"]],
-  ["animales", ["pets", "appointments", "animals"]],
+  ["animales", ["pets", "appointments", "animals", "adopciones"]],
   ["publicaciones", ["events", "posts"]],
+  ["rescate", ["rescate"]],
   ["veterinarias", ["clinics"]],
 ];
 
@@ -140,6 +169,7 @@ const KADESH_LINKS = [
   { id: "site-veterinarias", label: "Veterinarias", icon: HospitalLocationIcon, href: Routes.veterinaries.index },
   { id: "site-animales", label: "Animales", icon: MapsLocation01Icon, href: Routes.animals.index },
   { id: "site-eventos", label: "Eventos", icon: Calendar04Icon, href: Routes.events.index },
+  { id: "site-aliados", label: "Aliados", icon: CharityIcon, href: Routes.allies },
   { id: "site-novedades", label: "Novedades", icon: FlashIcon, href: Routes.novedades },
 ];
 
@@ -158,6 +188,7 @@ const BADGE_LABELS: Partial<Record<ProfileViewKey, (n: number) => string>> = {
 /** Vista activa a partir de la ruta y `?tab=`. */
 export function profileViewFor(pathname: string, tab: string | null): ProfileViewKey | null {
   if (pathname === Routes.notifications.alerts) return "alerts";
+  if (pathname.startsWith(Routes.rescueActivate)) return "rescate";
   if (pathname.startsWith(Routes.notifications.index)) return "notifications";
   if (pathname === Routes.profile) return isProfileTabKey(tab) ? tab : "inicio";
   return null;

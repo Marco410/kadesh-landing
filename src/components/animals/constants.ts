@@ -78,6 +78,16 @@ export function findFallbackBreedId(
   return mixed?.id ?? null;
 }
 
+/** Tipos de animal (`AnimalType.name`), iguales a `ANIMAL_TYPE_OPTIONS` del backend y en ese orden. */
+export const ANIMAL_TYPE_OPTIONS = [
+  { label: "Perro", value: "dog" },
+  { label: "Gato", value: "cat" },
+  { label: "Ave", value: "bird" },
+  { label: "Pez", value: "fish" },
+  { label: "Reptil", value: "reptil" },
+  { label: "Mamífero", value: "mammal" },
+] as const;
+
 // Mapeo de valores de AnimalType a labels en español
 export const ANIMAL_TYPE_LABELS: Record<string, string> = {
   dog: "Perro",
@@ -132,6 +142,11 @@ const TYPE_PLURAL: Record<string, string> = {
   conejo: 'conejos',
   rabbit: 'conejos',
 };
+
+/** «perros», «aves»… en minúsculas, para frases. `null` si el tipo no se conoce. */
+export function animalTypePlural(type: string): string | null {
+  return TYPE_PLURAL[type.toLowerCase()] ?? null;
+}
 
 const STATUS_PLURAL: Record<string, string> = {
   lost: 'perdidos',

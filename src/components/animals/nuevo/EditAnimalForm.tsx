@@ -30,6 +30,7 @@ import {
   isAnimalReportStatus,
   type AnimalReportStatus,
 } from 'kadesh/components/animals/constants';
+import { friendlyErrorText } from 'kadesh/utils/errorText';
 
 const MAX_IMAGES = 3;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -58,11 +59,7 @@ function toDateTimeLocal(value?: string | null): string {
 }
 
 function errorMessage(error: unknown): string {
-  if (error && typeof error === 'object' && 'graphQLErrors' in error) {
-    const first = (error as { graphQLErrors?: { message?: string }[] }).graphQLErrors?.[0]?.message;
-    if (first) return first.split('\n')[0];
-  }
-  return error instanceof Error && error.message ? error.message : 'Ocurrió un error inesperado.';
+  return friendlyErrorText(error, 'No se pudo guardar. Intenta de nuevo.');
 }
 
 export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {

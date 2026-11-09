@@ -33,6 +33,22 @@ export const EVENT_NOTIFICATION_TYPE = {
   UPDATED: 'event.updated',
 } as const;
 
+/** Avisos de espacios de rescate (kadesh-back `models/Notification/constants.ts`). */
+export const RESCUE_NOTIFICATION_TYPE = {
+  SUBMITTED: 'rescue.submitted',
+  VERIFIED: 'rescue.verified',
+  REJECTED: 'rescue.rejected',
+  MEMBER_ADDED: 'rescue.member_added',
+  /** Un espacio completó tu adopción: la mascota ya está en tu cartilla. */
+  ADOPTION_COMPLETED: 'pet.adoption_completed',
+  /** Alguien pidió adoptar un animal que publicaste (o de tu espacio). */
+  APPLICATION_RECEIVED: 'adoption.application_received',
+  /** Cambió tu solicitud de adopción (en revisión, aprobada, no aprobada o cerrada). */
+  APPLICATION_UPDATED: 'adoption.application_updated',
+  /** Alguien recibió con el código la mascota que traspasaste. */
+  TRANSFER_REDEEMED: 'pet.transfer_redeemed',
+} as const;
+
 export const NOTIFICATION_TONE_COLOR = {
   found: '#10b981',
   lost: '#dc2626',

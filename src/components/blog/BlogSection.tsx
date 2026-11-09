@@ -9,6 +9,7 @@ import { LoadingBar, SkeletonRegion } from "kadesh/components/ui/skeleton";
 import EmptyBlogState from "./EmptyBlogState";
 import { useBlogPosts } from "./hooks/useBlogPosts";
 import { BlogPost, PostWhereInput } from "./types";
+import { friendlyErrorText } from 'kadesh/utils/errorText';
 
 interface BlogSectionProps {
   postsPerPage?: number;
@@ -131,7 +132,7 @@ function BlogSectionContent({
   if (error && posts.length === 0) {
     return (
       <ErrorState
-        message={error?.message || 'Error desconocido al cargar los posts'}
+        message={friendlyErrorText(error, 'No se pudieron cargar los artículos. Intenta de nuevo.')}
         title="Error al cargar los posts"
       />
     );

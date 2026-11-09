@@ -11,11 +11,12 @@ La portada le habla primero a **quien perdió a su mascota**. Los demás públic
 5. Cómo funciona (`HowItWorksSection`, `#como-funciona`)
 6. Primeras 24 horas (`FirstHoursSection`, `#primeras-24-horas`)
 7. Historias (`StoriesSection`, `#historias`)
-8. Veterinarias cerca (`VeterinariansSection`, `#veterinarias`)
-9. Donaciones (`DonationsSection`, `#donaciones`)
-10. Franja para negocios (`BusinessStrip`) → el detalle vive en `/anunciate` (`components/advertise`)
-11. Preguntas frecuentes (`FaqSection`, `#preguntas-frecuentes`)
-12. Cierre (`ClosingSection`), suscripción al blog y pie
+8. Aliados (`AlliesSection`, `#aliados`): muro de espacios de rescate aliados, estilo contribuidores de GitHub; sin aliados no se pinta. Detalle en `components/rescue/README.md`.
+9. Veterinarias cerca (`VeterinariansSection`, `#veterinarias`)
+10. Donaciones (`DonationsSection`, `#donaciones`)
+11. Franja para negocios (`BusinessStrip`) → el detalle vive en `/anunciate` (`components/advertise`)
+12. Preguntas frecuentes (`FaqSection`, `#preguntas-frecuentes`)
+13. Cierre (`ClosingSection`), suscripción al blog y pie
 
 Fuera de la portada: el roadmap vive en `/novedades#roadmap` (`components/changelog/RoadmapSection`), Kadesh Business y FOOD en el pie (columna Familia Kadesh), y «¿Qué es KADESH?» con la frase «Tecnología moderna. Corazón compasivo. Misión espiritual.» en Conócenos (`WhatIsKadesh` se sigue exportando para esa página).
 

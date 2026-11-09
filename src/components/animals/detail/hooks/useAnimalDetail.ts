@@ -5,6 +5,19 @@ import { GET_ANIMAL_QUERY } from '../../queries';
 import { sortMultimediaByOrder } from 'kadesh/components/animals/sortMultimedia';
 import { isAnimalKeystoneId } from 'kadesh/components/animals/animalSlug';
 
+export interface AnimalOrganization {
+  id: string;
+  name: string;
+  slug?: string | null;
+  type: string;
+  city?: string | null;
+  state?: string | null;
+  status?: string | null;
+  isAlly?: boolean | null;
+  whatsapp?: string | null;
+  logo?: { url?: string | null } | null;
+}
+
 export interface AnimalDetail {
   id: string;
   slug?: string | null;
@@ -52,6 +65,15 @@ export interface AnimalDetail {
     status: string;
     date_status?: string;
   }>;
+  /** ¿Quien consulta puede editarlo? (autor, equipo de su espacio de rescate o admin). */
+  viewerCanEdit?: boolean | null;
+  /** Cartilla ligada al reporte. Solo llega si quien consulta puede verla (dueño o equipo). */
+  pet?: { id: string } | null;
+  /**
+   * Espacio de rescate a cuyo nombre se publicó. Al público solo le llega si ya está verificado
+   * (si no, null y la ficha muestra al autor como siempre).
+   */
+  organization?: AnimalOrganization | null;
   /** Keystone puede devolver null si el visitante no tiene permiso de leer User. */
   user: {
     id: string;

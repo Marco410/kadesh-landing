@@ -1,5 +1,10 @@
 import { SITE_URL } from 'kadesh/core/site';
-import { ANIMAL_REPORT_NOTIFICATION_TYPE, EVENT_NOTIFICATION_TYPE, NEARBY_ANIMAL_TYPE } from './constants';
+import {
+  ANIMAL_REPORT_NOTIFICATION_TYPE,
+  EVENT_NOTIFICATION_TYPE,
+  NEARBY_ANIMAL_TYPE,
+  RESCUE_NOTIFICATION_TYPE,
+} from './constants';
 import type { AppNotification, NotificationGroup, NotificationTone } from './types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -36,12 +41,16 @@ export function groupNotifications(
 
 /**
  * Verde si es una alerta de zona de un animal encontrado, una posible coincidencia (perdido ↔
- * encontrado) o un evento aprobado; rojo si es otra alerta de zona o un evento cancelado o
- * rechazado; azul el resto.
+ * encontrado), un evento aprobado, un espacio de rescate verificado o una adopción completada; rojo si es otra alerta de
+ * zona, un evento cancelado o rechazado, o un espacio de rescate rechazado; azul el resto.
  */
 export function notificationTone(notification: AppNotification): NotificationTone {
   if (notification.type === ANIMAL_REPORT_NOTIFICATION_TYPE.POSSIBLE_MATCH) return 'found';
   if (notification.type === EVENT_NOTIFICATION_TYPE.APPROVED) return 'found';
+  if (notification.type === RESCUE_NOTIFICATION_TYPE.VERIFIED) return 'found';
+  if (notification.type === RESCUE_NOTIFICATION_TYPE.ADOPTION_COMPLETED) return 'found';
+  if (notification.type === RESCUE_NOTIFICATION_TYPE.TRANSFER_REDEEMED) return 'found';
+  if (notification.type === RESCUE_NOTIFICATION_TYPE.REJECTED) return 'lost';
   if (notification.type === EVENT_NOTIFICATION_TYPE.CANCELLED || notification.type === EVENT_NOTIFICATION_TYPE.REJECTED) {
     return 'lost';
   }

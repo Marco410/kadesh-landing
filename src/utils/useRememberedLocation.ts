@@ -10,6 +10,7 @@ import {
   syncGrantedLocation,
   type GeoCoords,
 } from 'kadesh/utils/geolocation';
+import { friendlyErrorText } from 'kadesh/utils/errorText';
 
 /**
  * Coordenada que sobrevive a la recarga. La primera vez hace falta un click;
@@ -62,7 +63,7 @@ export function useRememberedLocation(
         setError(
           'code' in err
             ? geolocationErrorMessage(err)
-            : err.message || 'No se pudo obtener tu ubicación',
+            : friendlyErrorText(err, 'No se pudo obtener tu ubicación'),
         );
       })
       .finally(() => setIsLocating(false));

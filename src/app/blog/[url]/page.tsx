@@ -6,7 +6,7 @@ import {
   buildMissingPostMetadata,
   buildPostMetadata,
 } from 'kadesh/components/blog/blog-seo';
-import { fetchPublishedPostByUrl } from 'kadesh/components/blog/server';
+import { fetchPublishedPostByUrl, fetchRelatedPosts } from 'kadesh/components/blog/server';
 import BlogPostPageClient from 'kadesh/components/blog/post/BlogPostPageClient';
 
 export const revalidate = 60;
@@ -38,10 +38,12 @@ export default async function BlogPostPage({
     notFound();
   }
 
+  const related = await fetchRelatedPosts(post);
+
   return (
     <>
       <JsonLd data={buildBlogPostingJsonLd(post)} />
-      <BlogPostPageClient post={post} />
+      <BlogPostPageClient post={post} related={related} />
     </>
   );
 }

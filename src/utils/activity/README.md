@@ -22,6 +22,7 @@ Lo que solo sabe el navegador de Kadesh Pet, para Operaciones (kadesh-business �
 - Sin sesión solo se manda `app.client_error`.
 - Errores de red (`requestErrorLink`): las consultas se reintentan hasta 3 veces (`queryRetryLink`, nunca mutaciones) y solo se reporta si fallan todas con la persona en línea y la página visible. No se reportan las canceladas (pantalla desmontada, cambio de ruta) ni las que cortó el navegador al cerrar o salir de la página (`pagehide`, `kadesh/utils/network`).
 - `reportClientError` no manda nada si el error es por falta de WebGL (el mapa muestra su respaldo, no se cae nada) ni si el navegador es un bot: user agents de crawlers y vistas previas (`facebookexternalhit`, `meta-externalagent`, WhatsApp, buscadores, `HeadlessChrome`…) o `navigator.webdriver`. El crawler de Meta con user agent de Chrome normal lo descarta el back por rango de IP.
+- Un error de hidratación de React (#418, #419, #422, #423, #425) en una página que tradujo el navegador (`translated-ltr`/`-rtl` en `<html>`, `<font>` inyectados) se manda como `warning` (aviso de baja prioridad), no como `script`.
 - Un mapa que truena no tumba la pantalla: `MapErrorBoundary` (`components/shared`) muestra el respaldo y lo reporta como `script`.
 - Si el envío falla (sin red), se reintenta una vez. Nunca lanza ni bloquea la UI.
 - Ante `RATE_LIMITED` o `IP_BLOCKED`, `requestErrorLink` muestra el mensaje del back en un aviso (uno cada 30 s).

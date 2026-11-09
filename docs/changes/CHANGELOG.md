@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-09 · chore: skill de diseño Impeccable actualizado a v4.8.2
+- Rama: fix/sesion-y-red-resilientes (sin commit; es independiente de ese fix)
+- Qué cambió y por qué: `npx impeccable update` pasó el skill de v4.1.1 a v4.8.2. Los scripts `.mjs` se reemplazan por un motor nativo (`scripts/impeccable`, que usa `scripts/bin/<plataforma>/impeccable`, 18 MB) y se agregan los agentes del skill en `.claude/agents/` (revisor final, documentador, productor de imágenes, aplicador de ediciones manuales). Instala además el hook que revisa el diseño después de editar UI, en `.claude/settings.local.json` (local, no se versiona).
+- Archivos: .claude/skills/impeccable/ (referencias actualizadas, scripts reemplazados por el motor), .claude/agents/ (nuevo)
+- GraphQL: ninguna.
+- Móvil: no aplica (herramienta de desarrollo).
+
 ## 2026-11-09 · feat: sección «Espacios de rescate» en la portada
 - Rama: fix/sesion-y-red-resilientes (sin commit; es independiente de ese fix)
 - Qué cambió y por qué: la portada solo hablaba de los espacios de rescate en el muro de Aliados, que no se pinta mientras no haya aliados, y en un enlace de «Cómo funciona». Ahora tienen su sección, entre Historias y Aliados:

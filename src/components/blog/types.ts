@@ -48,6 +48,18 @@ export interface BlogPost {
   url: string;
 }
 
+/** Un artículo en la columna del blog (lo más leído, relacionados): sin contenido ni autor. */
+export type BlogSidebarPost = Pick<
+  BlogPost,
+  'id' | 'title' | 'url' | 'publishedAt' | 'createdAt' | 'image' | 'category' | 'post_viewsCount'
+>;
+
+/** Relacionados de un artículo; `related: false` si no hubo y son los más recientes. */
+export interface RelatedPostsResult {
+  posts: BlogSidebarPost[];
+  related: boolean;
+}
+
 export interface PostWhereInput {
   [key: string]: unknown;
 }

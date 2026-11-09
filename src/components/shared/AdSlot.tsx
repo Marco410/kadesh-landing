@@ -120,23 +120,7 @@ function AdUnit({
         </span>
         <AdInfoButton />
       </div>
-      {fallback ? (
         <HouseAd placement={placement} />
-      ) : (
-        <div className="relative flex min-h-0 flex-1">
-          <ins
-            ref={insRef}
-            className="adsbygoogle block min-h-0 w-full flex-1"
-            style={{ display: "block" }}
-            data-ad-client={client}
-            data-ad-slot={slot}
-            data-ad-format="rectangle"
-            data-full-width-responsive="false"
-          />
-          {/* Encima del <ins> (que debe conservar su tamaño para que AdSense lo mida) mientras llega el anuncio. */}
-          {!filled && <AdSkeleton />}
-        </div>
-      )}
     </aside>
   );
 }

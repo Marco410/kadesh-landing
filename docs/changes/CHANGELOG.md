@@ -15,6 +15,26 @@ Formato:
 
 ---
 
+## 2026-11-09 · feat: difusión pagada del reporte en Facebook e Instagram (sin lucro, por WhatsApp)
+- Rama: feat/difusion-pagada
+- Qué cambió y por qué: quien reporta una mascota puede pagar un anuncio para que más gente de su zona vea el reporte. Que no parezca negocio ni estafa (a quien pierde una mascota le escriben estafadores pidiendo dinero).
+  - **Ficha del animal**: aviso «Impulsar en Facebook», solo para quien puede editar el reporte (`canEditAnimal`) y si está `lost` o `found`. Recuerda que el reporte ya se publicó gratis en la página de Facebook.
+  - **Formulario** (`Sheet`): presupuesto ($150/$300/$500 o libre entre $100 y $5,000) y días (3/5/7). Lo elegido es lo que se transfiere y lo que va al anuncio, sin renglones extra.
+  - **Promesa antes de pagar**:
+    - KADESH no cobra nada: el 100 % va a Meta.
+    - No es una donación.
+    - Comprobantes de Meta y avances por WhatsApp.
+    - Si aparece, se pausa y se devuelve lo no gastado.
+    - No garantiza encontrarlo.
+
+    Aviso antiestafa: solo el WhatsApp oficial; KADESH nunca escribe primero para cobrar ni pide datos de tarjeta. Casilla «Entiendo que el pago es solo para el anuncio…».
+  - **WhatsApp**: «Solicitar por WhatsApp» abre el número oficial con el mensaje armado (folio `KP-<6 del reporte>-<4 al azar>`, enlace, zona, días y presupuesto). Después se ven el folio y los siguientes pasos.
+  - **Nada en el servidor**: no se guarda la solicitud, ni comprobantes, ni datos bancarios. La CLABE, el comprobante, los recibos de Meta, los avances y la devolución van por WhatsApp. El proceso manual está en el README de la feature.
+  - **Términos**: nueva §6 «Difusión pagada de reportes en Facebook e Instagram» (las siguientes se renumeran). §5 aclara que las donaciones no incluyen esta difusión.
+- Archivos: src/components/animals/promotion/ (carpeta nueva: constants.ts, promotionRequest.ts, PromoteReportBanner.tsx, PromotionSheet.tsx, index.ts, README.md), src/app/animales/[slug]/page.tsx, src/app/terminos/page.tsx
+- GraphQL: ninguna.
+- Móvil: [prompt](../mobile-sync/2026-11-09-difusion-pagada.md).
+
 ## 2026-11-05 · chore: ESLint instalado y en verde (el CI ya lo pedía)
 - Rama: fix/ficha-animal-og-y-lint (hotfix)
 - Qué cambió y por qué: el CI corre `pnpm lint` en cada PR, pero ESLint nunca estuvo instalado ni configurado: `next lint` no revisaba nada. Ahora:

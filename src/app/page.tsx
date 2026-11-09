@@ -6,6 +6,7 @@ import {
   HowItWorksSection,
   FirstHoursSection,
   StoriesSection,
+  RescueSpacesSection,
   AlliesSection,
   HOME_ALLIES_MAX,
   VeterinariansSection,
@@ -54,6 +55,7 @@ export default async function HomePage() {
         <HowItWorksSection />
         <FirstHoursSection />
         <StoriesSection />
+        <RescueSpacesSection />
         <AlliesSection allies={allies} />
         <DonationsSection />
         <BusinessStrip />

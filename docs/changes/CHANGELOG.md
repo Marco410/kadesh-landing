@@ -15,6 +15,17 @@ Formato:
 
 ---
 
+## 2026-11-09 · feat: sección «Espacios de rescate» en la portada
+- Rama: fix/sesion-y-red-resilientes (sin commit; es independiente de ese fix)
+- Qué cambió y por qué: la portada solo hablaba de los espacios de rescate en el muro de Aliados, que no se pinta mientras no haya aliados, y en un enlace de «Cómo funciona». Ahora tienen su sección, entre Historias y Aliados:
+  - **Texto**: H2 «Tu rescate en orden, desde que llega hasta que se va a casa», respuesta directa, los cinco tipos de espacio, tres puntos (equipo con roles, solicitudes de adopción, perfil verificado), **Activar mi espacio de rescate** y «Ver espacios verificados».
+  - **Vitrina** (`RescueJourney`): la ficha de ejemplo de Bruno, marcada «Ejemplo», con su recorrido. Llega, recibe una vacuna con recordatorio por WhatsApp, se publica en adopción, le aprueban una solicitud y su cartilla pasa de «Refugio Colibrí» a «Familia Ruiz». Al entrar en pantalla los pasos aparecen uno a uno y la etapa cambia con las etiquetas reales de la ficha interna. Sin JS o con «reducir movimiento» se ve el estado final.
+  - **Aliados** queda como la prueba de la sección: pierde su recuadro «¿Rescatas? Únete como aliado», que repetía el botón, y pasa a fondo blanco para alternar con la nueva sección.
+  - Revisado con capturas en escritorio, móvil (390 px, sin desborde horizontal) y modo oscuro. tsc, ESLint y el detector de diseño, limpios.
+- Archivos: src/components/home/RescueSpacesSection.tsx (nuevo), src/components/home/RescueJourney.tsx (nuevo), src/components/home/index.ts, src/components/home/AlliesSection.tsx, src/components/home/README.md, src/components/rescue/README.md, src/app/page.tsx
+- GraphQL: ninguna.
+- Móvil: no aplica (sección de la portada; la app abre las páginas de marketing en el navegador).
+
 ## 2026-11-09 · fix: sesión y consultas que aguantan cortes de red; sin ruido de «Error de conexión»
 - Rama: develop
 - Qué cambió y por qué: Operaciones registraba «Error de conexión en AuthenticatedItem» (`Failed to fetch` / Safari `Load failed`) en la ficha y el blog, y lo mismo en GetAnimal, GetPosts, NotificationUnreadCount, ProfileNavCounts… La mayoría eran bots sin sesión que cierran la página a media carga, o celulares que pierden señal. Además, con sesión válida y la red caída al cargar, `/perfil` y otras pantallas **mandaban al login**: el fallo de red se tomaba como "sin sesión".

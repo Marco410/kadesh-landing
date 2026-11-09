@@ -6,6 +6,7 @@ Listado de artículos publicados y detalle de cada post. La promesa es la misma 
 
 - **Índice (`/blog`)**: grid de artículos publicados, filtro opcional `?tab=` no aplica aquí; el filtro es `?category=<url-de-categoría>`. Sin categoría es el default. Vacío: estado `EmptyBlogState`.
 - **Detalle (`/blog/<url>`)**: artículo completo, autor, fechas, etiquetas, comentarios y relacionados. Si el post no existe o no está publicado, es **404** con `noindex` (no la pantalla genérica de “en construcción”, ni un 200 con “no encontrado”).
+- **Autor**: se pide como `author: authorProfile { … }`, no como `author { … }`. `Post.author` apunta a `User` y un visitante no puede leer `User`, así que `author` siempre le llegaba `null` y el blog nunca mostraba quién escribió el artículo (ni en la ficha, ni en tarjetas, ni en el JSON-LD para Google). `authorProfile` (kadesh-back, `models/Blog/Post/Post.authorProfile.ts`) da solo nombre, apellido, usuario, verificado, foto y fecha de alta, sin `id` ni correo. Requiere ese back desplegado.
 - La paginación es de cliente (`take`/`skip`). Solo la **página 1** se hidrata con el HTML del servidor; cambiar de página no reutiliza esos cards. El total sale de `postsCount` con el mismo filtro de publicados (y categoría, si hay). Cambiar `?category=` vuelve a la página 1.
 
 ## Contenido compartido con Kadesh Negocios

@@ -20,10 +20,10 @@ export default function AlliesSection({ allies }: { allies: RescueAlliesResult }
     <section
       id="aliados"
       aria-labelledby="aliados-heading"
-      className="w-full scroll-mt-20 bg-[#f7f8fa] py-24 dark:bg-night-raised"
+      className="w-full scroll-mt-20 bg-white py-24 dark:bg-night"
     >
       <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-        <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-kadesh-700 dark:bg-white/10 dark:text-kadesh-300">
+        <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-kadesh-50 px-3 py-1.5 text-sm font-semibold text-kadesh-700 dark:bg-white/10 dark:text-kadesh-300">
           <HugeiconsIcon icon={Award01Icon} size={16} strokeWidth={1.8} aria-hidden="true" />
           Aliados KADESH
         </p>
@@ -55,19 +55,6 @@ export default function AlliesSection({ allies }: { allies: RescueAlliesResult }
           Ver todos los aliados
           <HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={2} aria-hidden="true" />
         </Link>
-
-        <div className="mx-auto mt-12 flex max-w-3xl flex-col items-center gap-4 rounded-2xl border border-[#ececec] bg-white p-6 text-center dark:border-white/10 dark:bg-night sm:flex-row sm:justify-between sm:text-left">
-          <p className="text-[#3a3a3a] dark:text-[#d0d0d0]">
-            <strong className="font-bold text-[#121212] dark:text-white">¿Rescatas?</strong> Activa gratis tu espacio y
-            publica a tus animales a nombre de tu organización.
-          </p>
-          <Link
-            href={Routes.rescueActivate}
-            className="inline-flex min-h-11 flex-shrink-0 items-center justify-center rounded-xl border-2 border-kadesh px-5 font-semibold text-kadesh-700 transition-colors hover:bg-kadesh hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:text-kadesh-300"
-          >
-            Únete como aliado
-          </Link>
-        </div>
       </div>
     </section>
   );

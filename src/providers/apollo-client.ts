@@ -3,10 +3,14 @@ import { setContext } from "@apollo/client/link/context";
 import { ApolloLink } from "@apollo/client";
 import { clientContextHeaders } from "kadesh/utils/activity/clientContext";
 import { requestErrorLink } from "kadesh/utils/activity/requestErrorLink";
+import { watchPageLifecycle } from "kadesh/utils/network";
+import { readSessionToken } from "kadesh/utils/sessionToken";
+import { queryRetryLink } from "./queryRetryLink";
 // @ts-expect-error -- apollo-upload-client no publica tipos para este subpath.
 import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 
-const SESSION_TOKEN_KEY = "keystonejs-session-token";
+// Para no reportar las peticiones que el navegador corta al cerrar o salir de la página.
+watchPageLifecycle();
 
 /** App y pantalla de cada petición: el back las guarda en Actividad (y en sus errores). */
 const clientContextLink = setContext((_, { headers }) => {
@@ -15,8 +19,7 @@ const clientContextLink = setContext((_, { headers }) => {
 });
 
 const authLink = setContext((_, { headers }) => {
-  if (typeof window === "undefined") return { headers };
-  const token = window.localStorage?.getItem(SESSION_TOKEN_KEY);
+  const token = readSessionToken();
   if (!token) return { headers };
   return {
     headers: {
@@ -36,7 +39,14 @@ const uploadLink = createUploadLink({
 
 export const createApolloClient = () => {
   return new ApolloClient({
-    link: ApolloLink.from([clientContextLink, authLink, requestErrorLink, uploadLink]),
+    // El reporte va antes que los reintentos: solo ve el error final.
+    link: ApolloLink.from([
+      clientContextLink,
+      authLink,
+      requestErrorLink,
+      queryRetryLink,
+      uploadLink,
+    ]),
     cache: new InMemoryCache(),
     credentials: "include",
     defaultOptions: {

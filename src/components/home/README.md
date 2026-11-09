@@ -7,16 +7,19 @@ La portada le habla primero a **quien perdió a su mascota**. Los demás públic
 1. Hero (`HeroSection`)
 2. Reportes recientes (`RecentReportsSection`, `#animales`)
 3. Alertas de zona (`ZoneAlertsSection`, `#alertas`)
-4. Próximos eventos (`UpcomingEventsSection`, `#eventos`)
-5. Cómo funciona (`HowItWorksSection`, `#como-funciona`)
-6. Primeras 24 horas (`FirstHoursSection`, `#primeras-24-horas`)
-7. Historias (`StoriesSection`, `#historias`)
-8. Aliados (`AlliesSection`, `#aliados`): muro de espacios de rescate aliados, estilo contribuidores de GitHub; sin aliados no se pinta. Detalle en `components/rescue/README.md`.
-9. Veterinarias cerca (`VeterinariansSection`, `#veterinarias`)
-10. Donaciones (`DonationsSection`, `#donaciones`)
-11. Franja para negocios (`BusinessStrip`) → el detalle vive en `/anunciate` (`components/advertise`)
-12. Preguntas frecuentes (`FaqSection`, `#preguntas-frecuentes`)
-13. Cierre (`ClosingSection`), suscripción al blog y pie
+4. Veterinarias cerca (`VeterinariansSection`, `#veterinarias`)
+5. Próximos eventos (`UpcomingEventsSection`, `#eventos`)
+6. Cómo funciona (`HowItWorksSection`, `#como-funciona`)
+7. Primeras 24 horas (`FirstHoursSection`, `#primeras-24-horas`)
+8. Historias (`StoriesSection`, `#historias`)
+9. Espacios de rescate (`RescueSpacesSection`, `#espacios-de-rescate`): qué es, para quién y qué hace, con la vitrina `RescueJourney` y el botón para activar. Siempre se pinta.
+10. Aliados (`AlliesSection`, `#aliados`): muro de espacios de rescate aliados, estilo contribuidores de GitHub; sin aliados no se pinta. Es la prueba de la sección anterior, por eso ya no lleva su propio «¿Rescatas?». Detalle en `components/rescue/README.md`.
+11. Donaciones (`DonationsSection`, `#donaciones`)
+12. Franja para negocios (`BusinessStrip`) → el detalle vive en `/anunciate` (`components/advertise`)
+13. Preguntas frecuentes (`FaqSection`, `#preguntas-frecuentes`)
+14. Cierre (`ClosingSection`), suscripción al blog y pie
+
+Fondos: a partir de Historias se alternan blanco y `#f7f8fa` (Historias blanco, Espacios de rescate gris, Aliados blanco) hasta el azul de Donaciones. En oscuro, `night` / `night-raised`.
 
 Fuera de la portada: el roadmap vive en `/novedades#roadmap` (`components/changelog/RoadmapSection`), Kadesh Business y FOOD en el pie (columna Familia Kadesh), y «¿Qué es KADESH?» con la frase «Tecnología moderna. Corazón compasivo. Misión espiritual.» en Conócenos (`WhatIsKadesh` se sigue exportando para esa página).
 
@@ -57,6 +60,14 @@ Va después de las alertas de zona: «te avisamos de lo que pasa cerca» sigue c
 ## Cómo funciona
 
 El paso 4 es «Ayuda a otros» mientras no exista el estado «Reencontrado». Cuando exista, cambiarlo por «Márcalo como reencontrado».
+
+## Espacios de rescate
+
+Le habla a quien rescata (rescatistas, refugios, hogares temporales, colectivos, asociaciones), así que va abajo, después de Historias, sin robarle espacio a quien perdió su mascota.
+
+- **Texto** (`RescueSpacesSection`, servidor): H2, respuesta directa (GEO), los tipos de espacio (`RESCUE_ORG_TYPE_OPTIONS`), tres puntos (equipo con roles, solicitudes, perfil verificado) y **Activar mi espacio de rescate** → `/perfil/rescate/activar`, más «Ver espacios verificados» → `/organizaciones`. Dice «gratis» porque activar no tiene cobro.
+- **Vitrina** (`RescueJourney`, cliente): la ficha de ejemplo de Bruno (marcada «Ejemplo») con su recorrido: llega, vacuna con recordatorio por WhatsApp, en adopción, solicitud aprobada y a casa, donde su cartilla viaja de «Refugio Colibrí» a «Familia Ruiz». Los nombres son ficticios; las etiquetas de etapa son las reales de la ficha interna (`rescueStage`). Es `role="img"` con un `aria-label` que resume el recorrido.
+- **Motion**: al llegar a la vitrina, los pasos entran uno a uno, la línea se dibuja, la etapa cambia (Recién llegado → En tratamiento → Listo para adopción → Apartado → Adoptado), aparece el recordatorio y la cartilla cruza al final. Sin JS o con «reducir movimiento» se ve el estado final.
 
 ## Color
 

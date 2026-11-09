@@ -16,7 +16,9 @@ const PAGE_SHELL =
 function NewAnimalPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, loading: userLoading } = useUser();
+  const { user, loading, sessionPending } = useUser();
+  // Sesión sin confirmar por red: se espera, no se pide la cuenta.
+  const userLoading = loading || sessionPending;
   const requestedStatus = searchParams.get("status");
   const requestedOrg = searchParams.get("org");
 

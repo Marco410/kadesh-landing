@@ -14,7 +14,7 @@ const HOUSE_ADS = [
   {
     id: "business",
     brand: "KADESH Business",
-    title: "Consigue clientes B2B desde Google Maps",
+    title: "Consigue clientes B2B desde Google Maps e INEGI",
     body: "Leads con teléfono, email y dirección, y un CRM para darles seguimiento. 7 días gratis con 70 leads, sin tarjeta.",
     cta: "Probar gratis",
     href: "https://kadesh.com.mx/",

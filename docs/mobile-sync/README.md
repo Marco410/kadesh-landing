@@ -25,3 +25,4 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-04 | [Eventos: ver, «Me interesa / Asistiré» y avisos](2026-11-04-eventos-ver-y-asistir.md) | events | pendiente |
 | 2026-11-04 | [Eventos: publicar, «Mis eventos», editar y cancelar](2026-11-04-eventos-publicar.md) | events | pendiente |
 | 2026-11-05 | [Señas particulares recortadas con «Ver más» en la ficha del animal](2026-11-05-senas-ver-mas.md) | animals | pendiente |
+| 2026-11-09 | [Difusión pagada del reporte en Facebook e Instagram (por WhatsApp)](2026-11-09-difusion-pagada.md) | animals | pendiente |

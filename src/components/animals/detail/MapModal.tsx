@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Cancel01Icon } from '@hugeicons/core-free-icons';
-import LogMap from './LogMap';
+import AnimalLocationMap from './AnimalLocationMap';
 
 interface MapModalProps {
   isOpen: boolean;
@@ -42,7 +42,7 @@ export default function MapModal({ isOpen, onClose, lat, lng, status }: MapModal
           <HugeiconsIcon icon={Cancel01Icon} size={20} strokeWidth={1.5} />
         </button>
         <div className="h-full overflow-hidden rounded-2xl">
-          <LogMap lat={lat} lng={lng} status={status} />
+          <AnimalLocationMap lat={lat} lng={lng} status={status} />
         </div>
       </div>
     </div>

@@ -10,17 +10,17 @@ import { getStatusColor } from './constants';
 import AnimalInfoWindow from './AnimalInfoWindow';
 import {
   applyFreeMapThemeClass,
-  attachFreeMapBaseLayer,
+  createFreeMap,
   createStatusPinIcon,
   createUserLocationIcon,
   createMarkerGroup,
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_ZOOM,
+  destroyMap,
   fitMapToPoints,
   getLeaflet,
   isDarkMapTheme,
-  loadLeafletCluster,
-  resetLeafletContainer,
+  isMapAlive,
   type LeafletMap,
   type LeafletMarker,
   type LeafletMarkerClusterGroup,
@@ -32,6 +32,9 @@ import {
   readGrantedLocation,
   requestCurrentPosition,
 } from 'kadesh/utils/geolocation';
+import { useFreeMapStack } from 'kadesh/components/shared/useFreeMapStack';
+import MapErrorBoundary from 'kadesh/components/shared/MapErrorBoundary';
+import MapFallback from 'kadesh/components/shared/MapFallback';
 
 interface AnimalsMapProps {
   animals: LostAnimal[];
@@ -40,14 +43,23 @@ interface AnimalsMapProps {
   height?: string;
 }
 
-export default function AnimalsMap({
+/** Sin mapa: los reportes siguen en la lista. */
+function AnimalsMapFallback({ height = '600px' }: { height?: string }) {
+  return (
+    <div className="relative w-full overflow-hidden" style={{ height }}>
+      <MapFallback hint="No pudimos mostrar el mapa en este navegador. Los reportes siguen en la lista." />
+    </div>
+  );
+}
+
+function AnimalsMapView({
   animals,
   selectedAnimal,
   onAnimalClick,
   height = '600px',
 }: AnimalsMapProps) {
   const { resolvedTheme } = useTheme();
-  const [ready, setReady] = useState(false);
+  const { ready, unavailable, markUnavailable } = useFreeMapStack();
   const [mounted, setMounted] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(
@@ -77,18 +89,6 @@ export default function AnimalsMap({
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    loadLeafletCluster()
-      .then(() => {
-        if (!cancelled) setReady(true);
-      })
-      .catch((err) => console.error('Leaflet load error', err));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const closePopup = useCallback(() => {
     popupRef.current?.remove();
     popupRef.current = null;
@@ -100,7 +100,7 @@ export default function AnimalsMap({
     (animal: LostAnimal) => {
       const L = getLeaflet();
       const map = mapRef.current;
-      if (!L || !map || animal.latitude == null || animal.longitude == null) return;
+      if (!L || !isMapAlive(map) || animal.latitude == null || animal.longitude == null) return;
 
       closePopup();
 
@@ -146,25 +146,27 @@ export default function AnimalsMap({
     const container = containerRef.current;
     if (!ready || !container || !L) return;
 
-    resetLeafletContainer(container);
-
-    const map = L.map(container, { zoomControl: true }).setView(
-      [DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng],
-      DEFAULT_MAP_ZOOM
-    );
+    const map = createFreeMap(container, {
+      center: [DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng],
+      zoom: DEFAULT_MAP_ZOOM,
+      resolvedTheme,
+      onUnavailable: markUnavailable,
+    });
+    if (!map) return;
     mapRef.current = map;
-    attachFreeMapBaseLayer(map);
-    applyFreeMapThemeClass(container, resolvedTheme);
     clusterRef.current = createMarkerGroup(L, map);
 
-    const onResize = () => map.invalidateSize();
+    const onResize = () => {
+      if (isMapAlive(map)) map.invalidateSize();
+    };
     window.addEventListener('resize', onResize);
-    requestAnimationFrame(onResize);
+    const frame = requestAnimationFrame(onResize);
 
     return () => {
+      cancelAnimationFrame(frame);
       window.removeEventListener('resize', onResize);
       closePopup();
-      map.remove();
+      destroyMap(map);
       mapRef.current = null;
       clusterRef.current = null;
       userMarkerRef.current = null;
@@ -182,7 +184,7 @@ export default function AnimalsMap({
     const L = getLeaflet();
     const map = mapRef.current;
     const cluster = clusterRef.current;
-    if (!L || !map || !cluster) return;
+    if (!L || !isMapAlive(map) || !cluster) return;
 
     cluster.clearLayers();
 
@@ -217,11 +219,12 @@ export default function AnimalsMap({
   }, [animals, userLocation, ready]);
 
   useEffect(() => {
-    if (!ready || !mapRef.current) return;
+    const map = mapRef.current;
+    if (!ready || !isMapAlive(map)) return;
     if (selectedAnimal?.latitude != null && selectedAnimal.longitude != null) {
-      mapRef.current.setView(
+      map.setView(
         [selectedAnimal.latitude, selectedAnimal.longitude],
-        Math.max(mapRef.current.getZoom(), 14)
+        Math.max(map.getZoom(), 14)
       );
       openAnimalPopup(selectedAnimal);
       return;
@@ -235,7 +238,8 @@ export default function AnimalsMap({
     requestCurrentPosition(GEO_OPTIONS_FRESH)
       .then((location) => {
         setUserLocation(location);
-        mapRef.current?.setView([location.lat, location.lng], 14);
+        const map = mapRef.current;
+        if (isMapAlive(map)) map.setView([location.lat, location.lng], 14);
       })
       .catch(() => {
         alert(
@@ -244,6 +248,10 @@ export default function AnimalsMap({
       })
       .finally(() => setIsLocating(false));
   }, []);
+
+  if (unavailable) {
+    return <AnimalsMapFallback height={height} />;
+  }
 
   return (
     <div className="relative w-full overflow-hidden shadow-lg" style={{ height }}>
@@ -279,5 +287,14 @@ export default function AnimalsMap({
         </button>
       )}
     </div>
+  );
+}
+
+/** Si el mapa truena, solo cae el mapa: la lista de reportes sigue. */
+export default function AnimalsMap(props: AnimalsMapProps) {
+  return (
+    <MapErrorBoundary fallback={<AnimalsMapFallback height={props.height} />}>
+      <AnimalsMapView {...props} />
+    </MapErrorBoundary>
   );
 }

@@ -1,5 +1,12 @@
 'use client';
 
+import { hasWebGLSupport, isWebGLError } from 'kadesh/utils/webgl';
+import {
+  createSafeGlLayer,
+  GL_UNAVAILABLE_EVENT,
+  type GlLayerClass,
+} from 'kadesh/components/shared/free-map-layer';
+
 /** Liberty (OpenFreeMap) — sin API key. El dark se aplica con filtros CSS. */
 export const FREE_MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
 
@@ -32,11 +39,19 @@ async function importLeafletStack(): Promise<LeafletLib> {
 
   await import('maplibre-gl');
   const plugin = await import('@maplibre/maplibre-gl-leaflet');
-  const maplibreGL =
-    (plugin as { default?: LeafletLib['maplibreGL']; maplibreGL?: LeafletLib['maplibreGL'] })
-      .default ?? (plugin as { maplibreGL?: LeafletLib['maplibreGL'] }).maplibreGL;
-  if (maplibreGL) {
-    L.maplibreGL = maplibreGL;
+  const GlLayer = (plugin as { MaplibreGL?: unknown }).MaplibreGL as GlLayerClass | undefined;
+  const setTransform = L.DomUtil?.setTransform;
+  if (GlLayer && setTransform) {
+    // La capa del plugin con sus fallas cubiertas (ver `createSafeGlLayer`).
+    const SafeGlLayer = createSafeGlLayer(GlLayer, setTransform);
+    L.maplibreGL = (options) => new SafeGlLayer(options) as LeafletTileLayer;
+  } else {
+    const maplibreGL =
+      (plugin as { default?: LeafletLib['maplibreGL']; maplibreGL?: LeafletLib['maplibreGL'] })
+        .default ?? (plugin as { maplibreGL?: LeafletLib['maplibreGL'] }).maplibreGL;
+    if (maplibreGL) {
+      L.maplibreGL = maplibreGL;
+    }
   }
 
   return leafletFromWindow() ?? L;
@@ -61,6 +76,7 @@ export interface LeafletLayer {
   remove(): void;
   bringToBack?(): LeafletLayer;
   bringToFront?(): LeafletLayer;
+  on?(event: string, fn: (event?: { error?: unknown }) => void): LeafletLayer;
 }
 
 export type LeafletTileLayer = LeafletLayer;
@@ -157,6 +173,9 @@ export interface LeafletLib {
     }
   ): LeafletCircle;
   maplibreGL?: (options: { style: string; pane?: string }) => LeafletTileLayer;
+  DomUtil?: {
+    setTransform(el: HTMLElement, offset: unknown, scale?: number): void;
+  };
   tileLayer?(
     url: string,
     options?: { attribution?: string; pane?: string }
@@ -178,6 +197,90 @@ export function resetLeafletContainer(container: HTMLElement) {
   const el = container as HTMLElement & { _leaflet_id?: number };
   if (el._leaflet_id) {
     delete el._leaflet_id;
+  }
+}
+
+type LeafletMapInternals = LeafletMap & { _mapPane?: HTMLElement; _animatingZoom?: boolean };
+
+/**
+ * ¿El mapa sigue montado? Leaflet no marca el mapa como quitado: después de `remove()` sus
+ * métodos (`invalidateSize`, `setView`, `fitBounds`…) truenan con "reading '_leaflet_pos'".
+ * Revísalo en todo lo que corre después de crearlo: frames, timeouts, ResizeObserver y efectos.
+ */
+export function isMapAlive(map: LeafletMap | null | undefined): map is LeafletMap {
+  return Boolean(map && (map as LeafletMapInternals)._mapPane);
+}
+
+/** Quita el mapa sin dejar trabajo pendiente que lo toque después. Nunca lanza. */
+export function destroyMap(map: LeafletMap | null | undefined) {
+  if (!isMapAlive(map)) return;
+  // La animación de zoom termina con un setTimeout de 250 ms que mueve el mapa: así ya no corre.
+  (map as LeafletMapInternals)._animatingZoom = false;
+  try {
+    map.remove();
+  } catch (error) {
+    console.warn('[map] no se pudo quitar el mapa', error);
+  }
+}
+
+export interface CreateFreeMapOptions {
+  center: [number, number];
+  zoom: number;
+  zoomControl?: boolean;
+  attributionControl?: boolean;
+  resolvedTheme?: string;
+  /**
+   * El mapa no se puede dibujar (sin WebGL, o MapLibre falló): el componente muestra su respaldo.
+   * Puede llegar después de crear el mapa, si MapLibre avisa de un error de WebGL más tarde.
+   */
+  onUnavailable: (error?: unknown) => void;
+}
+
+/**
+ * Crea el mapa de Leaflet con la capa base de MapLibre. Nunca lanza: sin WebGL ni siquiera crea
+ * el mapa, y si algo falla quita lo que alcanzó a crear. En ambos casos llama `onUnavailable` y
+ * devuelve `null`.
+ */
+export function createFreeMap(
+  container: HTMLElement,
+  options: CreateFreeMapOptions
+): LeafletMap | null {
+  const L = getLeaflet();
+  if (!L) return null;
+  if (!hasWebGLSupport()) {
+    options.onUnavailable();
+    return null;
+  }
+
+  let reported = false;
+  const fail = (error?: unknown) => {
+    reported = true;
+    options.onUnavailable(error);
+  };
+
+  resetLeafletContainer(container);
+  let map: LeafletMap | null = null;
+  try {
+    map = L.map(container, {
+      zoomControl: options.zoomControl ?? true,
+      // Solo si viene: `undefined` le quitaría a Leaflet su valor por defecto.
+      ...(options.attributionControl === undefined
+        ? {}
+        : { attributionControl: options.attributionControl }),
+    }).setView(options.center, options.zoom);
+    const base = attachFreeMapBaseLayer(map, { onUnavailable: fail });
+    if (!base) {
+      destroyMap(map);
+      if (!reported) options.onUnavailable();
+      return null;
+    }
+    applyFreeMapThemeClass(container, options.resolvedTheme);
+    return map;
+  } catch (error) {
+    destroyMap(map);
+    if (!isWebGLError(error)) console.error('[map] no se pudo crear el mapa', error);
+    if (!reported) options.onUnavailable(error);
+    return null;
   }
 }
 
@@ -223,7 +326,15 @@ export function applyFreeMapThemeClass(
   container.classList.toggle('kadesh-free-map--standard', !isDark);
 }
 
-export function attachFreeMapBaseLayer(map: LeafletMap): LeafletTileLayer | null {
+/**
+ * Pone la capa base (MapLibre) en el mapa. Devuelve `null` sin lanzar si no hay WebGL o MapLibre
+ * no pudo crear su contexto, y avisa con `onUnavailable` (también si falla después).
+ * Para crear un mapa completo usa `createFreeMap`.
+ */
+export function attachFreeMapBaseLayer(
+  map: LeafletMap,
+  { onUnavailable }: { onUnavailable?: (error?: unknown) => void } = {}
+): LeafletTileLayer | null {
   const L = getLeaflet();
   if (!L) return null;
 
@@ -232,11 +343,21 @@ export function attachFreeMapBaseLayer(map: LeafletMap): LeafletTileLayer | null
   if (basePane) basePane.style.zIndex = '200';
 
   if (L.maplibreGL) {
+    if (!hasWebGLSupport()) {
+      onUnavailable?.();
+      return null;
+    }
     const baseLayer = L.maplibreGL({
       style: FREE_MAP_STYLE,
       pane: 'kadeshMapBase',
     });
+    let failed = false;
+    baseLayer.on?.(GL_UNAVAILABLE_EVENT, (event) => {
+      failed = true;
+      onUnavailable?.(event?.error);
+    });
     baseLayer.addTo(map);
+    if (failed) return null;
     baseLayer.bringToBack?.();
     return baseLayer;
   }
@@ -340,7 +461,7 @@ export function fitMapToPoints(
   points: { lat: number; lng: number }[]
 ) {
   const L = getLeaflet();
-  if (!L || points.length === 0) return;
+  if (!L || points.length === 0 || !isMapAlive(map)) return;
   if (points.length === 1) {
     map.setView([points[0].lat, points[0].lng], 13);
     return;

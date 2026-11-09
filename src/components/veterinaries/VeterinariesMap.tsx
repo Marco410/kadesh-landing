@@ -5,20 +5,23 @@ import { useTheme } from 'next-themes';
 import type { PetPlace } from './types';
 import {
   applyFreeMapThemeClass,
-  attachFreeMapBaseLayer,
+  createFreeMap,
   createMarkerGroup,
   createVeterinaryPinIcon,
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_ZOOM,
+  destroyMap,
   fitMapToPoints,
   getLeaflet,
   isDarkMapTheme,
-  loadLeafletCluster,
-  resetLeafletContainer,
+  isMapAlive,
   type LeafletMap,
   type LeafletMarkerClusterGroup,
   type LeafletPopup,
 } from 'kadesh/components/shared/free-map';
+import { useFreeMapStack } from 'kadesh/components/shared/useFreeMapStack';
+import MapErrorBoundary from 'kadesh/components/shared/MapErrorBoundary';
+import MapFallback from 'kadesh/components/shared/MapFallback';
 
 interface VeterinariesMapProps {
   places: PetPlace[];
@@ -42,14 +45,34 @@ function placeCoords(place: PetPlace) {
   return { lat, lng };
 }
 
-export default function VeterinariesMap({
+/** Sin mapa: con una sola veterinaria (su ficha), su nombre y "Ver en Google Maps"; con varias, la lista. */
+function VeterinariesMapFallback({ places, height }: Pick<VeterinariesMapProps, 'places' | 'height'>) {
+  const only = places.length === 1 ? places[0] : null;
+  const coords = only ? placeCoords(only) : null;
+  return (
+    <div className="relative w-full overflow-hidden" style={{ height: height ?? '100%' }}>
+      <MapFallback
+        title={only?.name}
+        lat={coords?.lat}
+        lng={coords?.lng}
+        hint={
+          only
+            ? undefined
+            : 'No pudimos mostrar el mapa en este navegador. Las veterinarias siguen en la lista.'
+        }
+      />
+    </div>
+  );
+}
+
+function VeterinariesMapView({
   places,
   selectedPlace,
   onPlaceClick,
   height = '100%',
 }: VeterinariesMapProps) {
   const { resolvedTheme } = useTheme();
-  const [ready, setReady] = useState(false);
+  const { ready, unavailable, markUnavailable } = useFreeMapStack();
   const [mounted, setMounted] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,18 +91,6 @@ export default function VeterinariesMap({
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    loadLeafletCluster()
-      .then(() => {
-        if (!cancelled) setReady(true);
-      })
-      .catch((err) => console.error('Leaflet load error', err));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const closePopup = useCallback(() => {
     popupRef.current?.remove();
     popupRef.current = null;
@@ -90,7 +101,7 @@ export default function VeterinariesMap({
       const L = getLeaflet();
       const map = mapRef.current;
       const coords = placeCoords(place);
-      if (!L || !map || !coords) return;
+      if (!L || !isMapAlive(map) || !coords) return;
 
       closePopup();
       const dark = isDarkMapTheme(resolvedTheme);
@@ -160,25 +171,27 @@ export default function VeterinariesMap({
     const container = containerRef.current;
     if (!ready || !container || !L) return;
 
-    resetLeafletContainer(container);
-
-    const map = L.map(container, { zoomControl: true }).setView(
-      [DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng],
-      DEFAULT_MAP_ZOOM
-    );
+    const map = createFreeMap(container, {
+      center: [DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng],
+      zoom: DEFAULT_MAP_ZOOM,
+      resolvedTheme,
+      onUnavailable: markUnavailable,
+    });
+    if (!map) return;
     mapRef.current = map;
-    attachFreeMapBaseLayer(map);
-    applyFreeMapThemeClass(container, resolvedTheme);
     clusterRef.current = createMarkerGroup(L, map);
 
-    const onResize = () => map.invalidateSize();
+    const onResize = () => {
+      if (isMapAlive(map)) map.invalidateSize();
+    };
     window.addEventListener('resize', onResize);
-    requestAnimationFrame(onResize);
+    const frame = requestAnimationFrame(onResize);
 
     return () => {
+      cancelAnimationFrame(frame);
       window.removeEventListener('resize', onResize);
       closePopup();
-      map.remove();
+      destroyMap(map);
       mapRef.current = null;
       clusterRef.current = null;
     };
@@ -194,7 +207,7 @@ export default function VeterinariesMap({
     const L = getLeaflet();
     const map = mapRef.current;
     const cluster = clusterRef.current;
-    if (!L || !map || !cluster) return;
+    if (!L || !isMapAlive(map) || !cluster) return;
 
     cluster.clearLayers();
     const points: { lat: number; lng: number }[] = [];
@@ -214,20 +227,22 @@ export default function VeterinariesMap({
   }, [places, ready]);
 
   useEffect(() => {
-    if (!ready || !mapRef.current) return;
+    const map = mapRef.current;
+    if (!ready || !isMapAlive(map)) return;
     if (selectedPlace) {
       const coords = placeCoords(selectedPlace);
       if (coords) {
-        mapRef.current.setView(
-          [coords.lat, coords.lng],
-          Math.max(mapRef.current.getZoom(), 14)
-        );
+        map.setView([coords.lat, coords.lng], Math.max(map.getZoom(), 14));
         openPlacePopup(selectedPlace);
       }
       return;
     }
     closePopup();
   }, [selectedPlace, ready, openPlacePopup, closePopup]);
+
+  if (unavailable) {
+    return <VeterinariesMapFallback places={places} height={height} />;
+  }
 
   return (
     <div className="relative w-full overflow-hidden" style={{ height }}>
@@ -247,5 +262,16 @@ export default function VeterinariesMap({
         </div>
       )}
     </div>
+  );
+}
+
+/** Si el mapa truena, solo cae el mapa: la lista y la ficha de la veterinaria siguen. */
+export default function VeterinariesMap(props: VeterinariesMapProps) {
+  return (
+    <MapErrorBoundary
+      fallback={<VeterinariesMapFallback places={props.places} height={props.height} />}
+    >
+      <VeterinariesMapView {...props} />
+    </MapErrorBoundary>
   );
 }

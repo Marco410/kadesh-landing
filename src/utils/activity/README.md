@@ -20,6 +20,8 @@ Lo que solo sabe el navegador de Kadesh Pet, para Operaciones (kadesh-business �
 - `trackActivity(type, { metadata })` encola. El lote sale cada 10 s, al ocultar la pestaña o al salir (`fetch` con `keepalive`, no Apollo).
 - El mismo evento repetido en 3 s cuenta una vez.
 - Sin sesión solo se manda `app.client_error`.
+- `reportClientError` no manda nada si el error es por falta de WebGL (el mapa muestra su respaldo, no se cae nada) ni si el navegador es un bot: user agents de crawlers y vistas previas (`facebookexternalhit`, `meta-externalagent`, WhatsApp, buscadores, `HeadlessChrome`…) o `navigator.webdriver`. El crawler de Meta con user agent de Chrome normal lo descarta el back por rango de IP.
+- Un mapa que truena no tumba la pantalla: `MapErrorBoundary` (`components/shared`) muestra el respaldo y lo reporta como `script`.
 - Si el envío falla (sin red), se reintenta una vez. Nunca lanza ni bloquea la UI.
 - Ante `RATE_LIMITED` o `IP_BLOCKED`, `requestErrorLink` muestra el mensaje del back en un aviso (uno cada 30 s).
 

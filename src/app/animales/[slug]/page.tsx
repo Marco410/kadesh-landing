@@ -37,6 +37,7 @@ import {
   ShareAnimalButton,
   NearbyVeterinariesRow,
 } from "kadesh/components/animals/detail";
+import { PromoteReportBanner } from "kadesh/components/animals/promotion";
 import {
   getStatusColor,
   getStatusLabel,
@@ -250,6 +251,15 @@ export default function AnimalDetailPage() {
           <ClaimReportButton animal={animal} status={status} />
           <KeepAnimalButton animal={animal} status={status} />
           <AdoptionApplyBanner animal={animal} status={status} />
+          <PromoteReportBanner
+            animal={animal}
+            status={status}
+            place={
+              lastLog?.placeLabel ||
+              [lastLog?.city, lastLog?.state].filter(Boolean).join(", ") ||
+              null
+            }
+          />
 
           {/*
             Escritorio: foto (izq.) y ficha (der.) arriba; historial + mapa ocupan el resto de la

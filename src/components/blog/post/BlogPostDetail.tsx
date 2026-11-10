@@ -7,7 +7,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Image01Icon,
 } from '@hugeicons/core-free-icons';
-import type { BlogPostDetail, RelatedPostsResult } from '../types';
+import type { BlogPostDetail, BlogSidebarCategory, RelatedPostsResult } from '../types';
 import { getCategoryLabel, getCategoryColors } from '../constants';
 import { Routes } from 'kadesh/core/routes';
 import renderers from 'kadesh/utils/renderes';
@@ -22,9 +22,11 @@ interface BlogPostDetailProps {
   post: BlogPostDetail;
   /** Para la columna derecha (relacionados o, si no hay, los más recientes). */
   related?: RelatedPostsResult;
+  /** Categorías del blog, debajo de la publicidad. */
+  categories?: BlogSidebarCategory[];
 }
 
-export default function BlogPostDetailComponent({ post, related }: BlogPostDetailProps) {
+export default function BlogPostDetailComponent({ post, related, categories }: BlogPostDetailProps) {
   const categoryValue = post.category?.name || '';
   const categoryLabel = getCategoryLabel(categoryValue);
   const categoryColors = getCategoryColors(categoryValue);
@@ -38,7 +40,7 @@ export default function BlogPostDetailComponent({ post, related }: BlogPostDetai
         aria-label="Miga de pan"
         className="border-b border-[#e0e0e0] px-4 pb-1 pt-[calc(72px+0.25rem)] sm:px-6 lg:px-8 dark:border-[#3a3a3a]"
       >
-        <ol className="mx-auto flex max-w-7xl items-center gap-x-2 text-sm text-[#616161] dark:text-[#b0b0b0]">
+        <ol className="mx-auto flex max-w-6xl items-center gap-x-2 text-sm text-[#616161] dark:text-[#b0b0b0]">
           <li>
             <Link href={Routes.home} className="min-h-11 inline-flex items-center hover:text-orange-500">
               Inicio
@@ -80,7 +82,7 @@ export default function BlogPostDetailComponent({ post, related }: BlogPostDetai
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         
         <div className="absolute bottom-0 left-0 right-0 px-4 py-8 text-white sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl">
+          <div className="mx-auto max-w-6xl">
             <div className="mb-4">
               <Link
                 href={`${Routes.blog.index}?category=${post.category?.url}`}
@@ -112,7 +114,7 @@ export default function BlogPostDetailComponent({ post, related }: BlogPostDetai
       </header>
 
       {/* Columna de lectura (~68ch) y, a la derecha, relacionados + publicidad. */}
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
+      <div className="mx-auto grid max-w-6xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
       <main className="min-w-0 max-w-[42rem]">
         <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
           <PostActions 
@@ -160,6 +162,8 @@ export default function BlogPostDetailComponent({ post, related }: BlogPostDetai
       <BlogSidebar
         title={related?.related ? 'Artículos relacionados' : 'Lo más reciente'}
         posts={related?.posts ?? []}
+        categories={categories}
+        activeCategory={post.category?.url}
       />
       </div>
     </article>

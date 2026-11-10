@@ -1,4 +1,10 @@
-import type { BlogPost, BlogPostDetail, BlogSidebarPost, RelatedPostsResult } from './types';
+import type {
+  BlogPost,
+  BlogPostDetail,
+  BlogSidebarCategory,
+  BlogSidebarPost,
+  RelatedPostsResult,
+} from './types';
 import { BLOG_PRODUCT_FILTER } from './constants';
 
 const REVALIDATE_SECONDS = 60;
@@ -105,6 +111,27 @@ const SIDEBAR_POSTS_QUERY = `
   }
 `;
 
+/** Productos de este blog, como lista literal de GraphQL (`["pet", "all"]`). */
+const PRODUCT_LIST = JSON.stringify(BLOG_PRODUCT_FILTER.in);
+
+/** Categorías de este blog con cuántos artículos publicados (y ya en fecha) tiene cada una. */
+const SIDEBAR_CATEGORIES_QUERY = `
+  query GetBlogCategories($now: DateTime!) {
+    categories(where: { product: { in: ${PRODUCT_LIST} } }) {
+      id
+      name
+      url
+      postsCount(
+        where: {
+          published: { equals: true }
+          publishedAt: { lte: $now }
+          product: { in: ${PRODUCT_LIST} }
+        }
+      )
+    }
+  }
+`;
+
 const SITEMAP_POSTS_QUERY = `
   query GetSitemapPosts(
     $take: Int
@@ -143,6 +170,10 @@ type PublishedPostsData = {
 
 type SidebarPostsData = {
   posts: BlogSidebarPost[] | null;
+};
+
+type SidebarCategoriesData = {
+  categories: BlogSidebarCategory[] | null;
 };
 
 type SitemapPostsData = {
@@ -303,6 +334,16 @@ export async function fetchRelatedPosts(
   }
 
   return { posts: await fetchSidebarPosts(where, limit), related: false };
+}
+
+/** Categorías con artículos publicados, de la que más tiene a la que menos. */
+export async function fetchBlogCategories(): Promise<BlogSidebarCategory[]> {
+  const data = await queryGraphql<SidebarCategoriesData>(SIDEBAR_CATEGORIES_QUERY, {
+    now: new Date().toISOString(),
+  });
+  return (data?.categories ?? [])
+    .filter((category) => Boolean(category.url) && category.postsCount > 0)
+    .sort((a, b) => b.postsCount - a.postsCount || a.name.localeCompare(b.name, 'es'));
 }
 
 export async function fetchPublishedPostsForSitemap(): Promise<SitemapPost[]> {

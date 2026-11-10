@@ -10,7 +10,7 @@ import { NewsletterSubscription } from 'kadesh/components/newsletter';
 import { useSearchParams } from 'next/navigation';
 import { Routes } from 'kadesh/core/routes';
 import BlogSidebar from './BlogSidebar';
-import type { BlogPost, BlogSidebarPost } from './types';
+import type { BlogPost, BlogSidebarCategory, BlogSidebarPost } from './types';
 
 /** Con la columna a la derecha caben 2 tarjetas por fila en lg y 3 en xl. */
 const GRID_WITH_SIDEBAR = 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3';
@@ -41,6 +41,8 @@ type BlogIndexClientProps = {
   initialCategory?: string | null;
   /** Lo más leído del blog, para la columna derecha. */
   mostViewed?: BlogSidebarPost[];
+  /** Categorías del blog, debajo de la publicidad. */
+  categories?: BlogSidebarCategory[];
 };
 
 export default function BlogIndexClient({
@@ -48,6 +50,7 @@ export default function BlogIndexClient({
   initialCount = 0,
   initialCategory = null,
   mostViewed = [],
+  categories = [],
 }: BlogIndexClientProps) {
   return (
     <div className="min-h-screen bg-[#ffffff] dark:bg-[#121212]">
@@ -105,7 +108,13 @@ export default function BlogIndexClient({
             gridClassName={GRID_WITH_SIDEBAR}
           />
         </main>
-        <BlogSidebar title="Lo más leído" posts={mostViewed} ranked />
+        <BlogSidebar
+          title="Lo más leído"
+          posts={mostViewed}
+          ranked
+          categories={categories}
+          activeCategory={initialCategory}
+        />
       </div>
 
       <CategorySection />

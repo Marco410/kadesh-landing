@@ -4,7 +4,11 @@ import {
   buildBlogIndexJsonLd,
   buildBlogIndexMetadata,
 } from 'kadesh/components/blog/blog-seo';
-import { fetchMostViewedPosts, fetchPublishedPosts } from 'kadesh/components/blog/server';
+import {
+  fetchBlogCategories,
+  fetchMostViewedPosts,
+  fetchPublishedPosts,
+} from 'kadesh/components/blog/server';
 
 export const revalidate = 60;
 
@@ -16,13 +20,14 @@ export default async function BlogPage({
   searchParams: Promise<{ category?: string }>;
 }) {
   const { category } = await searchParams;
-  const [{ posts, postsCount }, mostViewed] = await Promise.all([
+  const [{ posts, postsCount }, mostViewed, categories] = await Promise.all([
     fetchPublishedPosts({
       take: 12,
       skip: 0,
       categoryUrl: category || null,
     }),
     fetchMostViewedPosts(5),
+    fetchBlogCategories(),
   ]);
 
   return (
@@ -33,6 +38,7 @@ export default async function BlogPage({
         initialCount={postsCount}
         initialCategory={category || null}
         mostViewed={mostViewed}
+        categories={categories}
       />
     </>
   );

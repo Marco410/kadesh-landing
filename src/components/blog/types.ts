@@ -54,6 +54,14 @@ export type BlogSidebarPost = Pick<
   'id' | 'title' | 'url' | 'publishedAt' | 'createdAt' | 'image' | 'category' | 'post_viewsCount'
 >;
 
+/** Categoría en la columna del blog, con cuántos artículos publicados tiene en este blog. */
+export interface BlogSidebarCategory {
+  id: string;
+  name: string;
+  url: string;
+  postsCount: number;
+}
+
 /** Relacionados de un artículo; `related: false` si no hubo y son los más recientes. */
 export interface RelatedPostsResult {
   posts: BlogSidebarPost[];

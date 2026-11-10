@@ -7,6 +7,7 @@ Quien puede editar un reporte `lost` o `found` ve en la ficha un aviso opcional:
 - `promotionRequest.ts`: validación del monto, folio (`KP-<6 del reporte>-<4 al azar>`) y el mensaje de WhatsApp.
 - `PromoteReportBanner.tsx`: el aviso en la ficha. Se oculta solo si quien la ve no puede editar (`canEditAnimal`), si el estado no aplica o si el reporte está unido a otro.
 - `PromotionSheet.tsx`: el formulario (`Sheet`) y, al enviar, los siguientes pasos con el folio.
+- Enlace directo: `/animales/{slug}?accion=impulsar` abre la hoja al entrar (el correo «Tu reporte ya está publicado» de kadesh-back lo usa). La ficha pide sesión si no hay y lo ignora si quien entra no puede editar o el estado no aplica.
 
 ## Reglas del texto (no quitarlas)
 1. **Primero lo gratis:** el reporte ya se publicó gratis en la página de Facebook; pagar es opcional y no condiciona nada.

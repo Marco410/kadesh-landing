@@ -15,6 +15,24 @@ Formato:
 
 ---
 
+## 2026-11-10 · feat: correo «Tu reporte ya está publicado» y enlaces directos a «Agregar registro» e «Impulsar en Facebook»
+- Rama: feat/correo-reporte-publicado (aquí y en kadesh-back)
+- Qué cambió y por qué:
+  - **Correo al terminar un reporte (kadesh-back)**: quien publicaba no recibía nada. Ahora, con el primer registro del animal y ya con las fotos, el dueño recibe un correo con:
+    - la tarjeta para compartir (`/animales/{slug}/og`) y los datos del animal;
+    - «Qué puedes hacer ahora»: compartir (WhatsApp y Facebook), agregar registros, editar, alertas de zona y avisos por WhatsApp. Si ya los tiene activos, se lo dice en vez de ofrecerlos;
+    - «Impulsar en Facebook», solo para `lost` y `found`, con las reglas de texto de `promotion/README.md`.
+    - No sale al usuario de automatización, a cuentas anonimizadas o suspendidas, ni a reportes unidos a otro.
+    - Detalle y motivos en kadesh-back `models/Pet/Animal/README.md` (2026-11-10).
+  - **Enlaces directos en la ficha**: `/animales/{slug}?accion=registro` abre «Agregar registro» y `?accion=impulsar` abre «Impulsar en Facebook».
+    - Sin sesión pasa por el login y vuelve al mismo enlace.
+    - Si quien entra no puede editar, o el estado no se puede impulsar, la ficha se ve normal.
+    - El parámetro se quita al abrir, para que al recargar no se repita. El `replace` que corrige el slug lo conserva.
+    - Constantes en `ANIMAL_DETAIL_ACTION` (`animals/constants.ts`), las mismas que usa el backend.
+- Archivos: src/components/animals/constants.ts, src/components/animals/detail/hooks/useDetailAction.ts (nuevo), src/components/animals/detail/index.ts, src/components/animals/detail/LogTimeline.tsx, src/components/animals/promotion/{PromoteReportBanner.tsx, README.md}, src/app/animales/[slug]/page.tsx
+- GraphQL: ninguna (el correo es del backend; la web no cambia queries ni mutaciones).
+- Móvil: [prompt](../mobile-sync/2026-11-10-correo-reporte-publicado.md) (la app abre los enlaces `/animales` y `/notificaciones` del correo: debe atender `?accion=` y la ruta `/notificaciones/ajustes`, que hoy no tiene).
+
 ## 2026-11-10 · fix+feat: blog sin errores de hidratación; columna con lo más leído, relacionados, publicidad y categorías
 - Rama: fix/blog
 - Qué cambió y por qué:

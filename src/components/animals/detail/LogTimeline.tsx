@@ -39,6 +39,10 @@ interface LogTimelineProps {
   animal?: AnimalDetail;
   animalName?: string;
   onLogCreated?: (logId?: string) => void | Promise<void>;
+  /** Abrir «Agregar registro» al entrar (`?accion=registro`). Solo si quien ve puede editar. */
+  autoOpenAddLog?: boolean;
+  /** Ya se abrió: la ficha quita el parámetro. */
+  onAutoOpenAddLog?: () => void;
 }
 
 function hasCoords(log: Log) {
@@ -85,6 +89,8 @@ export default function LogTimeline({
   animal,
   animalName,
   onLogCreated,
+  autoOpenAddLog = false,
+  onAutoOpenAddLog,
 }: LogTimelineProps) {
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
   const [addLogModalOpen, setAddLogModalOpen] = useState(false);
@@ -147,6 +153,13 @@ export default function LogTimeline({
   const selectedLogWithCoords =
     selectedLog && hasCoords(selectedLog) ? selectedLog : null;
   const isOwner = canEditAnimal(user, animal);
+  const canAddLog = Boolean(animal && animalName && onLogCreated && isOwner);
+
+  useEffect(() => {
+    if (!autoOpenAddLog || !canAddLog) return;
+    setAddLogModalOpen(true);
+    onAutoOpenAddLog?.();
+  }, [autoOpenAddLog, canAddLog, onAutoOpenAddLog]);
 
   const handleDeleteClick = (logId: string, e: React.MouseEvent) => {
     e.stopPropagation();

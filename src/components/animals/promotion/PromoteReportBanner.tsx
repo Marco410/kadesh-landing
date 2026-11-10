@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Megaphone01Icon } from '@hugeicons/core-free-icons';
@@ -17,18 +17,35 @@ interface PromoteReportBannerProps {
   status: string;
   /** Zona del último registro, para el mensaje de WhatsApp. */
   place?: string | null;
+  /** Abrir la hoja al entrar (`?accion=impulsar`, desde el correo de reporte publicado). */
+  autoOpen?: boolean;
+  /** Ya se abrió: la ficha quita el parámetro. */
+  onAutoOpened?: () => void;
 }
 
 /**
  * Ofrece, solo a quien puede editar el reporte, pagar un anuncio en Facebook e Instagram. Es
  * opcional y discreto: el reporte ya se publicó gratis en la página de KADESH.
  */
-export default function PromoteReportBanner({ animal, status, place }: PromoteReportBannerProps) {
+export default function PromoteReportBanner({
+  animal,
+  status,
+  place,
+  autoOpen = false,
+  onAutoOpened,
+}: PromoteReportBannerProps) {
   const { user } = useUser();
   const motionPrefs = useUiMotion();
   const [open, setOpen] = useState(false);
+  const eligible = !animal.duplicateOf && isPromotableStatus(status) && canEditAnimal(user, animal);
 
-  if (animal.duplicateOf || !isPromotableStatus(status) || !canEditAnimal(user, animal)) return null;
+  useEffect(() => {
+    if (!autoOpen || !eligible) return;
+    setOpen(true);
+    onAutoOpened?.();
+  }, [autoOpen, eligible, onAutoOpened]);
+
+  if (!eligible) return null;
 
   return (
     <div className="flex shrink-0 flex-wrap items-center gap-3 rounded-2xl border border-[#ececec] bg-white px-4 py-3 dark:border-white/10 dark:bg-night-raised">

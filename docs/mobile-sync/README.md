@@ -33,3 +33,4 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-06 | [«Adopciones» en el perfil: ver, seguir y editar mis solicitudes](2026-11-06-mis-solicitudes-de-adopcion.md) | profile | pendiente |
 | 2026-11-09 | [Difusión pagada del reporte en Facebook e Instagram (por WhatsApp)](2026-11-09-difusion-pagada.md) | animals | pendiente |
 | 2026-11-09 | [La sesión y las consultas aguantan cortes de red](2026-11-09-sesion-y-red-resilientes.md) | shared | pendiente |
+| 2026-11-10 | [Blog: «Lo más leído», relacionados, categorías y fechas en hora de México](2026-11-10-blog-mas-leidos-y-categorias.md) | blog | pendiente |

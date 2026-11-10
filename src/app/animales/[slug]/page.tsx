@@ -27,6 +27,7 @@ import { useUiMotion } from "kadesh/components/shared/motion";
 import {
   useAnimalDetail,
   useAnimalView,
+  useDetailAction,
   AnimalImageGrid,
   AnimalInfoSection,
   LogTimeline,
@@ -37,8 +38,12 @@ import {
   ShareAnimalButton,
   NearbyVeterinariesRow,
 } from "kadesh/components/animals/detail";
-import { PromoteReportBanner } from "kadesh/components/animals/promotion";
 import {
+  PromoteReportBanner,
+  isPromotableStatus,
+} from "kadesh/components/animals/promotion";
+import {
+  ANIMAL_DETAIL_ACTION,
   getStatusColor,
   getStatusLabel,
 } from "kadesh/components/animals/constants";
@@ -70,12 +75,13 @@ export default function AnimalDetailPage() {
   const params = useParams();
   const router = useRouter();
   const motionPrefs = useUiMotion();
-  const { user } = useUser();
+  const { user, loading: userLoading, sessionPending } = useUser();
   const animalKey = (params?.slug || params?.id) as string;
   const { animal, logs, loading, error, refetch } = useAnimalDetail(
     animalKey || "",
   );
   useAnimalView(animal?.id || "");
+  const { action: detailAction, clear: clearDetailAction } = useDetailAction();
 
   useEffect(() => {
     // Un reporte unido a otro manda al principal (el servidor ya redirige; esto cubre la caché).
@@ -85,8 +91,27 @@ export default function AnimalDetailPage() {
       return;
     }
     if (!animal?.slug || animal.slug === animalKey) return;
-    router.replace(Routes.animals.detail(animal.slug));
+    // Conserva `?accion=` y demás parámetros del enlace.
+    router.replace(`${Routes.animals.detail(animal.slug)}${window.location.search}`);
   }, [animal?.duplicateOf, animal?.slug, animalKey, router]);
+
+  // `?accion=registro|impulsar` (correo de reporte publicado). Sin sesión no se ven esos botones:
+  // se entra y se vuelve al mismo enlace. Si quien entra no puede hacerlo, la ficha se ve normal.
+  // El historial y el banner abren el modal o la hoja y quitan el parámetro.
+  useEffect(() => {
+    if (!detailAction || !animal || animal.duplicateOf) return;
+    if (userLoading || sessionPending) return;
+    if (!user) {
+      const here = `${window.location.pathname}${window.location.search}`;
+      router.replace(`${Routes.auth.login}?redirect=${encodeURIComponent(here)}`);
+      return;
+    }
+    const currentStatus = logs?.[0]?.status || "register";
+    const allowed =
+      canEditAnimal(user, animal) &&
+      (detailAction !== ANIMAL_DETAIL_ACTION.promote || isPromotableStatus(currentStatus));
+    if (!allowed) clearDetailAction();
+  }, [detailAction, animal, logs, user, userLoading, sessionPending, router, clearDetailAction]);
 
   if (loading) {
     return (
@@ -264,6 +289,8 @@ export default function AnimalDetailPage() {
           <PromoteReportBanner
             animal={animal}
             status={status}
+            autoOpen={detailAction === ANIMAL_DETAIL_ACTION.promote}
+            onAutoOpened={clearDetailAction}
             place={
               lastLog?.placeLabel ||
               [lastLog?.city, lastLog?.state].filter(Boolean).join(", ") ||
@@ -313,6 +340,8 @@ export default function AnimalDetailPage() {
                 onLogCreated={async () => {
                   await refetch();
                 }}
+                autoOpenAddLog={detailAction === ANIMAL_DETAIL_ACTION.addLog}
+                onAutoOpenAddLog={clearDetailAction}
               />
             </div>
             {hasCoords && (

@@ -29,6 +29,23 @@ export function isAnimalReportStatus(
   );
 }
 
+/**
+ * Enlaces directos a la ficha: `/animales/{slug}?accion=registro` abre «Agregar registro» y
+ * `?accion=impulsar` abre «Impulsar en Facebook». Los manda kadesh-back en el correo «Tu reporte
+ * ya está publicado» (`ANIMAL_DETAIL_ACTION` en `models/Pet/Animal/Animal.publishedEmail.ts`) y
+ * la app los atiende igual: si se cambian aquí, cambiarlos allá.
+ */
+export const ANIMAL_DETAIL_ACTION_PARAM = 'accion';
+export const ANIMAL_DETAIL_ACTION = { addLog: 'registro', promote: 'impulsar' } as const;
+
+export type AnimalDetailAction = (typeof ANIMAL_DETAIL_ACTION)[keyof typeof ANIMAL_DETAIL_ACTION];
+
+export function parseAnimalDetailAction(value: string | null | undefined): AnimalDetailAction | null {
+  return (Object.values(ANIMAL_DETAIL_ACTION) as string[]).includes(value ?? '')
+    ? (value as AnimalDetailAction)
+    : null;
+}
+
 export const ANIMAL_SEX_OPTIONS = [
   { label: "Macho", value: "male" },
   { label: "Hembra", value: "female" },

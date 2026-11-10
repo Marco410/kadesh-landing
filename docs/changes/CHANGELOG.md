@@ -15,6 +15,35 @@ Formato:
 
 ---
 
+## 2026-11-10 · fix+feat: blog sin errores de hidratación; columna con lo más leído, relacionados, publicidad y categorías
+- Rama: fix/blog
+- Qué cambió y por qué:
+  - **Hidratación (#418 en `/blog`)**: reproducido en `next dev` con el servidor en UTC y el navegador en México. La tarjeta, la fecha del artículo, «Actualizado el», los comentarios y «Se unió el» usaban `toLocaleDateString('es-MX')` sin zona horaria. Con el servidor en UTC (Workers), una fecha de las 18:00–24:00 de México salía con otro día en cada lado.
+    - Ahora todas van en hora de la Ciudad de México con `formatLongDateMx` / `formatShortDateMx` / `dayKeyMx` (`utils/format-date.tsx`). Intl da los números y los nombres de mes son nuestros, para que no cambien entre motores.
+    - El año del pie usa `suppressHydrationWarning` solo en ese `<span>`, porque el HTML de ISR puede ser de antes de Año Nuevo.
+    - Verificado con `next build && next start` en UTC y el navegador en México, Tokio y Los Ángeles: índice, filtro por categoría y 3 artículos (incluido uno publicado a las 00:08 UTC) sin errores de hidratación.
+  - **Reporte de errores**:
+    - El listener de `window` se instala al cargar el módulo, antes de hidratar. En un `useEffect` llegaba tarde y se perdían los errores de hidratación del primer pase.
+    - Un error de hidratación (#418/#419/#422/#423/#425) en una página que tradujo el navegador (`translated-ltr`/`-rtl`, `<font>`, `_msttexthash`) se manda como `kind: "warning"` (aviso de baja prioridad), no como `script`. La señal se recuerda porque el render de recuperación de React la borra.
+    - Probado forzando un desajuste en producción: con traducción sale `warning`; sin ella, `script`. kadesh-back resume `warning` como «Aviso en …» y el panel de Negocios lo etiqueta «Aviso (baja prioridad)».
+  - **Diseño del blog**:
+    - **Índice:** columna derecha con «Lo más leído» (top 5 por vistas, numerado) y la cuadrícula a 3 por fila.
+    - **Artículo:** columna de lectura de ~68ch y, a la derecha, «Artículos relacionados» (sin coincidencias, «Lo más reciente»). Reemplaza al carrusel del final; se borraron `RelatedPostsSlider` y `useRelatedPosts`.
+    - **Debajo, en las dos columnas:** el bloque de publicidad del detalle de animal (`BLOG_AD_SLOT`, que sin slot propio usa el del animal) y las categorías con su conteo de publicados, con la activa marcada.
+    - Publicidad y categorías se quedan fijas al hacer scroll solo en escritorio con pantalla alta.
+    - Todo se pide en el servidor (`fetchMostViewedPosts`, `fetchRelatedPosts`, `fetchBlogCategories`).
+  - Mismo cambio en kadesh-business (fechas, reporte, columna y un `AdSlot` propio con anuncios de Kadesh Pet y Food).
+- Archivos: src/utils/format-date.tsx, src/components/blog/{BlogSidebar.tsx (nuevo), BlogIndexClient.tsx, BlogCard.tsx, server.ts, types.ts, README.md}, src/components/blog/post/{BlogPostDetail.tsx, BlogPostPageClient.tsx, CommentsSection.tsx}, src/components/blog/post/RelatedPostsSlider.tsx (borrado), src/components/blog/hooks/useRelatedPosts.ts (borrado), src/app/blog/page.tsx, src/app/blog/[url]/page.tsx, src/components/shared/AuthorCard.tsx, src/components/layout/Footer.tsx, src/core/ads.ts, src/utils/activity/{useClientErrorListener.ts, reportClientError.ts, README.md}, CLAUDE.md
+- GraphQL: nuevas `GetSidebarPosts` (posts ligeros para la columna) y `GetBlogCategories` (categorías con `postsCount` de publicados), solo lectura y desde el servidor.
+- Móvil: [prompt](../mobile-sync/2026-11-10-blog-mas-leidos-y-categorias.md) (lo más leído, relacionados, categorías y fechas en hora de México; la publicidad y la hidratación no aplican).
+
+## 2026-11-09 · chore: skill de diseño Impeccable actualizado a v4.8.2
+- Rama: fix/sesion-y-red-resilientes (sin commit; es independiente de ese fix)
+- Qué cambió y por qué: `npx impeccable update` pasó el skill de v4.1.1 a v4.8.2. Los scripts `.mjs` se reemplazan por un motor nativo (`scripts/impeccable`, que usa `scripts/bin/<plataforma>/impeccable`, 18 MB) y se agregan los agentes del skill en `.claude/agents/` (revisor final, documentador, productor de imágenes, aplicador de ediciones manuales). Instala además el hook que revisa el diseño después de editar UI, en `.claude/settings.local.json` (local, no se versiona).
+- Archivos: .claude/skills/impeccable/ (referencias actualizadas, scripts reemplazados por el motor), .claude/agents/ (nuevo)
+- GraphQL: ninguna.
+- Móvil: no aplica (herramienta de desarrollo).
+
 ## 2026-11-09 · feat: sección «Espacios de rescate» en la portada
 - Rama: fix/sesion-y-red-resilientes (sin commit; es independiente de ese fix)
 - Qué cambió y por qué: la portada solo hablaba de los espacios de rescate en el muro de Aliados, que no se pinta mientras no haya aliados, y en un enlace de «Cómo funciona». Ahora tienen su sección, entre Historias y Aliados:

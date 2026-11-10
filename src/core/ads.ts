@@ -5,4 +5,9 @@
 export const ADSENSE_CLIENT =
   process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-5261090590772430';
 
+/** Bloque del blog (lista y artículo). Sin uno propio, usa el del detalle de animal. */
+export const BLOG_AD_SLOT =
+  process.env.NEXT_PUBLIC_ADSENSE_SLOT_BLOG ||
+  process.env.NEXT_PUBLIC_ADSENSE_SLOT_ANIMAL_DETAIL;
+
 export const ADSENSE_SCRIPT_SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;

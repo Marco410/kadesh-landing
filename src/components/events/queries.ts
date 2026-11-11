@@ -108,12 +108,30 @@ export const MY_EVENTS_QUERY = gql`
       ${EVENT_CARD_FIELDS}
       reviewNote
       cancelReason
+      viewsCount
     }
   }
 `;
 
 export interface MyEventsResponse {
-  petEvents: Array<PetEvent & { reviewNote: string | null }>;
+  petEvents: Array<PetEvent & { reviewNote: string | null; viewsCount: number | null }>;
+}
+
+/**
+ * Suma una vista al abrir la ficha y devuelve el total. El backend no cuenta a quien lo publicó, a
+ * los admins, a los bots ni a quien vuelve en menos de 30 min, pero igual devuelve el total.
+ */
+export const RECORD_EVENT_VIEW_MUTATION = gql`
+  mutation RecordPetEventView($eventId: ID!) {
+    recordPetEventView(eventId: $eventId) {
+      counted
+      viewsCount
+    }
+  }
+`;
+
+export interface RecordEventViewResponse {
+  recordPetEventView: { counted: boolean; viewsCount: number };
 }
 
 export const SUBMIT_EVENT_MUTATION = gql`

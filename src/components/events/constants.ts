@@ -10,6 +10,7 @@ import {
   VaccineIcon,
 } from '@hugeicons/core-free-icons';
 import type { IconSvgElement } from '@hugeicons/react';
+import { ANIMAL_TYPE_OPTIONS, animalTypePlural } from 'kadesh/components/animals/constants';
 
 /**
  * Eventos de Kadesh Pet. Mismos valores que kadesh-back (`models/Pet/PetEvent/constants.ts`):
@@ -76,11 +77,33 @@ export function isEventCategory(value: string | null | undefined): value is Even
   return CATEGORY_BY_VALUE.has(value as EventCategory);
 }
 
-export const EVENT_SPECIES = [
-  { value: 'dog', label: 'Perros' },
-  { value: 'cat', label: 'Gatos' },
-  { value: 'other', label: 'Otros' },
-] as const;
+/**
+ * Para qué animales es: los mismos tipos que un reporte (`ANIMAL_TYPE_OPTIONS`, en ese orden), con la
+ * etiqueta en plural («Perros», «Aves»…). El backend no acepta otros valores al guardar.
+ */
+export const EVENT_SPECIES: ReadonlyArray<{ value: string; label: string }> = ANIMAL_TYPE_OPTIONS.map((option) => {
+  const plural = animalTypePlural(option.value) ?? option.label;
+  return { value: option.value, label: plural.charAt(0).toUpperCase() + plural.slice(1) };
+});
+
+/** Valor viejo (antes de usar los tipos de animal). Ya no se ofrece, pero hay eventos guardados con él. */
+const LEGACY_SPECIES_LABEL: Record<string, string> = { other: 'Otros' };
+
+/** Solo los valores que se pueden volver a guardar (para el formulario de edición). */
+export function knownEventSpecies(values: readonly string[] | null | undefined): string[] {
+  const known = new Set(EVENT_SPECIES.map((option) => option.value));
+  return [...new Set((values ?? []).filter((value) => known.has(value)))];
+}
+
+/** Etiquetas de `species` en el orden de `EVENT_SPECIES`; el valor viejo `other` va al final. */
+export function eventSpeciesLabels(values: readonly string[] | null | undefined): string[] {
+  const chosen = new Set(values ?? []);
+  const labels = EVENT_SPECIES.filter((option) => chosen.has(option.value)).map((option) => option.label);
+  for (const [value, label] of Object.entries(LEGACY_SPECIES_LABEL)) {
+    if (chosen.has(value)) labels.push(label);
+  }
+  return labels;
+}
 
 export type EventScope = 'zone' | 'city' | 'state' | 'national';
 

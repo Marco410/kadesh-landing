@@ -35,3 +35,5 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-09 | [La sesión y las consultas aguantan cortes de red](2026-11-09-sesion-y-red-resilientes.md) | shared | pendiente |
 | 2026-11-10 | [Blog: «Lo más leído», relacionados, categorías y fechas en hora de México](2026-11-10-blog-mas-leidos-y-categorias.md) | blog | pendiente |
 | 2026-11-10 | [Enlaces del correo «Tu reporte ya está publicado» (`?accion=registro` o `impulsar`, ajustes de avisos)](2026-11-10-correo-reporte-publicado.md) | animals | pendiente |
+| 2026-11-10 | [Eventos: «Para qué animales» con los tipos de animal (adiós «Otros»)](2026-11-10-eventos-especies-tipos-de-animal.md) | events | pendiente |
+| 2026-11-10 | [Eventos: vistas de la ficha y fotos en pantalla completa](2026-11-10-eventos-vistas-y-foto-completa.md) | events | pendiente |

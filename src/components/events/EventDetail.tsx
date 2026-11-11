@@ -13,7 +13,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { Footer, Navigation } from 'kadesh/components/layout';
 import { Routes } from 'kadesh/core/routes';
-import { EVENT_SPECIES, EVENT_STATUS_LABEL } from './constants';
+import { EVENT_STATUS_LABEL, eventSpeciesLabels } from './constants';
 import EventActions from './EventActions';
 import EventCategoryChip from './EventCategoryChip';
 import EventGallery from './EventGallery';
@@ -71,9 +71,7 @@ export default function EventDetail({
   const sessions = past ? (event.sessions ?? []) : upcoming;
   const place = eventPlaceText(event);
   const cityText = eventCityText(event);
-  const species = (event.species ?? [])
-    .map((value) => EVENT_SPECIES.find((option) => option.value === value)?.label)
-    .filter(Boolean);
+  const species = eventSpeciesLabels(event.species);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${event.lat},${event.lng}`;
   const tzCity = timeZoneCityLabel(tz);
   const organizer = event.petPlace?.name || event.organizerName?.trim() || null;

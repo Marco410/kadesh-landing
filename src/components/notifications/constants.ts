@@ -1,7 +1,13 @@
 export const NOTIFICATIONS_PAGE_SIZE = 20;
 
-/** Cada cuánto se refresca el contador de la campana. */
-export const UNREAD_POLL_MS = 60_000;
+/**
+ * Cada cuánto se refrescan el contador de la campana y los globos del menú, solo con la pestaña
+ * visible. Eran 60 s (también con la pestaña oculta): cada pestaña abierta le pedía al backend una
+ * o dos consultas por minuto todo el día.
+ */
+export const UNREAD_POLL_MS = 5 * 60_000;
+/** Al volver a la pestaña se vuelve a pedir si estuvo oculta al menos este tiempo. */
+export const UNREAD_STALE_MS = 60_000;
 
 export const ALERT_RADIUS_OPTIONS = [1, 3, 5, 10, 20, 50] as const;
 export const DEFAULT_ALERT_RADIUS_KM = 5;

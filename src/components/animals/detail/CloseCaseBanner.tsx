@@ -49,6 +49,10 @@ export default function CloseCaseBanner({
 
   const name = animal.name || 'este animal';
   const question = status === 'lost' ? `¿${name} ya volvió a casa?` : `¿${name} ya encontró hogar?`;
+  // Inactivo: el cron lo sacó del mapa por no tener registros (`inactiveAt`, kadesh-back).
+  const hint = animal.inactiveAt
+    ? 'Este reporte ya no sale en el mapa porque lleva semanas sin novedades. Ciérralo, o agrega un registro para que vuelva a salir.'
+    : 'Cierra el caso para que deje de salir como activo en el mapa.';
 
   return (
     <div className="flex shrink-0 flex-wrap items-center gap-3 rounded-2xl border border-[#ececec] bg-white px-4 py-3 dark:border-white/10 dark:bg-night-raised">
@@ -56,7 +60,7 @@ export default function CloseCaseBanner({
         <HugeiconsIcon icon={Home01Icon} size={18} strokeWidth={1.6} aria-hidden />
       </span>
       <p className="min-w-0 flex-1 text-sm text-[#3a3a3a] dark:text-[#d0d0d0]">
-        {question} Cierra el caso para que deje de salir como activo en el mapa.
+        {question} {hint}
       </p>
       <motion.button
         type="button"

@@ -15,6 +15,17 @@ Formato:
 
 ---
 
+## 2026-11-12 · feat: seguimiento de casos (recordatorios, casos inactivos y WhatsApp al reportar)
+- Rama: feat/cerrar-caso-reencuentros
+- Qué cambió y por qué: fase 2 del plan de reencuentros. kadesh-back recuerda a quien atiende un caso abierto que lo cierre o lo actualice, a la semana y a las 3 semanas sin registros, por campana, push, correo y WhatsApp. Sin respuesta, a los 45 días el caso queda inactivo y deja de salir en el mapa; los reportes sin dueño, a los 30 días. En la web:
+  - Al publicar un reporte, casilla desmarcada «Avísame por WhatsApp sobre este reporte». Enciende solo los avisos de los reportes propios (seguimiento, coincidencias, comentarios y solicitudes). Si el perfil no tiene teléfono, guarda el del reporte.
+  - Nuevo tipo de aviso `animal.follow_up`, con ícono en la campana y su categoría «Seguimiento de tus reportes» en los ajustes de WhatsApp.
+  - El aviso «Cerrar caso» de la ficha explica cuando el caso está inactivo y cómo reactivarlo.
+  - Por qué: sin esto, el contador de reencuentros no crece y el mapa se llena de casos viejos.
+- Archivos: src/components/animals/nuevo/NewAnimalForm.tsx, src/components/animals/{queries.ts, detail/CloseCaseBanner.tsx, detail/hooks/useAnimalDetail.ts}, src/components/notifications/{constants.ts, queries.ts, NotificationList.tsx, WhatsappNotificationsCard.tsx, hooks/useWhatsappNotifications.ts}
+- GraphQL: `GetAnimal` pide además `inactiveAt`. `UpdateWhatsappNotifications` puede mandar `phone` y lo devuelve. El formulario de reporte hace una consulta más al abrirse (`WhatsappNotifications`, una fila, la misma de /notificaciones; se reutiliza desde la caché de Apollo si ya estaba).
+- Móvil: [prompt](../mobile-sync/2026-11-12-seguimiento-de-casos.md)
+
 ## 2026-11-12 · feat: «Cerrar caso» y contador de reencuentros y adopciones
 - Rama: develop
 - Qué cambió y por qué: fase 1 del plan de reencuentros.

@@ -8,6 +8,17 @@ import { WHATSAPP_CATEGORIES, type WhatsappCategory } from '../constants';
 /** Tipo de las alertas de zona (`animal.nearby`). */
 const NEARBY_TYPE = 'animal.nearby';
 
+/**
+ * Avisos sobre los reportes propios: los que se encienden con «Avísame por WhatsApp» al publicar
+ * (seguimiento, coincidencias, comentarios y solicitudes).
+ */
+export const OWN_REPORT_TYPES = [
+  'animal.follow_up',
+  'animal.possible_match',
+  'animal.commented',
+  'animal.claim_requested',
+];
+
 /** Tipos de Pet que no son alertas de zona (los de admin no se tocan desde Alertas de zona). */
 const OTHER_PET_TYPES: string[] = WHATSAPP_CATEGORIES.filter(
   (category) => !('admin' in category && category.admin) && category.id !== 'nearby'
@@ -68,14 +79,19 @@ export function useWhatsappNotifications(userId: string | undefined) {
 
   // El interruptor cambia al instante; si falla, Apollo regresa el valor anterior.
   const save = useCallback(
-    async (next: { whatsappNotifications: boolean; whatsappMutedTypes: string[] }, changed: Partial<typeof next>) => {
+    async (
+      next: { whatsappNotifications: boolean; whatsappMutedTypes: string[] },
+      changed: Partial<typeof next> & { phone?: string }
+    ) => {
       if (!userId) throw new Error('Inicia sesión para cambiar tus avisos.');
       await updateMutation({
         variables: { id: userId, data: changed },
-        optimisticResponse: { updateUser: { __typename: 'User', id: userId, ...next } },
+        optimisticResponse: {
+          updateUser: { __typename: 'User', id: userId, phone: changed.phone ?? user?.phone ?? null, ...next },
+        },
       });
     },
-    [updateMutation, userId]
+    [updateMutation, userId, user?.phone]
   );
 
   const setEnabled = useCallback(
@@ -122,10 +138,38 @@ export function useWhatsappNotifications(userId: string | undefined) {
     [save, muted, enabled]
   );
 
+  /**
+   * «Avísame por WhatsApp sobre este reporte» (formulario de reporte). Enciende los avisos de los
+   * reportes propios (`OWN_REPORT_TYPES`). Si WhatsApp estaba apagado del todo, el resto de los avisos
+   * de Pet quedan silenciados (no se le prende todo de golpe). Sin teléfono en el perfil, guarda el
+   * del reporte (`phoneDigits`), que la persona vio en la casilla.
+   */
+  const enableForReports = useCallback(
+    async (phoneDigits?: string | null) => {
+      const ownTypes = new Set(OWN_REPORT_TYPES);
+      const withoutOwn = muted.filter((type) => !ownTypes.has(type));
+      const nextMuted = enabled
+        ? withoutOwn
+        : [...new Set([...withoutOwn, NEARBY_TYPE, ...OTHER_PET_TYPES.filter((type) => !ownTypes.has(type))])];
+      const phone = !whatsappPhoneLabel(user?.phone) && phoneDigits ? phoneDigits : undefined;
+      await save(
+        { whatsappNotifications: true, whatsappMutedTypes: nextMuted },
+        { whatsappNotifications: true, whatsappMutedTypes: nextMuted, ...(phone ? { phone } : {}) }
+      );
+    },
+    [save, muted, enabled, user?.phone]
+  );
+
+  /** ¿Ya le llegan por WhatsApp los avisos de sus reportes? (entonces no se ofrece la casilla). */
+  const ownReportsOn = enabled && OWN_REPORT_TYPES.every((type) => !muted.includes(type));
+
   return {
     enabled,
     muted,
     zoneOn,
+    ownReportsOn,
+    enableForReports,
+    loaded: Boolean(data),
     setZoneWhatsapp,
     phoneLabel: whatsappPhoneLabel(user?.phone),
     loading: loading && !data,

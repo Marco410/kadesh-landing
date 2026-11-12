@@ -35,6 +35,8 @@ export interface AnimalDetail {
   animal_viewsCount?: number | null;
   /** Si un admin lo unió con otro reporte del mismo animal, el principal. */
   duplicateOf?: { id: string; slug?: string | null } | null;
+  /** Sin novedades por semanas: ya no sale en el mapa. Un registro nuevo lo reactiva. */
+  inactiveAt?: string | null;
   animal_breed: {
     id?: string;
     breed: string;

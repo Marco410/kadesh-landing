@@ -17,6 +17,7 @@ import { useSimilarReports } from 'kadesh/components/animals/nuevo/hooks/useSimi
 import SimilarReportsNotice from 'kadesh/components/animals/nuevo/SimilarReportsNotice';
 import SimilarReportsSheet from 'kadesh/components/animals/nuevo/SimilarReportsSheet';
 import { useUser } from 'kadesh/utils/UserContext';
+import { useWhatsappNotifications, whatsappPhoneLabel } from 'kadesh/components/notifications/hooks';
 import LocationPicker from 'kadesh/components/animals/nuevo/LocationPicker';
 import AnimalNameInput from 'kadesh/components/animals/nuevo/AnimalNameInput';
 import AnimalTypeSelector from 'kadesh/components/animals/nuevo/AnimalTypeSelector';
@@ -211,6 +212,10 @@ export default function NewAnimalForm({
 }) {
   const router = useRouter();
   const { user } = useUser();
+  // «Avísame por WhatsApp sobre este reporte»: sin esto, los recordatorios de seguimiento solo llegan
+  // a la campana y al correo. Meta exige que cada quien lo acepte: la casilla empieza desmarcada.
+  const whatsapp = useWhatsappNotifications(user?.id);
+  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
   // Espacios de rescate a cuyo nombre puede publicar (admin, coordinador o voluntario).
   const { orgs: rescueOrgs } = usePublishableRescueOrgs(user?.id);
   const [organizationId, setOrganizationId] = useState('');
@@ -865,6 +870,18 @@ export default function NewAnimalForm({
 
       await clearAnimalReportDraft(user.id);
       published = true;
+      if (whatsappOptIn && whatsapp.loaded && !whatsapp.ownReportsOn) {
+        // El reporte ya salió: si esto falla, solo se avisa (se puede activar en Notificaciones).
+        try {
+          const target = normalizeMxPhone(contactNumber);
+          await whatsapp.enableForReports(target.ok ? target.digits : null);
+        } catch {
+          sileo.error({
+            title: 'No pudimos activar los avisos por WhatsApp',
+            description: 'Tu reporte sí se publicó. Actívalos desde Notificaciones.',
+          });
+        }
+      }
       setPublishStage('opening');
       const slug =
         logResult.data?.createAnimalLog?.animal?.slug ||
@@ -1318,6 +1335,33 @@ export default function NewAnimalForm({
                 {errors.contactNumber2 ? (
                   <p className="mt-2 text-xs text-red-600">{errors.contactNumber2}</p>
                 ) : null}
+                {whatsapp.loaded && !whatsapp.ownReportsOn ? (() => {
+                  // Va al teléfono del perfil; si no tiene, al del reporte (y se guarda en el perfil).
+                  const target = whatsapp.phoneLabel ?? whatsappPhoneLabel(contactNumber);
+                  return (
+                    <label className="mt-4 flex items-start gap-3 rounded-xl bg-[#f3f5f8] p-3 text-sm text-[#3a3a3a] dark:bg-night dark:text-[#d0d0d0]">
+                      <input
+                        type="checkbox"
+                        checked={whatsappOptIn && Boolean(target)}
+                        disabled={!target}
+                        onChange={(e) => setWhatsappOptIn(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
+                      />
+                      <span>
+                        <span className="font-semibold text-[#121212] dark:text-[#eef1f6]">
+                          Avísame por WhatsApp sobre este reporte
+                        </span>
+                        <span className="mt-0.5 block text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+                          {target
+                            ? `Seguimiento, coincidencias y comentarios al ${target}${
+                                whatsapp.phoneLabel ? '' : ' (lo guardamos en tu perfil)'
+                              }. Puedes apagarlos en Notificaciones.`
+                            : 'Escribe un teléfono de 10 dígitos para activarlo.'}
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })() : null}
               </div>
 
               <div>

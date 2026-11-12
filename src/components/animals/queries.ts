@@ -300,6 +300,7 @@ export const GET_ANIMAL_QUERY = gql`
       reportedBy
       id
       animal_viewsCount
+      inactiveAt
       duplicateOf {
         id
         slug

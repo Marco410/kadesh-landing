@@ -39,3 +39,4 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-10 | [Eventos: vistas de la ficha y fotos en pantalla completa](2026-11-10-eventos-vistas-y-foto-completa.md) | events | pendiente |
 | 2026-11-12 | [Menos peticiones al backend: campana cada 5 min, blog sin listas completas, animales sin consulta doble](2026-11-12-menos-carga-al-backend.md) | shared | pendiente |
 | 2026-11-12 | [«Cerrar caso» con «¿volvió a casa?» y «¿Kadesh ayudó?»](2026-11-12-cerrar-caso-y-reencuentros.md) | animals | pendiente |
+| 2026-11-12 | [Seguimiento de casos: recordatorios, casos inactivos y WhatsApp al reportar](2026-11-12-seguimiento-de-casos.md) | animals | pendiente |

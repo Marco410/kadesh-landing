@@ -4,7 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Cancel01Icon } from '@hugeicons/core-free-icons';
-import { ANIMAL_LOGS_OPTIONS, getStatusColor } from '../constants';
+import { ANIMAL_LOGS_OPTIONS, FINAL_LOG_STATUSES, getStatusColor } from '../constants';
+
+/** Los estatus que cierran el caso van por «Cerrar caso» (pregunta cómo terminó y si Kadesh ayudó). */
+const LOG_STATUS_OPTIONS = ANIMAL_LOGS_OPTIONS.filter((opt) => !FINAL_LOG_STATUSES.includes(opt.value));
 import LocationPicker from '../nuevo/LocationPicker';
 import StatusDatePicker from 'kadesh/components/shared/StatusDatePicker';
 import { useCreateLog } from './hooks/useCreateLog';
@@ -196,7 +199,7 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
                 Estado <span className="text-red-600">*</span>
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {ANIMAL_LOGS_OPTIONS.map((opt) => {
+                {LOG_STATUS_OPTIONS.map((opt) => {
                   const selected = status === opt.value;
                   const color = getStatusColor(opt.value);
                   return (
@@ -223,6 +226,9 @@ export default function AddLogModal({ isOpen, onClose, onSuccess, animalId, anim
                 })}
               </div>
               {errors.status && <p className="mt-1 text-xs text-red-600">{errors.status}</p>}
+              <p className="mt-2 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+                ¿Ya volvió a casa o fue adoptado? Usa «Cerrar caso» en la ficha.
+              </p>
             </div>
 
             <div>

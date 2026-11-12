@@ -35,6 +35,7 @@ import {
   AnimalClaimsPanel,
   ClaimReportButton,
   KeepAnimalButton,
+  CloseCaseBanner,
   ShareAnimalButton,
   NearbyVeterinariesRow,
 } from "kadesh/components/animals/detail";
@@ -44,6 +45,7 @@ import {
 } from "kadesh/components/animals/promotion";
 import {
   ANIMAL_DETAIL_ACTION,
+  OPEN_CASE_STATUSES,
   getStatusColor,
   getStatusLabel,
 } from "kadesh/components/animals/constants";
@@ -95,7 +97,7 @@ export default function AnimalDetailPage() {
     router.replace(`${Routes.animals.detail(animal.slug)}${window.location.search}`);
   }, [animal?.duplicateOf, animal?.slug, animalKey, router]);
 
-  // `?accion=registro|impulsar` (correo de reporte publicado). Sin sesión no se ven esos botones:
+  // `?accion=registro|impulsar|cerrar` (correo de reporte publicado y recordatorios). Sin sesión no se ven esos botones:
   // se entra y se vuelve al mismo enlace. Si quien entra no puede hacerlo, la ficha se ve normal.
   // El historial y el banner abren el modal o la hoja y quitan el parámetro.
   useEffect(() => {
@@ -109,7 +111,8 @@ export default function AnimalDetailPage() {
     const currentStatus = logs?.[0]?.status || "register";
     const allowed =
       canEditAnimal(user, animal) &&
-      (detailAction !== ANIMAL_DETAIL_ACTION.promote || isPromotableStatus(currentStatus));
+      (detailAction !== ANIMAL_DETAIL_ACTION.promote || isPromotableStatus(currentStatus)) &&
+      (detailAction !== ANIMAL_DETAIL_ACTION.close || OPEN_CASE_STATUSES.includes(currentStatus));
     if (!allowed) clearDetailAction();
   }, [detailAction, animal, logs, user, userLoading, sessionPending, router, clearDetailAction]);
 
@@ -284,6 +287,15 @@ export default function AnimalDetailPage() {
             }}
           />
           <ClaimReportButton animal={animal} status={status} />
+          <CloseCaseBanner
+            animal={animal}
+            status={status}
+            onClosed={async () => {
+              await refetch();
+            }}
+            autoOpen={detailAction === ANIMAL_DETAIL_ACTION.close}
+            onAutoOpened={clearDetailAction}
+          />
           <KeepAnimalButton animal={animal} status={status} />
           <AdoptionApplyBanner animal={animal} status={status} />
           <PromoteReportBanner

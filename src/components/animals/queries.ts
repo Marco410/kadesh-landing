@@ -847,3 +847,29 @@ export const KEEP_ANIMAL_MUTATION = gql`
 export interface KeepAnimalResponse {
   convertAnimalToPet: { success: boolean; message: string; petId?: string | null };
 }
+
+/** Cerrar el caso con «¿volvió a casa?» y «¿Kadesh ayudó?» (`closeAnimalReport` en kadesh-back). */
+export const CLOSE_ANIMAL_REPORT_MUTATION = gql`
+  mutation CloseAnimalReport($input: CloseAnimalReportInput!) {
+    closeAnimalReport(input: $input) {
+      success
+      message
+      status
+    }
+  }
+`;
+
+export interface CloseAnimalReportVariables {
+  input: {
+    animalId: string;
+    outcome: string;
+    helpedByKadesh?: string | null;
+    outcomeChannel?: string | null;
+    story?: string | null;
+    storyConsent?: boolean | null;
+  };
+}
+
+export interface CloseAnimalReportResponse {
+  closeAnimalReport: { success: boolean; message: string; status?: string | null };
+}

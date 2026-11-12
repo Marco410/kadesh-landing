@@ -15,6 +15,19 @@ Formato:
 
 ---
 
+## 2026-11-12 · feat: «Cerrar caso» y contador de reencuentros y adopciones
+- Rama: develop
+- Qué cambió y por qué: fase 1 del plan de reencuentros.
+  - Quien atiende un caso abierto ve en la ficha «¿Ya volvió a casa? / ¿Ya encontró hogar?» con el botón «Cerrar caso». La hoja pregunta cómo terminó, si Kadesh ayudó y por dónde, y deja contar la historia (opcional, con permiso para publicarla). Lo guarda `closeAnimalReport` (kadesh-back), que deja la bitácora final.
+  - «Agregar registro» ya no ofrece estatus finales.
+  - Nuevo estatus «Caso cerrado» (`closed`) para los casos que terminan sin hogar.
+  - `?accion=cerrar` abre la hoja; lo van a usar los recordatorios de seguimiento.
+  - El Hero muestra «N reencuentros · M adopciones» desde 10 entre los dos. Antes no se mostraba porque no había una cifra confiable.
+  - Por qué: sin registrar cómo termina cada caso, el contador nunca crece y el mapa se llena de casos viejos.
+- Archivos: src/components/animals/detail/{CloseCaseBanner.tsx (nuevo), CloseCaseModal.tsx (nuevo), AddLogModal.tsx, index.ts}, src/components/animals/{constants.ts, queries.ts}, src/app/animales/[slug]/page.tsx, src/components/home/{server.ts, HeroSection.tsx}
+- GraphQL: nueva mutación `CloseAnimalReport` (`closeAnimalReport`); `petLandingStats` pide además `reunions` y `adoptions`. La consulta de la portada sigue siendo una sola, con la misma caché de 1 h.
+- Móvil: [prompt](../mobile-sync/2026-11-12-cerrar-caso-y-reencuentros.md)
+
 ## 2026-11-12 · docs: sección «Rendimiento y costo» en CLAUDE.md
 - Rama: develop
 - Qué cambió y por qué: CLAUDE.md documenta cómo aplicar aquí las reglas globales de costo de infraestructura: utilidades que hay que reutilizar (`useRefetchOnTabReturn`, ventana de caché del blog, modo `passive` de la campana), valores vigentes de polling y caché, pendientes conocidos con archivo y qué revisar en la pestaña Red y en los logs del back.

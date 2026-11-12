@@ -15,6 +15,18 @@ Formato:
 
 ---
 
+## 2026-11-12 · perf: menos peticiones a kadesh-back (portada, campana, blog y /animales)
+- Rama: develop
+- Qué cambió y por qué: el backend y su Postgres cobran por RAM. Se quitaron las peticiones repetidas que más pesaban, sin cambiar lo que ve la persona.
+  - **Portada, «Reportes recientes»**: los más recientes del país ya los trae el servidor con la portada (caché de 10 min, `fetchRecentReports`). Antes los pedía el navegador en cada visita, y `getNearbyAnimals` recorre todos los reportes en el back en cada llamada. El navegador solo consulta si la persona comparte su ubicación o elige un filtro. La fecha relativa de la tarjeta («Hoy», «Ayer») se pinta ya en el navegador, porque depende del reloj y de la zona horaria.
+  - **`/animales`**: el mapa usa la misma respuesta que la lista. Se quitó la segunda consulta con `limit: 1000` que salía al llegar a 500 reportes (el mapa muestra como máximo esos 500). Los tipos de animal se leen de la caché (`cache-first`). `GetNearbyAnimals` ya no pide `user`, que nadie usaba.
+  - **Campana y globos del menú**: se refrescan cada 5 min (antes 60 s) y solo con la pestaña visible (`skipPollAttempt`). Al volver a la pestaña después de 1 min o más se vuelven a pedir (`useRefetchOnTabReturn`). El Inicio del panel lee el contador que ya pide el shell (`passive`), en lugar de consultarlo otra vez.
+  - **Blog**: una sola consulta de favoritos por persona (`MyPostFavorites`) en lugar de una por tarjeta, y ninguna sin sesión. Los likes piden el total y el like propio, no la lista. Los comentarios van de 20 en 20 con «Ver más comentarios» y su total sale de `postCommentsCount`. La primera página del índice ya no se vuelve a pedir desde el navegador: se usa la que pintó el servidor.
+  - **Pendiente en kadesh-back** (no se tocó): `getNearbyAnimals` sigue cargando todos los animales y sus bitácoras para filtrar en memoria. Mientras no filtre y pagine en SQL, cada llamada cuesta lo mismo sin importar `limit`.
+- Archivos: src/app/page.tsx, src/components/home/{recentReports.ts (nuevo), server.ts, RecentReportsSection.tsx}, src/components/home/hooks/useRecentReports.ts, src/components/animals/{queries.ts, hooks/useLostAnimals.ts}, src/components/notifications/{constants.ts, hooks/useUnreadNotifications.ts}, src/components/profile/shell/useProfileNavCounts.ts, src/components/profile/home/ProfileHome.tsx, src/utils/useRefetchOnTabReturn.ts (nuevo), src/components/blog/{queries.ts, post/CommentsSection.tsx}, src/components/blog/hooks/{usePostFavorites.ts, usePostLikes.ts, usePostComments.ts, useBlogPosts.ts}
+- GraphQL: nueva `MyPostFavorites` (reemplaza a `GetPostFavorites`) y `HomeRecentReports` (servidor); `GetPostLikes` ahora pide `postLikesCount` y el like propio; `GetPostComments` acepta `take`/`skip` y pide `postCommentsCount`; `GetNearbyAnimals` sin `user`.
+- Móvil: [prompt](../mobile-sync/2026-11-12-menos-carga-al-backend.md). La parte de la portada no aplica (página de marketing).
+
 ## 2026-11-10 · feat: eventos — vistas de la ficha y portada en pantalla completa
 - Rama: develop (aquí y en kadesh-back)
 - Qué cambió y por qué:

@@ -99,12 +99,6 @@ export const GET_NEARBY_ANIMALS_QUERY = gql`
           id
           name
         }
-        user {
-          name
-          profileImage {
-            url
-          }
-        }
         createdAt
         multimedia {
           id

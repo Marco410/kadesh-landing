@@ -169,6 +169,18 @@ export function formatDistanceKm(km: number | null | undefined): string | null {
   return km < 1 ? `a ${Math.round(km * 1000)} m` : `a ${km < 10 ? km.toFixed(1) : Math.round(km)} km`;
 }
 
+const COUNT_FORMAT = new Intl.NumberFormat('es-MX');
+
+/** «1,234» para conteos (vistas). */
+export function formatCount(value: number): string {
+  return COUNT_FORMAT.format(value);
+}
+
+/** «1 vista», «1,234 vistas». */
+export function viewsText(value: number): string {
+  return `${formatCount(value)} ${value === 1 ? 'vista' : 'vistas'}`;
+}
+
 /** ¿Ya terminaron todas sus fechas? */
 export function eventIsPast(event: Pick<PetEvent, 'lastEndsAt'>, now = new Date()): boolean {
   return Boolean(event.lastEndsAt && new Date(event.lastEndsAt).getTime() < now.getTime());

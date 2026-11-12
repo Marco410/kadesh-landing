@@ -16,7 +16,7 @@ import {
 } from 'kadesh/components/app-shell';
 import { Routes } from 'kadesh/core/routes';
 import { EVENT_STATUS_LABEL, eventCategory } from './constants';
-import { eventCityText, eventIsPast, eventTimeZone, formatSessionRange } from './format';
+import { eventCityText, eventIsPast, eventTimeZone, formatSessionRange, viewsText } from './format';
 import {
   CANCEL_EVENT_MUTATION,
   MY_EVENTS_QUERY,
@@ -79,9 +79,12 @@ function EventRow({ event, onCancel }: { event: MyEvent; onCancel: (event: MyEve
           </p>
           {event.status === 'approved' ? (
             <p className="mt-1 text-xs text-dash-soft">
-              {event.goingCount ?? 0} asistirán · {event.interestedCount ?? 0} les interesa
+              {viewsText(event.viewsCount ?? 0)} · {event.goingCount ?? 0} asistirán · {event.interestedCount ?? 0} les
+              interesa
               {event.capacity ? ` · cupo de ${event.capacity}` : ''}
             </p>
+          ) : event.status === 'cancelled' && (event.viewsCount ?? 0) > 0 ? (
+            <p className="mt-1 text-xs text-dash-soft">{viewsText(event.viewsCount ?? 0)}</p>
           ) : null}
           {event.status === 'rejected' && event.reviewNote ? (
             <p className="mt-2 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
@@ -116,7 +119,7 @@ function EventRow({ event, onCancel }: { event: MyEvent; onCancel: (event: MyEve
   );
 }
 
-/** «Mis eventos» en el panel: estado de revisión, asistentes y acciones. */
+/** «Mis eventos» en el panel: estado de revisión, vistas, asistentes y acciones. */
 export default function MyEventsSection({ userId }: { userId: string }) {
   const { data, loading, refetch } = useQuery<MyEventsResponse>(MY_EVENTS_QUERY, {
     variables: { userId },

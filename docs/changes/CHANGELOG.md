@@ -15,6 +15,29 @@ Formato:
 
 ---
 
+## 2026-11-10 · feat: eventos — vistas de la ficha y portada en pantalla completa
+- Rama: develop (aquí y en kadesh-back)
+- Qué cambió y por qué:
+  - **Pantalla completa**: la portada es 16:9 con `object-cover` y recortaba los carteles verticales. Ahora es un botón con la pastilla «Ver completa». Al tocarla se abre `FullscreenCarousel` (el de la ficha de animal) con la foto entera, flechas, miniaturas y Escape. Al cerrar, la portada queda en la última foto vista.
+  - **`FullscreenCarousel`** (también lo usa la ficha de animal): ahora es un diálogo (`role="dialog"`, `aria-modal`). El foco pasa a «Cerrar» al abrir y vuelve al botón que lo abrió al cerrar.
+  - **Vistas**: al abrir la ficha, `useEventViews` llama una vez a `recordPetEventView` y `EventActions` muestra el total al inicio de la línea de conteos («1,234 vistas · 2 asistirán · …»). Con 0 o con error no se muestra. «Mis eventos» muestra las vistas de cada evento publicado (y de un cancelado, si tiene).
+  - `viewsCount` no va en `EVENT_DETAIL_FIELDS`: si la web saliera antes que el backend, la consulta del servidor fallaría y ninguna ficha cargaría. Sale de la respuesta de la mutación, que además viene más fresca que la ficha en caché.
+  - **Backend (kadesh-back)**: campo `PetEvent.viewsCount` y mutación `recordPetEventView`. No cuentan quien lo publicó, los admins ni los bots. Cada persona suma una vez por evento cada 30 min. Suma con SQL directo para no mover `updatedAt` (es el `lastmod` del sitemap). **Necesita migración** (`yarn migrate`).
+- Archivos: src/components/events/{EventGallery.tsx, EventActions.tsx, MyEventsSection.tsx, queries.ts, format.ts, README.md}, src/components/events/hooks/useEventViews.ts (nuevo), src/components/animals/detail/FullscreenCarousel.tsx; kadesh-back: models/Pet/PetEvent/{PetEvent.ts, constants.ts, README.md}, graphql/customs/mutations/pet/events/{recordPetEventView.ts (nuevo), index.ts}
+- GraphQL: nueva `recordPetEventView(eventId) { counted viewsCount }`; `MyPetEvents` pide `viewsCount`.
+- Móvil: [prompt](../mobile-sync/2026-11-10-eventos-vistas-y-foto-completa.md)
+
+## 2026-11-10 · feat: eventos — «Para qué animales» con los tipos de animal
+- Rama: develop (aquí y en kadesh-back)
+- Qué cambió y por qué:
+  - El formulario de evento solo ofrecía Perros, Gatos y Otros. Ahora ofrece los mismos tipos que un reporte (`ANIMAL_TYPE_OPTIONS`): Perros, Gatos, Aves, Peces, Reptiles y Mamíferos. «Otros» no decía para qué animales era el evento.
+  - `EVENT_SPECIES` se arma con `ANIMAL_TYPE_OPTIONS` y `animalTypePlural`, para no repetir la lista.
+  - **Backend (kadesh-back)**: `PET_EVENT_SPECIES_OPTIONS = ANIMAL_TYPE_OPTIONS`, como `RescueOrganization.species`. No hay migración: `species` es JSON y Keystone solo valida lo que llega.
+  - **Eventos viejos con `other`**: la ficha lo sigue mostrando como «Otros» (`eventSpeciesLabels`). Al editarlos, el formulario lo quita (`knownEventSpecies`), porque ya no hay casilla para desmarcarlo y el backend lo descarta.
+- Archivos: src/components/events/constants.ts, src/components/events/EventDetail.tsx, src/components/events/form/eventFormModel.ts; kadesh-back: models/Pet/PetEvent/constants.ts, models/Pet/PetEvent/README.md
+- GraphQL: ninguna (`species: [String!]` no cambia; cambian los valores aceptados).
+- Móvil: [prompt](../mobile-sync/2026-11-10-eventos-especies-tipos-de-animal.md). También se actualizaron los prompts pendientes `2026-11-04-eventos-publicar.md` y `2026-11-04-eventos-ver-y-asistir.md`, para que no lleven la lista vieja.
+
 ## 2026-11-10 · feat: correo «Tu reporte ya está publicado» y enlaces directos a «Agregar registro» e «Impulsar en Facebook»
 - Rama: feat/correo-reporte-publicado (aquí y en kadesh-back)
 - Qué cambió y por qué:

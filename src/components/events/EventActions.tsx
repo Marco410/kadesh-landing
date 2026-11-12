@@ -23,7 +23,8 @@ import { SITE_URL } from 'kadesh/core/site';
 import { cn } from 'kadesh/utils/cn';
 import { useUser } from 'kadesh/utils/UserContext';
 import { EVENT_INTEREST, type EventInterestKind } from './constants';
-import { eventIsPast, googleCalendarUrl, upcomingSessions, whatsappUrl } from './format';
+import { eventIsPast, googleCalendarUrl, upcomingSessions, viewsText, whatsappUrl } from './format';
+import { useEventViews } from './hooks/useEventViews';
 import {
   EVENT_VIEWER_QUERY,
   SET_EVENT_INTEREST_MUTATION,
@@ -87,6 +88,7 @@ export default function EventActions({ event }: { event: PetEvent }) {
   }, [viewer]);
 
   const [setInterest, { loading: saving }] = useMutation<SetEventInterestResponse>(SET_EVENT_INTEREST_MUTATION);
+  const viewsCount = useEventViews(event.id);
 
   const isOwner = Boolean(user?.id && (viewer?.petEvent?.user?.id ?? null) === user.id);
   const past = eventIsPast(event);
@@ -136,6 +138,16 @@ export default function EventActions({ event }: { event: PetEvent }) {
   };
 
   const goingFullForMe = counts.isFull && kind !== EVENT_INTEREST.GOING;
+  const hasInterest = counts.interested + counts.going > 0;
+  const stats = [
+    viewsCount ? viewsText(viewsCount) : null,
+    counts.going > 0 ? `${counts.going} ${counts.going === 1 ? 'asistirá' : 'asistirán'}` : null,
+    counts.interested > 0
+      ? `${counts.interested} ${counts.interested === 1 ? 'persona interesada' : 'personas interesadas'}`
+      : null,
+    event.capacity && hasInterest ? `${Math.max(event.capacity - counts.going, 0)} lugares libres` : null,
+    event.capacity && !hasInterest && !closed ? `${event.capacity} lugares` : null,
+  ].filter((part): part is string => Boolean(part));
 
   return (
     <div className="space-y-3">
@@ -208,20 +220,8 @@ export default function EventActions({ event }: { event: PetEvent }) {
           <span className="font-normal text-[#5a5a5a] dark:text-[#9aa3b2]">Tócalo otra vez para quitarlo.</span>
         </p>
       ) : null}
-      {counts.interested + counts.going > 0 ? (
-        <p className="text-center text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
-          {[
-            counts.going > 0 ? `${counts.going} ${counts.going === 1 ? 'asistirá' : 'asistirán'}` : null,
-            counts.interested > 0
-              ? `${counts.interested} ${counts.interested === 1 ? 'persona interesada' : 'personas interesadas'}`
-              : null,
-          ]
-            .filter(Boolean)
-            .join(' · ')}
-          {event.capacity ? ` · ${Math.max(event.capacity - counts.going, 0)} lugares libres` : ''}
-        </p>
-      ) : event.capacity && !closed ? (
-        <p className="text-center text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">{event.capacity} lugares</p>
+      {stats.length > 0 ? (
+        <p className="text-center text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">{stats.join(' · ')}</p>
       ) : null}
 
       {next && !closed ? (

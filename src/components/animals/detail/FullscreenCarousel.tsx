@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowLeft01Icon, ArrowRight01Icon, Cancel01Icon } from '@hugeicons/core-free-icons';
@@ -21,12 +21,17 @@ export default function FullscreenCarousel({
   onClose,
 }: FullscreenCarouselProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(initialIndex);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
+  // Bloquea el scroll y lleva el foco a «Cerrar»; al cerrar, el foco vuelve a lo que lo abrió.
   useEffect(() => {
     const prev = document.body.style.overflow;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.body.style.overflow = 'hidden';
+    closeRef.current?.focus({ preventScroll: true });
     return () => {
       document.body.style.overflow = prev;
+      opener?.focus({ preventScroll: true });
     };
   }, []);
 
@@ -52,6 +57,9 @@ export default function FullscreenCarousel({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Fotos de ${animalName}`}
       className="fixed inset-0 z-[2000] flex flex-col bg-black/95"
       onClick={() => onClose(selectedImageIndex)}
     >
@@ -60,6 +68,7 @@ export default function FullscreenCarousel({
           {selectedImageIndex + 1} / {imageUrls.length}
         </span>
         <button
+          ref={closeRef}
           type="button"
           onClick={(e) => {
             e.stopPropagation();

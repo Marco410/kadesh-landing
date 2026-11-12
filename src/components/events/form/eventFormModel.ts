@@ -4,6 +4,7 @@ import {
   DEFAULT_EVENT_TIME_ZONE,
   EVENT_LIMITS,
   isEventCategory,
+  knownEventSpecies,
 } from '../constants';
 import { eventDayKey, isoToZonedInput, zonedInputToIso } from '../format';
 import { cityKey, stateFromText } from '../mexicoStates';
@@ -75,7 +76,8 @@ export function eventToFormValues(event: OwnPetEvent): EventFormValues {
   return {
     title: event.title ?? '',
     category: event.category ?? '',
-    species: event.species ?? [],
+    // Sin el valor viejo `other`: ya no hay casilla para quitarlo y el backend lo descarta.
+    species: knownEventSpecies(event.species),
     description: event.description ?? '',
     requirements: event.requirements ?? '',
     organizerName: event.organizerName ?? '',

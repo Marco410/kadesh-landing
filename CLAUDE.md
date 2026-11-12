@@ -86,6 +86,56 @@ GraphQL via Apollo Client against a KeystoneJS backend. Keep queries/mutations c
 - Directories: lowercase-with-dashes. Files: PascalCase for React components (`AnimalCard.tsx`), camelCase for hooks/utils (`useLostAnimals.ts`, `format-date.tsx`), and non-component modules (`queries.ts`, `types.ts`, `constants.ts`).
 - Validation: Zod where schema validation is needed.
 
+## Rendimiento y costo
+
+Aterriza en este repo las reglas generales de "Rendimiento y costo de infraestructura" de `~/.claude/CLAUDE.md`. Este front no toca Postgres: toda la carga llega a kadesh-back por `NEXT_PUBLIC_API_URL`.
+
+### Utilidades que hay que reutilizar
+
+- `src/utils/useRefetchOnTabReturn.ts`: `isTabHidden` va en `skipPollAttempt` de todo `pollInterval`, y `useRefetchOnTabReturn(refetch, { staleMs })` refresca al volver a la pestaña. Úsalos juntos; no escribas otro listener de `visibilitychange`.
+- `src/components/notifications/hooks/useUnreadNotifications.ts`: el contador de la campana. En pantallas que ya están dentro del shell de `/perfil`, usa `{ passive: true }` (lee la caché, no consulta).
+- `src/components/blog/server.ts`: `cacheWindowStart()` / `publishedCutoff()` y la cabecera `x-kadesh-cache-window`. Cualquier fetch del servidor que filtre por "ahora" (posts programados, eventos vigentes) usa ese patrón, no `new Date()`.
+- `src/components/home/server.ts` + `src/components/home/recentReports.ts`: patrón para traer datos en el servidor y pasarlos al hook cliente como valor inicial, con `skip` cuando no cambian los filtros.
+- `src/components/blog/queries.ts`: `MyPostFavorites` (una consulta por persona para todas las tarjetas) y `GetPostLikes` (`postLikesCount` + el like propio). Sigue ese modelo para cualquier "¿lo marqué?" en listas.
+- Sin equivalente aún en este repo: `normalizeSearchText` y `useStableQuery` (están en kadesh-business). Si una feature los necesita, tráelos en lugar de reescribirlos.
+
+### Valores vigentes
+
+| Qué | Valor | Dónde |
+|---|---|---|
+| Campana y globos de `/perfil` | cada 5 min, pausado con pestaña oculta; refetch al volver tras ≥ 60 s | `src/components/notifications/constants.ts` (`UNREAD_POLL_MS`, `UNREAD_STALE_MS`) |
+| Heartbeat de actividad | cada 5 min, solo con pestaña visible | `src/utils/activity/usePetActivity.ts` (`HEARTBEAT_MS`) |
+| Reintentos de consultas | hasta 4, 500 ms a 5 s | `src/providers/queryRetryLink.ts` |
+| Política por defecto de Apollo | `cache-and-network` | `src/providers/apollo-client.ts` |
+| Blog (datos y páginas) | ventana de 10 min (`revalidate = 600`) | `src/components/blog/server.ts`, `src/app/blog/**/page.tsx` |
+| Portada: alertas y reportes recientes | 10 min | `src/components/home/server.ts` (`ZONE_ALERTS_REVALIDATE_SECONDS`) |
+| Portada: resto de datos | 1 h | `src/components/home/server.ts` (`REVALIDATE_SECONDS`) |
+| Eventos | 60 s (portada: 10 min) | `src/components/events/server.ts`, `src/app/eventos/**/page.tsx` |
+| Animales y veterinarias (servidor) | 60 s; datos para compartir 1 h | `src/components/{animals,veterinaries}/server.ts` |
+| Organizaciones y aliados | 30 min | `src/components/rescue/server.ts`, `src/app/{organizaciones,aliados}/page.tsx` |
+| Imágenes OG | `max-age=300`; tarjetas `s-maxage=600` | `src/app/*/[slug]/og/route.tsx`, `src/core/og-card.tsx` |
+| URLs firmadas de imágenes | caducan a 1 h | `kadesh-back/keystone.ts` (`signed.expiry: 3600`) |
+| Pool de Postgres del back | `connection_limit` 5, `pool_timeout` 20 s (`DB_CONNECTION_LIMIT`, `DB_POOL_TIMEOUT`) | `kadesh-back/keystone.ts` |
+
+Cualquier `revalidate` de datos con imágenes debe quedar por debajo de 1 h por las URLs firmadas.
+
+### Pendientes conocidos (no empeorarlos)
+
+- `getNearbyAnimals` (`kadesh-back/graphql/customs/queries/nearbyAnimals.ts`) carga todos los animales y sus bitácoras y filtra y pagina en memoria; `limit` no abarata la llamada. No agregues llamadas nuevas: reutiliza la de la página. `/animales` pide `limit: 500` y el mapa muestra como máximo esos 500 (`src/components/animals/hooks/useLostAnimals.ts`); al acercarse a ese número hace falta una consulta ligera solo para el mapa.
+- `getNearbyPetPlaces` sin ubicación trae todas las veterinarias, y el directorio pide reseñas completas por lugar (`src/components/veterinaries/queries.ts`, `hooks/useNearbyPetPlaces.ts`).
+- Ficha de animal: el servidor ya trae la ficha para metadata y el cliente la vuelve a pedir con `cache-and-network` (`src/app/animales/[slug]/layout.tsx`, `src/components/animals/detail/hooks/useAnimalDetail.ts`). Cada visita además escribe una vista; lo mismo en blog y eventos (`useAnimalView.ts`, `usePostView.ts`, `useEventViews.ts`).
+- `sitemap.xml` (`src/app/sitemap.ts`) recorre posts, eventos, animales, veterinarias y organizaciones en cada regeneración.
+- Código de ventas muerto: `src/components/profile/sales/` y `src/app/(cuenta)/perfil/ventas/` (el layout redirige a `/perfil`). No lo revivas ni le agregues consultas.
+
+### Cómo comprobar que una feature no agrega carga
+
+- Pestaña Red, filtro `graphql`: cuenta las peticiones al cargar la pantalla y al navegar dentro de ella. Cada `operationName` debe salir una vez; dos iguales seguidas indican doble fetch (servidor + cliente, o dos hooks).
+- Deja la pestaña oculta 2–3 min: no debe salir ninguna petición. Al volver, a lo más un refetch por consulta con polling.
+- En listas, el número de peticiones no debe crecer con el número de tarjetas.
+- En el HTML de una página del servidor (ver código fuente), los datos ya deben venir; si el navegador los vuelve a pedir al cargar, sobra la consulta del cliente.
+- Para el caché del servidor, prueba con `pnpm build && pnpm start` (o `pnpm run preview`), no con `pnpm dev`: recarga varias veces y en los logs de kadesh-back debe llegar una sola petición por consulta por ventana de `revalidate`.
+- Revisa el tamaño de la respuesta en Red: si trae campos que la pantalla no pinta, recórtalos.
+
 ## Registro de cambios y sincronización con móvil
 
 Existe (o existirá) una app móvil en un repo separado, `kadesh-pet-mobile` (Expo + Expo Router + NativeWind + Apollo, mismo backend Keystone). Para que no se quede atrás de la web, **todo cambio en este repo se registra**, y los que apliquen a móvil se registran además como un prompt listo para implementarlo allá.

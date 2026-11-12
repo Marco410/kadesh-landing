@@ -15,12 +15,16 @@ import {
 } from '../queries';
 import { useUser } from 'kadesh/utils/UserContext';
 
+export const POST_COMMENTS_PAGE_SIZE = 20;
+
 export function usePostComments(postId: string) {
   const { user } = useUser();
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: commentsData, loading: commentsLoading, refetch: refetchComments } = useQuery<
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const { data: commentsData, loading: commentsLoading, refetch: refetchComments, fetchMore } = useQuery<
     GetPostCommentsResponse,
     GetPostCommentsVariables
   >(GET_POST_COMMENTS_QUERY, {
@@ -37,12 +41,41 @@ export function usePostComments(postId: string) {
           createdAt: 'desc',
         },
       ],
+      take: POST_COMMENTS_PAGE_SIZE,
+      skip: 0,
     },
     skip: !postId,
   });
 
+  // Se traen de 20 en 20 (los más nuevos primero); el total sale de `postCommentsCount`.
   const comments = commentsData?.postComments || [];
-  const commentsCount = comments.length;
+  const commentsCount = commentsData?.postCommentsCount ?? comments.length;
+  const hasMoreComments = comments.length < commentsCount;
+
+  const loadMoreComments = async () => {
+    if (isLoadingMore || !hasMoreComments) return;
+    setIsLoadingMore(true);
+    try {
+      await fetchMore({
+        variables: { skip: comments.length },
+        updateQuery: (previous, { fetchMoreResult }) => {
+          if (!fetchMoreResult) return previous;
+          const seen = new Set(previous.postComments.map((item) => item.id));
+          return {
+            ...fetchMoreResult,
+            postComments: [
+              ...previous.postComments,
+              ...fetchMoreResult.postComments.filter((item) => !seen.has(item.id)),
+            ],
+          };
+        },
+      });
+    } catch (error) {
+      console.error('Error al cargar más comentarios:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   const [createPostComment, { loading: isCreatingComment }] = useMutation<
     CreatePostCommentResponse,
@@ -128,6 +161,9 @@ export function usePostComments(postId: string) {
     isSubmitting,
     isCreatingComment,
     isDeletingComment,
+    hasMoreComments,
+    isLoadingMore,
+    loadMoreComments,
     handleSubmit,
     handleDelete,
     refetchComments,

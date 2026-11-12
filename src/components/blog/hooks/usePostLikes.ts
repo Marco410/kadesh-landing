@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { 
   CREATE_POST_LIKE_MUTATION, 
@@ -18,30 +17,21 @@ import { useUser } from 'kadesh/utils/UserContext';
 export function usePostLikes(postId: string) {
   const { user } = useUser();
 
+  const postWhere = { post: { id: { equals: postId } } };
   const { data: likesData, loading: likesLoading, refetch: refetchLikes } = useQuery<
     GetPostLikesResponse,
     GetPostLikesVariables
   >(GET_POST_LIKES_QUERY, {
     variables: {
-      where: {
-        post: {
-          id: {
-            equals: postId,
-          },
-        },
-      },
+      countWhere: postWhere,
+      mineWhere: user?.id ? { ...postWhere, user: { id: { equals: user.id } } } : postWhere,
+      withMine: Boolean(user?.id),
     },
     skip: !postId,
   });
 
-  const likes = likesData?.postLikes || [];
-  const likesCount = likes.length;
-
-  const userLike = useMemo(() => {
-    if (!user?.id) return null;
-    return likes.find((like) => like.user?.id === user.id) || null;
-  }, [likes, user?.id]);
-
+  const likesCount = likesData?.postLikesCount ?? 0;
+  const userLike = (user?.id && likesData?.postLikes?.[0]) || null;
   const isLiked = !!userLike;
 
   const [createPostLike, { loading: isCreatingLike }] = useMutation<
@@ -106,7 +96,6 @@ export function usePostLikes(postId: string) {
   };
 
   return {
-    likes,
     likesCount,
     isLiked,
     userLike,

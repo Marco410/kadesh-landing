@@ -6,47 +6,36 @@ import {
   CREATE_POST_FAVORITE_MUTATION, 
   CreatePostFavoriteVariables, 
   CreatePostFavoriteResponse,
-  GET_POST_FAVORITES_QUERY,
-  GetPostFavoritesResponse,
-  GetPostFavoritesVariables,
+  MY_POST_FAVORITES_QUERY,
+  MyPostFavoritesResponse,
+  MyPostFavoritesVariables,
   DELETE_POST_FAVORITE_MUTATION,
   DeletePostFavoriteVariables,
   DeletePostFavoriteResponse
 } from '../queries';
 import { useUser } from 'kadesh/utils/UserContext';
 
+/** Tope de favoritos que se revisan para marcar el corazón de cada post. */
+const MY_FAVORITES_TAKE = 500;
+
 export function usePostFavorites(postId: string) {
   const { user } = useUser();
 
+  // Una consulta para todas las tarjetas (mismas variables: Apollo la pide una vez y la comparte).
+  // Sin sesión no hay nada que preguntar.
   const { data: favoritesData, loading: favoritesLoading, refetch: refetchFavorites } = useQuery<
-    GetPostFavoritesResponse,
-    GetPostFavoritesVariables
-  >(GET_POST_FAVORITES_QUERY, {
-    variables: {
-      where: {
-        post: {
-          id: {
-            equals: postId,
-          },
-        },
-        ...(user?.id && {
-          user: {
-            id: {
-              equals: user.id,
-            },
-          },
-        }),
-      },
-    },
-    skip: !postId,
+    MyPostFavoritesResponse,
+    MyPostFavoritesVariables
+  >(MY_POST_FAVORITES_QUERY, {
+    variables: { userId: user?.id ?? '', take: MY_FAVORITES_TAKE },
+    skip: !postId || !user?.id,
+    fetchPolicy: 'cache-first',
   });
-
-  const favorites = favoritesData?.postFavorites || [];
 
   const userFavorite = useMemo(() => {
     if (!user?.id) return null;
-    return favorites.find((favorite) => favorite.user?.id === user.id) || null;
-  }, [favorites, user?.id]);
+    return favoritesData?.postFavorites.find((favorite) => favorite.post?.id === postId) || null;
+  }, [favoritesData, postId, user?.id]);
 
   const isFavorited = !!userFavorite;
   const postFavorite = userFavorite;

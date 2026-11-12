@@ -130,52 +130,35 @@ export interface CreatePostLikeResponse {
   };
 }
 
+/**
+ * Total de likes del post y, con sesión (`$withMine`), el like de quien mira. Antes se traían
+ * todos los likes con su usuario solo para contarlos.
+ */
 export const GET_POST_LIKES_QUERY = gql`
-  query GetPostLikes($where: PostLikeWhereInput!) {
-    postLikes(where: $where) {
+  query GetPostLikes(
+    $countWhere: PostLikeWhereInput!
+    $mineWhere: PostLikeWhereInput!
+    $withMine: Boolean!
+  ) {
+    postLikesCount(where: $countWhere)
+    postLikes(where: $mineWhere, take: 1) @include(if: $withMine) {
       id
-      user {
-        id
-        name
-      }
-      post {
-        id
-        url
-      }
-      createdAt
     }
   }
 `;
 
-export interface PostLikeUser {
-  id: string;
-  name: string;
-}
-
-export interface PostLikePost {
-  id: string;
-  url: string;
-}
-
-export interface PostLike {
-  id: string;
-  user: PostLikeUser | null;
-  post: PostLikePost;
-  createdAt: string;
-}
-
 export interface GetPostLikesResponse {
-  postLikes: PostLike[];
+  postLikesCount: number;
+  postLikes?: Array<{ id: string }>;
 }
+
+type PostIdWhere = { post: { id: { equals: string } } };
+type UserIdWhere = { user: { id: { equals: string } } };
 
 export interface GetPostLikesVariables {
-  where: {
-    post: {
-      id: {
-        equals: string;
-      };
-    };
-  };
+  countWhere: PostIdWhere;
+  mineWhere: PostIdWhere & Partial<UserIdWhere>;
+  withMine: boolean;
 }
 
 export const DELETE_POST_LIKE_MUTATION = gql`
@@ -284,8 +267,14 @@ export interface CreatePostCommentResponse {
 }
 
 export const GET_POST_COMMENTS_QUERY = gql`
-  query GetPostComments($where: PostCommentWhereInput!, $orderBy: [PostCommentOrderByInput!]) {
-    postComments(where: $where, orderBy: $orderBy) {
+  query GetPostComments(
+    $where: PostCommentWhereInput!
+    $orderBy: [PostCommentOrderByInput!]
+    $take: Int
+    $skip: Int
+  ) {
+    postCommentsCount(where: $where)
+    postComments(where: $where, orderBy: $orderBy, take: $take, skip: $skip) {
       id
       comment
       post {
@@ -331,6 +320,7 @@ export interface PostComment {
 
 export interface GetPostCommentsResponse {
   postComments: PostComment[];
+  postCommentsCount: number;
 }
 
 export interface GetPostCommentsVariables {
@@ -344,6 +334,8 @@ export interface GetPostCommentsVariables {
   orderBy?: Array<{
     createdAt?: 'asc' | 'desc';
   }>;
+  take?: number;
+  skip?: number;
 }
 
 export const DELETE_POST_COMMENT_MUTATION = gql`
@@ -407,17 +399,21 @@ export interface CreatePostFavoriteResponse {
   };
 }
 
-export const GET_POST_FAVORITES_QUERY = gql`
-  query GetPostFavorites($where: PostFavoriteWhereInput!) {
-    postFavorites(where: $where) {
+/**
+ * Los favoritos de quien tiene la sesión, en una sola consulta para todas las tarjetas y la ficha.
+ * Antes cada tarjeta del blog pedía los favoritos de su post (12 consultas por página, también sin sesión).
+ */
+export const MY_POST_FAVORITES_QUERY = gql`
+  query MyPostFavorites($userId: ID!, $take: Int!) {
+    postFavorites(
+      where: { user: { id: { equals: $userId } } }
+      orderBy: [{ createdAt: desc }]
+      take: $take
+    ) {
       id
       post {
         id
       }
-      user {
-        id
-      }
-      createdAt
     }
   }
 `;
@@ -426,30 +422,16 @@ export interface PostFavorite {
   id: string;
   post: {
     id: string;
-  };
-  user: {
-    id: string;
   } | null;
-  createdAt: string;
 }
 
-export interface GetPostFavoritesResponse {
+export interface MyPostFavoritesResponse {
   postFavorites: PostFavorite[];
 }
 
-export interface GetPostFavoritesVariables {
-  where: {
-    post: {
-      id: {
-        equals: string;
-      };
-    };
-    user?: {
-      id: {
-        equals: string;
-      };
-    };
-  };
+export interface MyPostFavoritesVariables {
+  userId: string;
+  take: number;
 }
 
 export const DELETE_POST_FAVORITE_MUTATION = gql`

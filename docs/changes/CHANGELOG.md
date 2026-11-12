@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-12 · perf: el blog se cachea en ventanas de 10 minutos
+- Rama: develop
+- Qué cambió y por qué: las consultas del blog en el servidor mandaban la hora exacta (`now`, `publishedAt: { lte }`) para ocultar los posts programados. Como la hora cambia en cada milisegundo, ninguna consulta se repetía y el caché de datos nunca se usaba: cada visita a `/blog` o a un artículo llegaba a kadesh-back. Ahora se usa el inicio de una ventana de 10 min (`cacheWindowStart`, igual que kadesh-business), con `revalidate: 600` en los fetch y en las páginas, y una cabecera `x-kadesh-cache-window` que rota la llave del caché también en las consultas sin fecha. 10 min y no más porque las imágenes son URLs firmadas que caducan a la hora. Costo: un artículo nuevo, editado o programado tarda hasta 10 min en verse.
+- Archivos: src/components/blog/server.ts, src/components/blog/README.md, src/app/blog/page.tsx, src/app/blog/[url]/page.tsx
+- GraphQL: ninguna (mismas consultas; cambia el valor de `$now`)
+- Móvil: no aplica (caché del render del servidor web)
+
 ## 2026-11-12 · perf: menos peticiones a kadesh-back (portada, campana, blog y /animales)
 - Rama: develop
 - Qué cambió y por qué: el backend y su Postgres cobran por RAM. Se quitaron las peticiones repetidas que más pesaban, sin cambiar lo que ve la persona.

@@ -16,6 +16,7 @@ export { default as AnimalCommentsSection } from './AnimalCommentsSection';
 export { default as AnimalClaimsPanel } from './AnimalClaimsPanel';
 export { default as ClaimReportButton } from './ClaimReportButton';
 export { default as KeepAnimalButton } from './KeepAnimalButton';
+export { default as CloseCaseBanner } from './CloseCaseBanner';
 
 
 

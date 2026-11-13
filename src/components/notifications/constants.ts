@@ -26,6 +26,8 @@ export const ANIMAL_REPORT_NOTIFICATION_TYPE = {
   CLAIM_APPROVED: 'animal.claim_approved',
   CLAIM_REJECTED: 'animal.claim_rejected',
   MERGED: 'animal.merged',
+  /** Un caso tuyo lleva 1 o 3 semanas sin registros: ¿ya volvió a casa? */
+  FOLLOW_UP: 'animal.follow_up',
 } as const;
 
 /** Avisos de eventos (kadesh-back `models/Notification/constants.ts`). */
@@ -85,6 +87,12 @@ export const WHATSAPP_CATEGORIES = [
     label: 'Posibles coincidencias',
     description: 'Un reporte nuevo se parece a uno tuyo.',
     types: ['animal.possible_match'],
+  },
+  {
+    id: 'follow-ups',
+    label: 'Seguimiento de tus reportes',
+    description: 'Un reporte tuyo lleva semanas sin novedades: ciérralo o actualízalo.',
+    types: ['animal.follow_up'],
   },
   {
     id: 'comments',

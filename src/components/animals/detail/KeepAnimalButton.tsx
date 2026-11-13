@@ -13,6 +13,7 @@ import { Routes } from 'kadesh/core/routes';
 import { useUser } from 'kadesh/utils/UserContext';
 import { KEEP_ANIMAL_MUTATION, type KeepAnimalResponse } from '../queries';
 import type { AnimalDetail } from './hooks/useAnimalDetail';
+import { animalNameSource, animalSentenceName, capitalizeFirst } from '../animalName';
 
 /** Estados en los que quien publicó tenía al animal consigo (no aplica a un perdido propio). */
 const KEEPABLE_STATUSES = ['rescued', 'found', 'abandoned', 'in_adoption'];
@@ -38,6 +39,8 @@ export default function KeepAnimalButton({ animal, status }: { animal: AnimalDet
     KEEPABLE_STATUSES.includes(status);
   if (!eligible) return null;
 
+  const who = capitalizeFirst(animalSentenceName(animalNameSource(animal)));
+
   const handleKeep = async () => {
     try {
       const result = await keep({ variables: { animalId: animal.id } });
@@ -60,7 +63,7 @@ export default function KeepAnimalButton({ animal, status }: { animal: AnimalDet
         <HugeiconsIcon icon={Home01Icon} size={18} strokeWidth={1.6} aria-hidden />
       </span>
       <p className="min-w-0 flex-1 text-sm text-[#3a3a3a] dark:text-[#d0d0d0]">
-        ¿{animal.name || 'Este animal'} se quedó contigo? Pásalo a tu cartilla para llevar sus vacunas y recordatorios.
+        ¿{who} se quedó contigo? Pásalo a tu cartilla para llevar sus vacunas y recordatorios.
       </p>
       <motion.button
         type="button"
@@ -75,7 +78,7 @@ export default function KeepAnimalButton({ animal, status }: { animal: AnimalDet
         isOpen={confirming}
         onClose={() => setConfirming(false)}
         onConfirm={handleKeep}
-        title={`¿${animal.name || 'Este animal'} se quedó contigo?`}
+        title={`¿${who} se quedó contigo?`}
         message="Crearemos su cartilla con los datos y fotos del reporte, y el reporte quedará «En familia»."
         confirmText="Sí, se quedó conmigo"
         confirmButtonColor="blue"

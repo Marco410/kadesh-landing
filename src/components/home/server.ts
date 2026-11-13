@@ -25,6 +25,8 @@ const PET_LANDING_STATS_QUERY = `
       animalsLost
       animalsHome
       animalsInAdoption
+      reunions
+      adoptions
       veterinaries
       veterinariesVerified
       cities
@@ -37,6 +39,10 @@ export type PetLandingStats = {
   animalsLost: number;
   animalsHome: number;
   animalsInAdoption: number;
+  /** Casos cerrados como «volvió con su familia» (`Animal.outcome`). */
+  reunions: number;
+  /** Casos cerrados como «adoptado». */
+  adoptions: number;
   veterinaries: number;
   veterinariesVerified: number;
   cities: number;

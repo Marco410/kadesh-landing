@@ -1,4 +1,5 @@
 import { ANIMAL_TYPE_LABELS } from 'kadesh/components/animals/constants';
+import { knownAnimalName } from 'kadesh/components/animals/animalName';
 
 /**
  * Lo que comparte la sección «Alertas de zona» de la portada entre el servidor (lista inicial,
@@ -37,15 +38,13 @@ export function isZoneAlertStatus(status: string | null | undefined): status is 
 }
 
 /** Nombres que la gente escribe cuando no sabe cómo se llama: el título es el tipo de animal. */
-const PLACEHOLDER_NAMES = new Set(['sin nombre', 'desconocido', 'no se', 'no sé', 'n/a', 'na']);
-
 export function alertTitle(
   name: string | null | undefined,
   typeName: string | null | undefined,
 ): { title: string; typeLabel: string | null } {
   const typeLabel = ANIMAL_TYPE_LABELS[(typeName ?? '').toLowerCase()] ?? null;
   const cleanName = name?.trim() ?? '';
-  const title = (!PLACEHOLDER_NAMES.has(cleanName.toLowerCase()) && cleanName) || typeLabel || 'Mascota';
+  const title = knownAnimalName(cleanName) || typeLabel || 'Mascota';
   return { title, typeLabel: typeLabel && typeLabel !== title ? typeLabel : null };
 }
 

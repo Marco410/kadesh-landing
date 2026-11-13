@@ -17,6 +17,8 @@ import { useSimilarReports } from 'kadesh/components/animals/nuevo/hooks/useSimi
 import SimilarReportsNotice from 'kadesh/components/animals/nuevo/SimilarReportsNotice';
 import SimilarReportsSheet from 'kadesh/components/animals/nuevo/SimilarReportsSheet';
 import { useUser } from 'kadesh/utils/UserContext';
+import { isUnknownAnimalName } from 'kadesh/components/animals/animalName';
+import { useWhatsappNotifications, whatsappPhoneLabel } from 'kadesh/components/notifications/hooks';
 import LocationPicker from 'kadesh/components/animals/nuevo/LocationPicker';
 import AnimalNameInput from 'kadesh/components/animals/nuevo/AnimalNameInput';
 import AnimalTypeSelector from 'kadesh/components/animals/nuevo/AnimalTypeSelector';
@@ -83,8 +85,8 @@ interface FieldErrors {
   physicalDescription?: string;
 }
 
-function isValidName(name: string) {
-  return name === 'Sin nombre' || name.trim() !== '';
+function isValidName(name: string, unknown: boolean) {
+  return unknown || name.trim() !== '';
 }
 
 function todayKey(date = new Date()) {
@@ -166,7 +168,11 @@ function publishErrorMessage(error: unknown): { text: string; step: number; fiel
   if (/10 dígitos|teléfono/i.test(text)) {
     return { text: 'El teléfono debe tener 10 dígitos.', step: 2, field: 'contactNumber' };
   }
-  if (/ciudad|ubicación|mapa/i.test(text) || (!text && /invalid data/i.test(raw))) {
+  // Un «invalid data» sin motivo en español solo es de la ubicación si viene de la bitácora o de las
+  // coordenadas. Antes cualquier fallo del servidor (p. ej. `Animal.folio: missing value`) mandaba a
+  // la persona a corregir un mapa que estaba bien.
+  const locationFailure = /invalid data/i.test(raw) && /AnimalLog\.|\b(lat|lng|city)\b/i.test(raw);
+  if (/ciudad|ubicación|mapa/i.test(text) || (!text && locationFailure)) {
     return {
       text: 'Elige una ubicación de la lista o toca el mapa.',
       step: 2,
@@ -182,7 +188,8 @@ function publishErrorMessage(error: unknown): { text: string; step: number; fiel
   if (text) {
     return { text, step: 2 };
   }
-  return { text: 'Revisa los datos marcados e inténtalo de nuevo.', step: 2 };
+  // Error del servidor sin campo identificable: no se marca ningún campo como malo.
+  return { text: 'No se pudo publicar el reporte. Intenta de nuevo en un momento.', step: 2 };
 }
 
 /** En qué va la publicación. El botón lo dice para que se note que algo está pasando. */
@@ -211,6 +218,10 @@ export default function NewAnimalForm({
 }) {
   const router = useRouter();
   const { user } = useUser();
+  // «Avísame por WhatsApp sobre este reporte»: sin esto, los recordatorios de seguimiento solo llegan
+  // a la campana y al correo. Meta exige que cada quien lo acepte: la casilla empieza desmarcada.
+  const whatsapp = useWhatsappNotifications(user?.id);
+  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
   // Espacios de rescate a cuyo nombre puede publicar (admin, coordinador o voluntario).
   const { orgs: rescueOrgs } = usePublishableRescueOrgs(user?.id);
   const [organizationId, setOrganizationId] = useState('');
@@ -235,9 +246,9 @@ export default function NewAnimalForm({
     ? initialStatus
     : 'lost';
 
-  const [name, setName] = useState(
-    UNNAMED_BY_DEFAULT_STATUSES.includes(resolvedStatus) ? 'Sin nombre' : ''
-  );
+  const [name, setName] = useState('');
+  // Encontrado, abandonado o rescatado: casi nunca se sabe el nombre. Se guarda vacío (no «Sin nombre»).
+  const [nameUnknown, setNameUnknown] = useState(UNNAMED_BY_DEFAULT_STATUSES.includes(resolvedStatus));
   const [animalTypeId, setAnimalTypeId] = useState('');
   const [animalBreedId, setAnimalBreedId] = useState('');
   const [sex, setSex] = useState('unknown');
@@ -284,7 +295,6 @@ export default function NewAnimalForm({
   const [errors, setErrors] = useState<FieldErrors>({});
 
   const copy = REPORT_COPY[status];
-  const unnamedByDefault = UNNAMED_BY_DEFAULT_STATUSES.includes(status);
   const lastSeen = status !== 'in_adoption';
   const motionPrefs = useUiMotion();
 
@@ -368,7 +378,10 @@ export default function NewAnimalForm({
       if (draft) {
         setStep(Math.min(Math.max(draft.step, 0), STEPS.length - 1));
         setShowNotes(draft.showNotes || Boolean(draft.notes));
-        setName(draft.name);
+        const draftUnknown =
+          draft.nameUnknown ?? (Boolean(draft.name?.trim()) && isUnknownAnimalName(draft.name));
+        setNameUnknown(draftUnknown);
+        setName(draftUnknown ? '' : draft.name);
         setAnimalTypeId(draft.animalTypeId);
         setAnimalBreedId(draft.animalBreedId);
         setSex(draft.sex || 'unknown');
@@ -443,6 +456,7 @@ export default function NewAnimalForm({
           step,
           showNotes,
           name,
+          nameUnknown,
           animalTypeId,
           animalBreedId,
           sex,
@@ -483,6 +497,7 @@ export default function NewAnimalForm({
     step,
     showNotes,
     name,
+    nameUnknown,
     animalTypeId,
     animalBreedId,
     sex,
@@ -528,7 +543,7 @@ export default function NewAnimalForm({
     if (!Number.isFinite(latNum) || !Number.isFinite(lngNum)) return null;
     return {
       animalTypeId,
-      name: name.trim() || 'Sin nombre',
+      name: nameUnknown ? '' : name.trim(),
       status,
       sex,
       color: color.trim() || null,
@@ -680,8 +695,8 @@ export default function NewAnimalForm({
     const nextErrors: FieldErrors = {};
 
     if (target >= 0) {
-      if (!isValidName(name)) {
-        nextErrors.name = 'Escribe un nombre o marca que no tiene.';
+      if (!isValidName(name, nameUnknown)) {
+        nextErrors.name = 'Escribe su nombre o marca «No sé su nombre».';
       }
       if (!animalTypeId) {
         nextErrors.animalTypeId = 'Elige perro, gato u otro tipo.';
@@ -744,7 +759,7 @@ export default function NewAnimalForm({
     if (!validateStep(2) || !user?.id) {
       if (!user?.id) {
         sileo.error({ title: 'Inicia sesión para publicar' });
-      } else if (!isValidName(name) || !animalTypeId) {
+      } else if (!isValidName(name, nameUnknown) || !animalTypeId) {
         setStep(0);
       } else if (!animalBreedId || !age.trim() || !color.trim() || !size.trim() || !physicalDescription.trim()) {
         setStep(1);
@@ -798,7 +813,7 @@ export default function NewAnimalForm({
       const { data: animalData } = await createAnimal({
         variables: {
           data: {
-            name: name.trim() || 'Sin nombre',
+            name: nameUnknown ? '' : name.trim(),
             contactNumber: phone.digits,
             contactNumber2: second.digits,
             sex,
@@ -865,6 +880,18 @@ export default function NewAnimalForm({
 
       await clearAnimalReportDraft(user.id);
       published = true;
+      if (whatsappOptIn && whatsapp.loaded && !whatsapp.ownReportsOn) {
+        // El reporte ya salió: si esto falla, solo se avisa (se puede activar en Notificaciones).
+        try {
+          const target = normalizeMxPhone(contactNumber);
+          await whatsapp.enableForReports(target.ok ? target.digits : null);
+        } catch {
+          sileo.error({
+            title: 'No pudimos activar los avisos por WhatsApp',
+            description: 'Tu reporte sí se publicó. Actívalos desde Notificaciones.',
+          });
+        }
+      }
       setPublishStage('opening');
       const slug =
         logResult.data?.createAnimalLog?.animal?.slug ||
@@ -994,8 +1021,9 @@ export default function NewAnimalForm({
               <AnimalNameInput
                 value={name}
                 onChange={setName}
+                unknown={nameUnknown}
+                onUnknownChange={setNameUnknown}
                 required
-                unnamedByDefault={unnamedByDefault}
                 error={errors.name}
               />
             </div>
@@ -1318,6 +1346,33 @@ export default function NewAnimalForm({
                 {errors.contactNumber2 ? (
                   <p className="mt-2 text-xs text-red-600">{errors.contactNumber2}</p>
                 ) : null}
+                {whatsapp.loaded && !whatsapp.ownReportsOn ? (() => {
+                  // Va al teléfono del perfil; si no tiene, al del reporte (y se guarda en el perfil).
+                  const target = whatsapp.phoneLabel ?? whatsappPhoneLabel(contactNumber);
+                  return (
+                    <label className="mt-4 flex items-start gap-3 rounded-xl bg-[#f3f5f8] p-3 text-sm text-[#3a3a3a] dark:bg-night dark:text-[#d0d0d0]">
+                      <input
+                        type="checkbox"
+                        checked={whatsappOptIn && Boolean(target)}
+                        disabled={!target}
+                        onChange={(e) => setWhatsappOptIn(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
+                      />
+                      <span>
+                        <span className="font-semibold text-[#121212] dark:text-[#eef1f6]">
+                          Avísame por WhatsApp sobre este reporte
+                        </span>
+                        <span className="mt-0.5 block text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+                          {target
+                            ? `Seguimiento, coincidencias y comentarios al ${target}${
+                                whatsapp.phoneLabel ? '' : ' (lo guardamos en tu perfil)'
+                              }. Puedes apagarlos en Notificaciones.`
+                            : 'Escribe un teléfono de 10 dígitos para activarlo.'}
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })() : null}
               </div>
 
               <div>

@@ -16,6 +16,7 @@ import {
 import type { AnimalDetail } from 'kadesh/components/animals/detail';
 import LocationPicker from 'kadesh/components/animals/nuevo/LocationPicker';
 import AnimalNameInput from 'kadesh/components/animals/nuevo/AnimalNameInput';
+import { animalNameSource, animalSentenceName, knownAnimalName } from 'kadesh/components/animals/animalName';
 import AnimalTypeSelector from 'kadesh/components/animals/nuevo/AnimalTypeSelector';
 import AnimalBreedPicker from 'kadesh/components/animals/nuevo/AnimalBreedPicker';
 import PhotoPicker from 'kadesh/components/animals/nuevo/PhotoPicker';
@@ -66,7 +67,8 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
   const router = useRouter();
   const log = animal.logs?.[0];
 
-  const [name, setName] = useState(animal.name ?? '');
+  const [name, setName] = useState(knownAnimalName(animal.name));
+  const [nameUnknown, setNameUnknown] = useState(!knownAnimalName(animal.name));
   const [animalTypeId, setAnimalTypeId] = useState(animal.animal_breed?.animal_type?.id ?? '');
   const [animalBreedId, setAnimalBreedId] = useState(animal.animal_breed?.id ?? '');
   const [sex, setSex] = useState(animal.sex || 'unknown');
@@ -155,8 +157,8 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
   const validate = () => {
     const next: FieldErrors = {};
     const missing: string[] = [];
-    if (!name.trim()) {
-      next.name = 'Escribe un nombre o marca que no tiene.';
+    if (!nameUnknown && !name.trim()) {
+      next.name = 'Escribe su nombre o marca «No sé su nombre».';
       missing.push('Nombre');
     }
     if (!animalBreedId) {
@@ -195,7 +197,7 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
         variables: {
           where: { id: animal.id },
           data: {
-            name: name.trim() || 'Sin nombre',
+            name: nameUnknown ? '' : name.trim(),
             contactNumber: contactNumber.trim(),
             sex,
             physical_description: physicalDescription.trim(),
@@ -291,7 +293,7 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
             <HugeiconsIcon icon={ArrowLeft01Icon} size={20} strokeWidth={1.5} />
           </button>
           <h1 className="truncate text-lg font-black tracking-tight text-[#121212] dark:text-[#eef1f6] sm:text-xl">
-            Editar a {animal.name || 'este animal'}
+            Editar a {animalSentenceName(animalNameSource(animal))}
           </h1>
         </div>
       </header>
@@ -320,7 +322,14 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
                 setAnimalBreedId('');
               }}
             />
-            <AnimalNameInput value={name} onChange={setName} required error={errors.name} />
+            <AnimalNameInput
+              value={name}
+              onChange={setName}
+              unknown={nameUnknown}
+              onUnknownChange={setNameUnknown}
+              required
+              error={errors.name}
+            />
           </section>
 
           <section className="space-y-6">

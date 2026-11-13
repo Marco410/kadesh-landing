@@ -7,6 +7,7 @@ import { sileo } from "sileo";
 import { Routes } from "kadesh/core/routes";
 import { SITE_URL } from "kadesh/core/site";
 import { useUiMotion } from "kadesh/components/shared/motion";
+import { animalDisplayName, animalNameSource } from "kadesh/components/animals/animalName";
 
 interface ShareAnimalButtonProps {
   animal: { id: string; slug?: string | null; name?: string | null };
@@ -46,7 +47,7 @@ export default function ShareAnimalButton({
 
   const handleShare = async () => {
     const url = `${SITE_URL}${Routes.animals.detail(animal.slug || animal.id)}`;
-    const name = animal.name?.trim() || "Animal";
+    const name = animalDisplayName(animalNameSource(animal));
     const title = `${name} · ${statusLabel}${city ? ` en ${city}` : ""}`;
     const text = `Ayuda a difundir este reporte en KADESH: ${title}`;
 

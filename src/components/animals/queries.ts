@@ -285,6 +285,10 @@ export const GET_ANIMAL_QUERY = gql`
   query GetAnimal($where: AnimalWhereUniqueInput!, $orderBy: [AnimalLogOrderByInput!]!) {
     animal(where: $where) {
       slug
+      animal_type {
+        id
+        name
+      }
       animal_breed {
         id
         breed
@@ -300,6 +304,7 @@ export const GET_ANIMAL_QUERY = gql`
       reportedBy
       id
       animal_viewsCount
+      inactiveAt
       duplicateOf {
         id
         slug
@@ -629,6 +634,7 @@ export const FIND_ANIMAL_REPORT_DUPLICATES = gql`
     ) {
       id
       name
+      displayName
       slug
       url
       score
@@ -663,7 +669,10 @@ export type SimilarReportReason =
 
 export interface SimilarReport {
   id: string;
+  /** Nombre real; vacío si no se sabe. */
   name: string;
+  /** Para mostrar: el nombre, o «Perra café» si no se sabe (lo arma kadesh-back). */
+  displayName?: string | null;
   slug: string | null;
   url: string;
   score: number;
@@ -710,6 +719,8 @@ export interface AnimalClaim {
   status: AnimalClaimStatus;
   message: string;
   phone?: string | null;
+  /** Cómo se llama la mascota según quien reclama (opcional). */
+  petName?: string | null;
   claimantName?: string | null;
   rejectReason?: string | null;
   createdAt: string;
@@ -728,6 +739,7 @@ export const GET_ANIMAL_CLAIMS_QUERY = gql`
       status
       message
       phone
+      petName
       claimantName
       rejectReason
       createdAt
@@ -759,6 +771,8 @@ export interface CreateAnimalClaimVariables {
     animal: { connect: { id: string } };
     message: string;
     phone: string;
+    /** Si el reporte no tenía nombre y se aprueba, pasa a ser su nombre (kadesh-back). */
+    petName?: string;
     evidence?: { upload: File };
   };
 }
@@ -846,4 +860,30 @@ export const KEEP_ANIMAL_MUTATION = gql`
 
 export interface KeepAnimalResponse {
   convertAnimalToPet: { success: boolean; message: string; petId?: string | null };
+}
+
+/** Cerrar el caso con «¿volvió a casa?» y «¿Kadesh ayudó?» (`closeAnimalReport` en kadesh-back). */
+export const CLOSE_ANIMAL_REPORT_MUTATION = gql`
+  mutation CloseAnimalReport($input: CloseAnimalReportInput!) {
+    closeAnimalReport(input: $input) {
+      success
+      message
+      status
+    }
+  }
+`;
+
+export interface CloseAnimalReportVariables {
+  input: {
+    animalId: string;
+    outcome: string;
+    helpedByKadesh?: string | null;
+    outcomeChannel?: string | null;
+    story?: string | null;
+    storyConsent?: boolean | null;
+  };
+}
+
+export interface CloseAnimalReportResponse {
+  closeAnimalReport: { success: boolean; message: string; status?: string | null };
 }

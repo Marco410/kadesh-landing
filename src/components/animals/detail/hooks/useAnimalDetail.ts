@@ -37,6 +37,8 @@ export interface AnimalDetail {
   duplicateOf?: { id: string; slug?: string | null } | null;
   /** Sin novedades por semanas: ya no sale en el mapa. Un registro nuevo lo reactiva. */
   inactiveAt?: string | null;
+  /** Tipo directo (los reportes sin raza no lo tienen en `animal_breed`). */
+  animal_type?: { id?: string; name?: string | null } | null;
   animal_breed: {
     id?: string;
     breed: string;

@@ -10,6 +10,7 @@ import {
   Call02Icon,
   Location01Icon,
   PencilEdit02Icon,
+  PrinterIcon,
   ViewIcon,
 } from "@hugeicons/core-free-icons";
 import { Navigation } from "kadesh/components/layout";
@@ -49,10 +50,12 @@ import {
   getStatusColor,
   getStatusLabel,
 } from "kadesh/components/animals/constants";
+import { POSTER_STATUSES } from "kadesh/components/animals/poster/folio";
 import {
   AdoptionApplicationsPanel,
   AdoptionApplyBanner,
 } from "kadesh/components/adoption";
+import { animalDisplayName, animalNameSource } from "kadesh/components/animals/animalName";
 
 const ANIMAL_DETAIL_AD_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ANIMAL_DETAIL;
 
@@ -165,6 +168,8 @@ export default function AnimalDetailPage() {
   }
 
   const isOwner = canEditAnimal(user, animal);
+  // Sin nombre conocido: «Perra café» (ver `animalName.ts`).
+  const displayName = animalDisplayName(animalNameSource(animal));
   const lastLog = logs?.[0];
   const status = lastLog?.status || "register";
   const statusColor = getStatusColor(status);
@@ -209,15 +214,25 @@ export default function AnimalDetailPage() {
                 Editar
               </Link>
             )}
+            {/* Cartel con QR y folio para imprimir o subir a historias: lo usa cualquiera que ayude a buscar. */}
+            {POSTER_STATUSES.includes(status) && (
+              <Link
+                href={Routes.animals.poster(animal.slug || animalKey)}
+                className={`order-2 inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-kadesh px-3 text-sm font-semibold text-kadesh transition-colors hover:bg-kadesh hover:text-white lg:order-3 lg:min-h-9 lg:shrink-0 ${isOwner ? "" : "ml-auto lg:ml-0"}`}
+              >
+                <HugeiconsIcon icon={PrinterIcon} size={16} strokeWidth={1.5} />
+                Cartel
+              </Link>
+            )}
             <ShareAnimalButton
               animal={animal}
               statusLabel={statusLabel}
               city={lastLog?.placeLabel || lastLog?.city}
-              className={`order-2 lg:order-3 lg:shrink-0 ${isOwner ? "" : "ml-auto lg:ml-0"}`}
+              className={`order-2 lg:order-3 lg:shrink-0 ${isOwner || POSTER_STATUSES.includes(status) ? "" : "ml-auto lg:ml-0"}`}
             />
             <div className="order-3 flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-1 lg:order-2 lg:w-auto lg:flex-1 lg:flex-nowrap">
               <h1 className="min-w-0 break-words text-2xl font-black leading-tight tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6] lg:truncate lg:text-xl">
-                {animal.name || "Sin nombre"}
+                {displayName}
               </h1>
               <span
                 className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold text-white"
@@ -321,7 +336,7 @@ export default function AnimalDetailPage() {
             <div className="min-h-0 overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-white/10 dark:bg-night-raised lg:col-start-1 lg:row-span-2 lg:row-start-1">
               <AnimalImageGrid
                 images={animal.multimedia}
-                animalName={animal.name}
+                animalName={displayName}
                 typeName={typeName}
                 statusColor={statusColor}
                 fill
@@ -348,7 +363,7 @@ export default function AnimalDetailPage() {
               <LogTimeline
                 logs={logs ?? []}
                 animal={animal}
-                animalName={animal.name}
+                animalName={displayName}
                 onLogCreated={async () => {
                   await refetch();
                 }}

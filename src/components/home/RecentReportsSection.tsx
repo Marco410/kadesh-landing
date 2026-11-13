@@ -29,6 +29,7 @@ import { cn } from 'kadesh/utils/cn';
 import { formatDate } from 'kadesh/utils/format-date';
 import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
 import { Bone, LoadingBar, SkeletonRegion, boneWidth } from 'kadesh/components/ui/skeleton';
+import { animalDisplayName } from 'kadesh/components/animals/animalName';
 
 const FILTERS: { label: string; value: RecentReportStatus }[] = [
   { label: 'Perdidos', value: 'lost' },
@@ -37,7 +38,7 @@ const FILTERS: { label: string; value: RecentReportStatus }[] = [
 ];
 
 function reportTitle(report: RecentReport): string {
-  return report.name?.trim() || ANIMAL_TYPE_LABELS[report.typeName] || 'Sin nombre';
+  return animalDisplayName({ name: report.name, typeName: report.typeName });
 }
 
 const subscribeNever = () => () => {};

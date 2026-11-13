@@ -40,3 +40,6 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-12 | [Menos peticiones al backend: campana cada 5 min, blog sin listas completas, animales sin consulta doble](2026-11-12-menos-carga-al-backend.md) | shared | pendiente |
 | 2026-11-12 | [«Cerrar caso» con «¿volvió a casa?» y «¿Kadesh ayudó?»](2026-11-12-cerrar-caso-y-reencuentros.md) | animals | pendiente |
 | 2026-11-12 | [Seguimiento de casos: recordatorios, casos inactivos y WhatsApp al reportar](2026-11-12-seguimiento-de-casos.md) | animals | pendiente |
+| 2026-11-12 | [Botón «Cartel» (cartel con QR e imagen para historias)](2026-11-12-cartel-qr.md) | animals | pendiente |
+| 2026-11-13 | [Nombre desconocido (vacío) en lugar de «Sin nombre»](2026-11-13-nombre-desconocido.md) | animals | pendiente |
+| 2026-11-13 | [«Agregar registro» más simple](2026-11-13-agregar-registro-simple.md) | animals | pendiente |

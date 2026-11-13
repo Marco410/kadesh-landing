@@ -109,6 +109,11 @@ export default function AnimalClaimsPanel({ animal, onResolved }: AnimalClaimsPa
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-[#121212] dark:text-[#eef1f6]">{nameOf(claim)}</p>
                 <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">{formatDate(claim.createdAt)}</p>
+                {claim.petName ? (
+                  <p className="mt-1 text-sm text-[#3a3a3a] dark:text-[#d0d0d0]">
+                    Dice que se llama <strong>{claim.petName}</strong>
+                  </p>
+                ) : null}
                 <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-[#121212] dark:text-[#eef1f6]">
                   {claim.message}
                 </p>

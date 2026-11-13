@@ -93,7 +93,7 @@ function ReportCard({
       <div className="flex gap-3 p-3">
         <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-[#eef1f6] dark:bg-white/5">
           {report.coverUrl ? (
-            <Image src={report.coverUrl} alt={report.name} fill sizes="96px" className="object-cover" />
+            <Image src={report.coverUrl} alt={report.displayName || report.name} fill sizes="96px" className="object-cover" />
           ) : (
             <span className="flex h-full items-center justify-center text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
               Sin foto
@@ -102,7 +102,7 @@ function ReportCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <p className="min-w-0 break-words font-bold text-[#121212] dark:text-[#eef1f6]">{report.name}</p>
+            <p className="min-w-0 break-words font-bold text-[#121212] dark:text-[#eef1f6]">{report.displayName || report.name}</p>
             <span
               className="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold text-white"
               style={{ backgroundColor: getStatusColor(statusKey) }}
@@ -332,7 +332,7 @@ export default function SimilarReportsSheet({
       ) : view.mode === 'comment' ? (
         <div className="space-y-3">
           <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
-            Se publica en el reporte de <span className="font-semibold text-[#121212] dark:text-[#eef1f6]">{view.report.name}</span> y
+            Se publica en el reporte de <span className="font-semibold text-[#121212] dark:text-[#eef1f6]">{view.report.displayName || view.report.name}</span> y
             le avisamos a quien lo reportó. Incluye cómo contactarte si quieres que te llamen.
           </p>
           <label htmlFor="similar-comment" className="sr-only">

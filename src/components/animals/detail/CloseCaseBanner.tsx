@@ -10,6 +10,7 @@ import { canEditAnimal } from '../canEditAnimal';
 import { OPEN_CASE_STATUSES } from '../constants';
 import CloseCaseModal from './CloseCaseModal';
 import type { AnimalDetail } from './hooks/useAnimalDetail';
+import { animalNameSource, animalSentenceName, capitalizeFirst } from '../animalName';
 
 interface CloseCaseBannerProps {
   animal: AnimalDetail;
@@ -47,8 +48,9 @@ export default function CloseCaseBanner({
 
   if (!eligible) return null;
 
-  const name = animal.name || 'este animal';
-  const question = status === 'lost' ? `¿${name} ya volvió a casa?` : `¿${name} ya encontró hogar?`;
+  const name = animalSentenceName(animalNameSource(animal));
+  const who = capitalizeFirst(name);
+  const question = status === 'lost' ? `¿${who} ya volvió a casa?` : `¿${who} ya encontró hogar?`;
   // Inactivo: el cron lo sacó del mapa por no tener registros (`inactiveAt`, kadesh-back).
   const hint = animal.inactiveAt
     ? 'Este reporte ya no sale en el mapa porque lleva semanas sin novedades. Ciérralo, o agrega un registro para que vuelva a salir.'
@@ -76,7 +78,7 @@ export default function CloseCaseBanner({
         onClose={() => setOpen(false)}
         onClosed={onClosed}
         animalId={animal.id}
-        animalName={animal.name}
+        animalName={name}
         status={status}
       />
     </div>

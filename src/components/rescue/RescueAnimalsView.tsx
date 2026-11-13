@@ -29,6 +29,7 @@ import {
   type RescueOrgAnimalsResponse,
 } from "./queries";
 import type { RescueAnimalRow, RescueOrganization } from "./types";
+import { animalDisplayName, animalNameSource } from "kadesh/components/animals/animalName";
 
 const PAGE_SIZE = 30;
 
@@ -193,7 +194,7 @@ export default function RescueAnimalsView({ org }: { org: RescueOrganization }) 
                       href={animalDetailHref(animal)}
                       className="truncate font-semibold text-dash-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-kadesh-400 rounded"
                     >
-                      {animal.name}
+                      {animalDisplayName(animalNameSource(animal))}
                     </Link>
                     <span
                       className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold leading-5 text-white"
@@ -219,7 +220,7 @@ export default function RescueAnimalsView({ org }: { org: RescueOrganization }) 
                       <Link
                         href={Routes.profileRescuePet(org.id, animal.pet.id)}
                         className={dashButtonClass({ variant: "ghost", size: "sm" })}
-                        aria-label={`Ver la ficha de ${animal.name}`}
+                        aria-label={`Ver la ficha de ${animalDisplayName(animalNameSource(animal))}`}
                       >
                         Ver ficha
                       </Link>
@@ -229,7 +230,7 @@ export default function RescueAnimalsView({ org }: { org: RescueOrganization }) 
                         onClick={() => createPet(animal)}
                         disabled={convertingId !== null}
                         className={dashButtonClass({ variant: "ghost", size: "sm" })}
-                        aria-label={`Crear la ficha de ${animal.name}`}
+                        aria-label={`Crear la ficha de ${animalDisplayName(animalNameSource(animal))}`}
                       >
                         {convertingId === animal.id ? "Creando…" : "Crear ficha"}
                       </button>
@@ -237,7 +238,7 @@ export default function RescueAnimalsView({ org }: { org: RescueOrganization }) 
                     <Link
                       href={Routes.animals.edit(animal.slug || animal.id)}
                       className={dashButtonClass({ variant: "outline", size: "sm" })}
-                      aria-label={`Actualizar a ${animal.name}`}
+                      aria-label={`Actualizar a ${animalDisplayName(animalNameSource(animal))}`}
                     >
                       Actualizar
                     </Link>

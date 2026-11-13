@@ -3,6 +3,7 @@ import { Routes } from 'kadesh/core/routes';
 import { SITE_URL } from 'kadesh/core/site';
 import { ANIMAL_TYPE_LABELS, getStatusLabel } from './constants';
 import { animalCoverUrl, type AnimalShareData } from './server';
+import { animalDisplayName, animalNameSource } from 'kadesh/components/animals/animalName';
 
 const DESCRIPTION_MAX = 200;
 
@@ -42,12 +43,13 @@ function formatSeenAt(value?: string | null): string {
 export function animalShareFacts(animal: AnimalShareData): AnimalShareFacts {
   const log = animal.logs?.[0];
   const status = log?.status || 'register';
-  const typeName = animal.animal_breed?.animal_type?.name || '';
+  const typeName = animal.animal_type?.name || animal.animal_breed?.animal_type?.name || '';
   const typeLabel = ANIMAL_TYPE_LABELS[typeName] || typeName;
   const breed = animal.animal_breed?.breed?.trim() || '';
 
   return {
-    name: animal.name?.trim() || typeLabel || 'Animal',
+    // Sin nombre conocido: «Perra café» (ver `animalName.ts`).
+    name: animalDisplayName(animalNameSource(animal)),
     status,
     statusLabel: getStatusLabel(status),
     typeLabel,

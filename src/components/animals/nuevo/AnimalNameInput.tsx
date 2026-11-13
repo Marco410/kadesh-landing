@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
-
 interface AnimalNameInputProps {
   value: string;
   onChange: (name: string) => void;
+  /** «No sé su nombre»: el nombre se guarda vacío y la web lo describe («Perra café»). */
+  unknown?: boolean;
+  /** Sin esta función no se ofrece «No sé su nombre» (p. ej. al agendar una cita). */
+  onUnknownChange?: (unknown: boolean) => void;
   required?: boolean;
-  unnamedByDefault?: boolean;
   error?: string;
 }
 
@@ -29,33 +30,20 @@ const inputClassName =
 export default function AnimalNameInput({
   value,
   onChange,
+  unknown = false,
+  onUnknownChange,
   required = false,
-  unnamedByDefault = false,
   error,
 }: AnimalNameInputProps) {
-  const [hasNoName, setHasNoName] = useState(
-    unnamedByDefault || value === 'Sin nombre'
-  );
-  const hasInitializedRef = useRef(false);
-
-  useEffect(() => {
-    if (hasInitializedRef.current) return;
-    hasInitializedRef.current = true;
-    if (unnamedByDefault && !value) {
-      onChange('Sin nombre');
-      setHasNoName(true);
-    }
-  }, [onChange, unnamedByDefault, value]);
-
   const generateRandomName = () => {
     const randomName = PET_NAMES[Math.floor(Math.random() * PET_NAMES.length)];
     onChange(randomName);
-    setHasNoName(false);
+    onUnknownChange?.(false);
   };
 
-  const handleNoNameChange = (checked: boolean) => {
-    setHasNoName(checked);
-    onChange(checked ? 'Sin nombre' : '');
+  const handleUnknownChange = (checked: boolean) => {
+    onUnknownChange?.(checked);
+    if (checked) onChange('');
   };
 
   return (
@@ -64,42 +52,45 @@ export default function AnimalNameInput({
         htmlFor="name"
         className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]"
       >
-        Nombre {required && <span className="text-red-600">*</span>}
+        Nombre {required && !unknown && <span className="text-red-600">*</span>}
       </label>
 
       <div className="space-y-3">
-        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-[#3a3a3a] dark:text-[#d0d0d0]">
-          <input
-            id="noName"
-            type="checkbox"
-            checked={hasNoName}
-            onChange={(e) => handleNoNameChange(e.target.checked)}
-            className="h-4 w-4 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
-          />
-          No tiene nombre
-        </label>
+        {onUnknownChange ? (
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-[#3a3a3a] dark:text-[#d0d0d0]">
+            <input
+              id="noName"
+              type="checkbox"
+              checked={unknown}
+              onChange={(e) => handleUnknownChange(e.target.checked)}
+              className="h-4 w-4 rounded border-[#d8dee8] text-kadesh focus:ring-kadesh"
+            />
+            No sé su nombre
+          </label>
+        ) : null}
+        {unknown ? (
+          <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+            Lo mostraremos por su tipo y color (por ejemplo, «Perra café»). Si su familia aparece, podrá
+            ponerle su nombre.
+          </p>
+        ) : null}
 
         <div className="flex gap-2">
           <input
             id="name"
             type="text"
-            value={hasNoName ? 'Sin nombre' : value}
-            onChange={(e) => {
-              onChange(e.target.value);
-              if (e.target.value.trim() && e.target.value !== 'Sin nombre') {
-                setHasNoName(false);
-              }
-            }}
-            required={required && !hasNoName}
-            disabled={hasNoName}
+            value={unknown ? '' : value}
+            onChange={(e) => onChange(e.target.value)}
+            required={required && !unknown}
+            disabled={unknown}
             className={inputClassName}
-            placeholder="Ej. Luna, Rocky…"
+            placeholder={unknown ? 'Sin nombre conocido' : 'Ej. Luna, Rocky…'}
             autoComplete="off"
           />
           <button
             type="button"
             onClick={generateRandomName}
-            disabled={hasNoName}
+            disabled={unknown}
             className="shrink-0 rounded-xl bg-kadesh px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
           >
             Sugerir

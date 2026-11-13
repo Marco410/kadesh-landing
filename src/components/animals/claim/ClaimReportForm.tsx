@@ -10,6 +10,7 @@ import { useUiMotion } from 'kadesh/components/shared/motion';
 import { normalizeMxPhone } from 'kadesh/utils/phone';
 import { toUploadableImage } from 'kadesh/utils/uploadable-image';
 import { claimErrorMessage, useCreateAnimalClaim } from './useAnimalClaims';
+import { knownAnimalName } from 'kadesh/components/animals/animalName';
 
 const MESSAGE_MIN = 10;
 const MESSAGE_MAX = 500;
@@ -46,6 +47,10 @@ export default function ClaimReportForm({
   const { createClaim, loading } = useCreateAnimalClaim();
   const [message, setMessage] = useState('');
   const [phone, setPhone] = useState(defaultPhone ?? '');
+  // Cómo se llama: ayuda a quien reportó a reconocer a la familia y, si el reporte no tenía nombre,
+  // se vuelve su nombre al aprobar la solicitud.
+  const [petName, setPetName] = useState('');
+  const reportHasName = Boolean(knownAnimalName(animalName));
   const [photo, setPhoto] = useState<{ file: File; preview: string } | null>(null);
   const [errors, setErrors] = useState<{ message?: string; phone?: string; form?: string }>({});
   const fileInput = useRef<HTMLInputElement>(null);
@@ -92,6 +97,7 @@ export default function ClaimReportForm({
           animal: { connect: { id: animalId } },
           message: text,
           phone: normalized.digits,
+          ...(petName.trim() ? { petName: petName.trim().slice(0, 60) } : {}),
           ...(photo ? { evidence: { upload: photo.file } } : {}),
         },
       });
@@ -109,7 +115,7 @@ export default function ClaimReportForm({
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
       <p className="text-sm leading-relaxed text-[#5a5a5a] dark:text-[#9aa3b2]">
-        Le pediremos a quien publicó {animalName && animalName !== 'Sin nombre' ? `el reporte de ${animalName}` : 'este reporte'} que
+        Le pediremos a quien publicó {knownAnimalName(animalName) ? `el reporte de ${knownAnimalName(animalName)}` : 'este reporte'} que
         lo pase a tu nombre. Si acepta, podrás actualizarlo y tu teléfono quedará como contacto.
       </p>
 
@@ -141,6 +147,28 @@ export default function ClaimReportForm({
             {message.length}/{MESSAGE_MAX}
           </span>
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="claim-pet-name" className="mb-2 block text-sm font-semibold text-[#121212] dark:text-[#eef1f6]">
+          ¿Cómo se llama tu mascota?
+        </label>
+        <input
+          id="claim-pet-name"
+          type="text"
+          maxLength={60}
+          value={petName}
+          onChange={(event) => setPetName(event.target.value)}
+          className={fieldClass}
+          placeholder="Ej. Luna"
+          autoComplete="off"
+          disabled={loading}
+        />
+        <p className="mt-2 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
+          {reportHasName
+            ? 'Opcional. Ayuda a confirmar que es tu mascota.'
+            : 'Opcional. Si aceptan tu solicitud, el reporte llevará este nombre.'}
+        </p>
       </div>
 
       <div>

@@ -84,6 +84,12 @@ export const Routes = {
     detail: (slug: string): string => `/animales/${slug}`,
     edit: (slug: string): string => `/animales/${slug}/editar`,
     image: (slug: string): string => `/animales/${slug}/og`,
+    /** Cartel para imprimir (fuera de `/animales/[slug]` para no heredar el layout de la ficha). */
+    poster: (slug: string): string => `/cartel/${slug}`,
+    /** Imagen 1080×1920 del cartel para historias. */
+    story: (slug: string): string => `/cartel/${slug}/historia`,
+    /** Enlace corto del QR: redirige a la ficha. */
+    folio: (folio: number): string => `/f/${folio}`,
   },
 
   // Veterinaries (pet places)

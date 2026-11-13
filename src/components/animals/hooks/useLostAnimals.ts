@@ -7,6 +7,7 @@ import { LostAnimal, AnimalFilters, AnimalType } from '../types';
 import { DEFAULT_ANIMALS_PER_PAGE, DEFAULT_RADIUS } from 'kadesh/constants/constans';
 import { sortMultimediaByOrder } from '../sortMultimedia';
 import { friendlyErrorText } from 'kadesh/utils/errorText';
+import { animalDisplayName } from 'kadesh/components/animals/animalName';
 
 
 // Function to normalize text by removing accents
@@ -85,7 +86,8 @@ function transformAnimal(animal: NearbyAnimal): LostAnimal {
   return {
     id: animal.id,
     slug: animal.slug,
-    name: animal.name,
+    // Sin nombre conocido: «Perra café» (ver `animalName.ts`). También es lo que busca el filtro por nombre.
+    name: animalDisplayName({ name: animal.name, typeName: animal.animal_type?.name, sex: animal.sex }),
     type: mappedType,
     breed: animal.animal_breed?.breed || '',
     status: animal.status,

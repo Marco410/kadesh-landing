@@ -19,6 +19,7 @@ import {
   type CloseAnimalReportResponse,
   type CloseAnimalReportVariables,
 } from '../queries';
+import { capitalizeFirst } from '../animalName';
 
 const MAX_STORY = 1000;
 /** Desenlaces con hogar: solo en esos tiene sentido contar la historia para la portada. */
@@ -29,6 +30,7 @@ interface CloseCaseModalProps {
   onClose: () => void;
   onClosed: () => void | Promise<void>;
   animalId: string;
+  /** Nombre para usar en una frase: el nombre, o «esta perra» (`animalSentenceName`). */
   animalName: string;
   /** `lost`: la pregunta es «¿volvió a casa?»; en los demás, «¿encontró hogar?». */
   status: string;
@@ -68,6 +70,7 @@ export default function CloseCaseModal({
   );
 
   const name = animalName || 'este animal';
+  const Name = capitalizeFirst(name);
   const isLost = status === 'lost';
   // A un perdido no se le «adopta»; a uno encontrado o en adopción no se le «reencuentra» con quien lo halló.
   const outcomeOptions = ANIMAL_OUTCOME_OPTIONS.filter((option) =>
@@ -159,7 +162,7 @@ export default function CloseCaseModal({
           </div>
         ) : null}
 
-        <Question title={isLost ? `¿${name} volvió a casa?` : `¿Qué pasó con ${name}?`}>
+        <Question title={isLost ? `¿${Name} volvió a casa?` : `¿Qué pasó con ${name}?`}>
           {outcomeOptions.map((option) => (
             <ChoiceChip
               key={option.value}

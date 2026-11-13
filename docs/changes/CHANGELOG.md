@@ -15,6 +15,56 @@ Formato:
 
 ---
 
+## 2026-11-13 · feat: «Agregar registro» más simple
+- Rama: feat/cerrar-caso-reencuentros
+- Qué cambió y por qué: el formulario pedía todo desde cero (estado que empezaba en «Perdido», selector de fecha de HeroUI con «Fue hoy», pin, dirección, ciudad, estado y país obligatorios, nota) y se sentía complicado. Ahora es una hoja (`Sheet`) con el orden de lo que la persona quiere hacer:
+  - **¿Qué hay de nuevo?** Nota con foco al abrir y un ejemplo según el estado.
+  - **¿Cuándo?** Chips «Hoy / Ayer / Otra fecha», igual que al reportar. Día y hora nativos solo con «Otra fecha», y nunca en el futuro.
+  - **¿Dónde?** «Mismo lugar» (por defecto, con el texto del lugar anterior) u «Otro lugar» con el mapa. Ya solo se exige el pin: la ciudad la completa el back. «Aquí lo vieron por última vez» solo aparece con «Perdido» y otro lugar.
+  - **Estado:** «Sigue como [Perdido] · Cambiar», que arranca en el estado actual. Ya no ofrece «Registrado» ni estados finales. Cada chip lleva un punto con el color del estado (`ChoiceChip` acepta `dotColor`).
+  - Título «Novedades de {nombre}» y botón «Guardar registro».
+  - Un caso de hoy y en el mismo lugar se guarda escribiendo solo la nota.
+- Archivos: src/components/animals/detail/AddLogModal.tsx, src/components/animals/detail/LogTimeline.tsx, src/components/animals/nuevo/ChoiceChip.tsx
+- GraphQL: ninguna (misma `CreateAnimalLog`)
+- Móvil: [prompt](../mobile-sync/2026-11-13-agregar-registro-simple.md)
+
+## 2026-11-13 · fix: los modales ya no hacen scroll en la página de atrás
+- Rama: feat/cerrar-caso-reencuentros
+- Qué cambió y por qué: con «Agregar registro» abierto (y las hojas como «Cerrar caso»), la rueda o el dedo movían la ficha de atrás. Nuevo hook `useBodyScrollLock`: mientras el modal está abierto bloquea el scroll del `body`, compensa el ancho de la barra para que la página no brinque y funciona con modales anidados. Lo usan `AddLogModal` y `Sheet`. Además, su contenido tiene `overscroll-contain`, para que al llegar al final del scroll interno no se pase a la página.
+- Archivos: src/utils/useBodyScrollLock.ts (nuevo), src/components/animals/detail/AddLogModal.tsx, src/components/shared/Sheet.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del scroll del navegador; las hojas nativas ya bloquean el fondo)
+
+## 2026-11-13 · feat: nombre desconocido vacío y descrito («Perra café») en lugar de «Sin nombre»
+- Rama: feat/cerrar-caso-reencuentros
+- Qué cambió y por qué: «Sin nombre» se guardaba como nombre y salía en títulos, carteles, el cierre del caso y los recordatorios («¿Sin nombre volvió a casa?»). Casi siempre el animal sí tiene nombre; quien lo encontró no lo sabe.
+  - El nombre desconocido se guarda vacío. Para mostrarlo, una sola función (`animalDisplayName` / `animalSentenceName` en `animalName.ts`) lo describe: «Perra café» en títulos, tarjetas, cartel y OG; «esta perra» en frases.
+  - La casilla «No tiene nombre» ahora dice «No sé su nombre» y explica cómo se va a mostrar.
+  - Al reclamar un reporte se puede decir cómo se llama la mascota (`petName`). Quien atiende el reporte lo ve en el panel («Dice que se llama…») y, si aprueba y el reporte no tenía nombre, ese pasa a ser su nombre.
+  - La ficha pide además `animal_type`, para describir también los reportes sin raza.
+- Archivos: src/components/animals/animalName.ts (nuevo), src/components/animals/nuevo/{AnimalNameInput.tsx, NewAnimalForm.tsx, EditAnimalForm.tsx, reportDraft.ts, SimilarReportsSheet.tsx}, src/components/animals/{queries.ts, server.ts, animal-seo.ts, similarReportsCopy.ts, hooks/useLostAnimals.ts}, src/components/animals/detail/{CloseCaseBanner.tsx, CloseCaseModal.tsx, KeepAnimalButton.tsx, ShareAnimalButton.tsx, AnimalClaimsPanel.tsx, hooks/useAnimalDetail.ts}, src/components/animals/claim/ClaimReportForm.tsx, src/components/animals/promotion/PromotionSheet.tsx, src/app/animales/[slug]/page.tsx, src/components/home/{RecentReportsSection.tsx, zoneAlerts.ts}, src/components/profile/UserAnimalsSection.tsx, src/components/rescue/RescueAnimalsView.tsx, src/components/adoption/{format.ts, MyAdoptionApplicationDetail.tsx, MyAdoptionApplicationsSection.tsx}
+- GraphQL:
+  - `GetAnimal` y `GetAnimalForShare` piden `animal_type { name }`.
+  - `FindSimilarReports` pide `displayName`.
+  - `GetAnimalClaims` pide `petName`, y `CreateAnimalClaim` puede mandarlo.
+  - No hay consultas nuevas.
+- Móvil: [prompt](../mobile-sync/2026-11-13-nombre-desconocido.md)
+
+## 2026-11-12 · feat: cartel con QR y folio, e imagen para historias
+- Rama: feat/cerrar-caso-reencuentros
+- Qué cambió y por qué: fase 3 del plan de reencuentros. Es lo más barato de construir y lo que más tráfico trae.
+  - La ficha de un caso abierto tiene el botón «Cartel». Abre `/cartel/{slug}`, un cartel tamaño carta para imprimir: titular según el estatus («SE BUSCA», «¿ES TUYO?»…), foto, datos, último lugar, señas, QR, enlace corto y folio `KP-01234`.
+  - El teléfono sale por defecto; quien imprime puede quitarlo («Quitar teléfono», `?telefono=0`).
+  - Formato vertical u horizontal (`?formato=horizontal`, carta horizontal: foto a la izquierda y datos a la derecha). En horizontal, la columna de datos usa el alto que le sobra: letra más grande, más señas, hasta 3 fotos más del reporte en miniatura, y QR y teléfono más grandes.
+  - «Imagen para historias» baja `/cartel/{slug}/historia`: PNG de 1080×1920, sin teléfono, con caché del edge de 10 min.
+  - El QR apunta a `/f/{folio}`, que redirige (308) a la ficha con `?src=cartel`.
+  - El QR se genera en el servidor con `uqr` (librería nueva, solo servidor; no entra al bundle del navegador).
+  - Las páginas del cartel no se indexan.
+  - Formulario de reporte: un error del servidor sin motivo en español ya no se muestra como «Elige una ubicación…» (solo si viene de la bitácora o las coordenadas). Antes, el fallo `Animal.folio: missing value` mandaba a corregir un mapa que estaba bien. El mensaje genérico ahora es «No se pudo publicar el reporte. Intenta de nuevo en un momento.».
+- Archivos: src/components/animals/nuevo/NewAnimalForm.tsx, src/app/cartel/[slug]/{page.tsx, historia/route.tsx} (nuevos), src/app/f/[folio]/route.ts (nuevo), src/components/animals/poster/{folio.ts, qr.ts, PosterToolbar.tsx} (nuevos), src/components/animals/server.ts, src/core/routes.ts, src/app/animales/[slug]/page.tsx, package.json, pnpm-lock.yaml
+- GraphQL: `GetAnimalForShare` pide además `folio`, `physical_description` y `contactNumber`. Nueva consulta de servidor `AnimalByFolio` (caché de 1 h). El cartel y la historia reutilizan `GetAnimalForShare` (60 s); no hay consultas desde el navegador.
+- Móvil: [prompt](../mobile-sync/2026-11-12-cartel-qr.md)
+
 ## 2026-11-12 · feat: seguimiento de casos (recordatorios, casos inactivos y WhatsApp al reportar)
 - Rama: feat/cerrar-caso-reencuentros
 - Qué cambió y por qué: fase 2 del plan de reencuentros. kadesh-back recuerda a quien atiende un caso abierto que lo cierre o lo actualice, a la semana y a las 3 semanas sin registros, por campana, push, correo y WhatsApp. Sin respuesta, a los 45 días el caso queda inactivo y deja de salir en el mapa; los reportes sin dueño, a los 30 días. En la web:

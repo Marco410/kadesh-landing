@@ -7,6 +7,8 @@ export type AnimalReportDraftV1 = {
   step: number;
   showNotes: boolean;
   name: string;
+  /** «No sé su nombre». Borradores viejos no lo traen: se deduce de `name` («Sin nombre»). */
+  nameUnknown?: boolean;
   animalTypeId: string;
   animalBreedId: string;
   sex: string;

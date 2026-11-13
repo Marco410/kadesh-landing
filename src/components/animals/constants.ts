@@ -7,7 +7,46 @@ export const ANIMAL_LOGS_OPTIONS = [
   { label: "Perdido", value: "lost" },
   { label: "Encontrado", value: "found" },
   { label: "En adopción", value: "in_adoption" },
+  { label: "Caso cerrado", value: "closed" },
 ];
+
+/**
+ * Estatus que cierran un caso. No se eligen en «Agregar registro»: pasan por «Cerrar caso»
+ * (`CloseCaseModal`), que pregunta cómo terminó y si Kadesh ayudó.
+ */
+export const FINAL_LOG_STATUSES = ['in_family', 'adopted', 'closed'];
+
+/** Estatus de un caso abierto: se puede cerrar desde la ficha. Igual que `OPEN_CASE_STATUSES` del back. */
+export const OPEN_CASE_STATUSES = ['lost', 'found', 'rescued', 'abandoned', 'in_adoption'];
+
+/** Desenlace de un caso (`Animal.outcome` en kadesh-back, `models/Pet/Animal/Animal.outcome.ts`). */
+export const ANIMAL_OUTCOME_OPTIONS = [
+  { value: 'reunited', label: 'Volvió con su familia' },
+  { value: 'adopted', label: 'Fue adoptado' },
+  { value: 'other_home', label: 'Encontró otro hogar' },
+  { value: 'deceased', label: 'Falleció' },
+  { value: 'closed_unresolved', label: 'Ya no se busca' },
+] as const;
+
+export type AnimalOutcome = (typeof ANIMAL_OUTCOME_OPTIONS)[number]['value'];
+
+export const HELPED_BY_KADESH_OPTIONS = [
+  { value: 'yes', label: 'Sí' },
+  { value: 'no', label: 'No' },
+  { value: 'unsure', label: 'No sé' },
+] as const;
+
+/** Por dónde ayudó Kadesh (solo si respondió «Sí»). */
+export const OUTCOME_CHANNEL_OPTIONS = [
+  { value: 'map', label: 'El mapa o la ficha' },
+  { value: 'zone_alert', label: 'Una alerta de zona' },
+  { value: 'whatsapp', label: 'Un aviso por WhatsApp' },
+  { value: 'poster', label: 'Un cartel o QR' },
+  { value: 'facebook', label: 'La página de Facebook' },
+  { value: 'match', label: 'Un aviso de coincidencia' },
+  { value: 'sighting', label: 'Alguien avisó que lo vio' },
+  { value: 'other', label: 'Otro' },
+] as const;
 
 /** Estados que se pueden elegir al dar de alta un animal. */
 export const ANIMAL_REPORT_STATUS_VALUES = [
@@ -36,7 +75,7 @@ export function isAnimalReportStatus(
  * la app los atiende igual: si se cambian aquí, cambiarlos allá.
  */
 export const ANIMAL_DETAIL_ACTION_PARAM = 'accion';
-export const ANIMAL_DETAIL_ACTION = { addLog: 'registro', promote: 'impulsar' } as const;
+export const ANIMAL_DETAIL_ACTION = { addLog: 'registro', promote: 'impulsar', close: 'cerrar' } as const;
 
 export type AnimalDetailAction = (typeof ANIMAL_DETAIL_ACTION)[keyof typeof ANIMAL_DETAIL_ACTION];
 
@@ -213,6 +252,8 @@ export const getStatusColor = (status: string) => {
       return '#10b981'; // green-500 - Encontrado
     case 'in_adoption':
       return '#9333ea'; // purple-500 - En adopción
+    case 'closed':
+      return '#64748b'; // slate-500 - Caso cerrado
     default:
       return '#6b7280'; // gray-500
   }
@@ -236,6 +277,8 @@ export const getStatusLabel = (status: string) => {
       return 'Encontrado';
     case 'in_adoption':
       return 'En adopción';
+    case 'closed':
+      return 'Caso cerrado';
     default:
       return status;
   }

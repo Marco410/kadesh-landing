@@ -16,7 +16,7 @@ import {
 } from "kadesh/components/home";
 import FaqSection from "kadesh/components/home/FaqSection";
 import HomeJsonLd from "kadesh/components/home/HomeJsonLd";
-import { fetchPetLandingStats, fetchRecentZoneAlerts } from "kadesh/components/home/server";
+import { fetchPetLandingStats, fetchRecentReports, fetchRecentZoneAlerts } from "kadesh/components/home/server";
 import { fetchHomeEvents } from "kadesh/components/events/server";
 import { fetchRescueAllies } from "kadesh/components/rescue/server";
 import { HOME_DEFINITION } from "kadesh/components/home/constants";
@@ -32,8 +32,9 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [stats, zoneAlerts, events, allies] = await Promise.all([
+  const [stats, recentReports, zoneAlerts, events, allies] = await Promise.all([
     fetchPetLandingStats(),
+    fetchRecentReports(),
     fetchRecentZoneAlerts(),
     fetchHomeEvents(),
     fetchRescueAllies(HOME_ALLIES_MAX),
@@ -48,7 +49,7 @@ export default async function HomePage() {
           stats={stats}
           events={events.publishedTotal > 0 ? { count: events.publishedTotal } : null}
         />
-        <RecentReportsSection />
+        <RecentReportsSection initialReports={recentReports} />
         <ZoneAlertsSection alerts={zoneAlerts} />
         <VeterinariansSection />
         <UpcomingEventsSection events={events} />

@@ -1,4 +1,5 @@
 import type { SimilarReport, SimilarReportReason } from './queries';
+import { knownAnimalName } from './animalName';
 
 /** Por qué se parece: chips de la tarjeta, en el orden que manda el backend (más peso primero). */
 export const SIMILAR_REASON_LABELS: Record<SimilarReportReason, string> = {
@@ -63,7 +64,7 @@ export function similarCommentTemplate(
   status: string,
   isOwnPet: boolean,
 ) {
-  const name = report.name && report.name !== 'Sin nombre' ? report.name : '';
+  const name = knownAnimalName(report.name);
   if (report.kind === 'match') {
     return isLostReport(status)
       ? `Creo que es mi mascota${name ? ` (la busco como ${name})` : ''}. `

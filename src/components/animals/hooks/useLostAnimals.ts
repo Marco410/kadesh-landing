@@ -7,6 +7,7 @@ import { LostAnimal, AnimalFilters, AnimalType } from '../types';
 import { DEFAULT_ANIMALS_PER_PAGE, DEFAULT_RADIUS } from 'kadesh/constants/constans';
 import { sortMultimediaByOrder } from '../sortMultimedia';
 import { friendlyErrorText } from 'kadesh/utils/errorText';
+import { animalDisplayName } from 'kadesh/components/animals/animalName';
 
 
 // Function to normalize text by removing accents
@@ -50,12 +51,6 @@ interface NearbyAnimal {
     id: string;
     name: string;
   } | null;
-  user: {
-    name: string;
-    profileImage: {
-      url: string;
-    } | null;
-  } | null;
   createdAt: string;
   multimedia: Array<{
     id: string;
@@ -91,7 +86,8 @@ function transformAnimal(animal: NearbyAnimal): LostAnimal {
   return {
     id: animal.id,
     slug: animal.slug,
-    name: animal.name,
+    // Sin nombre conocido: «Perra café» (ver `animalName.ts`). También es lo que busca el filtro por nombre.
+    name: animalDisplayName({ name: animal.name, typeName: animal.animal_type?.name, sex: animal.sex }),
     type: mappedType,
     breed: animal.animal_breed?.breed || '',
     status: animal.status,
@@ -123,6 +119,8 @@ export function useLostAnimals(
   // Get animal types to map Spanish names to English database values
   const { data: animalTypesData } = useQuery(GET_ANIMAL_TYPES_QUERY, {
     variables: { orderBy: [{ order: "asc" }] },
+    // Catálogo que casi no cambia: con lo que hay en caché basta.
+    fetchPolicy: 'cache-first',
   });
 
   // Map Spanish type names to English database values (for animalType ID lookup)
@@ -259,39 +257,12 @@ export function useLostAnimals(
     return animals;
   }, [data, filters]);
 
-  // For map, we need all animals (not paginated)
-  // Reuse the main query data if it has enough animals, otherwise use a separate query
-  const needsSeparateMapQuery = useMemo(() => {
-    // If we have data and it has animals, check if we need more for the map
-    if (data?.getNearbyAnimals?.animals) {
-      const animalCount = data.getNearbyAnimals.animals.length;
-      // If we got less than the limit, we have all animals, so reuse
-      return animalCount >= (queryInput.limit || 500);
-    }
-    return true; // Need to fetch if no data
-  }, [data, queryInput.limit]);
-
-  const { data: allAnimalsData } = useQuery(GET_NEARBY_ANIMALS_QUERY, {
-    variables: {
-      input: {
-        ...queryInput,
-        limit: 1000, // Large limit for map
-        skip: 0,
-      },
-    },
-    fetchPolicy: 'cache-and-network',
-    skip: !needsSeparateMapQuery, // Only fetch if we need more animals for map
-  });
-
+  // El mapa usa los mismos reportes que la lista: una sola consulta. Antes, al llegar al límite se
+  // pedía otra con 1000, y el back recorre todos los reportes en cada llamada.
   const allAnimals = useMemo(() => {
-    // If we don't need a separate query, use the main data
-    if (!needsSeparateMapQuery && data?.getNearbyAnimals?.animals) {
-      return (data.getNearbyAnimals.animals as NearbyAnimal[]).map(transformAnimal);
-    }
-    // Otherwise use the allAnimals query
-    if (!allAnimalsData?.getNearbyAnimals?.animals) return [];
-    return (allAnimalsData.getNearbyAnimals.animals as NearbyAnimal[]).map(transformAnimal);
-  }, [needsSeparateMapQuery, data, allAnimalsData]);
+    if (!data?.getNearbyAnimals?.animals) return [];
+    return (data.getNearbyAnimals.animals as NearbyAnimal[]).map(transformAnimal);
+  }, [data]);
 
   // Calculate pagination
   // Use the count of transformed animals (after client-side filters) for accurate pagination

@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowRightIcon, Calendar03Icon, HospitalLocationIcon } from '@hugeicons/core-free-icons';
+import { ArrowRightIcon, Calendar03Icon, Home01Icon, HospitalLocationIcon } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
 import { getStatusColor } from 'kadesh/components/animals/constants';
 import ReportLink from 'kadesh/components/animals/ReportLink';
@@ -117,16 +117,48 @@ const statLinkClass =
  * Cifras bajo los accesos, cada una lleva a su lugar: veterinarias (prueba social, redondeada y
  * solo desde 10) → `/veterinarias`; eventos registrados (desde 1; redondeada desde 100) → la
  * sección `#eventos`.
- * No se muestran animales registrados ni reencuentros hasta tener una cifra real de reencuentros.
+ * Reencuentros y adopciones (`Animal.outcome`, casos que alguien cerró) salen primero, desde 10
+ * entre los dos, y llevan a `/animales`. No se muestran animales registrados: no prueban nada.
  */
 function HeroProof({ stats, events }: { stats?: PetLandingStats | null; events?: HeroEventsStat | null }) {
+  const reunions = stats?.reunions ?? 0;
+  const adoptions = stats?.adoptions ?? 0;
+  const showHomes = reunions + adoptions >= MIN_STAT_TO_SHOW;
   const showVets = Boolean(stats && stats.veterinaries >= MIN_STAT_TO_SHOW);
   const showCities = Boolean(stats && stats.cities >= MIN_STAT_TO_SHOW);
   const showEvents = Boolean(events && events.count > 0);
-  if (!showVets && !showEvents) return null;
+  if (!showHomes && !showVets && !showEvents) return null;
 
   return (
     <ul className="kadesh-hero-in kadesh-hero-in-delay-3 mx-auto mt-10 flex max-w-lg flex-col items-center gap-1 border-t border-white/15 pt-6 text-base text-white/90 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-4 lg:mx-0 lg:-ml-2 lg:items-start lg:justify-start">
+      {showHomes ? (
+        <li>
+          <Link href={Routes.animals.index} className={statLinkClass}>
+            <HugeiconsIcon icon={Home01Icon} size={18} strokeWidth={2} aria-hidden />
+            {reunions > 0 ? (
+              <>
+                <strong className="font-black text-white">
+                  <StatsCounter value={roundDownForDisplay(reunions)} suffix={reunions >= 100 ? '+' : ''} />
+                </strong>{' '}
+                <span className="underline-offset-4 group-hover:underline">
+                  {reunions === 1 ? 'reencuentro' : 'reencuentros'}
+                </span>
+              </>
+            ) : null}
+            {reunions > 0 && adoptions > 0 ? <span aria-hidden>·</span> : null}
+            {adoptions > 0 ? (
+              <>
+                <strong className="font-black text-white">
+                  <StatsCounter value={roundDownForDisplay(adoptions)} suffix={adoptions >= 100 ? '+' : ''} />
+                </strong>{' '}
+                <span className="underline-offset-4 group-hover:underline">
+                  {adoptions === 1 ? 'adopción' : 'adopciones'}
+                </span>
+              </>
+            ) : null}
+          </Link>
+        </li>
+      ) : null}
       {showVets && stats ? (
         <li>
           <Link href={Routes.veterinaries.index} className={statLinkClass}>

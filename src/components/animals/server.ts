@@ -8,11 +8,17 @@ const ANIMAL_SHARE_QUERY = `
     animal(where: $where) {
       id
       slug
+      folio
       name
       sex
       age
       color
       size
+      physical_description
+      contactNumber
+      animal_type {
+        name
+      }
       duplicateOf {
         id
         slug
@@ -44,7 +50,12 @@ const ANIMAL_SHARE_QUERY = `
 export type AnimalShareData = {
   id: string;
   slug?: string | null;
+  /** Folio del cartel (KP-01234). */
+  folio?: number | null;
   name?: string | null;
+  physical_description?: string | null;
+  contactNumber?: string | null;
+  animal_type?: { name?: string | null } | null;
   sex?: string | null;
   age?: string | null;
   color?: string | null;
@@ -105,6 +116,38 @@ export async function fetchAnimalForShare(
     return payload.data?.animal ?? null;
   } catch (error) {
     console.error('Animal GraphQL fetch failed:', error);
+    return null;
+  }
+}
+
+const ANIMAL_BY_FOLIO_QUERY = `
+  query AnimalByFolio($folio: Int!) {
+    animal(where: { folio: $folio }) {
+      id
+      slug
+    }
+  }
+`;
+
+/** Slug del reporte de un folio (el QR del cartel). El slug no cambia: caché de 1 h. Solo servidor. */
+export async function fetchAnimalKeyByFolio(folio: number): Promise<string | null> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return null;
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: ANIMAL_BY_FOLIO_QUERY, variables: { folio } }),
+      next: { revalidate: 60 * 60 },
+    });
+    if (!response.ok) return null;
+    const payload = (await response.json()) as {
+      data?: { animal: { id: string; slug?: string | null } | null };
+    };
+    const animal = payload.data?.animal;
+    return animal ? animal.slug || animal.id : null;
+  } catch (error) {
+    console.error('Animal by folio fetch failed:', error);
     return null;
   }
 }

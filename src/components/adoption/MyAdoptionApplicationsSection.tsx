@@ -20,7 +20,7 @@ import { Routes } from 'kadesh/core/routes';
 import { friendlyErrorText } from 'kadesh/utils/errorText';
 import MyAdoptionApplicationDetail from './MyAdoptionApplicationDetail';
 import { ADOPTION_APPLICATION_PARAM, ADOPTION_OPEN_STATUSES, adoptionStatusMeta, isOpenAdoptionStatus } from './constants';
-import { adoptionAnimalName, adoptionShortDate } from './format';
+import { adoptionAnimalTitle, adoptionShortDate } from './format';
 import { MY_ADOPTION_APPLICATIONS_QUERY, myAdoptionWhere, type MyAdoptionApplicationsResponse } from './queries';
 import type { MyAdoptionApplicationRow } from './types';
 
@@ -31,8 +31,7 @@ const MY_ADOPTIONS_TAKE = 100;
 
 function ApplicationRow({ application }: { application: MyAdoptionApplicationRow }) {
   const animal = application.animal;
-  const name = adoptionAnimalName(animal?.name);
-  const title = name === 'este animal' ? 'Sin nombre' : name;
+  const title = adoptionAnimalTitle(animal?.name);
   const photo = animal?.multimedia?.[0]?.image?.url ?? null;
   const meta = adoptionStatusMeta(application.status);
   const caretaker = animal?.organization?.name;

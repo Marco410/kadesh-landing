@@ -1,7 +1,13 @@
 export const NOTIFICATIONS_PAGE_SIZE = 20;
 
-/** Cada cuánto se refresca el contador de la campana. */
-export const UNREAD_POLL_MS = 60_000;
+/**
+ * Cada cuánto se refrescan el contador de la campana y los globos del menú, solo con la pestaña
+ * visible. Eran 60 s (también con la pestaña oculta): cada pestaña abierta le pedía al backend una
+ * o dos consultas por minuto todo el día.
+ */
+export const UNREAD_POLL_MS = 5 * 60_000;
+/** Al volver a la pestaña se vuelve a pedir si estuvo oculta al menos este tiempo. */
+export const UNREAD_STALE_MS = 60_000;
 
 export const ALERT_RADIUS_OPTIONS = [1, 3, 5, 10, 20, 50] as const;
 export const DEFAULT_ALERT_RADIUS_KM = 5;
@@ -20,6 +26,8 @@ export const ANIMAL_REPORT_NOTIFICATION_TYPE = {
   CLAIM_APPROVED: 'animal.claim_approved',
   CLAIM_REJECTED: 'animal.claim_rejected',
   MERGED: 'animal.merged',
+  /** Un caso tuyo lleva 1 o 3 semanas sin registros: ¿ya volvió a casa? */
+  FOLLOW_UP: 'animal.follow_up',
 } as const;
 
 /** Avisos de eventos (kadesh-back `models/Notification/constants.ts`). */
@@ -79,6 +87,12 @@ export const WHATSAPP_CATEGORIES = [
     label: 'Posibles coincidencias',
     description: 'Un reporte nuevo se parece a uno tuyo.',
     types: ['animal.possible_match'],
+  },
+  {
+    id: 'follow-ups',
+    label: 'Seguimiento de tus reportes',
+    description: 'Un reporte tuyo lleva semanas sin novedades: ciérralo o actualízalo.',
+    types: ['animal.follow_up'],
   },
   {
     id: 'comments',

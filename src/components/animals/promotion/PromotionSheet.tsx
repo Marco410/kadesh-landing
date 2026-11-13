@@ -27,6 +27,7 @@ import {
   promotionFolio,
   promotionWhatsAppText,
 } from './promotionRequest';
+import { animalNameSource, animalSentenceName } from 'kadesh/components/animals/animalName';
 
 interface PromotionSheetProps {
   isOpen: boolean;
@@ -78,8 +79,7 @@ export default function PromotionSheet({ isOpen, onClose, animal, status, place 
     setFolio(promotionFolio({ id: animalId, slug: animalSlug }));
   }, [isOpen, animalId, animalSlug]);
 
-  const name = animal.name?.trim();
-  const subject = name || 'este animal';
+  const subject = animalSentenceName(animalNameSource(animal));
   const foundBy = status === 'found';
   const amount = custom === null ? budget : parsePromotionBudget(custom);
   const validAmount = isValidPromotionBudget(amount);

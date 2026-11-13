@@ -397,6 +397,7 @@ export default function LogTimeline({
           }}
           animalId={animal.id}
           animalName={animalName}
+          previousLog={logs[0] ?? null}
         />
       )}
 

@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Cancel01Icon } from '@hugeicons/core-free-icons';
 import { useUiMotion } from 'kadesh/components/shared/motion';
+import { useBodyScrollLock } from 'kadesh/utils/useBodyScrollLock';
 
 interface SheetProps {
   isOpen: boolean;
@@ -29,6 +30,8 @@ export default function Sheet({ isOpen, title, onClose, busy = false, footer, ch
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
+  // Con la hoja abierta solo hace scroll su contenido, no la página de atrás.
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -81,7 +84,7 @@ export default function Sheet({ isOpen, title, onClose, busy = false, footer, ch
               </button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto p-4">{children}</div>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">{children}</div>
 
             {footer ? (
               <div className="border-t border-[#ececec] p-4 dark:border-white/10">{footer}</div>

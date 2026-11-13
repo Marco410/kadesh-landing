@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useSyncExternalStore } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -29,6 +29,7 @@ import { cn } from 'kadesh/utils/cn';
 import { formatDate } from 'kadesh/utils/format-date';
 import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
 import { Bone, LoadingBar, SkeletonRegion, boneWidth } from 'kadesh/components/ui/skeleton';
+import { animalDisplayName } from 'kadesh/components/animals/animalName';
 
 const FILTERS: { label: string; value: RecentReportStatus }[] = [
   { label: 'Perdidos', value: 'lost' },
@@ -37,10 +38,22 @@ const FILTERS: { label: string; value: RecentReportStatus }[] = [
 ];
 
 function reportTitle(report: RecentReport): string {
-  return report.name?.trim() || ANIMAL_TYPE_LABELS[report.typeName] || 'Sin nombre';
+  return animalDisplayName({ name: report.name, typeName: report.typeName });
+}
+
+const subscribeNever = () => () => {};
+
+/**
+ * `false` en el servidor y al hidratar, `true` después. La fecha relativa («Hoy», «Ayer») depende
+ * del reloj y de la zona horaria: el servidor (UTC, HTML en caché) y el navegador darían textos
+ * distintos y React fallaría al hidratar. Por eso se pinta ya en el navegador.
+ */
+function useHydrated(): boolean {
+  return useSyncExternalStore(subscribeNever, () => true, () => false);
 }
 
 function ReportCard({ report }: { report: RecentReport }) {
+  const hydrated = useHydrated();
   const title = reportTitle(report);
   const typeLabel = ANIMAL_TYPE_LABELS[report.typeName];
 
@@ -90,7 +103,7 @@ function ReportCard({ report }: { report: RecentReport }) {
           </p>
         )}
         <p className="mt-auto pt-2 text-sm font-medium text-[#5a5a5a] dark:text-[#9aa3b2]">
-          {formatDate(report.createdAt)}
+          {hydrated ? formatDate(report.createdAt) : '\u00a0'}
           {report.distance != null && (
             <span className="text-kadesh">
               {' · '}
@@ -123,7 +136,8 @@ function ReportCardSkeleton({ index = 0 }: { index?: number }) {
   );
 }
 
-export default function RecentReportsSection() {
+/** `initialReports`: los más recientes del país, ya pintados por el servidor (sin filtro). */
+export default function RecentReportsSection({ initialReports = [] }: { initialReports?: RecentReport[] }) {
   const rootRef = useRef<HTMLElement>(null);
   const [status, setStatus] = useState<RecentReportStatus | null>(null);
   const {
@@ -132,7 +146,7 @@ export default function RecentReportsSection() {
     isLocating,
     request: handleUseLocation,
   } = useRememberedLocation();
-  const { reports, isNearby, loading, refreshing } = useRecentReports(coords, status);
+  const { reports, isNearby, loading, refreshing } = useRecentReports(coords, status, initialReports);
 
   useGSAP(
     () => {

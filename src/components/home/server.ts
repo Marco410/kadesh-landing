@@ -9,6 +9,12 @@ import {
   toIsoDate,
   type ZoneAlert,
 } from './zoneAlerts';
+import {
+  RECENT_REPORTS_LIMIT,
+  toRecentReport,
+  type NearbyAnimalNode,
+  type RecentReport,
+} from './recentReports';
 
 const REVALIDATE_SECONDS = 60 * 60;
 
@@ -19,6 +25,8 @@ const PET_LANDING_STATS_QUERY = `
       animalsLost
       animalsHome
       animalsInAdoption
+      reunions
+      adoptions
       veterinaries
       veterinariesVerified
       cities
@@ -31,6 +39,10 @@ export type PetLandingStats = {
   animalsLost: number;
   animalsHome: number;
   animalsInAdoption: number;
+  /** Casos cerrados como «volvió con su familia» (`Animal.outcome`). */
+  reunions: number;
+  /** Casos cerrados como «adoptado». */
+  adoptions: number;
   veterinaries: number;
   veterinariesVerified: number;
   cities: number;
@@ -203,6 +215,74 @@ export async function fetchRecentZoneAlerts(): Promise<ZoneAlert[]> {
     return dedupeAlerts(alerts).slice(0, ZONE_ALERTS_LIMIT);
   } catch (error) {
     console.error('HomeZoneAlerts GraphQL fetch failed:', error);
+    return [];
+  }
+}
+
+const RECENT_REPORTS_QUERY = `
+  query HomeRecentReports($input: NearbyAnimalsInput!) {
+    getNearbyAnimals(input: $input) {
+      animals {
+        id
+        slug
+        name
+        distance
+        address
+        city
+        state
+        status
+        animal_type {
+          name
+        }
+        createdAt
+        multimedia {
+          url
+          order
+        }
+      }
+    }
+  }
+`;
+
+type RecentReportsResponse = {
+  data?: { getNearbyAnimals: { animals: NearbyAnimalNode[] | null } | null };
+  errors?: Array<{ message?: string }>;
+};
+
+/**
+ * Los reportes más recientes de todo México para «Reportes recientes»; solo servidor, con la
+ * portada (10 min). Antes los pedía el navegador en cada visita, y `getNearbyAnimals` recorre todos
+ * los reportes en el back. Devuelve [] si el API falla: la sección los pide entonces desde el navegador.
+ */
+export async function fetchRecentReports(): Promise<RecentReport[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    return [];
+  }
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: RECENT_REPORTS_QUERY,
+        variables: { input: { limit: RECENT_REPORTS_LIMIT, skip: 0 } },
+      }),
+      next: { revalidate: ZONE_ALERTS_REVALIDATE_SECONDS },
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = (await response.json()) as RecentReportsResponse;
+    if (payload.errors?.length) {
+      console.error('HomeRecentReports GraphQL errors:', payload.errors);
+    }
+
+    return (payload.data?.getNearbyAnimals?.animals ?? []).map(toRecentReport);
+  } catch (error) {
+    console.error('HomeRecentReports GraphQL fetch failed:', error);
     return [];
   }
 }

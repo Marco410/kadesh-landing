@@ -53,7 +53,8 @@ function joinEs(parts: string[]): string {
  * Las reglas viven en `homeModel.ts`.
  */
 export default function ProfileHome({ user }: { user: User }) {
-  const unread = useUnreadNotifications({ skip: !user.id });
+  // El shell del panel ya pide y refresca el contador: aquí solo se lee (sin otra consulta).
+  const unread = useUnreadNotifications({ skip: !user.id, passive: true });
   const { loading, hasData, error, refetch, model } = useProfileHome({
     userId: user.id,
     hasPhone: Boolean(user.phone?.trim()),

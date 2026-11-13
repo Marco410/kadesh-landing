@@ -160,6 +160,7 @@ export const UPDATE_WHATSAPP_NOTIFICATIONS_MUTATION = gql`
   mutation UpdateWhatsappNotifications($id: ID!, $data: UserUpdateInput!) {
     updateUser(where: { id: $id }, data: $data) {
       id
+      phone
       whatsappNotifications
       whatsappMutedTypes
     }
@@ -168,11 +169,14 @@ export const UPDATE_WHATSAPP_NOTIFICATIONS_MUTATION = gql`
 
 export interface UpdateWhatsappNotificationsVariables {
   id: string;
-  data: { whatsappNotifications?: boolean; whatsappMutedTypes?: string[] };
+  /** `phone` solo lo manda el reporte, cuando el perfil no tenía teléfono (ver `enableForReports`). */
+  data: { whatsappNotifications?: boolean; whatsappMutedTypes?: string[]; phone?: string };
 }
 
 export interface UpdateWhatsappNotificationsResponse {
   updateUser:
-    | (Pick<WhatsappNotificationsUser, 'id' | 'whatsappNotifications' | 'whatsappMutedTypes'> & { __typename?: 'User' })
+    | (Pick<WhatsappNotificationsUser, 'id' | 'phone' | 'whatsappNotifications' | 'whatsappMutedTypes'> & {
+        __typename?: 'User';
+      })
     | null;
 }

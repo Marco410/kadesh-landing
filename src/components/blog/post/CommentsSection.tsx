@@ -23,6 +23,9 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     isSubmitting,
     isCreatingComment,
     isDeletingComment,
+    hasMoreComments,
+    isLoadingMore,
+    loadMoreComments,
     handleSubmit,
     handleDelete,
   } = usePostComments(postId);
@@ -164,6 +167,18 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                 </div>
               </div>
             ))
+          )}
+          {hasMoreComments && (
+            <div className="flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={() => void loadMoreComments()}
+                disabled={isLoadingMore}
+                className="min-h-11 rounded-lg border border-orange-500 px-6 py-2 font-semibold text-orange-500 transition-colors hover:bg-orange-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-500 dark:hover:text-white"
+              >
+                {isLoadingMore ? 'Cargando…' : 'Ver más comentarios'}
+              </button>
+            </div>
           )}
         </div>
       </div>

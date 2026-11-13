@@ -15,6 +15,106 @@ Formato:
 
 ---
 
+## 2026-11-13 · feat: «Agregar registro» más simple
+- Rama: feat/cerrar-caso-reencuentros
+- Qué cambió y por qué: el formulario pedía todo desde cero (estado que empezaba en «Perdido», selector de fecha de HeroUI con «Fue hoy», pin, dirección, ciudad, estado y país obligatorios, nota) y se sentía complicado. Ahora es una hoja (`Sheet`) con el orden de lo que la persona quiere hacer:
+  - **¿Qué hay de nuevo?** Nota con foco al abrir y un ejemplo según el estado.
+  - **¿Cuándo?** Chips «Hoy / Ayer / Otra fecha», igual que al reportar. Día y hora nativos solo con «Otra fecha», y nunca en el futuro.
+  - **¿Dónde?** «Mismo lugar» (por defecto, con el texto del lugar anterior) u «Otro lugar» con el mapa. Ya solo se exige el pin: la ciudad la completa el back. «Aquí lo vieron por última vez» solo aparece con «Perdido» y otro lugar.
+  - **Estado:** «Sigue como [Perdido] · Cambiar», que arranca en el estado actual. Ya no ofrece «Registrado» ni estados finales. Cada chip lleva un punto con el color del estado (`ChoiceChip` acepta `dotColor`).
+  - Título «Novedades de {nombre}» y botón «Guardar registro».
+  - Un caso de hoy y en el mismo lugar se guarda escribiendo solo la nota.
+- Archivos: src/components/animals/detail/AddLogModal.tsx, src/components/animals/detail/LogTimeline.tsx, src/components/animals/nuevo/ChoiceChip.tsx
+- GraphQL: ninguna (misma `CreateAnimalLog`)
+- Móvil: [prompt](../mobile-sync/2026-11-13-agregar-registro-simple.md)
+
+## 2026-11-13 · fix: los modales ya no hacen scroll en la página de atrás
+- Rama: feat/cerrar-caso-reencuentros
+- Qué cambió y por qué: con «Agregar registro» abierto (y las hojas como «Cerrar caso»), la rueda o el dedo movían la ficha de atrás. Nuevo hook `useBodyScrollLock`: mientras el modal está abierto bloquea el scroll del `body`, compensa el ancho de la barra para que la página no brinque y funciona con modales anidados. Lo usan `AddLogModal` y `Sheet`. Además, su contenido tiene `overscroll-contain`, para que al llegar al final del scroll interno no se pase a la página.
+- Archivos: src/utils/useBodyScrollLock.ts (nuevo), src/components/animals/detail/AddLogModal.tsx, src/components/shared/Sheet.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del scroll del navegador; las hojas nativas ya bloquean el fondo)
+
+## 2026-11-13 · feat: nombre desconocido vacío y descrito («Perra café») en lugar de «Sin nombre»
+- Rama: feat/cerrar-caso-reencuentros
+- Qué cambió y por qué: «Sin nombre» se guardaba como nombre y salía en títulos, carteles, el cierre del caso y los recordatorios («¿Sin nombre volvió a casa?»). Casi siempre el animal sí tiene nombre; quien lo encontró no lo sabe.
+  - El nombre desconocido se guarda vacío. Para mostrarlo, una sola función (`animalDisplayName` / `animalSentenceName` en `animalName.ts`) lo describe: «Perra café» en títulos, tarjetas, cartel y OG; «esta perra» en frases.
+  - La casilla «No tiene nombre» ahora dice «No sé su nombre» y explica cómo se va a mostrar.
+  - Al reclamar un reporte se puede decir cómo se llama la mascota (`petName`). Quien atiende el reporte lo ve en el panel («Dice que se llama…») y, si aprueba y el reporte no tenía nombre, ese pasa a ser su nombre.
+  - La ficha pide además `animal_type`, para describir también los reportes sin raza.
+- Archivos: src/components/animals/animalName.ts (nuevo), src/components/animals/nuevo/{AnimalNameInput.tsx, NewAnimalForm.tsx, EditAnimalForm.tsx, reportDraft.ts, SimilarReportsSheet.tsx}, src/components/animals/{queries.ts, server.ts, animal-seo.ts, similarReportsCopy.ts, hooks/useLostAnimals.ts}, src/components/animals/detail/{CloseCaseBanner.tsx, CloseCaseModal.tsx, KeepAnimalButton.tsx, ShareAnimalButton.tsx, AnimalClaimsPanel.tsx, hooks/useAnimalDetail.ts}, src/components/animals/claim/ClaimReportForm.tsx, src/components/animals/promotion/PromotionSheet.tsx, src/app/animales/[slug]/page.tsx, src/components/home/{RecentReportsSection.tsx, zoneAlerts.ts}, src/components/profile/UserAnimalsSection.tsx, src/components/rescue/RescueAnimalsView.tsx, src/components/adoption/{format.ts, MyAdoptionApplicationDetail.tsx, MyAdoptionApplicationsSection.tsx}
+- GraphQL:
+  - `GetAnimal` y `GetAnimalForShare` piden `animal_type { name }`.
+  - `FindSimilarReports` pide `displayName`.
+  - `GetAnimalClaims` pide `petName`, y `CreateAnimalClaim` puede mandarlo.
+  - No hay consultas nuevas.
+- Móvil: [prompt](../mobile-sync/2026-11-13-nombre-desconocido.md)
+
+## 2026-11-12 · feat: cartel con QR y folio, e imagen para historias
+- Rama: feat/cerrar-caso-reencuentros
+- Qué cambió y por qué: fase 3 del plan de reencuentros. Es lo más barato de construir y lo que más tráfico trae.
+  - La ficha de un caso abierto tiene el botón «Cartel». Abre `/cartel/{slug}`, un cartel tamaño carta para imprimir: titular según el estatus («SE BUSCA», «¿ES TUYO?»…), foto, datos, último lugar, señas, QR, enlace corto y folio `KP-01234`.
+  - El teléfono sale por defecto; quien imprime puede quitarlo («Quitar teléfono», `?telefono=0`).
+  - Formato vertical u horizontal (`?formato=horizontal`, carta horizontal: foto a la izquierda y datos a la derecha). En horizontal, la columna de datos usa el alto que le sobra: letra más grande, más señas, hasta 3 fotos más del reporte en miniatura, y QR y teléfono más grandes.
+  - «Imagen para historias» baja `/cartel/{slug}/historia`: PNG de 1080×1920, sin teléfono, con caché del edge de 10 min.
+  - El QR apunta a `/f/{folio}`, que redirige (308) a la ficha con `?src=cartel`.
+  - El QR se genera en el servidor con `uqr` (librería nueva, solo servidor; no entra al bundle del navegador).
+  - Las páginas del cartel no se indexan.
+  - Formulario de reporte: un error del servidor sin motivo en español ya no se muestra como «Elige una ubicación…» (solo si viene de la bitácora o las coordenadas). Antes, el fallo `Animal.folio: missing value` mandaba a corregir un mapa que estaba bien. El mensaje genérico ahora es «No se pudo publicar el reporte. Intenta de nuevo en un momento.».
+- Archivos: src/components/animals/nuevo/NewAnimalForm.tsx, src/app/cartel/[slug]/{page.tsx, historia/route.tsx} (nuevos), src/app/f/[folio]/route.ts (nuevo), src/components/animals/poster/{folio.ts, qr.ts, PosterToolbar.tsx} (nuevos), src/components/animals/server.ts, src/core/routes.ts, src/app/animales/[slug]/page.tsx, package.json, pnpm-lock.yaml
+- GraphQL: `GetAnimalForShare` pide además `folio`, `physical_description` y `contactNumber`. Nueva consulta de servidor `AnimalByFolio` (caché de 1 h). El cartel y la historia reutilizan `GetAnimalForShare` (60 s); no hay consultas desde el navegador.
+- Móvil: [prompt](../mobile-sync/2026-11-12-cartel-qr.md)
+
+## 2026-11-12 · feat: seguimiento de casos (recordatorios, casos inactivos y WhatsApp al reportar)
+- Rama: feat/cerrar-caso-reencuentros
+- Qué cambió y por qué: fase 2 del plan de reencuentros. kadesh-back recuerda a quien atiende un caso abierto que lo cierre o lo actualice, a la semana y a las 3 semanas sin registros, por campana, push, correo y WhatsApp. Sin respuesta, a los 45 días el caso queda inactivo y deja de salir en el mapa; los reportes sin dueño, a los 30 días. En la web:
+  - Al publicar un reporte, casilla desmarcada «Avísame por WhatsApp sobre este reporte». Enciende solo los avisos de los reportes propios (seguimiento, coincidencias, comentarios y solicitudes). Si el perfil no tiene teléfono, guarda el del reporte.
+  - Nuevo tipo de aviso `animal.follow_up`, con ícono en la campana y su categoría «Seguimiento de tus reportes» en los ajustes de WhatsApp.
+  - El aviso «Cerrar caso» de la ficha explica cuando el caso está inactivo y cómo reactivarlo.
+  - Por qué: sin esto, el contador de reencuentros no crece y el mapa se llena de casos viejos.
+- Archivos: src/components/animals/nuevo/NewAnimalForm.tsx, src/components/animals/{queries.ts, detail/CloseCaseBanner.tsx, detail/hooks/useAnimalDetail.ts}, src/components/notifications/{constants.ts, queries.ts, NotificationList.tsx, WhatsappNotificationsCard.tsx, hooks/useWhatsappNotifications.ts}
+- GraphQL: `GetAnimal` pide además `inactiveAt`. `UpdateWhatsappNotifications` puede mandar `phone` y lo devuelve. El formulario de reporte hace una consulta más al abrirse (`WhatsappNotifications`, una fila, la misma de /notificaciones; se reutiliza desde la caché de Apollo si ya estaba).
+- Móvil: [prompt](../mobile-sync/2026-11-12-seguimiento-de-casos.md)
+
+## 2026-11-12 · feat: «Cerrar caso» y contador de reencuentros y adopciones
+- Rama: develop
+- Qué cambió y por qué: fase 1 del plan de reencuentros.
+  - Quien atiende un caso abierto ve en la ficha «¿Ya volvió a casa? / ¿Ya encontró hogar?» con el botón «Cerrar caso». La hoja pregunta cómo terminó, si Kadesh ayudó y por dónde, y deja contar la historia (opcional, con permiso para publicarla). Lo guarda `closeAnimalReport` (kadesh-back), que deja la bitácora final.
+  - «Agregar registro» ya no ofrece estatus finales.
+  - Nuevo estatus «Caso cerrado» (`closed`) para los casos que terminan sin hogar.
+  - `?accion=cerrar` abre la hoja; lo van a usar los recordatorios de seguimiento.
+  - El Hero muestra «N reencuentros · M adopciones» desde 10 entre los dos. Antes no se mostraba porque no había una cifra confiable.
+  - Por qué: sin registrar cómo termina cada caso, el contador nunca crece y el mapa se llena de casos viejos.
+- Archivos: src/components/animals/detail/{CloseCaseBanner.tsx (nuevo), CloseCaseModal.tsx (nuevo), AddLogModal.tsx, index.ts}, src/components/animals/{constants.ts, queries.ts}, src/app/animales/[slug]/page.tsx, src/components/home/{server.ts, HeroSection.tsx}
+- GraphQL: nueva mutación `CloseAnimalReport` (`closeAnimalReport`); `petLandingStats` pide además `reunions` y `adoptions`. La consulta de la portada sigue siendo una sola, con la misma caché de 1 h.
+- Móvil: [prompt](../mobile-sync/2026-11-12-cerrar-caso-y-reencuentros.md)
+
+## 2026-11-12 · docs: sección «Rendimiento y costo» en CLAUDE.md
+- Rama: develop
+- Qué cambió y por qué: CLAUDE.md documenta cómo aplicar aquí las reglas globales de costo de infraestructura: utilidades que hay que reutilizar (`useRefetchOnTabReturn`, ventana de caché del blog, modo `passive` de la campana), valores vigentes de polling y caché, pendientes conocidos con archivo y qué revisar en la pestaña Red y en los logs del back.
+- Archivos: CLAUDE.md
+- GraphQL: ninguna
+- Móvil: no aplica (documentación del repo web)
+
+## 2026-11-12 · perf: el blog se cachea en ventanas de 10 minutos
+- Rama: develop
+- Qué cambió y por qué: las consultas del blog en el servidor mandaban la hora exacta (`now`, `publishedAt: { lte }`) para ocultar los posts programados. Como la hora cambia en cada milisegundo, ninguna consulta se repetía y el caché de datos nunca se usaba: cada visita a `/blog` o a un artículo llegaba a kadesh-back. Ahora se usa el inicio de una ventana de 10 min (`cacheWindowStart`, igual que kadesh-business), con `revalidate: 600` en los fetch y en las páginas, y una cabecera `x-kadesh-cache-window` que rota la llave del caché también en las consultas sin fecha. 10 min y no más porque las imágenes son URLs firmadas que caducan a la hora. Costo: un artículo nuevo, editado o programado tarda hasta 10 min en verse.
+- Archivos: src/components/blog/server.ts, src/components/blog/README.md, src/app/blog/page.tsx, src/app/blog/[url]/page.tsx
+- GraphQL: ninguna (mismas consultas; cambia el valor de `$now`)
+- Móvil: no aplica (caché del render del servidor web)
+
+## 2026-11-12 · perf: menos peticiones a kadesh-back (portada, campana, blog y /animales)
+- Rama: develop
+- Qué cambió y por qué: el backend y su Postgres cobran por RAM. Se quitaron las peticiones repetidas que más pesaban, sin cambiar lo que ve la persona.
+  - **Portada, «Reportes recientes»**: los más recientes del país ya los trae el servidor con la portada (caché de 10 min, `fetchRecentReports`). Antes los pedía el navegador en cada visita, y `getNearbyAnimals` recorre todos los reportes en el back en cada llamada. El navegador solo consulta si la persona comparte su ubicación o elige un filtro. La fecha relativa de la tarjeta («Hoy», «Ayer») se pinta ya en el navegador, porque depende del reloj y de la zona horaria.
+  - **`/animales`**: el mapa usa la misma respuesta que la lista. Se quitó la segunda consulta con `limit: 1000` que salía al llegar a 500 reportes (el mapa muestra como máximo esos 500). Los tipos de animal se leen de la caché (`cache-first`). `GetNearbyAnimals` ya no pide `user`, que nadie usaba.
+  - **Campana y globos del menú**: se refrescan cada 5 min (antes 60 s) y solo con la pestaña visible (`skipPollAttempt`). Al volver a la pestaña después de 1 min o más se vuelven a pedir (`useRefetchOnTabReturn`). El Inicio del panel lee el contador que ya pide el shell (`passive`), en lugar de consultarlo otra vez.
+  - **Blog**: una sola consulta de favoritos por persona (`MyPostFavorites`) en lugar de una por tarjeta, y ninguna sin sesión. Los likes piden el total y el like propio, no la lista. Los comentarios van de 20 en 20 con «Ver más comentarios» y su total sale de `postCommentsCount`. La primera página del índice ya no se vuelve a pedir desde el navegador: se usa la que pintó el servidor.
+  - **Pendiente en kadesh-back** (no se tocó): `getNearbyAnimals` sigue cargando todos los animales y sus bitácoras para filtrar en memoria. Mientras no filtre y pagine en SQL, cada llamada cuesta lo mismo sin importar `limit`.
+- Archivos: src/app/page.tsx, src/components/home/{recentReports.ts (nuevo), server.ts, RecentReportsSection.tsx}, src/components/home/hooks/useRecentReports.ts, src/components/animals/{queries.ts, hooks/useLostAnimals.ts}, src/components/notifications/{constants.ts, hooks/useUnreadNotifications.ts}, src/components/profile/shell/useProfileNavCounts.ts, src/components/profile/home/ProfileHome.tsx, src/utils/useRefetchOnTabReturn.ts (nuevo), src/components/blog/{queries.ts, post/CommentsSection.tsx}, src/components/blog/hooks/{usePostFavorites.ts, usePostLikes.ts, usePostComments.ts, useBlogPosts.ts}
+- GraphQL: nueva `MyPostFavorites` (reemplaza a `GetPostFavorites`) y `HomeRecentReports` (servidor); `GetPostLikes` ahora pide `postLikesCount` y el like propio; `GetPostComments` acepta `take`/`skip` y pide `postCommentsCount`; `GetNearbyAnimals` sin `user`.
+- Móvil: [prompt](../mobile-sync/2026-11-12-menos-carga-al-backend.md). La parte de la portada no aplica (página de marketing).
+
 ## 2026-11-10 · feat: eventos — vistas de la ficha y portada en pantalla completa
 - Rama: develop (aquí y en kadesh-back)
 - Qué cambió y por qué:

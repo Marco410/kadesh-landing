@@ -2,6 +2,7 @@ import { petErrorMessage } from 'kadesh/components/pets/utils';
 import { normalizeMxPhone } from 'kadesh/utils/phone';
 import { ADOPTION_HOUSING_OPTIONS, ADOPTION_OWNERSHIP_OPTIONS, ADOPTION_STATUS } from './constants';
 import type { AdoptionAnswers, AdoptionApplication } from './types';
+import { knownAnimalName } from 'kadesh/components/animals/animalName';
 
 /** `answers` es un JSON: normalmente llega como objeto, pero se acepta texto por si acaso. */
 export function parseAdoptionAnswers(raw: AdoptionApplication['answers']): AdoptionAnswers {
@@ -82,14 +83,18 @@ export function firstName(name: string | null | undefined): string {
 /** WhatsApp a quien envió la solicitud, con un saludo que dice de dónde viene. */
 export function adoptionWhatsAppUrl(digits: string, applicantName: string | null | undefined, animalName: string | null | undefined): string {
   const name = firstName(applicantName);
-  const text = `Hola${name ? `, ${name}` : ''}. Te escribo de KADESH por tu solicitud para adoptar a ${animalName?.trim() || 'nuestro animal'}.`;
+  const text = `Hola${name ? `, ${name}` : ''}. Te escribo de KADESH por tu solicitud para adoptar a ${knownAnimalName(animalName) || 'nuestro animal'}.`;
   return `https://wa.me/52${digits}?text=${encodeURIComponent(text)}`;
 }
 
-/** Nombre a mostrar del animal (los reportes sin nombre dicen «Sin nombre»). */
+/** Nombre del animal dentro de una frase; sin nombre conocido, «este animal». */
 export function adoptionAnimalName(name: string | null | undefined): string {
-  const clean = name?.trim();
-  return clean && clean !== 'Sin nombre' ? clean : 'este animal';
+  return knownAnimalName(name) || 'este animal';
+}
+
+/** Título de una solicitud: el nombre, o «Animal en adopción» si no se sabe. */
+export function adoptionAnimalTitle(name: string | null | undefined): string {
+  return knownAnimalName(name) || 'Animal en adopción';
 }
 
 /**

@@ -35,7 +35,9 @@ import {
   formatMxPhone,
   parseAdoptionAnswers,
   type AdoptionStep,
+  adoptionAnimalTitle,
 } from './format';
+import { knownAnimalName } from 'kadesh/components/animals/animalName';
 import { useAdoptionActions } from './hooks/useAdoptionActions';
 import { MY_ADOPTION_APPLICATION_DETAIL_QUERY, type MyAdoptionApplicationDetailResponse } from './queries';
 
@@ -121,7 +123,7 @@ export default function MyAdoptionApplicationDetail({ applicationId, userId }: {
   const application = data?.adoptionApplication ?? null;
   const animal = application?.animal ?? null;
   const name = adoptionAnimalName(animal?.name);
-  const title = name === 'este animal' ? 'Sin nombre' : name;
+  const title = adoptionAnimalTitle(animal?.name);
   useProfileDetailCrumb(application ? title : null);
 
   const backLink = (
@@ -243,7 +245,7 @@ export default function MyAdoptionApplicationDetail({ applicationId, userId }: {
             ) : null}
             {animalHref ? (
               <Link href={animalHref} className={dashButtonClass({ variant: 'outline', size: 'sm' })}>
-                {title === 'Sin nombre' ? 'Ver su ficha' : `Ver ficha de ${title}`}
+                {knownAnimalName(animal?.name) ? `Ver ficha de ${title}` : 'Ver su ficha'}
               </Link>
             ) : null}
             {open ? (

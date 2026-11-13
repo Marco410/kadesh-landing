@@ -20,6 +20,7 @@ import {
   type GetMyAnimalsVariables,
 } from "./queries";
 import { useProfileMotion } from "./motion";
+import { animalDisplayName, animalNameSource } from "kadesh/components/animals/animalName";
 
 export default function UserAnimalsSection({ userId }: { userId: string }) {
   const motionPrefs = useProfileMotion();
@@ -127,7 +128,7 @@ export default function UserAnimalsSection({ userId }: { userId: string }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="truncate font-semibold text-dash-ink">
-                      {animal.name || "Sin nombre"}
+                      {animalDisplayName(animalNameSource(animal))}
                     </p>
                     {status ? (
                       <span

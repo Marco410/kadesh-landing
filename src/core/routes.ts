@@ -90,6 +90,8 @@ export const Routes = {
     story: (slug: string): string => `/cartel/${slug}/historia`,
     /** Enlace corto del QR: redirige a la ficha. */
     folio: (folio: number): string => `/f/${folio}`,
+    /** «Vi una mascota perdida» del hero: el directorio con los perdidos y la pista para elegir cuál viste. */
+    sightingSearch: '/animales?status=lost&avistamiento=1',
   },
 
   // Veterinaries (pet places)

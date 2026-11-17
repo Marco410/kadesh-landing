@@ -55,7 +55,12 @@ import {
   AdoptionApplicationsPanel,
   AdoptionApplyBanner,
 } from "kadesh/components/adoption";
-import { animalDisplayName, animalNameSource } from "kadesh/components/animals/animalName";
+import {
+  animalDisplayName,
+  animalNameSource,
+  animalSentenceName,
+} from "kadesh/components/animals/animalName";
+import { SightingBanner, SightingsSection } from "kadesh/components/animals/sightings";
 
 const ANIMAL_DETAIL_AD_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ANIMAL_DETAIL;
 
@@ -170,6 +175,7 @@ export default function AnimalDetailPage() {
   const isOwner = canEditAnimal(user, animal);
   // Sin nombre conocido: «Perra café» (ver `animalName.ts`).
   const displayName = animalDisplayName(animalNameSource(animal));
+  const sentenceName = animalSentenceName(animalNameSource(animal));
   const lastLog = logs?.[0];
   const status = lastLog?.status || "register";
   const statusColor = getStatusColor(status);
@@ -301,6 +307,19 @@ export default function AnimalDetailPage() {
               void refetch();
             }}
           />
+          <SightingBanner
+            animal={animal}
+            status={status}
+            sentenceName={sentenceName}
+            mapCenter={
+              hasCoords
+                ? { lat: Number(lastLog.lat), lng: Number(lastLog.lng) }
+                : undefined
+            }
+            onSent={async () => {
+              await refetch();
+            }}
+          />
           <ClaimReportButton animal={animal} status={status} />
           <CloseCaseBanner
             animal={animal}
@@ -385,6 +404,13 @@ export default function AnimalDetailPage() {
           slot={ANIMAL_DETAIL_AD_SLOT}
           media={AD_INLINE_MEDIA}
           className="mb-3"
+        />
+
+        <SightingsSection
+          animal={animal}
+          onChanged={async () => {
+            await refetch();
+          }}
         />
 
         <div className="pb-6">

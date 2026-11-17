@@ -15,6 +15,19 @@ Formato:
 
 ---
 
+## 2026-11-13 · feat: «Lo vi»: avistamientos sin cuenta
+- Rama: feat/avistamientos
+- Qué cambió y por qué: quien ve a un animal perdido casi nunca tiene cuenta, y pedírsela para decir «lo vi en tal esquina» hace que no avise.
+  - **Banner «¿Viste a {nombre}?»** en la ficha de animales perdidos o abandonados. No lo ve quien atiende el reporte (su autor o su equipo, nueva `attendsAnimalReport` en `canEditAnimal.ts`); un admin sí, porque puede editar cualquier reporte pero no los atiende todos. Abre una hoja: dónde (pin), cuándo («Ahora / Hoy / Ayer / Otro día», con hora opcional y de máximo 30 días atrás), cómo estaba y, opcional, nombre y teléfono. No pide cuenta y se publica al momento.
+  - **Acceso «Vi una mascota perdida» en el hero** (con binoculares). Ocupa uno de los accesos y «Veterinarias cerca de mí» pasa a ocupar las dos columnas. Lleva a `/animales?status=lost&avistamiento=1` (`Routes.animals.sightingSearch`): el directorio de perdidos con la pista «¿Cuál viste? Ábrelo y toca «Lo vi»…», que se puede cerrar. El aviso se manda desde la ficha porque cada avistamiento es de un animal.
+  - **Sección «Lo han visto»** antes de los comentarios. Quien atiende el reporte ve el contacto (WhatsApp, llamar) y puede ocultar o mostrar cada avistamiento.
+  - **Aviso nuevo `animal.sighted`**: campana, push y WhatsApp. Tiene su categoría en «Avisos por WhatsApp» y se enciende con «Avísame por WhatsApp» al publicar.
+  - **Contra abuso:** campo trampa y Cloudflare Turnstile (`TurnstileWidget`), que solo aparece si existe `NEXT_PUBLIC_TURNSTILE_SITE_KEY`. Los límites por IP los pone el back.
+  - **Sin carga extra:** los avistamientos llegan en la misma consulta de la ficha (`GetAnimal`, campo `sightings(take: 20)`). No es otra petición.
+- Archivos: src/components/animals/sightings/ (nuevo: SightingBanner.tsx, ReportSightingSheet.tsx, SightingsSection.tsx, time.ts, constants.ts, index.ts), src/components/shared/TurnstileWidget.tsx (nuevo), src/app/animales/[slug]/page.tsx, src/components/animals/queries.ts, src/components/animals/detail/hooks/useAnimalDetail.ts, src/components/animals/canEditAnimal.ts, src/components/animals/AnimalsDirectory.tsx, src/components/home/HeroSection.tsx, src/core/routes.ts, src/components/notifications/{constants.ts,NotificationList.tsx,WhatsappNotificationsCard.tsx,hooks/useWhatsappNotifications.ts}, CLAUDE.md
+- GraphQL: `GetAnimal` pide `sightings(take: 20)`; nuevas `ReportAnimalSighting` y `SetAnimalSightingHidden`
+- Móvil: [prompt](../mobile-sync/2026-11-13-lo-vi-avistamientos.md)
+
 ## 2026-11-13 · feat: «Agregar registro» más simple
 - Rama: feat/cerrar-caso-reencuentros
 - Qué cambió y por qué: el formulario pedía todo desde cero (estado que empezaba en «Perdido», selector de fecha de HeroUI con «Fue hoy», pin, dirección, ciudad, estado y país obligatorios, nota) y se sentía complicado. Ahora es una hoja (`Sheet`) con el orden de lo que la persona quiere hacer:

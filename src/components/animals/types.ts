@@ -20,6 +20,17 @@ export interface LostAnimal {
   contactPhone?: string;
   contactEmail?: string;
   isFavorite?: boolean;
+  /** «Lo vi» de las últimas 72 h (solo en el directorio), el más reciente primero. */
+  recentSightings?: LostAnimalSighting[];
+}
+
+export interface LostAnimalSighting {
+  id: string;
+  latitude: number;
+  longitude: number;
+  seenAt: string | null;
+  /** Calle/colonia o ciudad. */
+  place: string | null;
 }
 
 export interface AnimalFilters {

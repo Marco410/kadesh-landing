@@ -509,6 +509,29 @@ export function createPawPinIcon(L: LeafletLib, color: string, pulse = false) {
   return createStatusPinIcon(L, color, pulse);
 }
 
+/**
+ * Punto de un avistamiento («Lo vi») en el mapa: círculo chico del color del estado con borde
+ * blanco y un ojo, más chico que los pines para que se lea como «lo vieron aquí», no como reporte.
+ * `faded`: los más viejos de un animal.
+ */
+export function createSightingDotIcon(L: LeafletLib, color: string, faded = false) {
+  const opacity = faded ? 0.6 : 1;
+  const svg = `
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="22" height="22" aria-hidden="true" opacity="${opacity}">
+      <circle cx="12" cy="12" r="10" fill="${color}" stroke="#ffffff" stroke-width="2"/>
+      <path d="M5.8 12c1.6-2.6 3.7-3.9 6.2-3.9s4.6 1.3 6.2 3.9c-1.6 2.6-3.7 3.9-6.2 3.9S7.4 14.6 5.8 12Z" fill="#ffffff"/>
+      <circle cx="12" cy="12" r="1.9" fill="${color}"/>
+    </svg>
+  `.trim();
+
+  return L.divIcon({
+    className: 'kadesh-map-pin-icon',
+    html: svg,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+  });
+}
+
 /** Veterinaria: el mismo pin con su «T», color de la marca. */
 export function createVeterinaryPinIcon(L: LeafletLib) {
   return kadeshPinIcon(L, getBrandColor(), 'vet');

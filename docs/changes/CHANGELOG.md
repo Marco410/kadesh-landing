@@ -60,6 +60,29 @@ Formato:
 - GraphQL: nueva consulta de servidor `PetReunionStories` (`petReunionStories(take)` en kadesh-back)
 - Móvil: no aplica (portada de marketing; la app no la tiene)
 
+## 2026-11-17 · perf: `/animales` paginado en la base y mapa con pines ligeros
+- Rama: feat/avistamientos-mapa
+- Qué cambió y por qué: `/animales` pedía `limit: 500` en una sola consulta y paginaba en el navegador. El back, para cualquier `limit`, traía todos los animales y todas sus bitácoras a memoria. Con los cambios en kadesh-back (`getNearbyAnimals` en SQL y la nueva `getNearbyAnimalPins`), ahora el directorio hace:
+  - **Lista:** una página por petición (`limit` = tarjetas por página, `skip` de la página). El total viene del back. Cambiar de página pide solo esa página.
+  - **Mapa:** `GetAnimalPins`, todos los pines del filtro (hasta 1000) con una sola foto de portada y sin autor. No se vuelve a pedir al cambiar de página. El mapa ya no se queda en 500.
+  - Con filtro de tipo, se espera al catálogo de tipos para no pedir dos veces (sin tipo y luego con tipo).
+  - Se quitan los filtros que solo existían en el cliente (nombre, raza, favoritos: la pantalla no los ofrece) y dos `console.log` en `updateFilters`.
+  - Peticiones: al entrar son 2 (lista + pines) en lugar de 1, pero cada una cuesta lo que devuelve. Al cambiar de página, 1 pequeña.
+- Archivos: src/components/animals/hooks/useLostAnimals.ts, src/components/animals/queries.ts, CLAUDE.md, src/components/home/README.md
+- GraphQL: nueva `GetAnimalPins` (`getNearbyAnimalPins`); `GetDirectoryAnimals` ahora con `limit`/`skip` por página
+- Móvil: [prompt](../mobile-sync/2026-11-17-animales-paginados-y-pines.md)
+
+## 2026-11-17 · feat: «Lo vi» en el mapa de `/animales` (últimas 72 h)
+- Rama: feat/avistamientos-mapa
+- Qué cambió y por qué: el pin de un perdido se queda en el último lugar que registró la familia, a veces de hace días. Los avisos «Lo vi» recientes dicen hacia dónde se movió, pero solo se veían entrando a la ficha. Ahora el directorio los muestra:
+  - **En el mapa:** un punto chico con un ojo, del color del estado, por cada avistamiento de las últimas 72 h (máximo 3 por animal; los más viejos, más tenues). Una línea punteada une el pin con el más reciente. Al tocar un punto se abre la tarjeta del animal. Los puntos no se agrupan con los pines.
+  - **En la lista y en la ventanita del mapa:** «Lo vieron hace 3 h · Col. Centro».
+  - **En el mapa de la ficha** (historial → «Ubicación»): los avistamientos visibles del reporte salen como puntos con ojo. El más reciente va encima y los de más de 72 h, tenues. Si el más reciente es de las últimas 72 h, una línea punteada lo une al pin y el mapa se encuadra para ver ambos. Abajo, «Los puntos con ojo son avistamientos («Lo vi»). Ver la lista», que lleva a «Lo han visto». Salen de `sightings` de la ficha: no es otra petición.
+  - **Sin peticiones de más:** van en la misma consulta del directorio (`GetDirectoryAnimals`, mismos campos que `GetNearbyAnimals` más `recentSightings`). La portada y las alertas de zona siguen con `GetNearbyAnimals` sin avistamientos. El back los saca con una sola consulta por página.
+- Archivos: src/components/animals/{AnimalsMap.tsx,AnimalCard.tsx,AnimalInfoWindow.tsx,queries.ts,types.ts}, src/components/animals/hooks/useLostAnimals.ts, src/components/animals/detail/{LogMap.tsx,AnimalLocationMap.tsx,LogTimeline.tsx}, src/components/shared/free-map.ts
+- GraphQL: nueva `GetDirectoryAnimals` (`getNearbyAnimals` + `recentSightings { id lat lng seenAt placeLabel city }`); `GetNearbyAnimals` pasa a usar el fragmento `NearbyAnimalFields` (mismos campos)
+- Móvil: [prompt](../mobile-sync/2026-11-17-lo-vi-en-el-mapa.md)
+
 ## 2026-11-13 · feat: «Lo vi»: avistamientos sin cuenta
 - Rama: feat/avistamientos
 - Qué cambió y por qué: quien ve a un animal perdido casi nunca tiene cuenta, y pedírsela para decir «lo vi en tal esquina» hace que no avise.

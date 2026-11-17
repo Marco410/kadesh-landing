@@ -72,38 +72,111 @@ export const GET_LOST_ANIMALS_QUERY = gql`
 `;
 
 // Queries for creating animals
+/** Campos de `getNearbyAnimals` que usan la portada, las alertas de zona y el directorio. */
+const NEARBY_ANIMAL_FIELDS = gql`
+  fragment NearbyAnimalFields on NearbyAnimal {
+    id
+    slug
+    name
+    distance
+    sex
+    lat
+    lng
+    address
+    city
+    state
+    country
+    status
+    animal_breed {
+      id
+      breed
+    }
+    animal_type {
+      id
+      name
+    }
+    createdAt
+    multimedia {
+      id
+      url
+      order
+    }
+  }
+`;
+
 export const GET_NEARBY_ANIMALS_QUERY = gql`
+  ${NEARBY_ANIMAL_FIELDS}
   query GetNearbyAnimals($input: NearbyAnimalsInput!) {
     getNearbyAnimals(input: $input) {
       success
       message
       total
       animals {
+        ...NearbyAnimalFields
+      }
+    }
+  }
+`;
+
+/**
+ * Pines del mapa de `/animales`: todos los del filtro (hasta 1000), ligeros (una foto, sin autor),
+ * con los «Lo vi» de las últimas 72 h. Sin página: no se repite al cambiar de página en la lista.
+ */
+export const GET_ANIMAL_PINS_QUERY = gql`
+  query GetAnimalPins($input: NearbyAnimalsInput!) {
+    getNearbyAnimalPins(input: $input) {
+      success
+      total
+      animals {
         id
         slug
         name
-        distance
         sex
+        status
         lat
         lng
+        distance
+        typeName
+        breedName
         address
         city
         state
         country
-        status
-        animal_breed {
-          id
-          breed
-        }
-        animal_type {
-          id
-          name
-        }
         createdAt
-        multimedia {
+        coverUrl
+        recentSightings {
           id
-          url
-          order
+          lat
+          lng
+          seenAt
+          placeLabel
+          city
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * Lista de `/animales` (una página por petición): lo mismo más el «Lo vi» más reciente, que la
+ * tarjeta muestra. La portada y las alertas no lo piden.
+ */
+export const GET_DIRECTORY_ANIMALS_QUERY = gql`
+  ${NEARBY_ANIMAL_FIELDS}
+  query GetDirectoryAnimals($input: NearbyAnimalsInput!) {
+    getNearbyAnimals(input: $input) {
+      success
+      message
+      total
+      animals {
+        ...NearbyAnimalFields
+        recentSightings {
+          id
+          lat
+          lng
+          seenAt
+          placeLabel
+          city
         }
       }
     }

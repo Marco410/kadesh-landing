@@ -44,6 +44,8 @@ export const Routes = {
   terms: '/terminos',
   privacy: '/privacidad',
   contact: '/contacto',
+  /** Canal de WhatsApp de Kadesh Pet (redirige; ver `core/whatsappChannels.ts`). */
+  channel: '/canal',
   
   // Profile (panel con sesión). Sin `tab` abre Inicio; cada vista es `?tab=<clave>`.
   profile: '/perfil',

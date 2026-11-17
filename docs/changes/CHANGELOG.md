@@ -15,6 +15,17 @@ Formato:
 
 ---
 
+## 2026-11-17 · feat: canal de WhatsApp de Kadesh Pet
+- Rama: feat/canal-whatsapp
+- Qué cambió y por qué: la API oficial de WhatsApp no publica en Canales, así que Kadesh Pet tiene un canal manual («Kadesh Pet», uno para todo el país) y se difunde desde aquí:
+  - **`/canal`** (`src/app/canal/route.ts`): redirige al canal. Lo usan el cartel, el correo de reporte publicado (kadesh-back), la portada y Operaciones, así que el enlace de WhatsApp vive en un solo lugar: `src/core/whatsappChannels.ts`. Ahí también va la lista de canales por estado (hoy vacía): `/canal?estado=michoacan` lleva al canal de ese estado si existe; si no, al general.
+  - **Cartel impreso:** al pie, «Más casos de tu zona en WhatsApp: pet.kadesh.com.mx/canal».
+  - **Portada, Alertas de zona:** «¿Sin cuenta? Sigue el canal de Kadesh Pet en WhatsApp».
+  - En kadesh-business (Operaciones → Kadesh Pet → Animales → detalle): «Copiar para el canal», «Imagen para el canal» y «Abrir canal».
+- Archivos: src/core/{whatsappChannels.ts (nuevo),routes.ts}, src/app/canal/route.ts (nuevo), src/app/cartel/[slug]/page.tsx, src/components/home/ZoneAlertsSection.tsx
+- GraphQL: ninguna en este repo (kadesh-back: `adminAnimalChannelPost`, solo admin)
+- Móvil: no aplica (la difusión del canal es del cartel, el correo, la web y Operaciones; si la app quiere enlazarlo, que use `https://pet.kadesh.com.mx/canal`)
+
 ## 2026-11-17 · feat: un solo pin en todos los mapas (círculo con punta)
 - Rama: feat/portada-orden
 - Qué cambió y por qué: cada mapa tenía su pin (gota con punto en `/animales` y la ficha, círculo con huella en el hero, gota con «T» en veterinarias). Ahora es uno solo (`components/shared/kadeshPin.ts`): círculo del color del estado, borde blanco y una punta abajo que marca el lugar exacto, en un solo trazo. Adentro va la huella para animales, la «T» para veterinarias y un punto para el lugar elegido y los eventos. El de «Perdido» late en la punta.

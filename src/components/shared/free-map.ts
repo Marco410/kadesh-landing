@@ -7,8 +7,17 @@ import {
   type GlLayerClass,
 } from 'kadesh/components/shared/free-map-layer';
 
-/** Liberty (OpenFreeMap) — sin API key. El dark se aplica con filtros CSS. */
-export const FREE_MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
+import { kadeshPinHtml, PIN_HEIGHT, PIN_TIP, PIN_WIDTH, type PinGlyph } from 'kadesh/components/shared/kadeshPin';
+import {
+  kadeshMapStyle,
+  kadeshMapStyleSync,
+  kadeshPlaceholderStyle,
+  LIBERTY_STYLE_URL,
+  type MapTheme,
+} from 'kadesh/components/shared/kadeshMapStyle';
+
+/** Liberty (OpenFreeMap), sin API key. Solo es el respaldo: los mapas usan `kadeshMapStyle`. */
+export const FREE_MAP_STYLE = LIBERTY_STYLE_URL;
 
 export const DEFAULT_MAP_CENTER = { lat: 19.4326, lng: -99.1332 };
 export const DEFAULT_MAP_ZOOM = 10;
@@ -141,7 +150,16 @@ export interface LeafletDivIcon {
 export interface LeafletLib {
   map(
     el: HTMLElement,
-    options?: { zoomControl?: boolean; attributionControl?: boolean }
+    options?: {
+      zoomControl?: boolean;
+      attributionControl?: boolean;
+      dragging?: boolean;
+      scrollWheelZoom?: boolean;
+      touchZoom?: boolean;
+      doubleClickZoom?: boolean;
+      boxZoom?: boolean;
+      keyboard?: boolean;
+    }
   ): LeafletMap;
   divIcon(options: {
     className: string;
@@ -190,7 +208,7 @@ export interface LeafletLib {
       interactive?: boolean;
     }
   ): LeafletCircle;
-  maplibreGL?: (options: { style: string; pane?: string }) => LeafletTileLayer;
+  maplibreGL?: (options: { style: string | object; pane?: string }) => LeafletTileLayer;
   DomUtil?: {
     setTransform(el: HTMLElement, offset: unknown, scale?: number): void;
   };
@@ -248,6 +266,15 @@ export interface CreateFreeMapOptions {
   attributionControl?: boolean;
   resolvedTheme?: string;
   /**
+   * Estilo de MapLibre (URL u objeto) fijo. Por defecto, la paleta de Kadesh del tema actual
+   * (`kadeshMapStyle`), que cambia sola con `applyFreeMapThemeClass` al cambiar el tema.
+   */
+  style?: string | object;
+  /** `false`: no pone las clases de tema (`kadesh-free-map--night` / `--standard`). */
+  themeClass?: boolean;
+  /** `false`: sin arrastre ni zoom (mapas decorativos o dentro de una página que hace scroll). */
+  interactive?: boolean;
+  /**
    * El mapa no se puede dibujar (sin WebGL, o MapLibre falló): el componente muestra su respaldo.
    * Puede llegar después de crear el mapa, si MapLibre avisa de un error de WebGL más tarde.
    */
@@ -279,20 +306,34 @@ export function createFreeMap(
   resetLeafletContainer(container);
   let map: LeafletMap | null = null;
   try {
+    const fixed = options.interactive === false;
     map = L.map(container, {
-      zoomControl: options.zoomControl ?? true,
+      zoomControl: options.zoomControl ?? !fixed,
+      ...(fixed
+        ? { dragging: false, scrollWheelZoom: false, touchZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false }
+        : {}),
       // Solo si viene: `undefined` le quitaría a Leaflet su valor por defecto.
       ...(options.attributionControl === undefined
         ? {}
         : { attributionControl: options.attributionControl }),
     }).setView(options.center, options.zoom);
-    const base = attachFreeMapBaseLayer(map, { onUnavailable: fail });
+    const theme: MapTheme = isDarkMapTheme(options.resolvedTheme) ? 'dark' : 'light';
+    const readyStyle = options.style ? null : kadeshMapStyleSync(theme);
+    const base = attachFreeMapBaseLayer(map, {
+      onUnavailable: fail,
+      style: options.style ?? readyStyle ?? kadeshPlaceholderStyle(theme),
+    });
     if (!base) {
       destroyMap(map);
       if (!reported) options.onUnavailable();
       return null;
     }
-    applyFreeMapThemeClass(container, options.resolvedTheme);
+    if (!options.style) {
+      // Paleta de Kadesh: se registra para cambiarla con el tema y, si aún no estaba, se pone al bajar.
+      themedBaseLayers.set(container, { layer: base, theme: readyStyle ? theme : null });
+      setThemedStyle(container, theme);
+    }
+    if (options.themeClass !== false) applyFreeMapThemeClass(container, options.resolvedTheme);
     return map;
   } catch (error) {
     destroyMap(map);
@@ -334,6 +375,32 @@ export function isDarkMapTheme(resolvedTheme: string | undefined): boolean {
   return resolvedTheme === 'dark';
 }
 
+/** Capas base con la paleta de Kadesh, por contenedor: para cambiarles el estilo con el tema. */
+const themedBaseLayers = new WeakMap<HTMLElement, { layer: LeafletTileLayer; theme: MapTheme | null }>();
+
+type GlStyleTarget = { setStyle(style: string | object, options?: { diff?: boolean }): void };
+
+/** Pone la paleta del tema en la capa base del contenedor (si cambió). Nunca lanza. */
+function setThemedStyle(container: HTMLElement, theme: MapTheme) {
+  const entry = themedBaseLayers.get(container);
+  if (!entry || entry.theme === theme) return;
+  entry.theme = theme;
+  void kadeshMapStyle(theme).then((style) => {
+    // Otro cambio de tema llegó mientras bajaba: gana el último.
+    if (entry.theme !== theme) return;
+    const layer = entry.layer as unknown as {
+      getMaplibreMap?: () => GlStyleTarget | null;
+      _glMap?: GlStyleTarget | null;
+    };
+    const gl = layer.getMaplibreMap?.() ?? layer._glMap;
+    try {
+      gl?.setStyle(style, { diff: typeof style !== 'string' });
+    } catch (error) {
+      console.error('[map] no se pudo cambiar el estilo', error);
+    }
+  });
+}
+
 export function applyFreeMapThemeClass(
   container: HTMLElement | null,
   resolvedTheme: string | undefined
@@ -342,6 +409,8 @@ export function applyFreeMapThemeClass(
   const isDark = isDarkMapTheme(resolvedTheme);
   container.classList.toggle('kadesh-free-map--night', isDark);
   container.classList.toggle('kadesh-free-map--standard', !isDark);
+  // Los mapas llaman esto al cambiar el tema: la paleta va en el estilo, no en un filtro CSS.
+  setThemedStyle(container, isDark ? 'dark' : 'light');
 }
 
 /**
@@ -351,7 +420,7 @@ export function applyFreeMapThemeClass(
  */
 export function attachFreeMapBaseLayer(
   map: LeafletMap,
-  { onUnavailable }: { onUnavailable?: (error?: unknown) => void } = {}
+  { onUnavailable, style }: { onUnavailable?: (error?: unknown) => void; style?: string | object } = {}
 ): LeafletTileLayer | null {
   const L = getLeaflet();
   if (!L) return null;
@@ -366,7 +435,7 @@ export function attachFreeMapBaseLayer(
       return null;
     }
     const baseLayer = L.maplibreGL({
-      style: FREE_MAP_STYLE,
+      style: style ?? FREE_MAP_STYLE,
       pane: 'kadeshMapBase',
     });
     let failed = false;
@@ -396,28 +465,20 @@ export function attachFreeMapBaseLayer(
   return null;
 }
 
-const PIN_SIZE = { width: 36, height: 44 } as const;
 
-export function createBrandPinIcon(L: LeafletLib, fill = getBrandColor()) {
-  const pinSvg = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 44" width="36" height="44" aria-hidden="true">
-      <path
-        fill="${fill}"
-        stroke="#ffffff"
-        stroke-width="2"
-        d="M18 2C10.82 2 5 7.82 5 15c0 9.75 13 25.5 13 25.5S31 24.75 31 15C31 7.82 25.18 2 18 2z"
-      />
-      <circle cx="18" cy="15" r="5.5" fill="#ffffff" />
-      <circle cx="18" cy="15" r="3" fill="${fill}" />
-    </svg>
-  `.trim();
-
+/** `L.divIcon` del pin de Kadesh (`kadeshPin.ts`), anclado en la punta. */
+function kadeshPinIcon(L: LeafletLib, color: string, glyph: PinGlyph, pulse = false) {
   return L.divIcon({
     className: 'kadesh-map-pin-icon',
-    html: pinSvg,
-    iconSize: [PIN_SIZE.width, PIN_SIZE.height],
-    iconAnchor: [PIN_SIZE.width / 2, PIN_SIZE.height],
+    html: kadeshPinHtml(color, glyph, pulse),
+    iconSize: [PIN_WIDTH, PIN_HEIGHT],
+    iconAnchor: PIN_TIP,
   });
+}
+
+/** Lugar elegido (selector de ubicación, eventos): pin de Kadesh con un punto, color de la marca. */
+export function createBrandPinIcon(L: LeafletLib, fill = getBrandColor()) {
+  return kadeshPinIcon(L, fill, 'dot');
 }
 
 export function createUserLocationIcon(L: LeafletLib) {
@@ -438,22 +499,14 @@ export function createUserLocationIcon(L: LeafletLib) {
   });
 }
 
-export function createStatusPinIcon(L: LeafletLib, color: string) {
-  const teardropPath =
-    'M12 2C16.8706 2 21 6.03298 21 10.9258C21 15.8965 16.8033 19.3847 12.927 21.7567C12.6445 21.9162 12.325 22 12 22C11.675 22 11.3555 21.9162 11.073 21.7567C7.2039 19.3616 3 15.9137 3 10.9258C3 6.03298 7.12944 2 12 2Z';
-  const svg = `
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="40" height="40" aria-hidden="true">
-      <path d="${teardropPath}" fill="${color}" stroke="#ffffff" stroke-width="1.2" stroke-linejoin="round"/>
-      <circle cx="12" cy="10.5" r="3.2" fill="#ffffff"/>
-    </svg>
-  `.trim();
+/** Animal en el mapa: pin de Kadesh con huella, del color de su estado. */
+export function createStatusPinIcon(L: LeafletLib, color: string, pulse = false) {
+  return kadeshPinIcon(L, color, 'paw', pulse);
+}
 
-  return L.divIcon({
-    className: 'kadesh-map-pin-icon',
-    html: svg,
-    iconSize: [40, 40],
-    iconAnchor: [20, 38],
-  });
+/** Igual que `createStatusPinIcon` (nombre que usa el hero). `pulse`: aro que late en la punta. */
+export function createPawPinIcon(L: LeafletLib, color: string, pulse = false) {
+  return createStatusPinIcon(L, color, pulse);
 }
 
 /**
@@ -479,22 +532,9 @@ export function createSightingDotIcon(L: LeafletLib, color: string, faded = fals
   });
 }
 
+/** Veterinaria: el mismo pin con su «T», color de la marca. */
 export function createVeterinaryPinIcon(L: LeafletLib) {
-  const color = getBrandColor();
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 44" width="36" height="44" aria-hidden="true">
-      <path fill="${color}" stroke="#ffffff" stroke-width="2"
-        d="M18 2C10.82 2 5 7.82 5 15c0 9.75 13 25.5 13 25.5S31 24.75 31 15C31 7.82 25.18 2 18 2z"/>
-      <path fill="#ffffff" d="M13 10h10v2h-4v8h-2v-8h-4z"/>
-    </svg>
-  `.trim();
-
-  return L.divIcon({
-    className: 'kadesh-map-pin-icon',
-    html: svg,
-    iconSize: [PIN_SIZE.width, PIN_SIZE.height],
-    iconAnchor: [PIN_SIZE.width / 2, PIN_SIZE.height],
-  });
+  return kadeshPinIcon(L, getBrandColor(), 'vet');
 }
 
 export function fitMapToPoints(

@@ -4,22 +4,25 @@ La portada le habla primero a **quien perdió a su mascota**. Los demás públic
 
 ## Orden
 
-1. Hero (`HeroSection`)
-2. Reportes recientes (`RecentReportsSection`, `#animales`)
-3. Alertas de zona (`ZoneAlertsSection`, `#alertas`)
-4. Veterinarias cerca (`VeterinariansSection`, `#veterinarias`)
-5. Próximos eventos (`UpcomingEventsSection`, `#eventos`)
-6. Cómo funciona (`HowItWorksSection`, `#como-funciona`)
-7. Primeras 24 horas (`FirstHoursSection`, `#primeras-24-horas`)
-8. Historias (`StoriesSection`, `#historias`)
-9. Espacios de rescate (`RescueSpacesSection`, `#espacios-de-rescate`): qué es, para quién y qué hace, con la vitrina `RescueJourney` y el botón para activar. Siempre se pinta.
-10. Aliados (`AlliesSection`, `#aliados`): muro de espacios de rescate aliados, estilo contribuidores de GitHub; sin aliados no se pinta. Es la prueba de la sección anterior, por eso ya no lleva su propio «¿Rescatas?». Detalle en `components/rescue/README.md`.
-11. Donaciones (`DonationsSection`, `#donaciones`)
-12. Franja para negocios (`BusinessStrip`) → el detalle vive en `/anunciate` (`components/advertise`)
-13. Preguntas frecuentes (`FaqSection`, `#preguntas-frecuentes`)
-14. Cierre (`ClosingSection`), suscripción al blog y pie
+Primero lo que sirve a quien perdió a su mascota; después la comunidad, los servicios y lo que sostiene a Kadesh (fase 6 del plan, noviembre 2026).
 
-Fondos: a partir de Historias se alternan blanco y `#f7f8fa` (Historias blanco, Espacios de rescate gris, Aliados blanco) hasta el azul de Donaciones. En oscuro, `night` / `night-raised`.
+1. Hero (`HeroSection`): «Reportar mascota perdida» y los accesos «Encontré una mascota», «Vi una mascota perdida», adoptar, dar en adopción y veterinarias.
+2. Reportes recientes (`RecentReportsSection`, `#animales`)
+3. Reencuentros (`ReunionsSection`, `#reencuentros`): historias reales de casos cerrados con hogar. Con menos de 2 no se pinta.
+4. Alertas de zona (`ZoneAlertsSection`, `#alertas`)
+5. Cómo funciona (`HowItWorksSection`, `#como-funciona`)
+6. Primeras 24 horas (`FirstHoursSection`, `#primeras-24-horas`)
+7. Preguntas frecuentes (`FaqSection`, `#preguntas-frecuentes`): sube porque responde las dudas de quien busca.
+8. Espacios de rescate (`RescueSpacesSection`, `#espacios-de-rescate`): qué es, para quién y qué hace, con la vitrina `RescueJourney` y el botón para activar. Siempre se pinta.
+9. Aliados (`AlliesSection`, `#aliados`): muro de espacios de rescate aliados; sin aliados no se pinta. Detalle en `components/rescue/README.md`.
+10. Veterinarias cerca (`VeterinariansSection`, `#veterinarias`)
+11. Historias del blog (`StoriesSection`, `#historias`)
+12. Próximos eventos (`UpcomingEventsSection`, `#eventos`)
+13. Donaciones (`DonationsSection`, `#donaciones`)
+14. Franja para negocios (`BusinessStrip`) → el detalle vive en `/anunciate` (`components/advertise`)
+15. Cierre (`ClosingSection`), suscripción al blog y pie
+
+Fondos: se alternan para que nunca queden dos iguales juntos (claro: blanco y `#f7f8fa`; oscuro: `night` y `night-raised`). Reportes gris, Reencuentros blanco, Alertas `kadesh-50`, Cómo funciona blanco, Primeras horas gris, FAQ blanco, Espacios gris, Aliados blanco, Veterinarias gris, Historias blanco, Eventos gris y Donaciones azul. Al mover una sección, revisa el fondo de sus vecinas.
 
 Fuera de la portada: el roadmap vive en `/novedades#roadmap` (`components/changelog/RoadmapSection`), Kadesh Business y FOOD en el pie (columna Familia Kadesh), y «¿Qué es KADESH?» con la frase «Tecnología moderna. Corazón compasivo. Misión espiritual.» en Conócenos (`WhatIsKadesh` se sigue exportando para esa página).
 
@@ -29,11 +32,40 @@ Una sola promesa: «¿Se perdió tu mascota? Repórtala gratis…». El botón p
 
 Cifras bajo los accesos, cada una es un enlace: veterinarias y ciudades (de `petLandingStats`, redondeadas hacia abajo; se ocultan si son menores a 10) → `/veterinarias`; eventos registrados («N eventos registrados»: todos los publicados, también los que ya pasaron; desde 1, redondeada desde 100; sale de `fetchHomeEvents`) → `#eventos`. No se muestran animales registrados ni reencuentros hasta tener una cifra real de reencuentros que se vea bien.
 
+## Mapa del hero
+
+`HeroMap` sale en el HTML como ilustración (`StreetLayer` y pines fijos), sin bajar ningún mapa. Si quien ve **ya compartió su ubicación antes** (`useRememberedLocation`, no se pide aquí) y hay reportes **activos** en su zona (perdido, encontrado, rescatado, abandonado, en adopción), encima aparece el mapa real (`HeroLiveMap`):
+
+- **Datos:** salen de `useRecentReports` con las mismas variables que «Reportes recientes», así que Apollo comparte la consulta y no sale ninguna petición de más.
+- **Paleta:** la misma de la ilustración en claro y oscuro. Es la de todos los mapas del sitio (`kadeshMapStyle` en `components/shared/kadeshMapStyle.ts`, `HERO_MAP_PALETTE`), que `createFreeMap` usa por defecto. Si cambias un color de `StreetLayer`, cambia el de la paleta.
+- **Pines:** el pin de Kadesh (`kadeshPin.ts`), el mismo de la ilustración y de todos los mapas: círculo con huella y una punta que marca el lugar; «Perdido» late. Cada uno abre su ficha. Se marca también la ubicación de quien ve. Los pines ilustrados se quitan cuando sale el mapa real.
+- **Interacción:** sin arrastre ni zoom (`interactive: false`), porque la página hace scroll encima.
+- **Encima del mapa:** la pastilla «N reportes activos cerca de ti». La leyenda muestra solo los estados presentes y «Tú».
+- **Respaldo:** sin ubicación, sin reportes activos cerca, sin WebGL o si no baja el estilo, se queda la ilustración. Leaflet y MapLibre solo se bajan en el caso del mapa real.
+
 ## Reportes recientes
 
-`hooks/useRecentReports` pide solo 6 reportes. Con ubicación, los de la zona (radio `DEFAULT_RADIUS`); si no hay ubicación o no hay nada cerca, los 6 más recientes del país, nunca una sección vacía. Filtros: Perdidos, Encontrados, En adopción. La geolocalización **no** se pide sola: el botón es **Ver los de mi zona** (misma regla que el resto del sitio con `useRememberedLocation`).
+Cuadrícula tipo feed (`RecentReportsSection`) de 12 cuadros cuadrados: 3 × 4 en celular, de orilla a orilla y con 2 px entre fotos; 4 × 3 en escritorio, con esquinas redondeadas. El primero es un cuadro rojo (`ReportLink`, el rojo del botón principal del hero) con la misma estructura que los de foto: pastilla «Gratis» arriba a la izquierda y «¿Se perdió tu mascota? Repórtala aquí →» abajo y los otros 11, reportes (`RECENT_REPORTS_LIMIT` en `recentReports.ts`).
+
+- Cada cuadro lleva:
+  - la foto;
+  - arriba a la izquierda, el badge de fecha (`reportDateBadge`): «Hoy», «Ayer», «Antier», «Esta semana», «Este mes», «Hace N meses» o «Hace más de un año», por días de calendario. Solo se pinta en el navegador, porque el HTML sale de caché;
+  - arriba a la derecha, un punto del color del estado;
+  - abajo, sobre un degradado, el nombre y la distancia (o la ciudad). En celular también va el estado en texto.
+  - Todo el cuadro enlaza a la ficha.
+- `hooks/useRecentReports` pide esos 11. Con ubicación, los de la zona (radio `DEFAULT_RADIUS`); sin ubicación o sin nada cerca, los más recientes del país, nunca una sección vacía. Filtros: Perdidos, Encontrados, En adopción. La geolocalización **no** se pide sola: el botón es **Ver los de mi zona** (misma regla que el resto del sitio con `useRememberedLocation`).
+- **Mini mapa** (`RecentReportsMiniMap`): debajo (en celular, de orilla a orilla y pegado a la cuadrícula), con los pines de los cuadros que se ven y el punto azul de quien ve si compartió ubicación. No se arrastra: todo el recuadro es un enlace a `/animales` con el mismo filtro («Ver todos en el mapa»). Leaflet y MapLibre solo se bajan cuando el mapa está por entrar a la pantalla (IntersectionObserver). Sin coordenadas, queda solo el enlace de texto.
 
 Sin ubicación, `getNearbyAnimals` devuelve los más recientes. Omite `lat`/`lng` (desde 2026-11-17, `null` hace lo mismo; antes no devolvía nada).
+
+## Reencuentros
+
+Va justo después de los reportes: a quien está buscando le dice que esto sí funciona, con casos reales.
+
+- **Servidor** (`ReunionsSection`, datos de `fetchReunionStories` en `server.ts`, revalida cada 10 min): `petReunionStories(take: 6)` de kadesh-back. Son casos cerrados con hogar (`reunited`, `adopted`, `other_home`) cuya persona aceptó publicar la historia (`storyConsent`), del cierre más reciente al más viejo. Todo llega en el HTML; el navegador no pide nada.
+- El back recorta la historia a 280 caracteres y le quita teléfonos, correos y enlaces. Nunca manda el contacto ni quién lo reportó. Para retirar una historia: en el Admin UI, apagar `storyConsent` o vaciar `outcomeStory`.
+- Con menos de 2 historias la sección no se pinta. La etiqueta de arriba dice «N ya tienen hogar» (reencuentros + adopciones de `petLandingStats`) desde 10; si no, «Reencuentros».
+- Cada tarjeta enlaza a la ficha del animal. Abajo, «¿Se perdió la tuya? Repórtala gratis» (`ReportLink`).
 
 ## Alertas de zona
 

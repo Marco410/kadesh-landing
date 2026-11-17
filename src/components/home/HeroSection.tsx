@@ -17,6 +17,7 @@ import { useChipPulse } from 'kadesh/components/animals/useChipMotion';
 import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 import HeroMap from 'kadesh/components/home/HeroMap';
 import type { PetLandingStats } from 'kadesh/components/home/server';
+import type { RecentReport } from 'kadesh/components/home/recentReports';
 import StatsCounter from 'kadesh/components/home/StatsCounter';
 
 const REPORT_LOST_HREF = `${Routes.animals.new}?status=lost`;
@@ -215,9 +216,12 @@ function HeroProof({ stats, events }: { stats?: PetLandingStats | null; events?:
 export default function HeroSection({
   stats,
   events,
+  recentReports,
 }: {
   stats?: PetLandingStats | null;
   events?: HeroEventsStat | null;
+  /** Los mismos de «Reportes recientes»: el mapa del hero los comparte (ver `HeroMap`). */
+  recentReports?: RecentReport[];
 }) {
   return (
     <section
@@ -252,7 +256,7 @@ export default function HeroSection({
           <HeroProof stats={stats} events={events} />
         </div>
 
-        <HeroMap />
+        <HeroMap initialReports={recentReports} />
       </div>
 
       <div className="kadesh-hero-fade" />

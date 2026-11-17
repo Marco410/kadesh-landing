@@ -46,3 +46,4 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-13 | [«Lo vi»: avistamientos sin cuenta](2026-11-13-lo-vi-avistamientos.md) | animals | pendiente |
 | 2026-11-17 | [«Lo vi» en el mapa (últimas 72 h)](2026-11-17-lo-vi-en-el-mapa.md) | animals | pendiente |
 | 2026-11-17 | [Animales paginados en el servidor y mapa con pines ligeros](2026-11-17-animales-paginados-y-pines.md) | animals | pendiente |
+| 2026-11-17 | [Paleta de mapas de Kadesh (claro y oscuro)](2026-11-17-paleta-de-mapas.md) | shared | pendiente |

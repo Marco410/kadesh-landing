@@ -11,24 +11,22 @@ import {
   Location01Icon,
 } from '@hugeicons/core-free-icons';
 import { animalDetailHref } from 'kadesh/components/animals/animalSlug';
-import {
-  ANIMAL_TYPE_LABELS,
-  getStatusColor,
-  getStatusLabel,
-} from 'kadesh/components/animals/constants';
+import { getStatusColor, getStatusLabel } from 'kadesh/components/animals/constants';
 import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 import {
+  RECENT_REPORTS_LIMIT,
   useRecentReports,
   type RecentReport,
   type RecentReportStatus,
 } from 'kadesh/components/home/hooks/useRecentReports';
+import { reportDateBadge } from 'kadesh/components/home/recentReports';
+import RecentReportsMiniMap from 'kadesh/components/home/RecentReportsMiniMap';
 import { DEFAULT_RADIUS } from 'kadesh/constants/constans';
 import { Routes } from 'kadesh/core/routes';
 import ReportLink from 'kadesh/components/animals/ReportLink';
 import { cn } from 'kadesh/utils/cn';
-import { formatDate } from 'kadesh/utils/format-date';
 import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
-import { Bone, LoadingBar, SkeletonRegion, boneWidth } from 'kadesh/components/ui/skeleton';
+import { Bone, LoadingBar, SkeletonRegion } from 'kadesh/components/ui/skeleton';
 import { animalDisplayName } from 'kadesh/components/animals/animalName';
 
 const FILTERS: { label: string; value: RecentReportStatus }[] = [
@@ -52,87 +50,113 @@ function useHydrated(): boolean {
   return useSyncExternalStore(subscribeNever, () => true, () => false);
 }
 
-function ReportCard({ report }: { report: RecentReport }) {
+function distanceText(distance: number | null): string | null {
+  if (distance == null) return null;
+  return distance < 1 ? `a ${Math.round(distance * 1000)} m` : `a ${distance.toFixed(1)} km`;
+}
+
+/**
+ * Cuadro del feed: foto cuadrada, badge de fecha («Hoy», «Ayer»…) arriba a la izquierda, punto con
+ * el color del estado arriba a la derecha y, sobre un degradado, el nombre y la distancia o ciudad.
+ */
+function ReportTile({ report }: { report: RecentReport }) {
   const hydrated = useHydrated();
   const title = reportTitle(report);
-  const typeLabel = ANIMAL_TYPE_LABELS[report.typeName];
+  const statusLabel = getStatusLabel(report.status);
+  const badge = hydrated ? reportDateBadge(report.createdAt) : null;
+  const where = distanceText(report.distance) ?? report.place;
 
   return (
-    <article
-      data-report-card
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,35,80,0.1)] dark:border-[#2a2a2a] dark:bg-[#1e1e1e]"
-    >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#e8edf3] dark:bg-[#2a3548]">
-        {report.imageUrl ? (
-          <Image
-            src={report.imageUrl}
-            alt={`${title}, ${getStatusLabel(report.status).toLowerCase()}`}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-[#5a5a5a]">
-            <HugeiconsIcon icon={Image01Icon} size={40} strokeWidth={1.5} aria-hidden="true" />
-          </div>
-        )}
-        <span
-          className="absolute top-3 left-3 z-10 rounded-full px-3 py-1.5 text-xs font-bold text-white shadow-md"
-          style={{ backgroundColor: getStatusColor(report.status) }}
-        >
-          {getStatusLabel(report.status)}
+    <li data-report-card className="group relative aspect-square overflow-hidden bg-[#e8edf3] dark:bg-[#2a3548] sm:rounded-xl">
+      {report.imageUrl ? (
+        <Image
+          src={report.imageUrl}
+          alt=""
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 1024px) 33vw, 25vw"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-[#5a5a5a]">
+          <HugeiconsIcon icon={Image01Icon} size={32} strokeWidth={1.5} aria-hidden="true" />
+        </div>
+      )}
+      {badge ? (
+        <span className="absolute left-1.5 top-1.5 z-10 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#121212] shadow-sm sm:left-2.5 sm:top-2.5 sm:px-2.5 sm:text-[11px]">
+          {badge}
         </span>
-      </div>
-
-      <div className="flex flex-1 flex-col gap-1.5 p-5">
-        <h3 className="line-clamp-1 text-lg font-bold text-[#212121] dark:text-white">
+      ) : null}
+      <span
+        className="absolute right-1.5 top-1.5 z-10 h-3 w-3 rounded-full ring-2 ring-white sm:right-2.5 sm:top-2.5 sm:h-3.5 sm:w-3.5"
+        style={{ backgroundColor: getStatusColor(report.status) }}
+        aria-hidden="true"
+      />
+      <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-2 pb-1.5 pt-6 sm:px-3 sm:pb-2.5 sm:pt-10">
+        <p className="truncate text-xs font-bold text-white sm:text-base">
           <Link
             href={animalDetailHref(report)}
             className="after:absolute after:inset-0 focus-visible:outline-none"
           >
             {title}
+            <span className="sr-only">, {statusLabel.toLowerCase()}</span>
           </Link>
-        </h3>
-        {typeLabel && typeLabel !== title && (
-          <p className="text-sm text-[#616161] dark:text-[#b0b0b0]">{typeLabel}</p>
-        )}
-        {report.place && (
-          <p className="flex items-start gap-1.5 text-sm text-[#616161] dark:text-[#b0b0b0]">
-            <HugeiconsIcon icon={Location01Icon} size={16} className="mt-0.5 flex-shrink-0" aria-hidden />
-            <span className="line-clamp-1">{report.place}</span>
-          </p>
-        )}
-        <p className="mt-auto pt-2 text-sm font-medium text-[#5a5a5a] dark:text-[#9aa3b2]">
-          {hydrated ? formatDate(report.createdAt) : '\u00a0'}
-          {report.distance != null && (
-            <span className="text-kadesh">
-              {' · '}
-              {report.distance < 1
-                ? `a ${Math.round(report.distance * 1000)} m`
-                : `a ${report.distance.toFixed(1)} km`}
-            </span>
-          )}
         </p>
+        {where ? (
+          <p className="truncate text-[10px] font-medium text-white/85 sm:text-xs">
+            <span className="sm:hidden">{statusLabel} · </span>
+            {where}
+          </p>
+        ) : null}
       </div>
-    </article>
+      {/* Anillo de foco sobre todo el cuadro (el enlace cubre el cuadro con `after`). */}
+      <span className="pointer-events-none absolute inset-0 z-20 rounded-[inherit] ring-kadesh ring-offset-0 group-has-[:focus-visible]:ring-4" aria-hidden="true" />
+    </li>
   );
 }
 
-const SKELETON_TITLE_WIDTHS = ['58%', '44%', '52%'] as const;
-const SKELETON_PLACE_WIDTHS = ['66%', '74%', '54%'] as const;
-
-/** Silueta de `ReportCard`, con sus mismas medidas. */
-function ReportCardSkeleton({ index = 0 }: { index?: number }) {
+/**
+ * Primer cuadro del feed, con la misma estructura que los de foto: arriba a la izquierda una
+ * pastilla blanca («Gratis», mismo estilo que «Hoy») y abajo el texto. Fondo: el rojo del botón
+ * principal del hero y del pin «Perdido».
+ */
+function ReportTileCta() {
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-[#2a2a2a] dark:bg-[#1e1e1e]">
-      <Bone kind="box" radius={0} className="aspect-[4/3]" />
-      <div className="flex flex-1 flex-col gap-1.5 p-5">
-        <Bone kind="title" slot={28} width={boneWidth(SKELETON_TITLE_WIDTHS, index)} />
-        <Bone kind="line" slot={20} width={64} />
-        <Bone kind="line" slot={20} width={boneWidth(SKELETON_PLACE_WIDTHS, index)} />
-        <Bone kind="line" slot={20} width={150} className="mt-auto pt-2" />
-      </div>
-    </div>
+    <li className="relative aspect-square overflow-hidden bg-red-600 transition-colors hover:bg-red-700 sm:rounded-xl">
+      <ReportLink
+        href={`${Routes.animals.new}?status=lost`}
+        className="group/cta flex h-full w-full flex-col justify-end px-2 pb-1.5 text-white focus-visible:outline focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white sm:px-4 sm:pb-3.5"
+      >
+        <span className="absolute left-1.5 top-1.5 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-700 shadow-sm sm:left-2.5 sm:top-2.5 sm:px-2.5 sm:text-[11px]">
+          Gratis
+        </span>
+        <span className="text-[13px] font-black leading-[1.05] tracking-[-0.02em] sm:text-2xl lg:text-[1.7rem]">
+          ¿Se perdió tu mascota?
+        </span>
+        <span className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-white/90 sm:mt-2 sm:text-sm">
+          Repórtala aquí
+          <HugeiconsIcon
+            icon={ArrowRight01Icon}
+            className="h-3 w-3 shrink-0 transition-transform duration-200 group-hover/cta:translate-x-1 sm:h-4 sm:w-4"
+            strokeWidth={2.4}
+            aria-hidden="true"
+          />
+        </span>
+      </ReportLink>
+    </li>
+  );
+}
+
+/** Silueta de la cuadrícula, con sus mismas medidas. */
+function ReportGridSkeleton() {
+  return (
+    <SkeletonRegion
+      label="Cargando reportes"
+      className="-mx-4 mb-0.5 grid grid-cols-3 gap-0.5 sm:mx-0 sm:mb-6 sm:gap-3 lg:grid-cols-4"
+    >
+      {Array.from({ length: RECENT_REPORTS_LIMIT + 1 }, (_, index) => (
+        <Bone key={index} kind="box" radius={0} className="aspect-square sm:rounded-xl" />
+      ))}
+    </SkeletonRegion>
   );
 }
 
@@ -250,26 +274,21 @@ export default function RecentReportsSection({ initialReports = [] }: { initialR
         </div>
 
         {loading ? (
-          <SkeletonRegion
-            label="Cargando reportes"
-            className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {[0, 1, 2].map((index) => (
-              <ReportCardSkeleton key={index} index={index} />
-            ))}
-          </SkeletonRegion>
+          <ReportGridSkeleton />
         ) : reports.length > 0 ? (
-          <div
+          <ul
             data-report-grid
+            aria-label="Reportes recientes"
             className={cn(
-              'mb-10 grid grid-cols-1 gap-6 transition-opacity duration-200 sm:grid-cols-2 lg:grid-cols-3',
+              '-mx-4 mb-0.5 grid grid-cols-3 gap-0.5 transition-opacity duration-200 sm:mx-0 sm:mb-6 sm:gap-3 lg:grid-cols-4',
               refreshing && 'opacity-50'
             )}
           >
+            <ReportTileCta />
             {reports.map((report) => (
-              <ReportCard key={report.id} report={report} />
+              <ReportTile key={report.id} report={report} />
             ))}
-          </div>
+          </ul>
         ) : (
           <div className="mb-10 flex flex-col items-center px-4 py-12 text-center">
             <p className="mb-6 max-w-md text-[#5a5a5a] dark:text-[#b0b0b0]">
@@ -285,15 +304,11 @@ export default function RecentReportsSection({ initialReports = [] }: { initialR
           </div>
         )}
 
-        <div className="text-center">
-          <Link
-            href={status ? `${Routes.animals.index}?status=${status}` : Routes.animals.index}
-            className="inline-flex min-h-11 items-center gap-2 font-semibold text-kadesh-700 hover:underline dark:text-kadesh-300"
-          >
-            Ver todos en el mapa
-            <HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={2} aria-hidden="true" />
-          </Link>
-        </div>
+        <RecentReportsMiniMap
+          reports={loading ? [] : reports}
+          coords={isNearby ? coords : null}
+          href={status ? `${Routes.animals.index}?status=${status}` : Routes.animals.index}
+        />
       </div>
     </section>
   );

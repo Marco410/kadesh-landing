@@ -1,10 +1,21 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Routes } from 'kadesh/core/routes';
 import { getStatusColor, getStatusLabel } from 'kadesh/components/animals/constants';
 import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
+import { useRecentReports } from 'kadesh/components/home/hooks/useRecentReports';
+import type { RecentReport } from 'kadesh/components/home/recentReports';
+import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
+import { kadeshPinHtml } from 'kadesh/components/shared/kadeshPin';
+
+/** El mapa real solo se baja si hay reportes activos cerca (Leaflet + MapLibre pesan). */
+const HeroLiveMap = dynamic(() => import('./HeroLiveMap'), { ssr: false });
+
+/** Estados de un caso abierto: los que salen como pin en el mapa real del hero. */
+const ACTIVE_STATUSES = ['lost', 'found', 'rescued', 'abandoned', 'in_adoption'];
 
 type PawPin = {
   kind: 'paw';
@@ -31,7 +42,7 @@ const PINS: Array<PawPin | VetPin> = [
   { kind: 'vet', x: 48, y: 16 },
 ];
 
-const LEGEND_STATUSES: PawPin['status'][] = ['lost', 'found', 'rescued', 'in_adoption'];
+const LEGEND_STATUSES: string[] = ['lost', 'found', 'rescued', 'in_adoption'];
 
 function PawGlyph({ className }: { className?: string }) {
   return (
@@ -79,8 +90,26 @@ function StreetLayer() {
   );
 }
 
-export default function HeroMap() {
+/**
+ * Mapa del hero. Al cargar es la ilustración (sale en el HTML, sin bajar ningún mapa). Si quien ve
+ * ya compartió su ubicación antes (no se le pide aquí) y hay reportes activos en su zona, encima
+ * aparece el mapa real con esos pines, con la misma paleta (`HeroLiveMap`). Sin ubicación o sin
+ * nada cerca, se queda la ilustración.
+ *
+ * Los reportes salen de `useRecentReports` con las mismas variables que «Reportes recientes»:
+ * Apollo comparte la consulta y no sale ninguna petición de más.
+ */
+export default function HeroMap({ initialReports = [] }: { initialReports?: RecentReport[] }) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const { coords } = useRememberedLocation();
+  const { reports, isNearby } = useRecentReports(coords, null, initialReports);
+  const activeNearby = isNearby
+    ? reports.filter((report) => ACTIVE_STATUSES.includes(report.status) && report.lat != null && report.lng != null)
+    : [];
+  const [liveShown, setLiveShown] = useState(false);
+  const [liveFailed, setLiveFailed] = useState(false);
+  const live = Boolean(coords) && activeNearby.length > 0 && !liveFailed;
+  const liveStatuses = ACTIVE_STATUSES.filter((status) => activeNearby.some((report) => report.status === status));
 
   useGSAP(
     () => {
@@ -130,63 +159,46 @@ export default function HeroMap() {
       >
         <div className="relative aspect-square overflow-hidden">
           <StreetLayer />
+          {live && coords ? (
+            <div className={`absolute inset-0 z-20 ${liveShown ? '' : 'pointer-events-none'}`}>
+              <HeroLiveMap
+              reports={activeNearby}
+              coords={coords}
+              onShown={() => setLiveShown(true)}
+                onUnavailable={() => setLiveFailed(true)}
+              />
+            </div>
+          ) : null}
+          {live && liveShown ? (
+            <p className="pointer-events-none absolute left-3 top-3 z-30 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-[#121212] shadow-[0_6px_16px_rgba(15,35,80,0.16)] dark:bg-night/95 dark:text-white">
+              {activeNearby.length === 1 ? '1 reporte activo cerca de ti' : `${activeNearby.length} reportes activos cerca de ti`}
+            </p>
+          ) : null}
 
-          {PINS.map((pin, index) => {
-            if (pin.kind === 'vet') {
-              return (
-                <Link
-                  key={`vet-${index}`}
-                  href={Routes.veterinaries.index}
-                  data-hero-pin="vet"
-                  style={{ left: `${pin.x}%`, top: `${pin.y}%` }}
-                  className="absolute z-10 -translate-x-1/2 -translate-y-full"
-                  aria-label="Veterinaria en el mapa"
-                >
-                  <span className="relative flex h-10 w-8 items-end justify-center">
-                    <svg viewBox="0 0 36 44" className="h-10 w-8" aria-hidden>
-                      <path
-                        fill="var(--color-kadesh)"
-                        stroke="#ffffff"
-                        strokeWidth="2"
-                        d="M18 2C10.82 2 5 7.82 5 15c0 9.75 13 25.5 13 25.5S31 24.75 31 15C31 7.82 25.18 2 18 2z"
-                      />
-                      <path fill="#ffffff" d="M13 10h10v2h-4v8h-2v-8h-4z" />
-                    </svg>
-                  </span>
-                </Link>
-              );
-            }
-
-            const color = getStatusColor(pin.status);
-            return (
-              <Link
-                key={`${pin.status}-${index}`}
-                href={Routes.animals.index}
-                data-hero-pin={pin.status}
-                style={{ left: `${pin.x}%`, top: `${pin.y}%` }}
-                className="absolute z-10 -translate-x-1/2 -translate-y-full"
-                aria-label={`Animal ${getStatusLabel(pin.status)}`}
-              >
-                {pin.status === 'lost' ? (
-                  <span
-                    className="kadesh-hero-pin-pulse absolute left-1/2 top-[70%] h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full"
-                    style={{ backgroundColor: color }}
-                    aria-hidden
+          {/* Pines ilustrados: los mismos que en los mapas reales (`kadeshPin.ts`). Se quitan al salir el mapa real. */}
+          {live && liveShown
+            ? null
+            : PINS.map((pin, index) => {
+                const vet = pin.kind === 'vet';
+                const html = vet
+                  ? kadeshPinHtml('var(--color-kadesh)', 'vet')
+                  : kadeshPinHtml(getStatusColor(pin.status), 'paw', pin.status === 'lost');
+                return (
+                  <Link
+                    key={`${vet ? 'vet' : pin.status}-${index}`}
+                    href={vet ? Routes.veterinaries.index : Routes.animals.index}
+                    data-hero-pin={vet ? 'vet' : pin.status}
+                    style={{ left: `${pin.x}%`, top: `${pin.y}%` }}
+                    className="absolute z-10 -translate-x-1/2 -translate-y-full"
+                    aria-label={vet ? 'Veterinaria en el mapa' : `Animal ${getStatusLabel(pin.status)}`}
+                    dangerouslySetInnerHTML={{ __html: html }}
                   />
-                ) : null}
-                <span
-                  className="relative flex h-11 w-11 items-center justify-center rounded-full border-2 border-white shadow-[0_8px_18px_rgba(15,35,80,0.28)]"
-                  style={{ backgroundColor: color }}
-                >
-                  <PawGlyph className="h-6 w-6 text-white" />
-                </span>
-              </Link>
-            );
-          })}
+                );
+              })}
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-[#ececec] px-4 py-3 dark:border-white/10">
-          {LEGEND_STATUSES.map((status) => (
+          {(live && liveShown ? liveStatuses : LEGEND_STATUSES).map((status) => (
             <span key={status} className="inline-flex items-center gap-1.5 text-xs font-medium text-[#3a3a3a] dark:text-[#d0d0d0]">
               <span
                 className="flex h-5 w-5 items-center justify-center rounded-full"
@@ -197,10 +209,17 @@ export default function HeroMap() {
               {getStatusLabel(status)}
             </span>
           ))}
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#3a3a3a] dark:text-[#d0d0d0]">
-            <span className="h-3.5 w-3 rounded-sm bg-kadesh" />
-            Veterinaria
-          </span>
+          {live && liveShown ? (
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#3a3a3a] dark:text-[#d0d0d0]">
+              <span className="h-3 w-3 rounded-full border-2 border-white bg-kadesh shadow-sm" />
+              Tú
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#3a3a3a] dark:text-[#d0d0d0]">
+              <span className="h-3.5 w-3 rounded-sm bg-kadesh" />
+              Veterinaria
+            </span>
+          )}
         </div>
       </div>
     </div>

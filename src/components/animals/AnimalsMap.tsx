@@ -8,9 +8,11 @@ import { Location01Icon } from '@hugeicons/core-free-icons';
 import { LostAnimal } from './types';
 import { getStatusColor } from './constants';
 import AnimalInfoWindow from './AnimalInfoWindow';
+import { sightingTimeLabel } from './sightings/time';
 import {
   applyFreeMapThemeClass,
   createFreeMap,
+  createSightingDotIcon,
   createStatusPinIcon,
   createUserLocationIcon,
   createMarkerGroup,
@@ -21,6 +23,7 @@ import {
   getLeaflet,
   isDarkMapTheme,
   isMapAlive,
+  type LeafletLayer,
   type LeafletMap,
   type LeafletMarker,
   type LeafletMarkerClusterGroup,
@@ -75,6 +78,8 @@ function AnimalsMapView({
   const mapRef = useRef<LeafletMap | null>(null);
   const clusterRef = useRef<LeafletMarkerClusterGroup | null>(null);
   const userMarkerRef = useRef<LeafletMarker | null>(null);
+  /** Puntos y líneas de «Lo vi» (fuera del cluster: no se agrupan con los reportes). */
+  const sightingLayersRef = useRef<Array<LeafletLayer | LeafletMarker>>([]);
   const popupRef = useRef<LeafletPopup | null>(null);
   const popupRootRef = useRef<Root | null>(null);
   const selectedRef = useRef(selectedAnimal);
@@ -170,6 +175,7 @@ function AnimalsMapView({
       mapRef.current = null;
       clusterRef.current = null;
       userMarkerRef.current = null;
+      sightingLayersRef.current = [];
     };
     // Map instance is created once when Leaflet is ready.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -187,6 +193,8 @@ function AnimalsMapView({
     if (!L || !isMapAlive(map) || !cluster) return;
 
     cluster.clearLayers();
+    sightingLayersRef.current.forEach((layer) => layer.remove());
+    sightingLayersRef.current = [];
 
     const points: { lat: number; lng: number }[] = [];
 
@@ -201,6 +209,33 @@ function AnimalsMapView({
         });
         cluster.addLayer(marker);
         points.push({ lat: animal.latitude!, lng: animal.longitude! });
+
+        // «Lo vi» de las últimas 72 h: línea punteada del pin al más reciente (hacia dónde va) y
+        // un punto por avistamiento. Al tocarlo se abre la tarjeta del animal.
+        const sightings = animal.recentSightings ?? [];
+        if (sightings.length === 0) return;
+        const color = getStatusColor(animal.status);
+        const trail = L.polyline(
+          [[animal.latitude!, animal.longitude!], [sightings[0].latitude, sightings[0].longitude]],
+          { color, weight: 2, opacity: 0.7, dashArray: '4 6', interactive: false }
+        );
+        trail.addTo(map);
+        sightingLayersRef.current.push(trail);
+        sightings.forEach((sighting, index) => {
+          const when = sightingTimeLabel(sighting.seenAt);
+          const label = `${animal.name}: lo vieron ${when.toLowerCase()}${sighting.place ? ` · ${sighting.place}` : ''}`;
+          const dot = L.marker([sighting.latitude, sighting.longitude], {
+            icon: createSightingDotIcon(L, color, index > 0),
+            title: label,
+            alt: label,
+            zIndexOffset: index > 0 ? 0 : 200,
+          });
+          dot.on('click', () => {
+            onAnimalClickRef.current?.(animal);
+          });
+          dot.addTo(map);
+          sightingLayersRef.current.push(dot);
+        });
       });
 
     if (userLocation) {

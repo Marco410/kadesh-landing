@@ -8,6 +8,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { Cancel01Icon, SentIcon } from '@hugeicons/core-free-icons';
 import { formatDate } from 'kadesh/utils/format-date';
 import { animalDetailHref } from 'kadesh/components/animals/animalSlug';
+import { sightingTimeLabel } from './sightings/time';
 
 interface AnimalInfoWindowProps {
   animal: LostAnimal;
@@ -176,6 +177,19 @@ export default function AnimalInfoWindow({
             </p>
           </div>
         )}
+
+        {/* «Lo vi» más reciente (últimas 72 h): el punto con el ojo en el mapa. */}
+        {animal.recentSightings?.[0] ? (
+          <p style={{
+            fontSize: '13px',
+            fontWeight: 600,
+            color: 'var(--color-kadesh)',
+            margin: '0 0 10px',
+          }}>
+            Lo vieron {sightingTimeLabel(animal.recentSightings[0].seenAt).toLowerCase()}
+            {animal.recentSightings[0].place ? ` · ${animal.recentSightings[0].place}` : ''}
+          </p>
+        ) : null}
 
         <div style={{ 
           display: 'flex', 

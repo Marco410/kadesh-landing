@@ -15,6 +15,18 @@ Formato:
 
 ---
 
+## 2026-11-17 · feat: nuevo orden de la portada, «Ya volvieron a casa» y reportes recientes como feed
+- Rama: feat/portada-orden
+- Qué cambió y por qué: la portada le habla primero a quien perdió a su mascota, pero las veterinarias y los eventos estaban antes de «Cómo funciona», y la FAQ casi al final. Nuevo orden: reportes → **reencuentros** → alertas de zona → cómo funciona → primeras 24 horas → FAQ → espacios de rescate → aliados → veterinarias → historias del blog → eventos → donaciones → negocios → cierre. La FAQ pasa a fondo blanco para no quedar gris entre dos grises.
+  - **Nueva sección «Ya volvieron a casa»** (`ReunionsSection`, `#reencuentros`): hasta 6 historias reales de casos cerrados con hogar cuya familia aceptó publicarlas, con foto, «Volvió a casa / Adoptado / Encontró hogar», ciudad y mes. Sale del servidor (`fetchReunionStories`, 10 min) en la misma carga de la portada. Con menos de 2 historias no se pinta.
+  - El hero ya tenía «Perdí / Encontré / Lo vi» (fases anteriores).
+  - **«Reportes recientes» como feed**: cuadrícula de 12 cuadros cuadrados en lugar de 6 tarjetas con mucho aire. Son 3 × 4 en celular (de orilla a orilla) y 4 × 3 en escritorio. El primero es un cuadro rojo (el rojo del botón del hero) con la misma estructura que los de foto: pastilla «Gratis» arriba y «¿Se perdió tu mascota? Repórtala aquí →» abajo. Los otros 11 son reportes. Cada cuadro lleva el badge de fecha («Hoy», «Ayer», «Antier», «Esta semana», «Este mes», «Hace N meses»), un punto con el color del estado y, sobre un degradado, el nombre y la distancia o ciudad.
+  - **Mini mapa** debajo con los pines de esos reportes (en celular, de orilla a orilla como la cuadrícula). Todo el recuadro lleva a `/animales` con el mismo filtro. Leaflet se baja solo cuando el mapa está por verse.
+  - Costo: la portada pide 11 reportes en lugar de 6 (en el servidor, cada 10 min; en el navegador, solo con ubicación o filtro).
+- Archivos: src/app/page.tsx, src/components/home/{ReunionsSection.tsx (nuevo),RecentReportsMiniMap.tsx (nuevo),RecentReportsSection.tsx,recentReports.ts,server.ts,index.ts,FaqSection.tsx,README.md}
+- GraphQL: nueva consulta de servidor `PetReunionStories` (`petReunionStories(take)` en kadesh-back)
+- Móvil: no aplica (portada de marketing; la app no la tiene)
+
 ## 2026-11-13 · feat: «Lo vi»: avistamientos sin cuenta
 - Rama: feat/avistamientos
 - Qué cambió y por qué: quien ve a un animal perdido casi nunca tiene cuenta, y pedírsela para decir «lo vi en tal esquina» hace que no avise.

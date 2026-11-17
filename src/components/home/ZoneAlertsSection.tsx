@@ -4,7 +4,9 @@ import {
   Location01Icon,
   Notification03Icon,
   VolumeOffIcon,
+  WhatsappIcon,
 } from '@hugeicons/core-free-icons';
+import { Routes } from 'kadesh/core/routes';
 import { ZONE_ALERTS_ANSWER, ZONE_ALERTS_FACTS } from 'kadesh/components/home/constants';
 import ZoneAlertsCta from 'kadesh/components/home/ZoneAlertsCta';
 import ZoneAlertsFeed from 'kadesh/components/home/ZoneAlertsFeed';
@@ -64,6 +66,16 @@ export default function ZoneAlertsSection({ alerts }: { alerts: ZoneAlert[] }) {
             ¿Se perdió la tuya? Actívalas también: si alguien reporta un animal encontrado en tu zona,
             te enteras al momento.
           </p>
+          {/* Sin cuenta: el canal de WhatsApp de Kadesh Pet (por `/canal`, ver `core/whatsappChannels.ts`). */}
+          <a
+            href={Routes.channel}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-kadesh-700 hover:underline dark:text-kadesh-300"
+          >
+            <HugeiconsIcon icon={WhatsappIcon} size={18} strokeWidth={1.8} aria-hidden="true" />
+            ¿Sin cuenta? Sigue el canal de Kadesh Pet en WhatsApp
+          </a>
         </div>
 
         <ZoneAlertsFeed initialAlerts={alerts} />

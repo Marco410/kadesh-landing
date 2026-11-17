@@ -338,6 +338,20 @@ export const GET_ANIMAL_QUERY = gql`
       color
       size
       viewerCanEdit
+      sightings(take: 20) {
+        id
+        seenAt
+        lat
+        lng
+        placeLabel
+        city
+        state
+        notes
+        createdAt
+        hidden
+        contactName
+        contactPhone
+      }
       pet {
         id
       }
@@ -886,4 +900,57 @@ export interface CloseAnimalReportVariables {
 
 export interface CloseAnimalReportResponse {
   closeAnimalReport: { success: boolean; message: string; status?: string | null };
+}
+
+/** «Lo vi»: avistamiento con o sin cuenta (`reportAnimalSighting` en kadesh-back). */
+export const REPORT_ANIMAL_SIGHTING_MUTATION = gql`
+  mutation ReportAnimalSighting($input: ReportAnimalSightingInput!) {
+    reportAnimalSighting(input: $input) {
+      success
+      message
+      sightingId
+    }
+  }
+`;
+
+export interface ReportAnimalSightingVariables {
+  input: {
+    animalId: string;
+    lat: string;
+    lng: string;
+    placeLabel?: string | null;
+    city?: string | null;
+    state?: string | null;
+    seenAt?: string | null;
+    notes?: string | null;
+    contactName?: string | null;
+    contactPhone?: string | null;
+    turnstileToken?: string | null;
+    website?: string | null;
+  };
+}
+
+export interface AnimalSightingResult {
+  success: boolean;
+  message: string;
+  sightingId?: string | null;
+}
+
+export interface ReportAnimalSightingResponse {
+  reportAnimalSighting: AnimalSightingResult;
+}
+
+/** Quien atiende el reporte oculta o vuelve a mostrar un avistamiento. */
+export const SET_ANIMAL_SIGHTING_HIDDEN_MUTATION = gql`
+  mutation SetAnimalSightingHidden($id: ID!, $hidden: Boolean!) {
+    setAnimalSightingHidden(id: $id, hidden: $hidden) {
+      success
+      message
+      sightingId
+    }
+  }
+`;
+
+export interface SetAnimalSightingHiddenResponse {
+  setAnimalSightingHidden: AnimalSightingResult;
 }

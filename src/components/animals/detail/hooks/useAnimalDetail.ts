@@ -18,6 +18,21 @@ export interface AnimalOrganization {
   logo?: { url?: string | null } | null;
 }
 
+export interface AnimalSighting {
+  id: string;
+  seenAt?: string | null;
+  lat: string;
+  lng: string;
+  placeLabel?: string | null;
+  city?: string | null;
+  state?: string | null;
+  notes?: string | null;
+  createdAt?: string | null;
+  hidden: boolean;
+  contactName?: string | null;
+  contactPhone?: string | null;
+}
+
 export interface AnimalDetail {
   id: string;
   slug?: string | null;
@@ -71,6 +86,11 @@ export interface AnimalDetail {
   }>;
   /** ¿Quien consulta puede editarlo? (autor, equipo de su espacio de rescate o admin). */
   viewerCanEdit?: boolean | null;
+  /**
+   * «Lo vi» más recientes (máx. 20). Al público solo le llegan los visibles y sin contacto; quien
+   * atiende el reporte ve también los ocultos y el nombre/teléfono que dejaron.
+   */
+  sightings?: AnimalSighting[] | null;
   /** Cartilla ligada al reporte. Solo llega si quien consulta puede verla (dueño o equipo). */
   pet?: { id: string } | null;
   /**

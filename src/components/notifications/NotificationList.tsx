@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Alert02Icon,
+  BinocularsIcon,
   BubbleChatIcon,
   Calendar03Icon,
   CalendarCheckIn01Icon,
@@ -51,6 +52,7 @@ const TYPE_ICON: Record<string, typeof Notification03Icon> = {
   [REPORT_TYPE.CLAIM_REJECTED]: UserCheck01Icon,
   [REPORT_TYPE.MERGED]: Link04Icon,
   [REPORT_TYPE.FOLLOW_UP]: Home01Icon,
+  [REPORT_TYPE.SIGHTED]: BinocularsIcon,
   [EVENT_TYPE.NEARBY]: Calendar03Icon,
   [EVENT_TYPE.REMINDER]: CalendarCheckIn01Icon,
   [EVENT_TYPE.SUBMITTED]: Calendar03Icon,

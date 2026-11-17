@@ -43,3 +43,4 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-12 | [Botón «Cartel» (cartel con QR e imagen para historias)](2026-11-12-cartel-qr.md) | animals | pendiente |
 | 2026-11-13 | [Nombre desconocido (vacío) en lugar de «Sin nombre»](2026-11-13-nombre-desconocido.md) | animals | pendiente |
 | 2026-11-13 | [«Agregar registro» más simple](2026-11-13-agregar-registro-simple.md) | animals | pendiente |
+| 2026-11-13 | [«Lo vi»: avistamientos sin cuenta](2026-11-13-lo-vi-avistamientos.md) | animals | pendiente |

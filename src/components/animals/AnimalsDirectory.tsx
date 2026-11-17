@@ -26,6 +26,8 @@ import { useRememberedLocation } from 'kadesh/utils/useRememberedLocation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Add01Icon,
+  BinocularsIcon,
+  Cancel01Icon,
   Location01Icon,
   Search01Icon,
 } from '@hugeicons/core-free-icons';
@@ -42,6 +44,8 @@ function LostAnimalsPageContent() {
   const searchParams = useSearchParams();
   const motionPrefs = useUiMotion();
   const statusFromQuery = searchParams.get('status');
+  // Viene de «Vi una mascota perdida» (hero): pista para elegir cuál viste y avisar desde su ficha.
+  const sightingMode = searchParams.get('avistamiento') === '1';
   const initialStatus =
     statusFromQuery && ANIMAL_LOGS_OPTIONS.some((option) => option.value === statusFromQuery)
       ? statusFromQuery
@@ -218,6 +222,29 @@ function LostAnimalsPageContent() {
               </motion.button>
             </div>
 
+            {sightingMode && (
+              <div className="mt-3 flex items-start gap-3 rounded-xl border border-kadesh/30 bg-kadesh-50 p-3 dark:bg-kadesh/10">
+                <HugeiconsIcon
+                  icon={BinocularsIcon}
+                  size={18}
+                  strokeWidth={1.6}
+                  className="mt-0.5 shrink-0 text-kadesh"
+                  aria-hidden="true"
+                />
+                <p className="min-w-0 flex-1 text-sm text-[#3a3a3a] dark:text-[#d0d0d0]">
+                  <span className="font-semibold text-[#121212] dark:text-white">¿Cuál viste?</span> Ábrelo y toca
+                  «Lo vi» para decirle a su familia dónde y cuándo. No necesitas cuenta.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => replaceDirectoryQuery((params) => params.delete('avistamiento'))}
+                  className="-m-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#5a5a5a] hover:bg-white/70 dark:text-[#9aa3b2] dark:hover:bg-night"
+                  aria-label="Cerrar pista"
+                >
+                  <HugeiconsIcon icon={Cancel01Icon} size={16} strokeWidth={1.6} />
+                </button>
+              </div>
+            )}
             {locationLoading && (
               <p className="mt-3 text-sm font-medium text-kadesh" aria-live="polite">
                 Obteniendo tu ubicación…

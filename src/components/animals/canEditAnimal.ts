@@ -14,6 +14,19 @@ type AnimalLike = {
  * muestra. El equipo llega por `viewerCanEdit` (el front no conoce a los miembros). El admin llega
  * desde Operaciones → Kadesh Pet → Animales → Editar.
  */
+/**
+ * ¿Quien ve atiende este reporte? Su autor o el equipo de su espacio de rescate, sin contar a un
+ * admin de plataforma por serlo (puede editar cualquiera, pero no «atiende» todos). Sirve para
+ * decidir qué ve un visitante: «Lo vi» se oculta a quien atiende el reporte, no a los admins.
+ */
+export function attendsAnimalReport(user: UserLike, animal: AnimalLike): boolean {
+  if (!user?.id) return false;
+  if (animal?.user?.id && animal.user.id === user.id) return true;
+  // `viewerCanEdit` también es true para un admin: solo cuenta como equipo si no lo es.
+  const isAdmin = user.roles?.some((role) => role.name === Role.ADMIN) ?? false;
+  return !isAdmin && Boolean(animal?.viewerCanEdit);
+}
+
 export function canEditAnimal(user: UserLike, animal: AnimalLike): boolean {
   if (!user?.id) return false;
   if (user.roles?.some((role) => role.name === Role.ADMIN)) return true;

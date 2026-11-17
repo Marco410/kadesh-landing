@@ -3,7 +3,13 @@
 import { useRef } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowRightIcon, Calendar03Icon, Home01Icon, HospitalLocationIcon } from '@hugeicons/core-free-icons';
+import {
+  ArrowRightIcon,
+  BinocularsIcon,
+  Calendar03Icon,
+  Home01Icon,
+  HospitalLocationIcon,
+} from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
 import { getStatusColor } from 'kadesh/components/animals/constants';
 import ReportLink from 'kadesh/components/animals/ReportLink';
@@ -15,11 +21,16 @@ import StatsCounter from 'kadesh/components/home/StatsCounter';
 
 const REPORT_LOST_HREF = `${Routes.animals.new}?status=lost`;
 
+/**
+ * Accesos bajo el botón principal. «Vi una mascota perdida» va al directorio de perdidos: el aviso
+ * («Lo vi», sin cuenta) se manda desde la ficha del animal que viste. `wide`: ocupa las dos columnas.
+ */
 const SECONDARY_ACCESSES = [
-  { href: `${Routes.animals.new}?status=found`, label: 'Encontré una mascota', status: 'found' },
-  { href: `${Routes.animals.index}?status=in_adoption`, label: 'Quiero adoptar', status: 'in_adoption' },
-  { href: `${Routes.animals.new}?status=in_adoption`, label: 'Dar en adopción', status: 'in_adoption' },
-  { href: Routes.veterinaries.index, label: 'Veterinarias cerca de mí', status: null },
+  { href: `${Routes.animals.new}?status=found`, label: 'Encontré una mascota', status: 'found', icon: null, wide: false },
+  { href: Routes.animals.sightingSearch, label: 'Vi una mascota perdida', status: null, icon: BinocularsIcon, wide: false },
+  { href: `${Routes.animals.index}?status=in_adoption`, label: 'Quiero adoptar', status: 'in_adoption', icon: null, wide: false },
+  { href: `${Routes.animals.new}?status=in_adoption`, label: 'Dar en adopción', status: 'in_adoption', icon: null, wide: false },
+  { href: Routes.veterinaries.index, label: 'Veterinarias cerca de mí', status: null, icon: HospitalLocationIcon, wide: true },
 ] as const;
 
 function ReportLostCta() {
@@ -54,9 +65,9 @@ function AccessChip({ access }: { access: (typeof SECONDARY_ACCESSES)[number] })
           style={{ backgroundColor: getStatusColor(access.status) }}
           aria-hidden
         />
-      ) : (
-        <HugeiconsIcon className="h-4 w-4 flex-shrink-0" icon={HospitalLocationIcon} aria-hidden />
-      )}
+      ) : access.icon ? (
+        <HugeiconsIcon className="h-4 w-4 flex-shrink-0" icon={access.icon} aria-hidden />
+      ) : null}
       <span>{access.label}</span>
     </AccessLink>
   );
@@ -87,7 +98,7 @@ function SecondaryAccessNav() {
     <nav aria-label="Otros accesos">
       <ul ref={scope} className="grid grid-cols-2 gap-2">
         {SECONDARY_ACCESSES.map((access) => (
-          <li key={access.label}>
+          <li key={access.label} className={access.wide ? 'col-span-2' : undefined}>
             <AccessChip access={access} />
           </li>
         ))}

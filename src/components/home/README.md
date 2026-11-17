@@ -50,7 +50,7 @@ Cuadrícula tipo feed (`RecentReportsSection`) de 12 cuadros cuadrados: 3 × 4 e
 - Cada cuadro lleva:
   - la foto;
   - arriba a la izquierda, el badge de fecha (`reportDateBadge`): «Hoy», «Ayer», «Antier», «Esta semana», «Este mes», «Hace N meses» o «Hace más de un año», por días de calendario. Solo se pinta en el navegador, porque el HTML sale de caché;
-  - arriba a la derecha, un punto del color del estado;
+  - arriba a la derecha, el estado: un punto de su color en celular y tablet, y una pastilla de su color con el texto («PERDIDO») en escritorio (`lg`);
   - abajo, sobre un degradado, el nombre y la distancia (o la ciudad). En celular también va el estado en texto.
   - Todo el cuadro enlaza a la ficha.
 - `hooks/useRecentReports` pide esos 11. Con ubicación, los de la zona (radio `DEFAULT_RADIUS`); sin ubicación o sin nada cerca, los más recientes del país, nunca una sección vacía. Filtros: Perdidos, Encontrados, En adopción. La geolocalización **no** se pide sola: el botón es **Ver los de mi zona** (misma regla que el resto del sitio con `useRememberedLocation`).

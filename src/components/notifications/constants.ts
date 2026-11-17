@@ -28,6 +28,8 @@ export const ANIMAL_REPORT_NOTIFICATION_TYPE = {
   MERGED: 'animal.merged',
   /** Un caso tuyo lleva 1 o 3 semanas sin registros: ¿ya volvió a casa? */
   FOLLOW_UP: 'animal.follow_up',
+  /** Alguien (con o sin cuenta) avisó que vio al animal de tu reporte («Lo vi»). */
+  SIGHTED: 'animal.sighted',
 } as const;
 
 /** Avisos de eventos (kadesh-back `models/Notification/constants.ts`). */
@@ -87,6 +89,12 @@ export const WHATSAPP_CATEGORIES = [
     label: 'Posibles coincidencias',
     description: 'Un reporte nuevo se parece a uno tuyo.',
     types: ['animal.possible_match'],
+  },
+  {
+    id: 'sightings',
+    label: 'Avistamientos de tus reportes',
+    description: 'Alguien vio al animal que buscas y nos dijo dónde.',
+    types: ['animal.sighted'],
   },
   {
     id: 'follow-ups',

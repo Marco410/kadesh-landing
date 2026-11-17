@@ -10,10 +10,11 @@ const NEARBY_TYPE = 'animal.nearby';
 
 /**
  * Avisos sobre los reportes propios: los que se encienden con «Avísame por WhatsApp» al publicar
- * (seguimiento, coincidencias, comentarios y solicitudes).
+ * (seguimiento, avistamientos, coincidencias, comentarios y solicitudes).
  */
 export const OWN_REPORT_TYPES = [
   'animal.follow_up',
+  'animal.sighted',
   'animal.possible_match',
   'animal.commented',
   'animal.claim_requested',

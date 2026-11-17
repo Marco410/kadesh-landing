@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { sileo } from 'sileo';
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react';
 import {
+  BinocularsIcon,
   BubbleChatIcon,
   CheckmarkCircle02Icon,
   CreditCardIcon,
@@ -36,6 +37,7 @@ const CATEGORY_ICON: Record<WhatsappCategory['id'], IconSvgElement> = {
   reminders: InjectionIcon,
   matches: SearchVisualIcon,
   'follow-ups': Home01Icon,
+  sightings: BinocularsIcon,
   comments: BubbleChatIcon,
   claims: UserSearch01Icon,
   'claim-answers': CheckmarkCircle02Icon,

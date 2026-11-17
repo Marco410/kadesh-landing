@@ -122,7 +122,7 @@ Cualquier `revalidate` de datos con imágenes debe quedar por debajo de 1 h por 
 
 ### Pendientes conocidos (no empeorarlos)
 
-- `getNearbyAnimals` (`kadesh-back/graphql/customs/queries/nearbyAnimals.ts`) carga todos los animales y sus bitácoras y filtra y pagina en memoria; `limit` no abarata la llamada. No agregues llamadas nuevas: reutiliza la de la página. `/animales` pide `limit: 500` y el mapa muestra como máximo esos 500 (`src/components/animals/hooks/useLostAnimals.ts`); al acercarse a ese número hace falta una consulta ligera solo para el mapa.
+- Mapa de `/animales`: `getNearbyAnimalPins` devuelve hasta 1000 pines del filtro (`MAX_PINS` en `kadesh-back/graphql/customs/queries/nearbyAnimals.ts`). Si una zona se acerca a ese número, hay que agrupar en el servidor (cuadrícula por zoom) en lugar de subir el tope. La lista ya va paginada en la base (`getNearbyAnimals` con `limit`/`skip`); no vuelvas a pedir cientos de una vez para paginar en el navegador.
 - `getNearbyPetPlaces` sin ubicación trae todas las veterinarias, y el directorio pide reseñas completas por lugar (`src/components/veterinaries/queries.ts`, `hooks/useNearbyPetPlaces.ts`).
 - Ficha de animal: el servidor ya trae la ficha para metadata y el cliente la vuelve a pedir con `cache-and-network` (`src/app/animales/[slug]/layout.tsx`, `src/components/animals/detail/hooks/useAnimalDetail.ts`). Cada visita además escribe una vista; lo mismo en blog y eventos (`useAnimalView.ts`, `usePostView.ts`, `useEventViews.ts`).
 - `sitemap.xml` (`src/app/sitemap.ts`) recorre posts, eventos, animales, veterinarias y organizaciones en cada regeneración.

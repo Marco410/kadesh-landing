@@ -33,7 +33,7 @@ Cifras bajo los accesos, cada una es un enlace: veterinarias y ciudades (de `pet
 
 `hooks/useRecentReports` pide solo 6 reportes. Con ubicación, los de la zona (radio `DEFAULT_RADIUS`); si no hay ubicación o no hay nada cerca, los 6 más recientes del país, nunca una sección vacía. Filtros: Perdidos, Encontrados, En adopción. La geolocalización **no** se pide sola: el botón es **Ver los de mi zona** (misma regla que el resto del sitio con `useRememberedLocation`).
 
-Ojo con `getNearbyAnimals`: mandar `lat: null` filtra todo. Sin ubicación hay que **omitir** lat/lng para recibir los más recientes.
+Sin ubicación, `getNearbyAnimals` devuelve los más recientes. Omite `lat`/`lng` (desde 2026-11-17, `null` hace lo mismo; antes no devolvía nada).
 
 ## Alertas de zona
 

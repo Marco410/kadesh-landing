@@ -10,12 +10,14 @@ import { useUiMotion } from 'kadesh/components/shared/motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowRight01Icon,
+  BinocularsIcon,
   Image01Icon,
   Location01Icon,
   MapsLocation01Icon,
 } from '@hugeicons/core-free-icons';
 import { getStatusColor, getStatusLabel, getTypeLabel } from './constants';
 import { Bone, boneWidth } from 'kadesh/components/ui/skeleton';
+import { sightingTimeLabel } from './sightings/time';
 
 const MotionLink = motion.create(Link);
 
@@ -125,6 +127,22 @@ export default function AnimalCard({
                 <span className="line-clamp-2 leading-relaxed">{animal.location}</span>
               </p>
             )}
+
+            {animal.recentSightings?.[0] ? (
+              <p className="mt-1.5 flex items-start gap-1.5 text-sm font-semibold text-kadesh">
+                <HugeiconsIcon
+                  icon={BinocularsIcon}
+                  size={14}
+                  className="mt-0.5 flex-shrink-0"
+                  strokeWidth={1.8}
+                  aria-hidden
+                />
+                <span className="line-clamp-1">
+                  Lo vieron {sightingTimeLabel(animal.recentSightings[0].seenAt).toLowerCase()}
+                  {animal.recentSightings[0].place ? ` · ${animal.recentSightings[0].place}` : ''}
+                </span>
+              </p>
+            ) : null}
           </div>
         </div>
 

@@ -6,14 +6,35 @@ import { getStatusColor } from "../constants";
 import {
   applyFreeMapThemeClass,
   createFreeMap,
+  createSightingDotIcon,
   createStatusPinIcon,
   destroyMap,
+  fitMapToPoints,
   getLeaflet,
   isDarkMapTheme,
   isMapAlive,
 } from "kadesh/components/shared/free-map";
 import { useFreeMapStack } from "kadesh/components/shared/useFreeMapStack";
 import MapFallback from "kadesh/components/shared/MapFallback";
+import { sightingTimeLabel } from "../sightings/time";
+
+/** Un «Lo vi» en el mapa de la ficha. */
+export interface MapSightingPoint {
+  id: string;
+  latitude: number;
+  longitude: number;
+  seenAt: string | null;
+  place: string | null;
+}
+
+/** La línea al más reciente y el encuadre solo cuentan avistamientos de las últimas 72 h. */
+const RECENT_SIGHTING_MS = 72 * 60 * 60 * 1000;
+
+function isRecent(sighting: MapSightingPoint) {
+  if (!sighting.seenAt) return false;
+  const time = new Date(sighting.seenAt).getTime();
+  return Number.isFinite(time) && Date.now() - time <= RECENT_SIGHTING_MS;
+}
 
 interface LogMapProps {
   lat: number;
@@ -22,6 +43,8 @@ interface LogMapProps {
   /** Zona del registro (colonia, ciudad) para el respaldo cuando no se puede dibujar el mapa. */
   label?: string | null;
   className?: string;
+  /** «Lo vi» visibles del reporte, el más reciente primero. */
+  sightings?: MapSightingPoint[];
 }
 
 function toCoordinate(value: number | string): number | null {
@@ -33,7 +56,7 @@ function toCoordinate(value: number | string): number | null {
  * Mapa de un registro. Úsalo con `AnimalLocationMap`, que lo carga solo en el navegador y lo
  * aísla con un error boundary. Sin WebGL no crea el mapa y muestra la zona con "Ver en Google Maps".
  */
-export default function LogMap({ lat, lng, status, label, className }: LogMapProps) {
+export default function LogMap({ lat, lng, status, label, className, sightings }: LogMapProps) {
   const { resolvedTheme } = useTheme();
   const { ready, unavailable, markUnavailable } = useFreeMapStack();
   const [mounted, setMounted] = useState(false);
@@ -41,6 +64,10 @@ export default function LogMap({ lat, lng, status, label, className }: LogMapPro
 
   const validLat = toCoordinate(lat);
   const validLng = toCoordinate(lng);
+  // Llave estable: el mapa se rehace solo si cambian los avistamientos, no en cada render.
+  const sightingsKey = (sightings ?? []).map((sighting) => sighting.id).join(",");
+  const sightingsRef = useRef(sightings);
+  sightingsRef.current = sightings;
 
   useEffect(() => {
     setMounted(true);
@@ -65,6 +92,34 @@ export default function LogMap({ lat, lng, status, label, className }: LogMapPro
       icon: createStatusPinIcon(L, getStatusColor(status)),
     }).addTo(map);
 
+    // «Lo vi»: un punto con ojo por avistamiento (los viejos, tenues) y una línea punteada del pin
+    // al más reciente si es de las últimas 72 h. El encuadre incluye los recientes.
+    const color = getStatusColor(status);
+    const points = sightingsRef.current ?? [];
+    const recent = points.filter(isRecent);
+    if (recent.length > 0) {
+      L.polyline(
+        [[validLat, validLng], [recent[0].latitude, recent[0].longitude]],
+        { color, weight: 2, opacity: 0.7, dashArray: "4 6", interactive: false }
+      ).addTo(map);
+    }
+    points.forEach((sighting, index) => {
+      const when = sightingTimeLabel(sighting.seenAt).toLowerCase();
+      const text = `Lo vieron ${when}${sighting.place ? ` · ${sighting.place}` : ""}`;
+      L.marker([sighting.latitude, sighting.longitude], {
+        icon: createSightingDotIcon(L, color, index > 0 || !isRecent(sighting)),
+        title: text,
+        alt: text,
+        zIndexOffset: index === 0 ? 200 : 0,
+      }).addTo(map);
+    });
+    if (recent.length > 0) {
+      fitMapToPoints(map, [
+        { lat: validLat, lng: validLng },
+        ...recent.map((sighting) => ({ lat: sighting.latitude, lng: sighting.longitude })),
+      ]);
+    }
+
     const resize = () => {
       if (isMapAlive(map)) map.invalidateSize();
     };
@@ -80,7 +135,7 @@ export default function LogMap({ lat, lng, status, label, className }: LogMapPro
     };
     // Recreate when the logged point changes; el tema se aplica aparte.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, validLat, validLng, status, markUnavailable]);
+  }, [ready, validLat, validLng, status, sightingsKey, markUnavailable]);
 
   useEffect(() => {
     if (!mounted || !ready) return;

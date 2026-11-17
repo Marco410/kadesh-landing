@@ -1,16 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { formatDate } from "kadesh/utils/format-date";
 import { getStatusLabel, getStatusColor } from "../constants";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Add01Icon,
+  BinocularsIcon,
   Delete02Icon,
   Location01Icon,
 } from "@hugeicons/core-free-icons";
 import AnimalLocationMap from "./AnimalLocationMap";
+import type { MapSightingPoint } from "./LogMap";
 import AddLogModal from "./AddLogModal";
 import ConfirmModal from "kadesh/components/shared/ConfirmModal";
 import { useUser } from "kadesh/utils/UserContext";
@@ -18,6 +20,7 @@ import { canEditAnimal } from "kadesh/components/animals/canEditAnimal";
 import { AnimalDetail } from "./hooks/useAnimalDetail";
 import { useDeleteLog } from "./hooks/useDeleteLog";
 import { useUiMotion } from "kadesh/components/shared/motion";
+import { SIGHTINGS_ANCHOR } from "../sightings/constants";
 
 interface Log {
   id: string;
@@ -153,6 +156,22 @@ export default function LogTimeline({
   const selectedLogWithCoords =
     selectedLog && hasCoords(selectedLog) ? selectedLog : null;
   const isOwner = canEditAnimal(user, animal);
+  // «Lo vi» que se dibujan en el mapa: los visibles (los ocultos solo salen en la lista, para quien
+  // atiende el reporte). Ya vienen en la ficha: no es otra petición.
+  const mapSightings = useMemo<MapSightingPoint[]>(
+    () =>
+      (animal?.sightings ?? [])
+        .filter((sighting) => !sighting.hidden)
+        .map((sighting) => ({
+          id: sighting.id,
+          latitude: Number.parseFloat(sighting.lat),
+          longitude: Number.parseFloat(sighting.lng),
+          seenAt: sighting.seenAt ?? null,
+          place: sighting.placeLabel || sighting.city || null,
+        }))
+        .filter((sighting) => Number.isFinite(sighting.latitude) && Number.isFinite(sighting.longitude)),
+    [animal?.sightings]
+  );
   const canAddLog = Boolean(animal && animalName && onLogCreated && isOwner);
 
   useEffect(() => {
@@ -347,8 +366,18 @@ export default function LogTimeline({
                   status={selectedLogWithCoords.status}
                   label={areaLabel(selectedLogWithCoords)}
                   className="min-h-0"
+                  sightings={mapSightings}
                 />
               </div>
+              {mapSightings.length > 0 ? (
+                <a
+                  href={`#${SIGHTINGS_ANCHOR}`}
+                  className="mt-2 inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-[#5a5a5a] hover:text-kadesh hover:underline dark:text-[#9aa3b2]"
+                >
+                  <HugeiconsIcon icon={BinocularsIcon} size={14} strokeWidth={1.8} className="text-kadesh" aria-hidden />
+                  Los puntos con ojo son avistamientos («Lo vi»). Ver la lista
+                </a>
+              ) : null}
               {placeLabel(selectedLogWithCoords) ? (
                 <p className="mt-2 shrink-0 truncate text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
                   {placeLabel(selectedLogWithCoords)}

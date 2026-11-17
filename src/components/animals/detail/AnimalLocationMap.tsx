@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import MapErrorBoundary from "kadesh/components/shared/MapErrorBoundary";
 import MapFallback, { MapLoading } from "kadesh/components/shared/MapFallback";
+import type { MapSightingPoint } from "./LogMap";
 
 /** Solo en el navegador: el mapa necesita `window` y WebGL, y no aporta nada al HTML del servidor. */
 const LogMap = dynamic(() => import("./LogMap"), {
@@ -17,6 +18,8 @@ interface AnimalLocationMapProps {
   /** Zona del registro (colonia, ciudad) para el respaldo. */
   label?: string | null;
   className?: string;
+  /** «Lo vi» visibles del reporte, el más reciente primero. */
+  sightings?: MapSightingPoint[];
 }
 
 /**
@@ -30,6 +33,7 @@ export default function AnimalLocationMap({
   status,
   label,
   className,
+  sightings,
 }: AnimalLocationMapProps) {
   return (
     <MapErrorBoundary
@@ -44,6 +48,7 @@ export default function AnimalLocationMap({
         status={status}
         label={label}
         className={className}
+        sightings={sightings}
       />
     </MapErrorBoundary>
   );

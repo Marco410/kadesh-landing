@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
-import { GET_NEARBY_ANIMALS_QUERY, GET_ANIMAL_TYPES_QUERY } from '../queries';
+import { GET_ANIMAL_PINS_QUERY, GET_DIRECTORY_ANIMALS_QUERY, GET_ANIMAL_TYPES_QUERY } from '../queries';
 import { LostAnimal, AnimalFilters, AnimalType } from '../types';
 import { DEFAULT_ANIMALS_PER_PAGE, DEFAULT_RADIUS } from 'kadesh/constants/constans';
 import { sortMultimediaByOrder } from '../sortMultimedia';
@@ -10,18 +10,8 @@ import { friendlyErrorText } from 'kadesh/utils/errorText';
 import { animalDisplayName } from 'kadesh/components/animals/animalName';
 
 
-// Function to normalize text by removing accents
-function normalizeText(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-    .toLowerCase();
-}
-
-/** `NearbyAnimalsInput` del back: lat/lng/radio solo si hay ubicación (con null no devuelve nada). */
-interface NearbyAnimalsQueryInput {
-  limit: number;
-  skip: number;
+/** Filtros de `NearbyAnimalsInput`: lat/lng/radio solo si hay ubicación. */
+interface NearbyAnimalsFilterInput {
   lat?: number;
   lng?: number;
   radius?: number;
@@ -57,31 +47,102 @@ interface NearbyAnimal {
     url: string;
     order?: number | null;
   }>;
+  /** «Lo vi» de las últimas 72 h (máx. 3, el más reciente primero). */
+  recentSightings?: Array<{
+    id: string;
+    lat: string;
+    lng: string;
+    seenAt?: string | null;
+    placeLabel?: string | null;
+    city?: string | null;
+  }> | null;
+}
+
+/** Pin del mapa (`getNearbyAnimalPins`): lo que pinta el pin y su ventanita. */
+interface NearbyAnimalPin {
+  id: string;
+  slug?: string | null;
+  name: string;
+  sex?: string | null;
+  status: string;
+  lat: string;
+  lng: string;
+  distance: number | null;
+  typeName?: string | null;
+  breedName?: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  createdAt: string;
+  coverUrl?: string | null;
+  recentSightings?: NearbyAnimal['recentSightings'];
+}
+
+const TYPE_TO_SPANISH: Record<string, AnimalType> = {
+  dog: 'perro',
+  cat: 'gato',
+  rabbit: 'conejo',
+  bird: 'ave',
+};
+
+/** Tipo de la base (`dog`) al de la web (`perro`); filtro de tipo en el sentido contrario. */
+const TYPE_TO_DB: Record<string, string> = {
+  perro: 'dog',
+  gato: 'cat',
+  ave: 'bird',
+  conejo: 'rabbit',
+  otro: 'other',
+};
+
+function locationText(animal: { address: string | null; city: string | null; state: string | null; country: string | null; lat: string; lng: string }) {
+  const parts = [animal.address, animal.city, animal.state, animal.country].filter(Boolean);
+  if (parts.length) return parts.join(', ');
+  return animal.lat && animal.lng ? `${animal.lat}, ${animal.lng}` : 'Ubicación no disponible';
+}
+
+function transformSightings(sightings: NearbyAnimal['recentSightings']) {
+  return (sightings ?? [])
+    .map((sighting) => ({
+      id: sighting.id,
+      latitude: Number.parseFloat(sighting.lat),
+      longitude: Number.parseFloat(sighting.lng),
+      seenAt: sighting.seenAt ?? null,
+      place: sighting.placeLabel || sighting.city || null,
+    }))
+    .filter((sighting) => Number.isFinite(sighting.latitude) && Number.isFinite(sighting.longitude));
+}
+
+function coordinate(value: string) {
+  const num = Number.parseFloat(value);
+  return Number.isFinite(num) ? num : undefined;
+}
+
+function transformPin(pin: NearbyAnimalPin): LostAnimal {
+  const typeName = pin.typeName?.toLowerCase() || '';
+  return {
+    id: pin.id,
+    slug: pin.slug,
+    name: animalDisplayName({ name: pin.name, typeName: pin.typeName, sex: pin.sex }),
+    type: TYPE_TO_SPANISH[typeName] || (typeName as AnimalType) || 'otro',
+    breed: pin.breedName || '',
+    status: pin.status,
+    location: locationText(pin),
+    latitude: coordinate(pin.lat),
+    longitude: coordinate(pin.lng),
+    distance: pin.distance || 0.01,
+    image: pin.coverUrl ? { url: pin.coverUrl } : undefined,
+    description: '',
+    createdAt: pin.createdAt,
+    isFavorite: false,
+    recentSightings: transformSightings(pin.recentSightings),
+  };
 }
 
 function transformAnimal(animal: NearbyAnimal): LostAnimal {
-  const locationParts = [];
-  if (animal.address) locationParts.push(animal.address);
-  if (animal.city) locationParts.push(animal.city);
-  if (animal.state) locationParts.push(animal.state);
-  if (animal.country) locationParts.push(animal.country);
-  
-  const location = locationParts.length > 0 
-    ? locationParts.join(', ')
-    : animal.lat && animal.lng 
-      ? `${animal.lat}, ${animal.lng}` 
-      : 'Ubicación no disponible';
-
   const image = sortMultimediaByOrder(animal.multimedia)?.[0];
-
   const typeName = animal.animal_type?.name?.toLowerCase() || '';
-  const typeMap: Record<string, AnimalType> = {
-    'dog': 'perro',
-    'cat': 'gato',
-    'rabbit': 'conejo',
-    'bird': 'ave',
-  };
-  const mappedType = typeMap[typeName] || (typeName as AnimalType) || 'otro';
+  const mappedType = TYPE_TO_SPANISH[typeName] || (typeName as AnimalType) || 'otro';
 
   return {
     id: animal.id,
@@ -91,17 +152,26 @@ function transformAnimal(animal: NearbyAnimal): LostAnimal {
     type: mappedType,
     breed: animal.animal_breed?.breed || '',
     status: animal.status,
-    location,
-    latitude: animal.lat ? parseFloat(animal.lat) : undefined,
-    longitude: animal.lng ? parseFloat(animal.lng) : undefined,
+    location: locationText(animal),
+    latitude: coordinate(animal.lat),
+    longitude: coordinate(animal.lng),
     distance: animal.distance || 0.01,
     image: image ? { url: image.url } : undefined,
     description: '',
     createdAt: animal.createdAt,
     isFavorite: false,
+    recentSightings: transformSightings(animal.recentSightings),
   };
 }
 
+/**
+ * Directorio `/animales`: dos consultas, ambas paginadas o topadas en el back.
+ * - Lista: `getNearbyAnimals` con `limit`/`skip` de la página actual (con fotos). Cambiar de página
+ *   pide solo esa página.
+ * - Mapa: `getNearbyAnimalPins` con los mismos filtros, sin página: todos los pines del filtro
+ *   (hasta 1000) con una foto de portada. No se vuelve a pedir al cambiar de página.
+ * Filtros de la pantalla: estado y tipo (y el radio). Todo se filtra en el back.
+ */
 export function useLostAnimals(
   initialFilters?: AnimalFilters,
   animalsPerPage?: number,
@@ -116,164 +186,72 @@ export function useLostAnimals(
     setCurrentPage(1);
   }, [radiusKm]);
 
-  // Get animal types to map Spanish names to English database values
+  // Catálogo de tipos: el filtro manda el id del tipo, no el nombre.
   const { data: animalTypesData } = useQuery(GET_ANIMAL_TYPES_QUERY, {
     variables: { orderBy: [{ order: "asc" }] },
     // Catálogo que casi no cambia: con lo que hay en caché basta.
     fetchPolicy: 'cache-first',
   });
 
-  // Map Spanish type names to English database values (for animalType ID lookup)
-  const typeNameMap: Record<string, string> = {
-    'perro': 'dog',
-    'gato': 'cat',
-    'ave': 'bird',
-    'conejo': 'rabbit',
-    'otro': 'other',
-  };
+  const lat = userLocation?.lat ?? null;
+  const lng = userLocation?.lng ?? null;
 
-  // Build input for getNearbyAnimals query (lat/lng null = backend returns all)
-  const queryInput = useMemo(() => {
-    const input: NearbyAnimalsQueryInput = {
-      limit: 500, // Get enough for client-side filtering and pagination
-      skip: 0,
-    };
+  const typeId = useMemo(() => {
+    if (!filters.type) return null;
+    const dbTypeName = TYPE_TO_DB[filters.type] || filters.type;
+    const match = (animalTypesData?.animalTypes as Array<{ id: string; name?: string | null }> | undefined)?.find(
+      (type) => type.name?.toLowerCase() === dbTypeName.toLowerCase()
+    );
+    return match?.id ?? null;
+  }, [filters.type, animalTypesData]);
+  // Con filtro de tipo, se espera al catálogo para no pedir primero todo y luego lo filtrado.
+  const waitingForTypes = Boolean(filters.type) && !animalTypesData;
 
-    // Location: only send lat/lng when both exist. Omitting them makes the backend
-    // return every report, newest first; sending null filters everything out.
-    const lat = userLocation?.lat ?? null;
-    const lng = userLocation?.lng ?? null;
+  const filterInput = useMemo(() => {
+    const input: NearbyAnimalsFilterInput = {};
+    // Solo con las dos coordenadas: sin ellas el back devuelve todo, del más nuevo al más viejo.
     if (lat != null && lng != null) {
       input.lat = lat;
       input.lng = lng;
       input.radius = radiusKm ?? DEFAULT_RADIUS;
     }
-
-    // Filter by animal type - need to find the ID from animalTypesData
-    // If we can't find the ID, we'll filter client-side
-    if (filters.type && animalTypesData?.animalTypes) {
-      const dbTypeName = typeNameMap[filters.type] || filters.type;
-      const animalType = animalTypesData.animalTypes.find(
-        (at: { id: string; name?: string | null }) =>
-          at.name?.toLowerCase() === dbTypeName.toLowerCase()
-      );
-      if (animalType?.id) {
-        input.animalType = animalType.id;
-      }
-      // Note: If ID not found, we'll filter client-side in transformedAnimals
-    }
-
-    // Filter by status
-    if (filters.status) {
-      input.status = filters.status;
-    }
-
-    // Filter by breed - need breed ID, but we'll filter client-side for now
-    // TODO: If you have a way to get breed ID from breed name, add it here
-
-    // Filter by city, state, country from location filter
-    if (filters.location) {
-      // Try to parse location - could be city, state, or country
-      const locationLower = filters.location.toLowerCase();
-      // Simple heuristic: if it's a short string, assume city
-      if (locationLower.length < 20) {
-        input.location = filters.location;
-      }
-    }
-
+    if (typeId) input.animalType = typeId;
+    if (filters.status) input.status = filters.status;
+    if (filters.location) input.location = filters.location;
     return input;
-  }, [filters, userLocation, radiusKm, animalTypesData, ANIMALS_PER_PAGE]);
+  }, [lat, lng, radiusKm, typeId, filters.status, filters.location]);
 
-  // Query animals using getNearbyAnimals
-  const { data: currentData, previousData, loading, error } = useQuery(GET_NEARBY_ANIMALS_QUERY, {
+  const listQuery = useQuery(GET_DIRECTORY_ANIMALS_QUERY, {
     variables: {
-      input: queryInput,
+      input: { ...filterInput, limit: ANIMALS_PER_PAGE, skip: (currentPage - 1) * ANIMALS_PER_PAGE },
     },
+    skip: waitingForTypes,
     fetchPolicy: 'cache-and-network',
     errorPolicy: 'all', // Return partial data even if there are errors
   });
-  // Al cambiar filtros o radio se queda lo anterior (atenuado en la UI) hasta que llega lo nuevo.
-  const data = currentData ?? previousData;
+  const pinsQuery = useQuery(GET_ANIMAL_PINS_QUERY, {
+    variables: { input: filterInput },
+    skip: waitingForTypes,
+    fetchPolicy: 'cache-and-network',
+    errorPolicy: 'all',
+  });
 
-  // Transform and filter animals
-  const transformedAnimals = useMemo(() => {
-    if (!data?.getNearbyAnimals?.animals) return [];
+  // Al cambiar filtros, radio o página se queda lo anterior (atenuado en la UI) hasta que llega lo nuevo.
+  const listData = listQuery.data ?? listQuery.previousData;
+  const pinsData = pinsQuery.data ?? pinsQuery.previousData;
 
-    let animals = (data.getNearbyAnimals.animals as NearbyAnimal[]).map(transformAnimal);
-
-    // Filter out animals without coordinates (shouldn't happen with new query, but safety check)
-    animals = animals.filter((animal: LostAnimal) => 
-      animal.latitude !== undefined && animal.longitude !== undefined
-    );
-
-    // Client-side filtering for location text search (more flexible than server-side)
-    if (filters.location) {
-      const normalizedLocationFilter = normalizeText(filters.location);
-      animals = animals.filter((animal: LostAnimal) =>
-        normalizeText(animal.location).includes(normalizedLocationFilter)
-      );
-    }
-
-    // Filter by name (client-side)
-    if (filters.name) {
-      const normalizedNameFilter = normalizeText(filters.name);
-      animals = animals.filter((animal: LostAnimal) =>
-        normalizeText(animal.name).includes(normalizedNameFilter)
-      );
-    }
-
-    // Filter by breed (client-side)
-    if (filters.breed) {
-      const normalizedBreedFilter = normalizeText(filters.breed);
-      animals = animals.filter((animal: LostAnimal) =>
-        animal.breed && normalizeText(animal.breed).includes(normalizedBreedFilter)
-      );
-    }
-
-    // Filter by type (client-side if not filtered server-side or if ID not found)
-    if (filters.type) {
-      const dbTypeName = typeNameMap[filters.type] || filters.type;
-      animals = animals.filter((animal: LostAnimal) => {
-        // Map the animal type back to compare
-        const animalTypeMap: Record<string, string> = {
-          'perro': 'dog',
-          'gato': 'cat',
-          'conejo': 'rabbit',
-          'ave': 'bird',
-        };
-        const animalDbType = animalTypeMap[animal.type] || animal.type;
-        return animalDbType.toLowerCase() === dbTypeName.toLowerCase();
-      });
-    }
-
-    // Filter favorites if needed
-    if (filters.favoritesOnly) {
-      animals = animals.filter((animal: LostAnimal) => animal.isFavorite);
-    }
-
-    // Distance is already calculated by the server, so no need to recalculate
-    // Animals are already sorted by distance if lat/lng provided
-
-    return animals;
-  }, [data, filters]);
-
-  // El mapa usa los mismos reportes que la lista: una sola consulta. Antes, al llegar al límite se
-  // pedía otra con 1000, y el back recorre todos los reportes en cada llamada.
-  const allAnimals = useMemo(() => {
-    if (!data?.getNearbyAnimals?.animals) return [];
-    return (data.getNearbyAnimals.animals as NearbyAnimal[]).map(transformAnimal);
-  }, [data]);
-
-  // Calculate pagination
-  // Use the count of transformed animals (after client-side filters) for accurate pagination
-  const totalAnimals = transformedAnimals.length;
-  const totalPages = Math.ceil(totalAnimals / ANIMALS_PER_PAGE);
-  
-  // Paginate client-side (since we get all matching animals and filter client-side)
-  const paginatedAnimals = transformedAnimals.slice(
-    (currentPage - 1) * ANIMALS_PER_PAGE, 
-    currentPage * ANIMALS_PER_PAGE
+  const animals = useMemo(
+    () => ((listData?.getNearbyAnimals?.animals ?? []) as NearbyAnimal[]).map(transformAnimal),
+    [listData]
   );
+
+  const allAnimals = useMemo(
+    () => ((pinsData?.getNearbyAnimalPins?.animals ?? []) as NearbyAnimalPin[]).map(transformPin),
+    [pinsData]
+  );
+
+  const totalAnimals: number = listData?.getNearbyAnimals?.total ?? 0;
+  const totalPages = Math.ceil(totalAnimals / ANIMALS_PER_PAGE);
 
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -294,9 +272,7 @@ export function useLostAnimals(
   };
 
   const updateFilters = (newFilters: Partial<AnimalFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-    console.log('newFilters', newFilters);
-    console.log('filters', filters);
+    setFilters((prev) => ({ ...prev, ...newFilters }));
     setCurrentPage(1);
   };
 
@@ -305,10 +281,12 @@ export function useLostAnimals(
     setCurrentPage(1);
   };
 
+  const error = listQuery.error ?? pinsQuery.error;
+
   return {
-    animals: paginatedAnimals,
-    allAnimals, // For map markers
-    loading,
+    animals,
+    allAnimals, // Pines del mapa
+    loading: listQuery.loading || waitingForTypes,
     error: error ? friendlyErrorText(error, 'No se pudieron cargar los reportes. Intenta de nuevo.') : null,
     currentPage,
     totalPages,

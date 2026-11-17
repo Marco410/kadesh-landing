@@ -1,6 +1,7 @@
 import {
   HeroSection,
   RecentReportsSection,
+  ReunionsSection,
   ZoneAlertsSection,
   UpcomingEventsSection,
   HowItWorksSection,
@@ -16,7 +17,12 @@ import {
 } from "kadesh/components/home";
 import FaqSection from "kadesh/components/home/FaqSection";
 import HomeJsonLd from "kadesh/components/home/HomeJsonLd";
-import { fetchPetLandingStats, fetchRecentReports, fetchRecentZoneAlerts } from "kadesh/components/home/server";
+import {
+  fetchPetLandingStats,
+  fetchRecentReports,
+  fetchRecentZoneAlerts,
+  fetchReunionStories,
+} from "kadesh/components/home/server";
 import { fetchHomeEvents } from "kadesh/components/events/server";
 import { fetchRescueAllies } from "kadesh/components/rescue/server";
 import { HOME_DEFINITION } from "kadesh/components/home/constants";
@@ -32,12 +38,13 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [stats, recentReports, zoneAlerts, events, allies] = await Promise.all([
+  const [stats, recentReports, zoneAlerts, events, allies, reunionStories] = await Promise.all([
     fetchPetLandingStats(),
     fetchRecentReports(),
     fetchRecentZoneAlerts(),
     fetchHomeEvents(),
     fetchRescueAllies(HOME_ALLIES_MAX),
+    fetchReunionStories(),
   ]);
 
   return (
@@ -48,19 +55,28 @@ export default async function HomePage() {
         <HeroSection
           stats={stats}
           events={events.publishedTotal > 0 ? { count: events.publishedTotal } : null}
+          recentReports={recentReports}
         />
+        {/*
+          Orden (ver components/home/README.md): primero lo que sirve a quien perdió a su mascota
+          (reportes, prueba de que funciona, alertas, qué hacer, dudas); después la comunidad
+          (espacios, aliados), los servicios y el blog (veterinarias, historias, eventos) y lo que
+          sostiene a Kadesh (donaciones, negocios). Fondos alternados: no muevas una sección sin revisar
+          el de sus vecinas.
+        */}
         <RecentReportsSection initialReports={recentReports} />
+        <ReunionsSection stories={reunionStories} stats={stats} />
         <ZoneAlertsSection alerts={zoneAlerts} />
-        <VeterinariansSection />
-        <UpcomingEventsSection events={events} />
         <HowItWorksSection />
         <FirstHoursSection />
-        <StoriesSection />
+        <FaqSection />
         <RescueSpacesSection />
         <AlliesSection allies={allies} />
+        <VeterinariansSection />
+        <StoriesSection />
+        <UpcomingEventsSection events={events} />
         <DonationsSection />
         <BusinessStrip />
-        <FaqSection />
         <ClosingSection />
         <NewsletterSubscription description="Recibe consejos y reencuentros de la comunidad, una vez por semana." />
         <Footer />

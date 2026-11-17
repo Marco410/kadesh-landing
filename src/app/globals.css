@@ -321,11 +321,6 @@ html.dark .kadesh-hero {
   }
 }
 
-.kadesh-hero-pin-pulse {
-  opacity: 0.35;
-  animation: kadesh-pin-pulse 2.2s ease-out infinite;
-}
-
 @keyframes kadesh-pin-pulse {
   0% {
     transform: translate(-50%, -50%) scale(0.6);
@@ -370,9 +365,43 @@ html.dark .kadesh-hero {
 
 @media (prefers-reduced-motion: reduce) {
   .kadesh-hero-in,
-  .kadesh-hero-map-streets,
-  .kadesh-hero-pin-pulse {
+  .kadesh-hero-map-streets {
     animation: none !important;
+  }
+}
+
+/*
+ * Pin de Kadesh (`components/shared/kadeshPin.ts`): círculo con punta, igual en todos los mapas y
+ * en la ilustración del hero. `--pin-color` = color del estado. El aro de «Perdido» late en la punta.
+ */
+.kadesh-pin {
+  position: relative;
+  display: block;
+  width: 40px;
+  height: 48px;
+  cursor: pointer;
+}
+
+.kadesh-pin__svg {
+  position: relative;
+  display: block;
+  filter: drop-shadow(0 6px 10px rgba(15, 35, 80, 0.32));
+}
+
+.kadesh-pin__pulse {
+  position: absolute;
+  left: 50%;
+  top: 46px;
+  height: 26px;
+  width: 26px;
+  border-radius: 9999px;
+  background: var(--pin-color);
+  animation: kadesh-pin-pulse 2.2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kadesh-pin__pulse {
+    animation: none;
   }
 }
 
@@ -389,7 +418,11 @@ html.dark .kadesh-hero-fade {
   background: linear-gradient(to bottom, transparent, var(--color-night));
 }
 
-/* Leaflet + MapLibre (OpenFreeMap Liberty). Dark = CSS filter, no second style. */
+/*
+ * Leaflet + MapLibre. Los colores vienen en el estilo (`kadeshMapStyle`: la paleta del mapa
+ * ilustrado del hero, claro y oscuro), no en filtros CSS. El fondo es el mismo `ground` de la
+ * paleta, para que no se vea otro color mientras bajan los tiles.
+ */
 .kadesh-free-map--standard,
 .kadesh-free-map--night {
   position: relative;
@@ -401,54 +434,12 @@ html.dark .kadesh-hero-fade {
 
 .kadesh-free-map--standard.leaflet-container,
 .kadesh-free-map--standard {
-  background: #e8eef5;
+  background: #eef3f8;
 }
 
 .kadesh-free-map--night.leaflet-container,
 .kadesh-free-map--night {
-  background: #0f172a;
-}
-
-.kadesh-free-map--standard .maplibregl-canvas-container,
-.kadesh-free-map--standard .leaflet-tile-pane {
-  filter: saturate(1.05) brightness(1.04) contrast(1.02);
-  transition: filter 0.35s ease;
-}
-
-.kadesh-free-map--standard::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.18) 0%,
-    transparent 28%,
-    transparent 72%,
-    color-mix(in srgb, var(--color-kadesh) 6%, transparent) 100%
-  );
-}
-
-.kadesh-free-map--night .maplibregl-canvas-container,
-.kadesh-free-map--night .leaflet-tile-pane {
-  filter: brightness(0.78) saturate(0.88) contrast(1.12);
-  transition: filter 0.35s ease;
-}
-
-.kadesh-free-map--night::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-kadesh) 10%, transparent) 0%,
-    rgba(15, 23, 42, 0.08) 30%,
-    transparent 55%,
-    color-mix(in srgb, var(--color-kadesh) 8%, transparent) 100%
-  );
+  background: #1a2433;
 }
 
 .kadesh-free-map--standard .leaflet-control-zoom a {

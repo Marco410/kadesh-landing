@@ -15,6 +15,51 @@ Formato:
 
 ---
 
+## 2026-11-17 · feat: un solo pin en todos los mapas (círculo con punta)
+- Rama: feat/portada-orden
+- Qué cambió y por qué: cada mapa tenía su pin (gota con punto en `/animales` y la ficha, círculo con huella en el hero, gota con «T» en veterinarias). Ahora es uno solo (`components/shared/kadeshPin.ts`): círculo del color del estado, borde blanco y una punta abajo que marca el lugar exacto, en un solo trazo. Adentro va la huella para animales, la «T» para veterinarias y un punto para el lugar elegido y los eventos. El de «Perdido» late en la punta.
+  - Lo usan `createStatusPinIcon`, `createPawPinIcon`, `createVeterinaryPinIcon` y `createBrandPinIcon` (todos los mapas) y la ilustración del hero.
+  - Arreglo: en el hero, el mapa real quedaba debajo de los pines ilustrados (la clase de tema del mapa le ponía `position: relative; z-index: 0`). Ahora va en su propia capa y los pines ilustrados se quitan cuando sale.
+  - Probado en `/animales` y en la portada con el servidor de desarrollo.
+- Archivos: src/components/shared/{kadeshPin.ts (nuevo),free-map.ts}, src/components/home/{HeroMap.tsx,HeroLiveMap.tsx,README.md}, src/app/globals.css
+- GraphQL: ninguna
+- Móvil: [prompt](../mobile-sync/2026-11-17-paleta-de-mapas.md) (se agregó el pin)
+
+## 2026-11-17 · feat: todos los mapas con la paleta del hero (claro y oscuro)
+- Rama: feat/portada-orden
+- Qué cambió y por qué: los mapas usaban Liberty tal cual en claro y, en oscuro, el mismo estilo oscurecido con filtros CSS (gris y apagado). Ahora todos (`/animales`, ficha, cartel de ubicación, veterinarias, eventos, zona de alertas, mini mapa y hero) usan la paleta del mapa ilustrado del hero:
+  - `createFreeMap` usa `kadeshMapStyle(tema)` por defecto. Mientras baja el estilo pinta solo el fondo de la paleta, para que no parpadee.
+  - Al cambiar de tema, `applyFreeMapThemeClass` (que ya llamaban todos los mapas) cambia el estilo en vivo con `setStyle`, sin rehacer el mapa ni perder los pines.
+  - Fuera los filtros y degradados de `kadesh-free-map--night` / `--standard` en `globals.css`; el fondo es el `ground` de la paleta.
+  - El estilo recoloreado se arma una vez por sesión y tema.
+  - Probado en `/animales` con el servidor de desarrollo: en claro sale la paleta y, al tocar la luna, el mismo mapa pasa a la oscura.
+- Archivos: src/components/shared/{free-map.ts,kadeshMapStyle.ts}, src/components/home/HeroLiveMap.tsx, src/app/globals.css, src/components/home/README.md
+- GraphQL: ninguna
+- Móvil: [prompt](../mobile-sync/2026-11-17-paleta-de-mapas.md)
+
+## 2026-11-17 · feat: mapa del hero con los reportes activos cerca, con la paleta de la ilustración
+- Rama: feat/portada-orden
+- Qué cambió y por qué: el mapa del hero era solo una ilustración. Ahora, si quien ve ya compartió su ubicación antes y hay reportes activos cerca (perdido, encontrado, rescatado, abandonado, en adopción), la ilustración se cambia por el mapa real con esos pines. Sin ubicación o sin nada cerca, se queda la ilustración.
+  - Mismos colores que la ilustración en claro y oscuro: nuevo `kadeshHeroMapStyle` recolorea el estilo Liberty (fondo, calles, parques, agua; sin puntos de interés, escudos ni vías de tren).
+  - Pines redondos con huella como los ilustrados (`createPawPinIcon`); «Perdido» late. Cada pin abre su ficha. Va también la ubicación de quien ve, y la pastilla «N reportes activos cerca de ti».
+  - Sin arrastre ni zoom. `createFreeMap` acepta ahora `style`, `themeClass: false` e `interactive: false`.
+  - Sin peticiones nuevas: usa la misma consulta que «Reportes recientes» (Apollo la comparte). Leaflet y MapLibre solo se bajan cuando sale el mapa real.
+- Archivos: src/components/home/{HeroMap.tsx,HeroLiveMap.tsx (nuevo),HeroSection.tsx,README.md}, src/components/shared/{free-map.ts,kadeshMapStyle.ts (nuevo)}, src/app/page.tsx, src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (portada de marketing)
+
+## 2026-11-17 · feat: nuevo orden de la portada, «Ya volvieron a casa» y reportes recientes como feed
+- Rama: feat/portada-orden
+- Qué cambió y por qué: la portada le habla primero a quien perdió a su mascota, pero las veterinarias y los eventos estaban antes de «Cómo funciona», y la FAQ casi al final. Nuevo orden: reportes → **reencuentros** → alertas de zona → cómo funciona → primeras 24 horas → FAQ → espacios de rescate → aliados → veterinarias → historias del blog → eventos → donaciones → negocios → cierre. La FAQ pasa a fondo blanco para no quedar gris entre dos grises.
+  - **Nueva sección «Ya volvieron a casa»** (`ReunionsSection`, `#reencuentros`): hasta 6 historias reales de casos cerrados con hogar cuya familia aceptó publicarlas, con foto, «Volvió a casa / Adoptado / Encontró hogar», ciudad y mes. Sale del servidor (`fetchReunionStories`, 10 min) en la misma carga de la portada. Con menos de 2 historias no se pinta.
+  - El hero ya tenía «Perdí / Encontré / Lo vi» (fases anteriores).
+  - **«Reportes recientes» como feed**: cuadrícula de 12 cuadros cuadrados en lugar de 6 tarjetas con mucho aire. Son 3 × 4 en celular (de orilla a orilla) y 4 × 3 en escritorio. El primero es un cuadro rojo (el rojo del botón del hero) con la misma estructura que los de foto: pastilla «Gratis» arriba y «¿Se perdió tu mascota? Repórtala aquí →» abajo. Los otros 11 son reportes. Cada cuadro lleva el badge de fecha («Hoy», «Ayer», «Antier», «Esta semana», «Este mes», «Hace N meses»), un punto con el color del estado y, sobre un degradado, el nombre y la distancia o ciudad.
+  - **Mini mapa** debajo con los pines de esos reportes (en celular, de orilla a orilla como la cuadrícula). Todo el recuadro lleva a `/animales` con el mismo filtro. Leaflet se baja solo cuando el mapa está por verse.
+  - Costo: la portada pide 11 reportes en lugar de 6 (en el servidor, cada 10 min; en el navegador, solo con ubicación o filtro).
+- Archivos: src/app/page.tsx, src/components/home/{ReunionsSection.tsx (nuevo),RecentReportsMiniMap.tsx (nuevo),RecentReportsSection.tsx,recentReports.ts,server.ts,index.ts,FaqSection.tsx,README.md}
+- GraphQL: nueva consulta de servidor `PetReunionStories` (`petReunionStories(take)` en kadesh-back)
+- Móvil: no aplica (portada de marketing; la app no la tiene)
+
 ## 2026-11-17 · perf: `/animales` paginado en la base y mapa con pines ligeros
 - Rama: feat/avistamientos-mapa
 - Qué cambió y por qué: `/animales` pedía `limit: 500` en una sola consulta y paginaba en el navegador. El back, para cualquier `limit`, traía todos los animales y todas sus bitácoras a memoria. Con los cambios en kadesh-back (`getNearbyAnimals` en SQL y la nueva `getNearbyAnimalPins`), ahora el directorio hace:

@@ -231,6 +231,8 @@ const RECENT_REPORTS_QUERY = `
         city
         state
         status
+        lat
+        lng
         animal_type {
           name
         }
@@ -283,6 +285,69 @@ export async function fetchRecentReports(): Promise<RecentReport[]> {
     return (payload.data?.getNearbyAnimals?.animals ?? []).map(toRecentReport);
   } catch (error) {
     console.error('HomeRecentReports GraphQL fetch failed:', error);
+    return [];
+  }
+}
+
+const REUNION_STORIES_QUERY = `
+  query PetReunionStories($take: Int) {
+    petReunionStories(take: $take) {
+      id
+      slug
+      displayName
+      outcome
+      closedAt
+      story
+      city
+      state
+      coverUrl
+    }
+  }
+`;
+
+/** Historias de reencuentro de la portada (`ReunionsSection`). */
+export const REUNION_STORIES_LIMIT = 6;
+
+export type ReunionStory = {
+  id: string;
+  slug: string | null;
+  displayName: string;
+  /** reunited | adopted | other_home */
+  outcome: string;
+  closedAt: string | null;
+  story: string;
+  city: string | null;
+  state: string | null;
+  coverUrl: string | null;
+};
+
+/**
+ * Reencuentros con historia publicable (`storyConsent`), del más reciente al más viejo. Solo
+ * servidor y con la ventana de 10 min de la portada (las fotos son URLs firmadas de 1 h). Si el
+ * API falla, lista vacía: la sección no se pinta y la portada sigue.
+ */
+export async function fetchReunionStories(): Promise<ReunionStory[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return [];
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: REUNION_STORIES_QUERY, variables: { take: REUNION_STORIES_LIMIT } }),
+      next: { revalidate: ZONE_ALERTS_REVALIDATE_SECONDS },
+    });
+    if (!response.ok) return [];
+    const payload = (await response.json()) as {
+      data?: { petReunionStories: ReunionStory[] | null };
+      errors?: Array<{ message?: string }>;
+    };
+    if (payload.errors?.length) {
+      console.error('PetReunionStories GraphQL errors:', payload.errors);
+      return [];
+    }
+    return payload.data?.petReunionStories ?? [];
+  } catch (error) {
+    console.error('PetReunionStories GraphQL fetch failed:', error);
     return [];
   }
 }

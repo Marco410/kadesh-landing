@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { Routes } from 'kadesh/core/routes';
+import { SITE_URL } from 'kadesh/core/site';
 import { getStatusColor } from 'kadesh/components/animals/constants';
 import { animalShareFacts } from 'kadesh/components/animals/animal-seo';
 import { animalCoverUrl, fetchAnimalForShare } from 'kadesh/components/animals/server';
@@ -16,6 +17,9 @@ import { folioQrDataUri } from 'kadesh/components/animals/poster/qr';
 import PosterToolbar from 'kadesh/components/animals/poster/PosterToolbar';
 import { normalizeMxPhone } from 'kadesh/utils/phone';
 
+
+/** «pet.kadesh.com.mx/canal», como se lee impreso. */
+const CHANNEL_DISPLAY = `${new URL(SITE_URL).host}${Routes.channel}`;
 /**
  * Cartel para imprimir (carta) con foto, datos, QR al enlace corto y folio. Lo puede imprimir
  * cualquiera (dueños y voluntarios que pegan carteles).
@@ -165,6 +169,10 @@ export default async function AnimalPosterPage({
         {folio ? <p className="break-all text-sm font-semibold text-[#3a3a3a] sm:text-base">{folioDisplayUrl(folio)}</p> : null}
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5a5a5a]">
           {folioLabel ? `Folio ${folioLabel} · ` : ''}KADESH Pet
+        </p>
+        {/* Canal de WhatsApp: `/canal` y no el enlace de WhatsApp, para no reimprimir si cambia. */}
+        <p className="text-xs text-[#5a5a5a] sm:text-sm">
+          Más casos de tu zona en WhatsApp: <span className="font-semibold text-[#3a3a3a]">{CHANNEL_DISPLAY}</span>
         </p>
       </div>
     </footer>

@@ -66,50 +66,56 @@ function ReportTile({ report }: { report: RecentReport }) {
   const badge = hydrated ? reportDateBadge(report.createdAt) : null;
   const where = distanceText(report.distance) ?? report.place;
 
+  // Todo el cuadro es el enlace (foto, badges y texto). Antes el enlace era solo el nombre y su
+  // `::after` quedaba dentro de la franja de abajo, así que tocar la foto no hacía nada.
   return (
     <li data-report-card className="group relative aspect-square overflow-hidden bg-[#e8edf3] dark:bg-[#2a3548] sm:rounded-xl">
-      {report.imageUrl ? (
-        <Image
-          src={report.imageUrl}
-          alt=""
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 1024px) 33vw, 25vw"
-        />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center text-[#5a5a5a]">
-          <HugeiconsIcon icon={Image01Icon} size={32} strokeWidth={1.5} aria-hidden="true" />
-        </div>
-      )}
-      {badge ? (
-        <span className="absolute left-1.5 top-1.5 z-10 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#121212] shadow-sm sm:left-2.5 sm:top-2.5 sm:px-2.5 sm:text-[11px]">
-          {badge}
-        </span>
-      ) : null}
-      <span
-        className="absolute right-1.5 top-1.5 z-10 h-3 w-3 rounded-full ring-2 ring-white sm:right-2.5 sm:top-2.5 sm:h-3.5 sm:w-3.5"
-        style={{ backgroundColor: getStatusColor(report.status) }}
-        aria-hidden="true"
-      />
-      <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-2 pb-1.5 pt-6 sm:px-3 sm:pb-2.5 sm:pt-10">
-        <p className="truncate text-xs font-bold text-white sm:text-base">
-          <Link
-            href={animalDetailHref(report)}
-            className="after:absolute after:inset-0 focus-visible:outline-none"
-          >
-            {title}
-            <span className="sr-only">, {statusLabel.toLowerCase()}</span>
-          </Link>
-        </p>
-        {where ? (
-          <p className="truncate text-[10px] font-medium text-white/85 sm:text-xs">
-            <span className="sm:hidden">{statusLabel} · </span>
-            {where}
-          </p>
+      <Link
+        href={animalDetailHref(report)}
+        aria-label={`${title}, ${statusLabel.toLowerCase()}${where ? `, ${where}` : ''}`}
+        className="absolute inset-0 block focus-visible:outline focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-kadesh"
+      >
+        {report.imageUrl ? (
+          <Image
+            src={report.imageUrl}
+            alt=""
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 1024px) 33vw, 25vw"
+          />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center text-[#5a5a5a]">
+            <HugeiconsIcon icon={Image01Icon} size={32} strokeWidth={1.5} aria-hidden="true" />
+          </span>
+        )}
+        {badge ? (
+          <span className="absolute left-1.5 top-1.5 z-10 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#121212] shadow-sm sm:left-2.5 sm:top-2.5 sm:px-2.5 sm:text-[11px]">
+            {badge}
+          </span>
         ) : null}
-      </div>
-      {/* Anillo de foco sobre todo el cuadro (el enlace cubre el cuadro con `after`). */}
-      <span className="pointer-events-none absolute inset-0 z-20 rounded-[inherit] ring-kadesh ring-offset-0 group-has-[:focus-visible]:ring-4" aria-hidden="true" />
+        {/* Estado: punto en celular y tablet (cuadros chicos); pastilla con texto en escritorio. */}
+        <span
+          className="absolute right-1.5 top-1.5 z-10 h-3 w-3 rounded-full ring-2 ring-white sm:right-2.5 sm:top-2.5 sm:h-3.5 sm:w-3.5 lg:hidden"
+          style={{ backgroundColor: getStatusColor(report.status) }}
+          aria-hidden="true"
+        />
+        <span
+          className="absolute right-2.5 top-2.5 z-10 hidden rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm lg:inline-flex"
+          style={{ backgroundColor: getStatusColor(report.status) }}
+          aria-hidden="true"
+        >
+          {statusLabel}
+        </span>
+        <span className="absolute inset-x-0 bottom-0 z-10 block bg-gradient-to-t from-black/80 via-black/45 to-transparent px-2 pb-1.5 pt-6 sm:px-3 sm:pb-2.5 sm:pt-10">
+          <span className="block truncate text-xs font-bold text-white sm:text-base">{title}</span>
+          {where ? (
+            <span className="block truncate text-[10px] font-medium text-white/85 sm:text-xs">
+              <span className="sm:hidden">{statusLabel} · </span>
+              {where}
+            </span>
+          ) : null}
+        </span>
+      </Link>
     </li>
   );
 }

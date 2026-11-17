@@ -32,6 +32,17 @@ Una sola promesa: «¿Se perdió tu mascota? Repórtala gratis…». El botón p
 
 Cifras bajo los accesos, cada una es un enlace: veterinarias y ciudades (de `petLandingStats`, redondeadas hacia abajo; se ocultan si son menores a 10) → `/veterinarias`; eventos registrados («N eventos registrados»: todos los publicados, también los que ya pasaron; desde 1, redondeada desde 100; sale de `fetchHomeEvents`) → `#eventos`. No se muestran animales registrados ni reencuentros hasta tener una cifra real de reencuentros que se vea bien.
 
+## Mapa del hero
+
+`HeroMap` sale en el HTML como ilustración (`StreetLayer` y pines fijos), sin bajar ningún mapa. Si quien ve **ya compartió su ubicación antes** (`useRememberedLocation`, no se pide aquí) y hay reportes **activos** en su zona (perdido, encontrado, rescatado, abandonado, en adopción), encima aparece el mapa real (`HeroLiveMap`):
+
+- **Datos:** salen de `useRecentReports` con las mismas variables que «Reportes recientes», así que Apollo comparte la consulta y no sale ninguna petición de más.
+- **Paleta:** la misma de la ilustración en claro y oscuro. Es la de todos los mapas del sitio (`kadeshMapStyle` en `components/shared/kadeshMapStyle.ts`, `HERO_MAP_PALETTE`), que `createFreeMap` usa por defecto. Si cambias un color de `StreetLayer`, cambia el de la paleta.
+- **Pines:** el pin de Kadesh (`kadeshPin.ts`), el mismo de la ilustración y de todos los mapas: círculo con huella y una punta que marca el lugar; «Perdido» late. Cada uno abre su ficha. Se marca también la ubicación de quien ve. Los pines ilustrados se quitan cuando sale el mapa real.
+- **Interacción:** sin arrastre ni zoom (`interactive: false`), porque la página hace scroll encima.
+- **Encima del mapa:** la pastilla «N reportes activos cerca de ti». La leyenda muestra solo los estados presentes y «Tú».
+- **Respaldo:** sin ubicación, sin reportes activos cerca, sin WebGL o si no baja el estilo, se queda la ilustración. Leaflet y MapLibre solo se bajan en el caso del mapa real.
+
 ## Reportes recientes
 
 Cuadrícula tipo feed (`RecentReportsSection`) de 12 cuadros cuadrados: 3 × 4 en celular, de orilla a orilla y con 2 px entre fotos; 4 × 3 en escritorio, con esquinas redondeadas. El primero es un cuadro rojo (`ReportLink`, el rojo del botón principal del hero) con la misma estructura que los de foto: pastilla «Gratis» arriba a la izquierda y «¿Se perdió tu mascota? Repórtala aquí →» abajo y los otros 11, reportes (`RECENT_REPORTS_LIMIT` en `recentReports.ts`).

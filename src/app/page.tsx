@@ -55,6 +55,7 @@ export default async function HomePage() {
         <HeroSection
           stats={stats}
           events={events.publishedTotal > 0 ? { count: events.publishedTotal } : null}
+          recentReports={recentReports}
         />
         {/*
           Orden (ver components/home/README.md): primero lo que sirve a quien perdió a su mascota

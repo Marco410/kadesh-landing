@@ -373,6 +373,8 @@ export const GET_ANIMAL_QUERY = gql`
       createdAt
       contactNumber
       contactNumber2
+      rewardOffered
+      rewardAmount
       sourceUrl
       reportedBy
       id

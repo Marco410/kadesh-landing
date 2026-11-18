@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { rewardPosterText } from 'kadesh/components/animals/reward';
 import { NextResponse } from 'next/server';
 import { SITE_URL } from 'kadesh/core/site';
 import { ogFonts } from 'kadesh/core/og-fonts';
@@ -23,6 +24,8 @@ import { folioQrDataUri } from 'kadesh/components/animals/poster/qr';
 const WIDTH = 1080;
 const HEIGHT = 1920;
 const PHOTO_HEIGHT = 1000;
+/** Franja de «Recompensa» bajo el título. */
+const REWARD_HEIGHT = 110;
 
 function nameSize(name: string) {
   if (name.length <= 12) return 120;
@@ -33,6 +36,9 @@ function nameSize(name: string) {
 async function renderStory(animal: AnimalShareData, photo: OgPhoto | null) {
   const facts = animalShareFacts(animal);
   const color = getStatusColor(facts.status);
+  // Con recompensa, la foto se acorta lo que mide la franja: todo sigue cabiendo en 1080 × 1920.
+  const reward = rewardPosterText(animal, facts.status);
+  const photoHeight = reward ? PHOTO_HEIGHT - REWARD_HEIGHT : PHOTO_HEIGHT;
   const photoSrc = ogPhotoSrc(photo);
   const folio = animal.folio ?? null;
   const kind = [facts.typeLabel, facts.breed]
@@ -66,15 +72,32 @@ async function renderStory(animal: AnimalShareData, photo: OgPhoto | null) {
         >
           {posterHeadline(facts.status)}
         </div>
-        <div style={{ display: 'flex', width: WIDTH, height: PHOTO_HEIGHT, backgroundColor: '#f3f5f8' }}>
+        {reward ? (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              height: REWARD_HEIGHT,
+              alignItems: 'center',
+              backgroundColor: '#fbbf24',
+              color: '#3d2800',
+              fontSize: 56,
+              fontWeight: 800,
+              textTransform: 'uppercase',
+            }}
+          >
+            {reward}
+          </div>
+        ) : null}
+        <div style={{ display: 'flex', width: WIDTH, height: photoHeight, backgroundColor: '#f3f5f8' }}>
           {photoSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={photoSrc}
               alt=""
               width={WIDTH}
-              height={PHOTO_HEIGHT}
-              style={{ width: WIDTH, height: PHOTO_HEIGHT, objectFit: 'cover' }}
+              height={photoHeight}
+              style={{ width: WIDTH, height: photoHeight, objectFit: 'cover' }}
             />
           ) : null}
         </div>

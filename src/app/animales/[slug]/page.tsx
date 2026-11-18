@@ -61,6 +61,7 @@ import {
   animalSentenceName,
 } from "kadesh/components/animals/animalName";
 import { SightingBanner, SightingsSection } from "kadesh/components/animals/sightings";
+import RewardBanner from "kadesh/components/animals/detail/RewardBanner";
 
 const ANIMAL_DETAIL_AD_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ANIMAL_DETAIL;
 
@@ -307,6 +308,7 @@ export default function AnimalDetailPage() {
               void refetch();
             }}
           />
+          <RewardBanner animal={animal} status={status} />
           <SightingBanner
             animal={animal}
             status={status}

@@ -15,6 +15,15 @@ Formato:
 
 ---
 
+## 2026-11-17 · feat: recompensa en reportes de mascota perdida · fix: cartel horizontal que se desbordaba
+- Rama: fix/cartel-horizontal-y-recompensa
+- Qué cambió y por qué:
+  - **Recompensa:** en el formulario de reporte y en el de edición, con estado «Perdido», va la casilla «Ofrezco recompensa» y un monto opcional (`RewardField`). Se ve en la ficha (`RewardBanner`, franja ámbar «Se ofrece recompensa: $2,000» con el aviso «Si alguien te pide dinero por adelantado, es una estafa»), en el cartel (franja bajo «SE BUSCA») y en la imagen para historias. En kadesh-back también entra en el post de Facebook y en el texto del canal. Solo se muestra mientras el caso esté en «Perdido».
+  - **Cartel horizontal:** la columna derecha se pasaba del alto (sobre todo con fotos extra y teléfono) y el QR quedaba cortado. Ahora las fotos extra son lo único elástico (ocupan lo que sobra o no salen) y el pie con QR, teléfono, enlace, folio y canal siempre cabe. Letras y QR un poco más chicos en horizontal.
+- Archivos: src/components/animals/nuevo/{RewardField.tsx (nuevo),NewAnimalForm.tsx,EditAnimalForm.tsx,reportDraft.ts}, src/components/animals/{reward.ts (nuevo),queries.ts,server.ts}, src/components/animals/detail/{RewardBanner.tsx (nuevo),hooks/useAnimalDetail.ts}, src/app/animales/[slug]/page.tsx, src/app/cartel/[slug]/{page.tsx,historia/route.tsx}
+- GraphQL: `GetAnimal` y la consulta del cartel piden `rewardOffered` y `rewardAmount`; `createAnimal`/`updateAnimal` los mandan.
+- Móvil: [prompt](../mobile-sync/2026-11-17-recompensa.md)
+
 ## 2026-11-17 · feat: canal de WhatsApp de Kadesh Pet
 - Rama: feat/canal-whatsapp
 - Qué cambió y por qué: la API oficial de WhatsApp no publica en Canales, así que Kadesh Pet tiene un canal manual («Kadesh Pet», uno para todo el país) y se difunde desde aquí:

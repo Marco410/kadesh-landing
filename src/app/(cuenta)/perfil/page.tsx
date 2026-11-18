@@ -19,13 +19,14 @@ import { MyEventsSection } from "kadesh/components/events";
 import RescueSection from "kadesh/components/rescue/RescueSection";
 import { MyAdoptionApplicationsSection } from "kadesh/components/adoption";
 import { PawsSection } from "kadesh/components/paws";
+import PublicProfileSettings from "kadesh/components/public-profile/PublicProfileSettings";
 import { useUser } from "kadesh/utils/UserContext";
 import { cn } from "kadesh/utils/cn";
 
 /** Ancho de cada vista: los formularios conservan su medida; Inicio, Rescate y Clínicas usan más. */
 const VIEW_WIDTH: Record<ProfileTabKey, string> = {
   inicio: "",
-  profile: "max-w-3xl",
+  profile: "",
   paws: "",
   pets: "max-w-5xl",
   posts: "max-w-4xl",
@@ -66,7 +67,13 @@ export default function ProfilePage() {
       ) : null}
 
       {view === "inicio" ? <ProfileHome user={user} /> : null}
-      {view === "profile" ? <ProfileData user={user} /> : null}
+      {view === "profile" ? (
+        // Dos columnas en pantallas anchas: datos de la cuenta y, al lado, el perfil público.
+        <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
+          <ProfileData user={user} />
+          <PublicProfileSettings userId={user.id} hasPhone={Boolean(user.phone?.trim())} />
+        </div>
+      ) : null}
       {view === "paws" ? <PawsSection userId={user.id} /> : null}
       {view === "pets" ? <MyPetsSection userId={user.id} /> : null}
       {view === "posts" ? <UserPostsSection userId={user.id} /> : null}

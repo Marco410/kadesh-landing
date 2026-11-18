@@ -49,3 +49,4 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-17 | [Paleta de mapas de Kadesh (claro y oscuro)](2026-11-17-paleta-de-mapas.md) | shared | pendiente |
 | 2026-11-17 | [Huellitas en el perfil: nivel, progreso y racha](2026-11-17-huellitas-perfil.md) | profile | pendiente |
 | 2026-11-17 | [Recompensa en reportes de mascota perdida](2026-11-17-recompensa.md) | animals | pendiente |
+| 2026-11-18 | [Perfil público, autor con nivel y ajustes de perfil](2026-11-18-perfil-publico.md) | profile | pendiente |

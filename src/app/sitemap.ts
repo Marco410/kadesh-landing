@@ -26,6 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     Routes.veterinaries.register,
     Routes.organizations.index,
     Routes.allies,
+    Routes.ranking,
     Routes.conocenos,
     Routes.contact,
     Routes.novedades,

@@ -43,6 +43,30 @@ export type SetPawRankingVisibilityResponse = {
 
 export type MyPawsSummary = Pick<
   MyPaws,
-  "enabled" | "balance" | "lifetimeEarned" | "level" | "toNextLevel" | "streakWeeks" | "streakActiveThisWeek"
+  | "enabled"
+  | "balance"
+  | "lifetimeEarned"
+  | "level"
+  | "toNextLevel"
+  | "streakWeeks"
+  | "streakActiveThisWeek"
+  | "rankingHidden"
+  | "rank"
 >;
 export type MyPawsSummaryResponse = { myPaws: MyPawsSummary | null };
+
+export type PawLeaderboardPeriod = "month" | "all_time";
+
+/** Una fila del ranking público. Nombre con inicial, foto y enlace al perfil: nunca contacto ni id de la cuenta. */
+export type PawLeaderboardEntry = {
+  rank: number;
+  /** Nombre e inicial del apellido («Marco C.»). */
+  name: string;
+  /** Para el enlace a `/u/<username>`; `null` si la persona apagó su perfil público. */
+  username: string | null;
+  avatarUrl: string | null;
+  /** Huellitas del periodo (del mes o de siempre). */
+  points: number;
+  streakWeeks: number;
+  level: Pick<PawLevelInfo, "level" | "key" | "label">;
+};

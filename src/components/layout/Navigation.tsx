@@ -21,6 +21,7 @@ const PRIMARY_NAV = [
   { label: "Veterinarias", href: Routes.veterinaries.index },
   { label: "Animales", href: Routes.animals.index },
   { label: "Eventos", href: Routes.events.index },
+  { label: "Ranking", href: Routes.ranking },
   { label: "Blog", href: Routes.blog.index },
   { label: "Conócenos", href: Routes.conocenos },
   { label: "Contacto", href: Routes.contact },

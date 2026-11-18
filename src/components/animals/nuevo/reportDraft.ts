@@ -26,6 +26,9 @@ export type AnimalReportDraftV1 = {
   notes: string;
   contactNumber: string;
   contactNumber2?: string;
+  /** «Ofrezco recompensa» y su monto (texto tal como lo escribió). Solo perdidos. */
+  rewardOffered?: boolean;
+  rewardAmount?: string;
   dateStatus: string;
   isToday: boolean;
   dateMode?: 'today' | 'yesterday' | 'other';

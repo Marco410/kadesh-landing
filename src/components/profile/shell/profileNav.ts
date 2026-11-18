@@ -17,6 +17,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
 import type { AppNavGroup } from "kadesh/components/app-shell";
+import { PAW_ICON } from "kadesh/components/paws/constants";
 import { Routes } from "kadesh/core/routes";
 
 /**
@@ -31,6 +32,7 @@ import { Routes } from "kadesh/core/routes";
 export const PROFILE_TAB_KEYS = [
   "inicio",
   "profile",
+  "paws",
   "pets",
   "posts",
   "animals",
@@ -83,6 +85,13 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
     group: "cuenta",
     href: Routes.profileTab("profile"),
     description: "Tu nombre, teléfono, fecha de nacimiento y foto.",
+  },
+  paws: {
+    label: "Huellitas",
+    icon: PAW_ICON,
+    group: "cuenta",
+    href: Routes.profileTab("paws"),
+    description: "Lo que has ganado por ayudar: tu nivel, cuánto te falta para el siguiente y tu racha.",
   },
   notifications: {
     label: "Notificaciones",
@@ -157,7 +166,7 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
 };
 
 const GROUP_ORDER: Array<[GroupId, ProfileViewKey[]]> = [
-  ["cuenta", ["inicio", "profile", "notifications", "alerts"]],
+  ["cuenta", ["inicio", "profile", "paws", "notifications", "alerts"]],
   ["animales", ["pets", "appointments", "animals", "adopciones"]],
   ["publicaciones", ["events", "posts"]],
   ["rescate", ["rescate"]],

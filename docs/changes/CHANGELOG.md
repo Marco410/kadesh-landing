@@ -15,6 +15,29 @@ Formato:
 
 ---
 
+## 2026-11-17 · feat: recompensa en reportes de mascota perdida · fix: cartel horizontal que se desbordaba
+- Rama: fix/cartel-horizontal-y-recompensa
+- Qué cambió y por qué:
+  - **Recompensa:** en el formulario de reporte y en el de edición, con estado «Perdido», va la casilla «Ofrezco recompensa» y un monto opcional (`RewardField`). Se ve en la ficha (`RewardBanner`, franja ámbar «Se ofrece recompensa: $2,000» con el aviso «Si alguien te pide dinero por adelantado, es una estafa»), en el cartel (franja bajo «SE BUSCA») y en la imagen para historias. En kadesh-back también entra en el post de Facebook y en el texto del canal. Solo se muestra mientras el caso esté en «Perdido».
+  - **Cartel horizontal:** la columna derecha se pasaba del alto (sobre todo con fotos extra y teléfono) y el QR quedaba cortado. Ahora las fotos extra son lo único elástico (ocupan lo que sobra o no salen) y el pie con QR, teléfono, enlace, folio y canal siempre cabe. Letras y QR un poco más chicos en horizontal.
+- Archivos: src/components/animals/nuevo/{RewardField.tsx (nuevo),NewAnimalForm.tsx,EditAnimalForm.tsx,reportDraft.ts}, src/components/animals/{reward.ts (nuevo),queries.ts,server.ts}, src/components/animals/detail/{RewardBanner.tsx (nuevo),hooks/useAnimalDetail.ts}, src/app/animales/[slug]/page.tsx, src/app/cartel/[slug]/{page.tsx,historia/route.tsx}
+- GraphQL: `GetAnimal` y la consulta del cartel piden `rewardOffered` y `rewardAmount`; `createAnimal`/`updateAnimal` los mandan.
+- Móvil: [prompt](../mobile-sync/2026-11-17-recompensa.md)
+
+## 2026-11-17 · feat: Huellitas en el perfil (nivel, progreso y racha)
+- Rama: feat/huellitas
+- Qué cambió y por qué: kadesh-back ya da huellitas por ayudar (reportes, avisos «Lo vi», casos cerrados, reencuentros, adopciones). Nueva vista **Mi cuenta → Huellitas** (`/perfil?tab=paws`, a la que enlaza la notificación `paws.level_up`):
+  - Nivel actual («Nivel 2 de 6 · Explorador»), huellitas que tiene, barra de progreso con «Te faltan N huellitas para Guardián» y el camino de los 6 niveles.
+  - Racha semanal: semanas seguidas, si esta semana ya cuenta y la mejor racha.
+  - Cómo se ganan (puntos y topes), historial de movimientos con «Cargar más» e interruptor para aparecer o no en el ranking (con su lugar si está en el top 50).
+  - Con las huellitas apagadas en el back muestra «Las huellitas llegan pronto». La vista usa todo el ancho, como Inicio.
+  - Una consulta al abrir la vista, sin polling; el interruptor corrige la caché con la respuesta.
+  - Cada nivel tiene su ícono (Cachorro hueso, Explorador brújula, Guardián escudo, Rescatista salvavidas, Héroe medalla, Leyenda corona): va en el encabezado, en el camino de niveles y en la tarjeta de Inicio.
+  - **Inicio del perfil**: tarjeta «Huellitas» bajo «Requiere atención» con nivel, huellitas, barra de progreso, «Te faltan N…», racha y «Ver más». Su propia consulta sin historial; si las huellitas están apagadas o la consulta falla, no sale.
+- Archivos: src/components/paws/{PawsSection.tsx,PawsSummaryCard.tsx,useMyPaws.ts,queries.ts,types.ts,constants.ts,index.ts,README.md} (nuevos), src/components/profile/shell/profileNav.ts, src/components/profile/home/ProfileHome.tsx, src/app/(cuenta)/perfil/page.tsx, src/components/profile/README.md
+- GraphQL: nuevas en el front `MyPaws` (`myPaws`), `MyPawsSummary` (`myPaws` sin historial), `MyPawHistory` (`myPawHistory`) y `SetPawRankingVisibility` (`setPawRankingVisibility`); existen en kadesh-back
+- Móvil: [prompt](../mobile-sync/2026-11-17-huellitas-perfil.md)
+
 ## 2026-11-17 · feat: canal de WhatsApp de Kadesh Pet
 - Rama: feat/canal-whatsapp
 - Qué cambió y por qué: la API oficial de WhatsApp no publica en Canales, así que Kadesh Pet tiene un canal manual («Kadesh Pet», uno para todo el país) y se difunde desde aquí:

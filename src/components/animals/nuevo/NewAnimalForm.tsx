@@ -31,6 +31,7 @@ import { sileo } from 'sileo';
 import { Routes } from 'kadesh/core/routes';
 import { gsap, useGSAP, HOME_EASE } from 'kadesh/components/home/gsap-register';
 import ChoiceChip from 'kadesh/components/animals/nuevo/ChoiceChip';
+import RewardField, { parseRewardAmount, rewardAmountError } from 'kadesh/components/animals/nuevo/RewardField';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useUiMotion } from 'kadesh/components/shared/motion';
 import {
@@ -78,6 +79,7 @@ interface FieldErrors {
   location?: string;
   contactNumber?: string;
   contactNumber2?: string;
+  rewardAmount?: string;
   date?: string;
   age?: string;
   color?: string;
@@ -283,6 +285,8 @@ export default function NewAnimalForm({
     if (org.whatsapp) setContactNumber(org.whatsapp);
   }, [initialOrganizationId, rescueOrgs]);
   const [contactNumber2, setContactNumber2] = useState('');
+  const [rewardOffered, setRewardOffered] = useState(false);
+  const [rewardAmount, setRewardAmount] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [fromSocial, setFromSocial] = useState(false);
   const [notes, setNotes] = useState('');
@@ -403,6 +407,8 @@ export default function NewAnimalForm({
         setIsOwnPet(draft.isOwnPet !== false);
         if (draft.contactNumber) setContactNumber(draft.contactNumber);
         setContactNumber2(draft.contactNumber2 || '');
+        setRewardOffered(Boolean(draft.rewardOffered));
+        setRewardAmount(draft.rewardAmount || '');
         setSourceUrl(draft.sourceUrl || '');
         setFromSocial(Boolean(draft.fromSocial || draft.sourceUrl));
         if (draft.dateMode) {
@@ -478,6 +484,8 @@ export default function NewAnimalForm({
           isOwnPet,
           contactNumber,
           contactNumber2,
+          rewardOffered,
+          rewardAmount,
           sourceUrl,
           fromSocial,
           dateStatus: '',
@@ -519,6 +527,8 @@ export default function NewAnimalForm({
     isOwnPet,
     contactNumber,
     contactNumber2,
+    rewardOffered,
+    rewardAmount,
     sourceUrl,
     fromSocial,
     dateMode,
@@ -734,6 +744,10 @@ export default function NewAnimalForm({
         const second = normalizeMxPhone(contactNumber2);
         if (!second.ok) nextErrors.contactNumber2 = second.reason;
       }
+      if (status === 'lost' && rewardOffered) {
+        const rewardError = rewardAmountError(rewardAmount);
+        if (rewardError) nextErrors.rewardAmount = rewardError;
+      }
     }
 
     setErrors(nextErrors);
@@ -816,6 +830,9 @@ export default function NewAnimalForm({
             name: nameUnknown ? '' : name.trim(),
             contactNumber: phone.digits,
             contactNumber2: second.digits,
+            // Recompensa: solo perdidos. El monto es opcional.
+            rewardOffered: status === 'lost' && rewardOffered,
+            rewardAmount: status === 'lost' && rewardOffered ? parseRewardAmount(rewardAmount) : null,
             sex,
             physical_description: physicalDescription.trim(),
             age: age.trim() || null,
@@ -1345,6 +1362,15 @@ export default function NewAnimalForm({
                 />
                 {errors.contactNumber2 ? (
                   <p className="mt-2 text-xs text-red-600">{errors.contactNumber2}</p>
+                ) : null}
+                {status === 'lost' ? (
+                  <RewardField
+                    offered={rewardOffered}
+                    amount={rewardAmount}
+                    onOfferedChange={setRewardOffered}
+                    onAmountChange={setRewardAmount}
+                    error={errors.rewardAmount}
+                  />
                 ) : null}
                 {whatsapp.loaded && !whatsapp.ownReportsOn ? (() => {
                   // Va al teléfono del perfil; si no tiene, al del reporte (y se guarda en el perfil).

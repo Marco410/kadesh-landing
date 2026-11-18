@@ -16,6 +16,8 @@ const ANIMAL_SHARE_QUERY = `
       size
       physical_description
       contactNumber
+      rewardOffered
+      rewardAmount
       animal_type {
         name
       }
@@ -55,6 +57,9 @@ export type AnimalShareData = {
   name?: string | null;
   physical_description?: string | null;
   contactNumber?: string | null;
+  /** Recompensa (solo se muestra en perdidos). */
+  rewardOffered?: boolean | null;
+  rewardAmount?: number | null;
   animal_type?: { name?: string | null } | null;
   sex?: string | null;
   age?: string | null;

@@ -45,6 +45,9 @@ export interface AnimalDetail {
   createdAt: string;
   contactNumber?: string | null;
   contactNumber2?: string | null;
+  /** La familia ofrece recompensa (solo perdidos); el monto es opcional. */
+  rewardOffered?: boolean | null;
+  rewardAmount?: number | null;
   sourceUrl?: string | null;
   reportedBy?: string | null;
   animal_viewsCount?: number | null;

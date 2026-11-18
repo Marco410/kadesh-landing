@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { Routes } from 'kadesh/core/routes';
+import { rewardPosterText } from 'kadesh/components/animals/reward';
 import { SITE_URL } from 'kadesh/core/site';
 import { getStatusColor } from 'kadesh/components/animals/constants';
 import { animalShareFacts } from 'kadesh/components/animals/animal-seo';
@@ -89,11 +90,20 @@ export default async function AnimalPosterPage({
     .filter((part, index, all) => part && all.indexOf(part) === index)
     .join(' · ');
 
+  const reward = rewardPosterText(animal, facts.status);
   const headline = (
-    <header className="px-6 py-4 text-center text-white sm:py-6" style={{ backgroundColor: color }}>
-      <p className="text-[clamp(2.25rem,9vw,4.5rem)] font-black leading-none tracking-[-0.03em]">
-        {posterHeadline(facts.status)}
-      </p>
+    <header className="shrink-0 text-center">
+      <div className="px-6 py-4 text-white sm:py-6" style={{ backgroundColor: color }}>
+        <p className="text-[clamp(2.25rem,9vw,4.5rem)] font-black leading-none tracking-[-0.03em]">
+          {posterHeadline(facts.status)}
+        </p>
+      </div>
+      {/* Recompensa: franja ámbar bajo el título, para que se lea de lejos. */}
+      {reward ? (
+        <p className="bg-amber-400 px-6 py-2 text-[clamp(1.25rem,4.5vw,2.25rem)] font-black uppercase leading-tight tracking-[-0.01em] text-[#3d2800]">
+          {reward}
+        </p>
+      ) : null}
     </header>
   );
 
@@ -106,37 +116,39 @@ export default async function AnimalPosterPage({
 
   // En horizontal todo va más grande: la columna de texto tiene alto de sobra y el cartel se lee de lejos.
   const details = (
-    <div className={landscape ? 'space-y-3 text-left' : 'space-y-2 px-6 pt-4 text-center sm:px-10'}>
+    <div className={landscape ? 'shrink-0 space-y-2 text-left' : 'space-y-2 px-6 pt-4 text-center sm:px-10'}>
       <h1
         className={`font-black leading-tight tracking-[-0.03em] ${
-          landscape ? 'text-[clamp(2rem,5vw,3.75rem)]' : 'text-[clamp(1.75rem,6vw,3rem)]'
+          landscape ? 'text-[clamp(1.75rem,4.2vw,3.25rem)]' : 'text-[clamp(1.75rem,6vw,3rem)]'
         }`}
       >
         {facts.name}
       </h1>
       {kind || facts.shortTraits.length ? (
-        <p className={`font-semibold text-[#3a3a3a] ${landscape ? 'text-lg sm:text-2xl' : 'text-base sm:text-lg'}`}>
+        <p className={`font-semibold text-[#3a3a3a] ${landscape ? 'text-base sm:text-xl' : 'text-base sm:text-lg'}`}>
           {[kind, ...facts.shortTraits].filter(Boolean).join(' · ')}
         </p>
       ) : null}
       {facts.location ? (
-        <p className={`text-[#3a3a3a] ${landscape ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'}`}>
+        <p className={`text-[#3a3a3a] ${landscape ? 'text-base sm:text-lg' : 'text-base sm:text-lg'}`}>
           <strong>Último lugar:</strong> {facts.location}
           {facts.seenAt ? ` · ${facts.seenAt}` : ''}
         </p>
       ) : null}
       {marks ? (
-        <p className={`leading-snug text-[#3a3a3a] ${landscape ? 'text-base sm:text-lg' : 'text-sm sm:text-base'}`}>
+        <p className={`leading-snug text-[#3a3a3a] ${landscape ? 'text-sm sm:text-base' : 'text-sm sm:text-base'}`}>
           {marks}
         </p>
       ) : null}
     </div>
   );
 
+  // Lo único elástico de la columna: ocupa lo que sobre y se encoge (o no se ve) si no cabe, para
+  // que el pie con el QR y el teléfono siempre quepa completo.
   const morePhotos = extraPhotos.length ? (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="flex min-h-0 flex-1 gap-2 overflow-hidden">
       {extraPhotos.map((url, index) => (
-        <div key={url} className="relative aspect-square overflow-hidden rounded-lg bg-[#f3f5f8]">
+        <div key={url} className="relative aspect-square h-full max-h-36 min-h-0 overflow-hidden rounded-lg bg-[#f3f5f8]">
           {/* eslint-disable-next-line @next/next/no-img-element -- se imprime, igual que la portada. */}
           <img src={url} alt={`Otra foto de ${facts.name} (${index + 2})`} className="absolute inset-0 h-full w-full object-cover" />
         </div>
@@ -146,7 +158,7 @@ export default async function AnimalPosterPage({
 
   const contact = (
     <footer
-      className={`flex items-center gap-4 border-t-4 sm:gap-6 ${landscape ? 'mt-auto pt-4' : 'mt-4 px-6 py-4 sm:px-10'}`}
+      className={`flex items-center gap-4 border-t-4 sm:gap-6 ${landscape ? 'mt-auto shrink-0 pt-3' : 'mt-4 px-6 py-4 sm:px-10'}`}
       style={{ borderColor: color }}
     >
       {folio ? (
@@ -154,15 +166,15 @@ export default async function AnimalPosterPage({
         <img
           src={folioQrDataUri(folio)}
           alt="Código QR del reporte"
-          className={`shrink-0 ${landscape ? 'h-32 w-32 sm:h-44 sm:w-44' : 'h-28 w-28 sm:h-36 sm:w-36'}`}
+          className={`shrink-0 ${landscape ? 'h-24 w-24 sm:h-32 sm:w-32' : 'h-28 w-28 sm:h-36 sm:w-36'}`}
         />
       ) : null}
       <div className="min-w-0 flex-1 space-y-1">
-        <p className={`font-bold leading-snug ${landscape ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'}`}>
+        <p className={`font-bold leading-snug ${landscape ? 'text-base sm:text-xl' : 'text-base sm:text-xl'}`}>
           {posterCallToAction(facts.status)}
         </p>
         {showPhone ? (
-          <p className={`font-black tracking-tight ${landscape ? 'text-2xl sm:text-4xl' : 'text-2xl sm:text-3xl'}`}>
+          <p className={`font-black tracking-tight ${landscape ? 'text-xl sm:text-3xl' : 'text-2xl sm:text-3xl'}`}>
             Llama al {phone}
           </p>
         ) : null}
@@ -210,7 +222,7 @@ export default async function AnimalPosterPage({
           {headline}
           <div className="grid min-h-0 flex-1 grid-cols-[55%_1fr]">
             <div className="relative min-h-0 bg-[#f3f5f8]">{photo}</div>
-            <div className="flex min-h-0 flex-col gap-4 p-5 sm:gap-6 sm:p-8">
+            <div className="flex min-h-0 flex-col gap-3 p-5 sm:gap-4 sm:p-7">
               {details}
               {morePhotos}
               {contact}

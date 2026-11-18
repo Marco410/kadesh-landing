@@ -30,6 +30,7 @@ import {
 // Directo (no el barrel): el barrel de notificaciones exporta NotificationsShell.
 import { useUnreadNotifications } from "kadesh/components/notifications/hooks";
 import { Bone, SkeletonRegion } from "kadesh/components/ui/skeleton";
+import { PawsSummaryCard } from "kadesh/components/paws";
 import { Routes } from "kadesh/core/routes";
 import { cn } from "kadesh/utils/cn";
 import type { User } from "kadesh/utils/types";
@@ -79,7 +80,10 @@ export default function ProfileHome({ user }: { user: User }) {
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <GreetingCard firstName={user.name?.trim() || "hola"} model={model} userId={user.id} />
-        <AttentionCard items={model.attention} />
+        <div className="flex min-w-0 flex-col gap-4">
+          <AttentionCard items={model.attention} />
+          <PawsSummaryCard userId={user.id} index={2} />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">

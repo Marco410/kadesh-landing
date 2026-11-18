@@ -15,6 +15,7 @@ import {
 } from 'kadesh/components/animals/queries';
 import type { AnimalDetail } from 'kadesh/components/animals/detail';
 import LocationPicker from 'kadesh/components/animals/nuevo/LocationPicker';
+import RewardField, { parseRewardAmount, rewardAmountError } from 'kadesh/components/animals/nuevo/RewardField';
 import AnimalNameInput from 'kadesh/components/animals/nuevo/AnimalNameInput';
 import { animalNameSource, animalSentenceName, knownAnimalName } from 'kadesh/components/animals/animalName';
 import AnimalTypeSelector from 'kadesh/components/animals/nuevo/AnimalTypeSelector';
@@ -51,6 +52,7 @@ interface FieldErrors {
   animalBreedId?: string;
   location?: string;
   contactNumber?: string;
+  rewardAmount?: string;
 }
 
 function toDateTimeLocal(value?: string | null): string {
@@ -77,6 +79,10 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
   const [color, setColor] = useState(animal.color ?? '');
   const [physicalDescription, setPhysicalDescription] = useState(animal.physical_description ?? '');
   const [contactNumber, setContactNumber] = useState(animal.contactNumber ?? '');
+  const [rewardOffered, setRewardOffered] = useState(Boolean(animal.rewardOffered));
+  const [rewardAmount, setRewardAmount] = useState(
+    animal.rewardAmount ? animal.rewardAmount.toLocaleString('en-US') : ''
+  );
   const [status, setStatus] = useState<AnimalReportStatus>(
     isAnimalReportStatus(log?.status) ? log.status : 'lost'
   );
@@ -179,6 +185,13 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
       next.contactNumber = 'Un teléfono para que te contacten.';
       missing.push('Teléfono');
     }
+    if (status === 'lost' && rewardOffered) {
+      const rewardError = rewardAmountError(rewardAmount);
+      if (rewardError) {
+        next.rewardAmount = rewardError;
+        missing.push('Recompensa');
+      }
+    }
     setErrors(next);
     if (missing.length) {
       sileo.error({
@@ -199,6 +212,9 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
           data: {
             name: nameUnknown ? '' : name.trim(),
             contactNumber: contactNumber.trim(),
+            // Recompensa: solo perdidos. Al pasar a otro estado o quitarla, se borra el monto (back).
+            rewardOffered: status === 'lost' && rewardOffered,
+            rewardAmount: status === 'lost' && rewardOffered ? parseRewardAmount(rewardAmount) : null,
             sex,
             physical_description: physicalDescription.trim(),
             age: age.trim() || null,
@@ -439,6 +455,15 @@ export default function EditAnimalForm({ animal }: { animal: AnimalDetail }) {
                 autoComplete="tel"
               />
               {errors.contactNumber ? <p className="mt-2 text-xs text-red-600">{errors.contactNumber}</p> : null}
+              {status === 'lost' ? (
+                <RewardField
+                  offered={rewardOffered}
+                  amount={rewardAmount}
+                  onOfferedChange={setRewardOffered}
+                  onAmountChange={setRewardAmount}
+                  error={errors.rewardAmount}
+                />
+              ) : null}
             </div>
             <div>
               <label htmlFor="notes" className={labelClass}>Nota</label>

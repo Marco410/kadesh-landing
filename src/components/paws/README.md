@@ -5,6 +5,8 @@ Puntos por ayudar en Kadesh Pet. Los da y los quita kadesh-back (`models/Pet/Paw
 ## Dónde
 
 - **Mi cuenta → Huellitas** (`/perfil?tab=paws`, `PawsSection`). A esa ruta lleva la notificación `paws.level_up`.
+- **`/ranking`** (pública, «Quién apoya más»): encabezado con «Ayudar a buscar»; a la izquierda, pestañas «Este mes» y «De siempre», podio de los tres primeros (`RankingPodium`) y la lista del 4.º al 50.º (`PawRankRow`); a la derecha, «Tú» (o «¿Quieres aparecer aquí?»), cómo se ganan y los niveles. Cada persona: foto con la insignia de su nivel (`LevelAvatar`), nombre con inicial, racha y huellitas, y enlace a su perfil público (`/u/<username>`). Las dos listas se piden en el servidor (`server.ts`, `fetchPawLeaderboard`, 5 min; el back rehace su caché en cuanto cambia un saldo) y `RankingBoard` solo cambia de pestaña. Con sesión, la franja «Tú» (lugar, nivel, huellitas o «lo ocultaste») sale de `MyPawsSummary`, y tu fila se marca en «De siempre» por lugar y nombre (las filas no traen ids). Enlaces: menú del sitio («Ranking»), pie («Quién apoya más») y la vista Huellitas.
+- **Portada** (`components/home/PawRankingSection`): los 5 primeros del mes (o de siempre si este mes hay menos de 3); con menos de 3 personas no sale. Usa la misma `fetchPawLeaderboard` que `/ranking`: comparten la caché.
 - **Inicio del perfil**, bajo "Requiere atención" (`PawsSummaryCard`): nivel, huellitas, progreso y racha. Consulta propia `MyPawsSummary` (sin historial); con las huellitas apagadas o si falla, no se muestra.
 
 ## Qué muestra

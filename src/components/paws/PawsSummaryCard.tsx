@@ -8,6 +8,7 @@ import { AnimatedNumber, Reveal, dashSurfaceClass } from "kadesh/components/app-
 import { Routes } from "kadesh/core/routes";
 import { cn } from "kadesh/utils/cn";
 import { PAW_LEVELS, pawLevelIcon, pawLevelProgress, pawProgressText } from "./constants";
+import { levelColors } from "./LevelAvatar";
 import { MY_PAWS_SUMMARY_QUERY } from "./queries";
 import type { MyPawsSummaryResponse } from "./types";
 
@@ -32,6 +33,7 @@ export default function PawsSummaryCard({ userId, index = 0 }: { userId: string;
   const { level, lifetimeEarned } = paws;
   const progress = pawLevelProgress(level, lifetimeEarned);
   const next = PAW_LEVELS.find((step) => step.level === level.level + 1) ?? null;
+  const colors = levelColors(level.key);
 
   return (
     <Reveal as="section" index={index} className={cn(dashSurfaceClass, "min-w-0 p-5 md:p-6")}>
@@ -47,11 +49,11 @@ export default function PawsSummaryCard({ userId, index = 0 }: { userId: string;
       </div>
 
       <div className="mt-4 flex items-center gap-3">
-        <span className="dash-grad-accent flex size-11 shrink-0 items-center justify-center rounded-2xl text-white shadow-dash-accent">
+        <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-2xl shadow-md", colors.solid)}>
           <HugeiconsIcon icon={pawLevelIcon(level.key)} size={24} aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-dash-muted">
+          <p className={cn("text-xs font-semibold uppercase tracking-[0.08em]", colors.text)}>
             Nivel {level.level} de {PAW_LEVELS.length}
           </p>
           <p className="truncate text-lg font-bold tracking-[-0.03em] text-dash-ink">{level.label}</p>
@@ -73,7 +75,7 @@ export default function PawsSummaryCard({ userId, index = 0 }: { userId: string;
         aria-valuenow={Math.round(progress)}
       >
         <div
-          className="dash-grad-accent h-full rounded-full transition-[width] duration-700 ease-out"
+          className={cn("h-full rounded-full transition-[width] duration-700 ease-out", colors.bar)}
           style={{ width: `${Math.max(progress, lifetimeEarned > level.from ? 3 : 0)}%` }}
         />
       </div>

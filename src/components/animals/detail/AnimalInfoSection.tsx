@@ -5,7 +5,7 @@ import { AnimalDetail } from "./hooks/useAnimalDetail";
 import { ANIMAL_TYPE_LABELS } from "../constants";
 import { TypeGlyph } from "../TypeGlyph";
 import { formatDate } from "kadesh/utils/format-date";
-import Avatar from "kadesh/components/shared/Avatar";
+import AnimalAuthorByline from "kadesh/components/public-profile/AnimalAuthorByline";
 import RescueByline from "kadesh/components/rescue/RescueByline";
 
 interface AnimalInfoSectionProps {
@@ -146,34 +146,7 @@ export default function AnimalInfoSection({ animal }: AnimalInfoSectionProps) {
           publishedAt={`Publicado ${formatDate(animal.createdAt)}`}
         />
       ) : (
-      <div className="flex items-center gap-3 border-t border-[#ececec] pt-3 dark:border-white/10">
-        {animal.user ? (
-          <Avatar
-            author={{
-              id: animal.user.username || "",
-              name: animal.user.name,
-              lastName: animal.user.lastName || "",
-              username: animal.user.username,
-              verified: animal.user.verified || false,
-              profileImage: animal.user.profileImage,
-              createdAt: animal.user.createdAt,
-            }}
-            verify={animal.user.verified || false}
-          />
-        ) : (
-          <Avatar author={null} />
-        )}
-        <div className="min-w-0">
-          <p className="truncate font-semibold text-[#121212] dark:text-[#eef1f6]">
-            {animal.user
-              ? `${animal.user.name} ${animal.user.lastName || ""}`.trim()
-              : "Usuario de KADESH"}
-          </p>
-          <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
-            Publicado {formatDate(animal.createdAt)}
-          </p>
-        </div>
-      </div>
+        <AnimalAuthorByline animalId={animal.id} publishedAt={`Publicado ${formatDate(animal.createdAt)}`} />
       )}
     </div>
   );

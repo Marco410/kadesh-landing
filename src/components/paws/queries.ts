@@ -77,6 +77,8 @@ export const MY_PAWS_SUMMARY_QUERY = gql`
       toNextLevel
       streakWeeks
       streakActiveThisWeek
+      rankingHidden
+      rank
     }
   }
 `;

@@ -128,6 +128,10 @@ export const Routes = {
   },
   /** Aliados KADESH: espacios de rescate que destacamos en la portada. */
   allies: '/aliados',
+  /** Quién apoya más: ranking público de huellitas (este mes y de siempre). */
+  ranking: '/ranking',
+  /** Perfil público de una persona (nivel, reportes, eventos, espacios y clínicas). */
+  publicProfile: (username: string): string => `/u/${encodeURIComponent(username)}`,
 
   // Notifications (campana y alertas de zona)
   notifications: {

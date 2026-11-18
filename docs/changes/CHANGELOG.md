@@ -15,6 +15,34 @@ Formato:
 
 ---
 
+## 2026-11-18 · feat: perfil público, autor con nivel en la ficha y ranking rediseñado
+- Rama: feat/ranking-huellitas
+- Qué cambió y por qué:
+  - **Perfil público `/u/<username>`**: foto con la insignia de su nivel, nombre con inicial («Marco C.»), nivel y barra al siguiente, biografía, contacto si lo eligió, cifras (huellitas, lugar, racha, reportes) y sus reportes (con «Ver más»), eventos, espacios de rescate y clínicas. Apagado o inexistente: 404. `noindex`.
+  - **Ficha del animal:** el autor se ve para cualquiera (antes solo lo veía el propio autor), con su nivel y enlace a su perfil.
+  - **Insignia de nivel** (`LevelAvatar`): anillo y ícono del color del nivel en la foto, en el ranking, la portada, el perfil y la ficha.
+  - **Mi cuenta → Datos del perfil:** tarjeta «Perfil público» con biografía (280), «Mostrar mi perfil público» (encendido) y «Mostrar mi teléfono» / «Mostrar mi correo» (apagados por defecto).
+  - **`/ranking` rediseñado:** podio de los tres primeros, lista compacta del 4.º en adelante y columna lateral con tu lugar, cómo se gana y los niveles; todo al ancho del sitio. **Portada:** texto y cifras a la izquierda, podio y siguientes a la derecha.
+  - Nombres públicos con inicial del apellido en todos lados (ranking incluido).
+  - **Lista de niveles** (`PawLevelsList`): los seis con su ícono, color y umbral, con el nivel de la persona marcado. Sale en `/ranking`, en Mi cuenta → Huellitas («Tú») y en el perfil público («Su nivel»).
+  - **Colores por nivel** (`levelColors` en `LevelAvatar.tsx`): Cachorro gris, Explorador verde, Guardián azul cielo, Rescatista violeta, Héroe ámbar, Leyenda dorado. La vista Huellitas los usa en el ícono, el brillo, la barra, «Siguiente: …» y el camino de niveles (ahora una línea con los seis); también la tarjeta de Inicio y la barra del perfil público.
+  - Probado con el servidor de desarrollo y datos de prueba: `/ranking`, la portada, `/u/<username>` (con y sin reportes) y 404 de un perfil inexistente o apagado.
+- Archivos: src/app/u/[username]/page.tsx (nuevo), src/components/public-profile/{AnimalAuthorByline.tsx,ProfileReports.tsx,PublicProfileSettings.tsx,ReportCard.tsx,queries.ts,server.ts,types.ts,index.ts,README.md} (nuevos), src/components/paws/{LevelAvatar.tsx,RankingPodium.tsx} (nuevos), src/components/paws/{PawRankRow.tsx,RankingBoard.tsx,server.ts,types.ts,index.ts,README.md}, src/components/home/{PawRankingSection.tsx,README.md}, src/app/ranking/page.tsx, src/app/(cuenta)/perfil/page.tsx, src/components/profile/shell/profileNav.ts, src/components/animals/detail/AnimalInfoSection.tsx, src/core/routes.ts
+- GraphQL: nuevas `PublicUserProfile`, `PublicUserReports`, `AnimalAuthor`, `MyPublicProfileSettings` y `UpdatePublicProfileSettings` (`updateUser` con `bio`, `publicProfileEnabled`, `showPhoneOnProfile`, `showEmailOnProfile`); `PawLeaderboard` pide también `username`
+- Móvil: [prompt](../mobile-sync/2026-11-18-perfil-publico.md)
+
+## 2026-11-18 · feat: ranking público de huellitas («Quién apoya más»)
+- Rama: feat/ranking-huellitas
+- Qué cambió y por qué: el back ya tenía `pawLeaderboard`, pero ninguna pantalla lo mostraba.
+  - **`/ranking`** (pública): pestañas «Este mes» y «De siempre» con los 50 primeros (lugar con oro, plata y bronce, nombre de pila, foto o inicial, nivel con su ícono, racha y huellitas), cómo se ganan y los niveles. Con sesión, franja «Tú» con tu lugar y tu fila marcada; sin nadie todavía, un vacío con enlace a animales perdidos.
+  - **Portada:** «Quién apoya más» después de Aliados, con los 5 primeros del mes (o de siempre si este mes hay menos de 3); con menos de 3 personas no sale.
+  - Enlaces: «Ranking» en el menú del sitio, «Quién apoya más» en el pie, «Ver el ranking» en Mi cuenta → Huellitas, y `/ranking` en el sitemap.
+  - Las listas se piden en el servidor cada 5 min (las fotos firmadas duran 1 h); el back rehace su caché del ranking en cuanto cambia un saldo, así que una huellita nueva sale a lo más en 5 min. En el navegador solo se pide el resumen de huellitas con sesión, que ya comparte la tarjeta de Inicio.
+  - Probado con el servidor de desarrollo: `/ranking` responde con el vacío y el menú lleva al ranking. Sin datos en local no se pudo ver la lista llena ni la sección de la portada.
+- Archivos: src/app/ranking/page.tsx (nuevo), src/components/paws/{server.ts,RankingBoard.tsx,PawRankRow.tsx} (nuevos), src/components/home/PawRankingSection.tsx (nuevo), src/components/paws/{index.ts,types.ts,queries.ts,PawsSection.tsx,README.md}, src/components/home/{index.ts,README.md}, src/app/page.tsx, src/app/sitemap.ts, src/components/layout/{Navigation.tsx,Footer.tsx}, src/core/routes.ts
+- GraphQL: nueva en el front `PawLeaderboard` (`pawLeaderboard`, del servidor); `MyPawsSummary` ahora pide también `rankingHidden` y `rank`
+- Móvil: [prompt](../mobile-sync/2026-11-17-huellitas-perfil.md) (se agregó la sección «Ranking»)
+
 ## 2026-11-17 · feat: recompensa en reportes de mascota perdida · fix: cartel horizontal que se desbordaba
 - Rama: fix/cartel-horizontal-y-recompensa
 - Qué cambió y por qué:

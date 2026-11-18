@@ -8,6 +8,7 @@ export { default as FirstHoursSection } from './FirstHoursSection';
 export { default as StoriesSection } from './StoriesSection';
 export { default as RescueSpacesSection } from './RescueSpacesSection';
 export { default as AlliesSection, HOME_ALLIES_MAX } from './AlliesSection';
+export { default as PawRankingSection, HOME_RANKING_TAKE } from './PawRankingSection';
 export { default as VeterinariansSection } from './VeterinariansSection';
 export { default as DonationsSection } from './DonationsSection';
 export { default as BusinessStrip } from './BusinessStrip';

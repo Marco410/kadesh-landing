@@ -29,6 +29,8 @@ import {
   pawLevelProgress,
   pawProgressText,
 } from "./constants";
+import { levelColors } from "./LevelAvatar";
+import PawLevelsList from "./PawLevelsList";
 import type { MyPaws, PawHistoryEntry } from "./types";
 import { useMyPaws } from "./useMyPaws";
 
@@ -85,7 +87,7 @@ export default function PawsSection({ userId }: { userId: string }) {
         <StreakCard paws={paws} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_340px]">
         <DashSectionCard
           index={2}
           title="Cómo ganar huellitas"
@@ -132,6 +134,10 @@ export default function PawsSection({ userId }: { userId: string }) {
             </>
           )}
         </DashSectionCard>
+
+        <DashSectionCard index={4} title="Niveles" description="Desde cuántas huellitas empieza cada uno.">
+          <PawLevelsList currentLevel={paws.level.level} surface="dash" />
+        </DashSectionCard>
       </div>
 
       <RankingCard paws={paws} saving={savingVisibility} onChange={onToggleRanking} />
@@ -144,88 +150,103 @@ function LevelCard({ paws }: { paws: MyPaws }) {
   const next = PAW_LEVELS.find((step) => step.level === level.level + 1) ?? null;
   const progress = pawLevelProgress(level, lifetimeEarned);
   const progressLabel = pawProgressText(level, toNextLevel);
+  const colors = levelColors(level.key);
+  const nextColors = next ? levelColors(next.key) : null;
 
   return (
-    <Reveal as="section" index={0} className={cn(dashSurfaceClass, "dash-glow flex flex-col p-6 xl:p-8")}>
-      <div className="flex flex-wrap items-center gap-4">
-        <span className="dash-grad-accent flex size-14 shrink-0 items-center justify-center rounded-2xl text-white shadow-dash-accent">
-          <HugeiconsIcon icon={pawLevelIcon(level.key)} size={30} aria-hidden />
+    <Reveal as="section" index={0} className={cn(dashSurfaceClass, "relative flex flex-col overflow-hidden p-6 xl:p-8")}>
+      {/* Brillo del color del nivel en la esquina. */}
+      <span
+        aria-hidden
+        className={cn("pointer-events-none absolute -left-24 -top-24 size-72 rounded-full bg-gradient-to-br to-transparent blur-2xl", colors.glow)}
+      />
+
+      <div className="relative flex flex-wrap items-center gap-4">
+        <span className={cn("flex size-16 shrink-0 items-center justify-center rounded-2xl shadow-lg", colors.solid)}>
+          <HugeiconsIcon icon={pawLevelIcon(level.key)} size={32} strokeWidth={1.8} aria-hidden />
         </span>
         <div className="min-w-0">
-          <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-dash-muted">
+          <p className={cn("text-[13px] font-semibold uppercase tracking-[0.08em]", colors.text)}>
             Nivel {level.level} de {PAW_LEVELS.length}
           </p>
-          <h2 className="text-[clamp(1.6rem,1.2rem+1.6vw,2.25rem)] font-bold leading-[1.1] tracking-[-0.04em] text-dash-ink">
+          <h2 className="text-[clamp(1.7rem,1.2rem+1.6vw,2.4rem)] font-bold leading-[1.05] tracking-[-0.04em] text-dash-ink">
             {level.label}
           </h2>
         </div>
         <div className="ml-auto text-right">
-          <p className="text-[clamp(1.8rem,1.3rem+1.8vw,2.6rem)] font-bold leading-none tracking-[-0.04em] text-dash-ink tabular-nums">
+          <p className="text-[clamp(2rem,1.4rem+2vw,2.9rem)] font-bold leading-none tracking-[-0.04em] text-dash-ink tabular-nums">
             <AnimatedNumber value={paws.balance} />
           </p>
           <p className="mt-1 text-sm text-dash-soft">{paws.balance === 1 ? "huellita" : "huellitas"}</p>
         </div>
       </div>
 
-      <div className="mt-6">
-        <div className="flex items-baseline justify-between gap-3 text-sm">
-          <span className="font-medium text-dash-ink">{progressLabel}</span>
-          {level.nextAt !== null ? (
-            <span className="shrink-0 tabular-nums text-dash-muted">
-              {n(lifetimeEarned)} / {n(level.nextAt)}
+      <div className="relative mt-7 rounded-2xl bg-dash-surface-2 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <p className="text-sm font-medium text-dash-ink">{progressLabel}</p>
+          {next && nextColors ? (
+            <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold", nextColors.soft)}>
+              <HugeiconsIcon icon={next.icon} size={13} strokeWidth={2} aria-hidden />
+              Siguiente: {next.label}
             </span>
           ) : null}
         </div>
-        <div
-          className="mt-2 h-3 w-full overflow-hidden rounded-full bg-dash-surface-2"
-          role="progressbar"
-          aria-label={next ? `Progreso hacia el nivel ${next.label}` : "Nivel más alto alcanzado"}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(progress)}
-        >
+        <div className="mt-3 flex items-center gap-3">
           <div
-            className="dash-grad-accent h-full rounded-full transition-[width] duration-700 ease-out"
-            style={{ width: `${Math.max(progress, lifetimeEarned > level.from ? 3 : 0)}%` }}
-          />
+            className="h-3 flex-1 overflow-hidden rounded-full bg-dash-surface-3"
+            role="progressbar"
+            aria-label={next ? `Progreso hacia el nivel ${next.label}` : "Nivel más alto alcanzado"}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(progress)}
+          >
+            <div
+              className={cn("h-full rounded-full transition-[width] duration-700 ease-out", colors.bar)}
+              style={{ width: `${Math.max(progress, lifetimeEarned > level.from ? 3 : 0)}%` }}
+            />
+          </div>
+          <span className="shrink-0 text-sm font-semibold tabular-nums text-dash-soft">
+            {level.nextAt !== null ? `${n(lifetimeEarned)} / ${n(level.nextAt)}` : `${n(lifetimeEarned)}`}
+          </span>
         </div>
       </div>
 
-      <ol className="mt-6 grid grid-cols-3 gap-2 sm:grid-cols-6" aria-label="Niveles">
+      <ol className="relative mt-7 grid grid-cols-6 gap-1" aria-label="Niveles">
+        {/* Línea que une los niveles; la parte alcanzada va del color del nivel actual. */}
+        <span aria-hidden className="absolute left-[8.33%] right-[8.33%] top-5 h-1 rounded-full bg-dash-surface-3" />
+        <span
+          aria-hidden
+          className={cn("absolute left-[8.33%] top-5 h-1 rounded-full", colors.bar)}
+          style={{ width: `${((level.level - 1) / (PAW_LEVELS.length - 1)) * 83.34}%` }}
+        />
         {PAW_LEVELS.map((step) => {
           const reached = step.level <= level.level;
           const current = step.level === level.level;
+          const stepColors = levelColors(step.key);
           return (
-            <li
-              key={step.key}
-              aria-current={current ? "step" : undefined}
-              className={cn(
-                "rounded-2xl border px-3 py-2.5",
-                current
-                  ? "border-kadesh-400 bg-kadesh-50 dark:border-kadesh-400/60 dark:bg-kadesh-500/15"
-                  : "border-dash-line bg-dash-surface-2",
-              )}
-            >
+            <li key={step.key} aria-current={current ? "step" : undefined} className="relative flex flex-col items-center text-center">
               <span
                 className={cn(
-                  "flex size-8 items-center justify-center rounded-xl",
-                  current
-                    ? "dash-grad-accent text-white"
-                    : reached
-                      ? "bg-kadesh-50 text-kadesh-600 dark:bg-kadesh-500/15 dark:text-kadesh-300"
-                      : "bg-dash-surface-3 text-dash-muted",
+                  "relative flex items-center justify-center rounded-full border-4 border-dash-surface transition-transform",
+                  current ? "size-11 -mt-0.5 scale-110 shadow-lg" : "size-10",
+                  reached ? stepColors.solid : "bg-dash-surface-2 text-dash-muted",
                 )}
               >
-                <HugeiconsIcon icon={step.icon} size={17} aria-hidden />
+                <HugeiconsIcon icon={step.icon} size={current ? 18 : 16} strokeWidth={2} aria-hidden />
               </span>
-              <p className={cn("mt-2 truncate text-xs font-semibold", reached ? "text-dash-ink" : "text-dash-muted")}>
+              <p
+                className={cn(
+                  "mt-2 w-full truncate text-[11px] font-semibold sm:text-xs",
+                  current ? stepColors.text : reached ? "text-dash-ink" : "text-dash-muted",
+                )}
+              >
                 <span className="sr-only">
                   Nivel {step.level}
                   {reached ? (current ? " (actual)" : " (alcanzado)") : ""}:{" "}
                 </span>
                 {step.label}
               </p>
-              <p className="mt-0.5 text-[11px] tabular-nums text-dash-muted">desde {n(step.from)}</p>
+              <p className="text-[10px] tabular-nums text-dash-muted sm:text-[11px]">{n(step.from)}</p>
             </li>
           );
         })}
@@ -320,7 +341,10 @@ function RankingCard({
         </h2>
         <p id={descriptionId} className="mt-0.5 text-[13px] leading-relaxed text-dash-muted">
           {visible && paws.rank ? `Vas en el lugar ${n(paws.rank)}. ` : ""}
-          Solo se ven tu nombre y tu foto, nunca tus datos de contacto.
+          Solo se ven tu nombre y tu foto, nunca tus datos de contacto.{" "}
+          <Link href={Routes.ranking} className="font-medium text-kadesh-600 hover:underline dark:text-kadesh-300">
+            Ver el ranking
+          </Link>
         </p>
       </div>
       <DashSwitch checked={visible} onChange={onChange} disabled={saving} labelledBy={labelId} describedBy={descriptionId} />

@@ -84,7 +84,7 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
     icon: UserCircleIcon,
     group: "cuenta",
     href: Routes.profileTab("profile"),
-    description: "Tu nombre, teléfono, fecha de nacimiento y foto.",
+    description: "Tu nombre, teléfono, fecha de nacimiento, foto y lo que muestra tu perfil público.",
   },
   paws: {
     label: "Huellitas",

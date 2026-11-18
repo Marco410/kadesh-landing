@@ -30,6 +30,14 @@ Una pantalla «Huellitas» dentro del perfil (junto a «Datos del perfil»). La 
 
 Una sola consulta al abrir la pantalla y al jalar para refrescar. Nada de polling. Es un campo nuevo del back: va en su propia operación, no dentro de la consulta de arranque, hasta que todas las versiones publicadas del back lo tengan.
 
+9. **Ranking «Quién apoya más»** (pantalla nueva, se abre desde Huellitas y, si la app tiene una portada, con los 5 primeros del mes):
+   - Pestañas «Este mes» (`period: "month"`) y «De siempre» (`period: "all_time"`); abre en «Este mes» si tiene filas, si no en «De siempre».
+   - Cada fila: lugar (1 oro, 2 plata, 3 bronce, el resto gris), foto o inicial, nombre de pila, «Nivel N · nombre» con el ícono del nivel, «N semanas» con ícono de fuego si `streakWeeks > 1`, y las huellitas del periodo.
+   - Con sesión, arriba una franja «Tú · Nivel N nombre.» con: «Vas en el lugar {rank} de siempre, con {lifetimeEarned} huellitas.» / «No apareces en el ranking: lo ocultaste en tu perfil.» / «Llevas N huellitas. Sigue ayudando para entrar a los 50 primeros.» / «Aún no tienes huellitas…», y enlace a Huellitas. Marca tu fila con «Tú» usando `isMe`: la app manda la sesión en la consulta, así que el back lo resuelve (la web no puede porque arma la lista en el servidor, sin sesión).
+   - Vacío: «Este mes todavía nadie suma huellitas.» / «Todavía nadie aparece en el ranking.» con botón a animales perdidos.
+   - En la portada de la app, solo si hay 3 personas o más.
+   - El ranking ya viene cacheado 10 min del back: pídelo al abrir la pantalla, sin polling.
+
 ## GraphQL
 
 ```graphql
@@ -58,6 +66,16 @@ query MyPawsSummary {
     toNextLevel
     streakWeeks
     streakActiveThisWeek
+    rankingHidden
+    rank
+  }
+}
+
+query PawLeaderboard($period: String, $take: Int) {
+  pawLeaderboard(period: $period, take: $take) {
+    rank name avatarUrl points streakWeeks
+    level { level key label }
+    isMe
   }
 }
 

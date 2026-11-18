@@ -15,14 +15,15 @@ Primero lo que sirve a quien perdió a su mascota; después la comunidad, los se
 7. Preguntas frecuentes (`FaqSection`, `#preguntas-frecuentes`): sube porque responde las dudas de quien busca.
 8. Espacios de rescate (`RescueSpacesSection`, `#espacios-de-rescate`): qué es, para quién y qué hace, con la vitrina `RescueJourney` y el botón para activar. Siempre se pinta.
 9. Aliados (`AlliesSection`, `#aliados`): muro de espacios de rescate aliados; sin aliados no se pinta. Detalle en `components/rescue/README.md`.
-10. Veterinarias cerca (`VeterinariansSection`, `#veterinarias`)
-11. Historias del blog (`StoriesSection`, `#historias`)
-12. Próximos eventos (`UpcomingEventsSection`, `#eventos`)
-13. Donaciones (`DonationsSection`, `#donaciones`)
-14. Franja para negocios (`BusinessStrip`) → el detalle vive en `/anunciate` (`components/advertise`)
-15. Cierre (`ClosingSection`), suscripción al blog y pie
+10. Quién apoya más (`PawRankingSection`, `#ranking`): texto, cifras del mes y botones a la izquierda; podio y los siguientes (hasta 6) a la derecha. Los del mes (si este mes hay menos de 3, los de siempre); cada persona enlaza a su perfil público. Con menos de 3 personas no se pinta. Detalle en `components/paws/README.md`.
+11. Veterinarias cerca (`VeterinariansSection`, `#veterinarias`)
+12. Historias del blog (`StoriesSection`, `#historias`)
+13. Próximos eventos (`UpcomingEventsSection`, `#eventos`)
+14. Donaciones (`DonationsSection`, `#donaciones`)
+15. Franja para negocios (`BusinessStrip`) → el detalle vive en `/anunciate` (`components/advertise`)
+16. Cierre (`ClosingSection`), suscripción al blog y pie
 
-Fondos: se alternan para que nunca queden dos iguales juntos (claro: blanco y `#f7f8fa`; oscuro: `night` y `night-raised`). Reportes gris, Reencuentros blanco, Alertas `kadesh-50`, Cómo funciona blanco, Primeras horas gris, FAQ blanco, Espacios gris, Aliados blanco, Veterinarias gris, Historias blanco, Eventos gris y Donaciones azul. Al mover una sección, revisa el fondo de sus vecinas.
+Fondos: se alternan para que nunca queden dos iguales juntos (claro: blanco y `#f7f8fa`; oscuro: `night` y `night-raised`). Reportes gris, Reencuentros blanco, Alertas `kadesh-50`, Cómo funciona blanco, Primeras horas gris, FAQ blanco, Espacios gris, Aliados blanco, Ranking `kadesh-50` (distinto de sus dos vecinas aunque Aliados no salga), Veterinarias gris, Historias blanco, Eventos gris y Donaciones azul. Al mover una sección, revisa el fondo de sus vecinas.
 
 Fuera de la portada: el roadmap vive en `/novedades#roadmap` (`components/changelog/RoadmapSection`), Kadesh Business y FOOD en el pie (columna Familia Kadesh), y «¿Qué es KADESH?» con la frase «Tecnología moderna. Corazón compasivo. Misión espiritual.» en Conócenos (`WhatIsKadesh` se sigue exportando para esa página).
 

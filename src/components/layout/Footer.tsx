@@ -33,6 +33,7 @@ const FOOTER_COLUMNS = [
     links: [
       { label: "Animales", href: Routes.animals.index },
       { label: "Eventos y campañas", href: Routes.events.index },
+      { label: "Quién apoya más", href: Routes.ranking },
       { label: "Directorio de veterinarias", href: Routes.veterinaries.index },
       { label: "Donaciones", href: Routes.donations },
     ],

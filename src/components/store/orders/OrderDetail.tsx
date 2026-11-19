@@ -225,6 +225,10 @@ export default function OrderDetail({
       const result = data?.resumeStoreOrderPayment;
       if (result?.success && result.stripeClientSecret) {
         setPayment({ clientSecret: result.stripeClientSecret, totalCents: result.totalCents ?? summary.totalCents });
+      } else if (result?.success) {
+        // Stripe had already charged it: the order is paid now, just show it.
+        sileo.success({ title: result.message });
+        onChanged();
       } else {
         sileo.info({ title: result?.message ?? 'No pudimos preparar el pago.' });
         onChanged();

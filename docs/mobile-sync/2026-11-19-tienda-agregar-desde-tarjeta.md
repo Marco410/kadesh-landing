@@ -16,7 +16,10 @@ En la web, las tarjetas del catálogo, de relacionados y de la lista de deseos y
 - En `ProductCard`, debajo del precio:
   - Si `singleVariantId` no es nulo: botón «Agregar al carrito» que suma una pieza de esa variante al carrito guardado en el teléfono (sin petición) y avisa «Agregado a tu carrito». Si ya hay de ese producto: «Agregar otro (N en tu carrito)». Tope de 20 piezas por línea.
   - Si `singleVariantId` es nulo, el producto lo vende Kadesh, hay stock y `variantsCount` es 2 o más: botón «Elegir opción» que abre la ficha.
-  - Mercado Libre o agotado: sin botón.
+  - Mercado Libre (con `affiliateUrl`): botón amarillo «Comprar en Mercado Libre» que abre el enlace de afiliado en el navegador.
+  - Agotado: sin botón.
+- Destacados (`isFeatured`): etiqueta «Destacado» con estrella y borde ámbar en la tarjeta.
+- Tras pagar con PaymentSheet, abrir el pedido basta: el back ya lo marca pagado consultando a Stripe. Si «Pagar» responde `success: true` sin `stripeClientSecret`, el pedido ya está pagado: refrescarlo, sin mensaje de error.
 - Pedir los dos campos nuevos en el fragmento de la tarjeta.
 
 ## GraphQL

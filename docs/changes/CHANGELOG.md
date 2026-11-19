@@ -15,6 +15,16 @@ Formato:
 
 ---
 
+## 2026-11-19 · fix: el pago con tarjeta se ve al instante; destacados y Mercado Libre en las tarjetas
+- Rama: feat/pet-store
+- Qué cambió y por qué:
+  - **Pago con tarjeta**: tras pagar, el pedido podía seguir diciendo «sin pagar» hasta que llegara el aviso de Stripe al back (en local nunca llega sin `stripe listen`), y «Pagar» terminaba en un aviso de «ya estaba pagado». Ahora el back le pregunta a Stripe al abrir el pedido y lo marca pagado en ese momento; si aun así se pulsa «Pagar» sobre un pedido cobrado, se muestra como pagado sin aviso de error.
+  - **Destacados**: etiqueta «Destacado» y borde ámbar en la tarjeta.
+  - **Mercado Libre**: botón «Comprar en Mercado Libre» en la tarjeta, directo al enlace de afiliado (`rel="sponsored nofollow noopener"`, pestaña nueva).
+- Archivos: src/components/store/{ProductCard.tsx,cart/CardCartButton.tsx,orders/OrderDetail.tsx}
+- GraphQL: ninguna nueva (el back cambió por dentro `myStoreOrder` y `resumeStoreOrderPayment`)
+- Móvil: [prompt](../mobile-sync/2026-11-19-tienda-agregar-desde-tarjeta.md) (actualizado)
+
 ## 2026-11-19 · feat: agregar al carrito desde la tarjeta y carrito en el menú móvil
 - Rama: feat/pet-store
 - Qué cambió y por qué:

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ShoppingBag01Icon } from '@hugeicons/core-free-icons';
+import { ShoppingBag01Icon, StarIcon } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
 import { cn } from 'kadesh/utils/cn';
 import { Bone } from 'kadesh/components/ui/skeleton';
@@ -22,7 +22,11 @@ export default function ProductCard({ item, className }: { item: StoreItem; clas
   return (
     <article
       className={cn(
-        'group relative flex flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,35,80,0.1)] dark:border-[#2a2a2a] dark:bg-[#1e1e1e]',
+        'group relative flex flex-col overflow-hidden rounded-2xl border bg-white transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,35,80,0.1)] dark:bg-[#1e1e1e]',
+        // Featured products stand out: amber border and glow, plus the «Destacado» tag.
+        item.isFeatured
+          ? 'border-amber-400 shadow-[0_0_0_1px_rgba(251,191,36,0.6),0_10px_30px_rgba(245,158,11,0.15)] dark:border-amber-400/80'
+          : 'border-[#ececec] dark:border-[#2a2a2a]',
         className,
       )}
     >
@@ -43,6 +47,12 @@ export default function ProductCard({ item, className }: { item: StoreItem; clas
           </div>
         )}
         <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1.5">
+          {item.isFeatured ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-bold text-[#3a2600] shadow-sm">
+              <HugeiconsIcon icon={StarIcon} size={13} strokeWidth={2.4} aria-hidden="true" />
+              Destacado
+            </span>
+          ) : null}
           {discount ? (
             <span className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold text-white">-{discount} %</span>
           ) : null}

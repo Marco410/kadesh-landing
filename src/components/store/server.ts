@@ -1,0 +1,117 @@
+import { STORE_REVALIDATE_SECONDS, STORE_REVIEWS_PAGE_SIZE } from './constants';
+import { STORE_ITEM_FIELDS, STORE_REVIEW_FIELDS } from './fields';
+import { storeCatalogInput } from './searchParams';
+import type { StoreCatalog, StoreFacets, StoreFilters, StoreProduct, StoreReviews } from './types';
+
+/**
+ * Store queries from the server (no session): `/tienda` and the product page. Cached for 10
+ * minutes, below the 1 h signature of product photos. If the API fails they answer empty so the
+ * page does not break.
+ */
+
+const CATALOG_QUERY = `
+  query StoreCatalog($input: StoreCatalogInput) {
+    storeCatalog(input: $input) {
+      total
+      items { ${STORE_ITEM_FIELDS} }
+    }
+  }
+`;
+
+const FACETS_QUERY = `
+  query StoreCatalogFacets {
+    storeCatalogFacets {
+      enabled
+      total
+      categories { id slug name parentSlug imageUrl count }
+      brands { id slug name logoUrl count }
+      minPriceCents
+      maxPriceCents
+    }
+  }
+`;
+
+const PRODUCT_QUERY = `
+  query StoreCatalogProduct($slug: String!) {
+    storeCatalogProduct(slug: $slug) {
+      item { ${STORE_ITEM_FIELDS} }
+      description
+      metaTitle
+      metaDescription
+      images { url alt }
+      variants { id title sku priceCents compareAtPriceCents inStock stockLeft }
+      animalTypes
+      ratingBreakdown
+      related { ${STORE_ITEM_FIELDS} }
+    }
+  }
+`;
+
+const REVIEWS_QUERY = `
+  query StoreCatalogReviews($productId: ID!, $take: Int, $skip: Int) {
+    storeCatalogReviews(productId: $productId, take: $take, skip: $skip) {
+      total
+      items { ${STORE_REVIEW_FIELDS} }
+    }
+  }
+`;
+
+type GraphqlResponse<T> = { data?: T; errors?: Array<{ message?: string }> };
+
+async function queryGraphql<T>(query: string, variables: Record<string, unknown>): Promise<T | null> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return null;
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables }),
+      next: { revalidate: STORE_REVALIDATE_SECONDS },
+    });
+    if (!response.ok) return null;
+    const payload = (await response.json()) as GraphqlResponse<T>;
+    if (payload.errors?.length) console.error('Store GraphQL errors:', payload.errors);
+    return payload.data ?? null;
+  } catch (error) {
+    console.error('Store GraphQL fetch failed:', error);
+    return null;
+  }
+}
+
+export async function fetchStoreCatalog(filters: StoreFilters): Promise<StoreCatalog> {
+  const data = await queryGraphql<{ storeCatalog: StoreCatalog }>(CATALOG_QUERY, {
+    input: storeCatalogInput(filters),
+  });
+  return data?.storeCatalog ?? { total: 0, items: [] };
+}
+
+const EMPTY_FACETS: StoreFacets = {
+  enabled: false,
+  total: 0,
+  categories: [],
+  brands: [],
+  minPriceCents: 0,
+  maxPriceCents: 0,
+};
+
+/** Categories, brands and whether the store is open. */
+export async function fetchStoreFacets(): Promise<StoreFacets> {
+  const data = await queryGraphql<{ storeCatalogFacets: StoreFacets }>(FACETS_QUERY, {});
+  return data?.storeCatalogFacets ?? EMPTY_FACETS;
+}
+
+export async function fetchStoreProduct(slug: string): Promise<StoreProduct | null> {
+  if (!slug) return null;
+  const data = await queryGraphql<{ storeCatalogProduct: StoreProduct | null }>(PRODUCT_QUERY, { slug });
+  return data?.storeCatalogProduct ?? null;
+}
+
+/** First page of published reviews of a product. */
+export async function fetchStoreReviews(productId: string): Promise<StoreReviews> {
+  const data = await queryGraphql<{ storeCatalogReviews: Omit<StoreReviews, 'mine'> }>(REVIEWS_QUERY, {
+    productId,
+    take: STORE_REVIEWS_PAGE_SIZE,
+    skip: 0,
+  });
+  return { total: data?.storeCatalogReviews.total ?? 0, items: data?.storeCatalogReviews.items ?? [], mine: null };
+}

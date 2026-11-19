@@ -15,6 +15,20 @@ Formato:
 
 ---
 
+## 2026-11-19 · feat: tienda de Kadesh Pet (catálogo, ficha, lista de deseos y reseñas)
+- Rama: feat/pet-store
+- Qué cambió y por qué:
+  - **`/tienda`**: catálogo pintado por el servidor, con buscador, categorías en dos niveles, marca, «Quién vende», «En oferta», orden y «Ver más». Los filtros viven en la URL.
+  - **`/tienda/<slug>`**: galería, precio, opciones, disponibilidad, descripción, reseñas y relacionados, con JSON-LD de producto.
+  - **Dos tipos de producto**: «Vendido por Kadesh» (la compra en línea llega con el carrito; la ficha lo dice en vez de mostrar un botón que no hace nada) y «En Mercado Libre» (botón al enlace de afiliado con `rel="sponsored nofollow noopener"`, precio aproximado con su fecha y aviso de afiliado).
+  - **Lista de deseos**: corazón en tarjetas y ficha, y vista «Lista de deseos» en Mi cuenta (`/perfil?tab=deseos`). Una sola consulta pinta todos los corazones.
+  - **Reseñas**: todo producto empieza sin estrellas; solo cuentan las escritas aquí. Una por persona y producto, editable y borrable.
+  - **Apagada por defecto**: sin `STORE_ENABLED` en el back, `/tienda` responde 404; sin `NEXT_PUBLIC_STORE_ENABLED` aquí, no sale en el menú ni en Mi cuenta.
+  - Comprobado: tipos, lint, las 11 operaciones contra el esquema del back, 404 con la tienda cerrada en el servidor de desarrollo y un render de tarjeta, compra, galería y JSON-LD con datos de prueba. No se vio el catálogo con productos reales en el navegador (la tienda está cerrada en dev).
+- Archivos: src/app/tienda/page.tsx (nuevo), src/app/tienda/[slug]/page.tsx (nuevo), src/components/store/{MyWishlistSection.tsx,ProductBuyBox.tsx,ProductCard.tsx,ProductDetail.tsx,ProductGallery.tsx,ProductReviews.tsx,StoreIndexClient.tsx,StoreListingPage.tsx,StoreStars.tsx,StoreWishlist.tsx,constants.ts,fields.ts,format.ts,index.ts,queries.ts,searchParams.ts,server.ts,store-seo.ts,types.ts,README.md} (nuevos), src/core/routes.ts, src/components/layout/Navigation.tsx, src/components/profile/shell/profileNav.ts, src/app/(cuenta)/perfil/page.tsx, CLAUDE.md
+- GraphQL: nuevas `StoreCatalog`, `StoreCatalogFacets`, `StoreCatalogProduct`, `StoreCatalogReviews`, `StoreCatalogMore`, `StoreProductReviewsList`, `MyStoreWishlistIds`, `MyStoreWishlist`, `SetStoreWishlist`, `SubmitStoreProductReview` y `DeleteMyStoreProductReview`
+- Móvil: [prompt](../mobile-sync/2026-11-19-tienda-catalogo.md)
+
 ## 2026-11-19 · fix: ficha del animal recortada cuando hay varios banners
 - Rama: feat/ranking-huellitas
 - Qué cambió y por qué: en escritorio el bloque de arriba tenía alto fijo de pantalla con `overflow-hidden`. Si había banners encima de la cuadrícula (impulsar en Facebook, recompensa, avistamientos…), le quitaban alto a la foto, el historial, el mapa y las veterinarias, que se cortaban justo encima de «Comentarios». Ahora el alto fijo lo lleva la cuadrícula (pantalla menos el encabezado, mínimo 43.5rem) y los banners empujan la página hacia abajo en lugar de aplastarla.

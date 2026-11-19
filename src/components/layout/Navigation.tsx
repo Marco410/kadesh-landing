@@ -12,6 +12,7 @@ import { useUser } from "kadesh/utils/UserContext";
 import { useLogout } from "kadesh/components/auth/hooks";
 // Directo (no el barrel): el barrel de notificaciones importa el layout y haría un ciclo.
 import NotificationBell from "kadesh/components/notifications/NotificationBell";
+import { STORE_NAV_ENABLED } from "kadesh/components/store/constants";
 import { useUnreadNotifications } from "kadesh/components/notifications/hooks";
 import FontSizeSlider from "./FontSizeSlider";
 import ThemeToggle from "./ThemeToggle";
@@ -21,6 +22,8 @@ const PRIMARY_NAV = [
   { label: "Veterinarias", href: Routes.veterinaries.index },
   { label: "Animales", href: Routes.animals.index },
   { label: "Eventos", href: Routes.events.index },
+  // Only once the store is open (NEXT_PUBLIC_STORE_ENABLED); closed, `/tienda` is a 404.
+  ...(STORE_NAV_ENABLED ? [{ label: "Tienda", href: Routes.store.index }] : []),
   { label: "Ranking", href: Routes.ranking },
   { label: "Blog", href: Routes.blog.index },
   { label: "Conócenos", href: Routes.conocenos },

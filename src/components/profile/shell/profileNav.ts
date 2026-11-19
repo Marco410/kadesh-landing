@@ -12,12 +12,14 @@ import {
   Megaphone01Icon,
   Notification03Icon,
   RadarIcon,
+  ShoppingBag01Icon,
   Stethoscope02Icon,
   UserCircleIcon,
 } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
 import type { AppNavGroup } from "kadesh/components/app-shell";
 import { PAW_ICON } from "kadesh/components/paws/constants";
+import { STORE_NAV_ENABLED } from "kadesh/components/store/constants";
 import { Routes } from "kadesh/core/routes";
 
 /**
@@ -33,6 +35,7 @@ export const PROFILE_TAB_KEYS = [
   "inicio",
   "profile",
   "paws",
+  "deseos",
   "pets",
   "posts",
   "animals",
@@ -92,6 +95,13 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
     group: "cuenta",
     href: Routes.profileTab("paws"),
     description: "Lo que has ganado por ayudar: tu nivel, cuánto te falta para el siguiente y tu racha.",
+  },
+  deseos: {
+    label: "Lista de deseos",
+    icon: ShoppingBag01Icon,
+    group: "cuenta",
+    href: Routes.store.wishlist,
+    description: "Los productos de la tienda que guardaste para después.",
   },
   notifications: {
     label: "Notificaciones",
@@ -166,7 +176,8 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
 };
 
 const GROUP_ORDER: Array<[GroupId, ProfileViewKey[]]> = [
-  ["cuenta", ["inicio", "profile", "paws", "notifications", "alerts"]],
+  // The wishlist only shows once the store is open.
+  ["cuenta", ["inicio", "profile", "paws", ...(STORE_NAV_ENABLED ? (["deseos"] as const) : []), "notifications", "alerts"]],
   ["animales", ["pets", "appointments", "animals", "adopciones"]],
   ["publicaciones", ["events", "posts"]],
   ["rescate", ["rescate"]],

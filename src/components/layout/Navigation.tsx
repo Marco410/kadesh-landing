@@ -228,13 +228,16 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
           )}
         </div>
 
-        {user?.id ? (
-          <div className="ml-auto mr-3 lg:hidden">
-            <NotificationBell
-              variant="link"
-              tone={atTopLight ? "onLight" : "onDark"}
-              count={unreadCount}
-            />
+        {user?.id || STORE_NAV_ENABLED ? (
+          <div className="ml-auto mr-3 flex items-center gap-1 lg:hidden">
+            {STORE_NAV_ENABLED ? <CartLink className={navLinkClass} /> : null}
+            {user?.id ? (
+              <NotificationBell
+                variant="link"
+                tone={atTopLight ? "onLight" : "onDark"}
+                count={unreadCount}
+              />
+            ) : null}
           </div>
         ) : null}
 

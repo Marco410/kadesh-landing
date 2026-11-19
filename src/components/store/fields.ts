@@ -15,6 +15,8 @@ export const STORE_ITEM_FIELDS = `
   ratingAverage
   ratingCount
   isFeatured
+  variantsCount
+  singleVariantId
   category { slug name }
   brand { slug name }
   affiliateUrl

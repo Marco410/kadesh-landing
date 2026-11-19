@@ -4,6 +4,7 @@ import { ShoppingBag01Icon } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
 import { cn } from 'kadesh/utils/cn';
 import { Bone } from 'kadesh/components/ui/skeleton';
+import CardCartButton from './cart/CardCartButton';
 import { discountPercent, formatPrice } from './format';
 import StoreStars from './StoreStars';
 import { StoreWishlistButton } from './StoreWishlist';
@@ -11,7 +12,8 @@ import type { StoreItem } from './types';
 
 /**
  * Card of a product (`/tienda`, related products, wishlist). No hooks of its own: it renders on
- * the server and in the browser. The heart only shows inside a `StoreWishlistProvider`.
+ * the server and in the browser. The heart only shows inside a `StoreWishlistProvider`; the cart
+ * button (`CardCartButton`) is a client island.
  */
 export default function ProductCard({ item, className }: { item: StoreItem; className?: string }) {
   const discount = discountPercent(item.priceCents, item.compareAtPriceCents);
@@ -73,6 +75,9 @@ export default function ProductCard({ item, className }: { item: StoreItem; clas
         <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
           {affiliate ? 'En Mercado Libre · precio aproximado' : 'Vendido por Kadesh'}
         </p>
+        <div className="pt-2 empty:hidden">
+          <CardCartButton item={item} />
+        </div>
       </div>
     </article>
   );

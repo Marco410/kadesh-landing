@@ -15,6 +15,16 @@ Formato:
 
 ---
 
+## 2026-11-19 · feat: agregar al carrito desde la tarjeta y carrito en el menú móvil
+- Rama: feat/pet-store
+- Qué cambió y por qué:
+  - **Tarjetas de producto** (catálogo, relacionados, lista de deseos): «Agregar al carrito» cuando el producto lo vende Kadesh, hay stock y tiene una sola opción; «Elegir opción» lleva a la ficha cuando tiene varias. Mercado Libre y agotados, sin botón. Agregar no hace ninguna petición.
+  - **Menú en el celular**: el carrito con su globo sale junto a la campana (antes solo estaba en el menú de escritorio).
+  - Comprobado: tipos, lint y `/tienda` en el servidor de desarrollo con los productos del seed (5 tarjetas con «Agregar al carrito», 3 con «Elegir opción»).
+- Archivos: src/components/store/cart/CardCartButton.tsx (nuevo), src/components/store/{ProductCard.tsx,types.ts,fields.ts}, src/components/layout/Navigation.tsx
+- GraphQL: `StoreCatalogItem` gana `variantsCount` y `singleVariantId` (en `StoreCatalog`, `StoreCatalogProduct` y `MyStoreWishlist`). El back debe publicarse antes.
+- Móvil: [prompt](../mobile-sync/2026-11-19-tienda-agregar-desde-tarjeta.md)
+
 ## 2026-11-19 · feat: cupones en la tienda y huellitas por comprar y reseñar
 - Rama: feat/pet-store-coupons
 - Qué cambió y por qué:

@@ -22,6 +22,10 @@ export type StoreItem = {
   ratingAverage: number;
   ratingCount: number;
   isFeatured: boolean;
+  /** Variants on sale; 0 for Mercado Libre. */
+  variantsCount: number;
+  /** Set when the card can add it straight to the cart (sold by Kadesh, in stock, one variant). */
+  singleVariantId: string | null;
   category: StoreRef | null;
   brand: StoreRef | null;
   /** Only for `mercado_libre`: the outbound affiliate link. */

@@ -1,0 +1,62 @@
+'use client';
+
+import Link from 'next/link';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { ShoppingCartAdd01Icon } from '@hugeicons/core-free-icons';
+import { sileo } from 'sileo';
+import { Routes } from 'kadesh/core/routes';
+import { STORE_CART_MAX_QUANTITY } from '../constants';
+import type { StoreItem } from '../types';
+import { cart, useCart } from './cartStore';
+
+const buttonClass =
+  'relative z-20 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh';
+
+/**
+ * The cart action of a product card. Nothing to choose (one variant, in stock, sold by Kadesh):
+ * adds one piece right there, with no request (the cart lives in the browser). Several options:
+ * «Elegir opción» opens the product page. Mercado Libre or sold out: nothing.
+ */
+export default function CardCartButton({ item }: { item: StoreItem }) {
+  const inCart = useCart().find((line) => line.variantId === item.singleVariantId)?.quantity ?? 0;
+
+  if (item.seller !== 'kadesh' || !item.inStock) return null;
+
+  if (!item.singleVariantId) {
+    if (item.variantsCount < 2) return null;
+    return (
+      <Link
+        href={Routes.store.product(item.slug)}
+        className={`${buttonClass} border border-[#d8dee8] text-[#121212] hover:border-kadesh dark:border-white/15 dark:text-white`}
+      >
+        Elegir opción
+      </Link>
+    );
+  }
+
+  const full = inCart >= STORE_CART_MAX_QUANTITY;
+  const add = () => {
+    if (!item.singleVariantId || full) return;
+    if (!cart.add(item.singleVariantId, 1)) {
+      sileo.warning({ title: 'Tu carrito está lleno.' });
+      return;
+    }
+    sileo.success({
+      title: 'Agregado a tu carrito',
+      description: item.name,
+    });
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={add}
+      disabled={full}
+      aria-label={`Agregar ${item.name} al carrito`}
+      className={`${buttonClass} bg-kadesh text-white hover:bg-kadesh-600 disabled:opacity-60`}
+    >
+      <HugeiconsIcon icon={ShoppingCartAdd01Icon} size={18} aria-hidden="true" />
+      {inCart > 0 ? `Agregar otro (${inCart} en tu carrito)` : 'Agregar al carrito'}
+    </button>
+  );
+}

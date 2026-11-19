@@ -154,8 +154,17 @@ export type CartQuote = {
   lines: CartLine[];
   itemsCount: number;
   subtotalCents: number;
+  /** After a free-shipping coupon. */
   shippingCents: number;
+  /** Subtotal − couponDiscountCents + shippingCents. */
   totalCents: number;
+  /** The code that was sent (normalized), applied or not; `null` when none was. */
+  couponCode: string | null;
+  couponApplied: boolean;
+  /** Off the products. 0 for a free-shipping coupon. */
+  couponDiscountCents: number;
+  /** Why it applied or why it did not, ready to show. */
+  couponMessage: string | null;
   currency: string;
   /** 0 = shipping is never free. */
   freeShippingMinCents: number;
@@ -217,6 +226,7 @@ export type PlaceOrderCode =
   | 'INVALID'
   | 'CART_CHANGED'
   | 'PRICE_CHANGED'
+  | 'COUPON_INVALID'
   | 'PAYMENT_UNAVAILABLE'
   | 'PAYMENT_ERROR';
 
@@ -274,6 +284,8 @@ export type StoreOrderDetail = {
   summary: StoreOrderSummary;
   subtotalCents: number;
   shippingCents: number;
+  couponCode: string | null;
+  couponDiscountCents: number;
   customerNote: string | null;
   cancelReason: string | null;
   address: StoreAddress;

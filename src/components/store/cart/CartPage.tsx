@@ -10,6 +10,7 @@ import { formatPrice } from '../format';
 import type { CartLine } from '../types';
 import { cart } from './cartStore';
 import CartSummary from './CartSummary';
+import CouponField from './CouponField';
 import { useCartQuote } from './useCartQuote';
 
 const stepButtonClass =
@@ -86,7 +87,7 @@ function CartRow({ line }: { line: CartLine }) {
  * come from the server's quote. One request when it opens and one per pause after a change.
  */
 export default function CartPage() {
-  const { items, quote, loading, error, notices, refresh } = useCartQuote();
+  const { items, quote, loading, error, notices, couponNotice, refresh } = useCartQuote();
   const empty = items.length === 0;
 
   return (
@@ -148,7 +149,11 @@ export default function CartPage() {
                 <CartRow key={line.variantId} line={line} />
               ))}
             </ul>
-            <CartSummary quote={quote} className="self-start lg:sticky lg:top-28">
+            <CartSummary
+              quote={quote}
+              className="self-start lg:sticky lg:top-28"
+              coupon={<CouponField quote={quote} notice={couponNotice} busy={loading} />}
+            >
               {quote.canCheckout && !loading ? (
                 <Link
                   href={Routes.store.checkout}

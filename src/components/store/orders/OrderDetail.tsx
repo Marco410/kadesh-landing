@@ -396,7 +396,7 @@ export default function OrderDetail({
                     href={`${Routes.store.product(item.productSlug)}#resenas`}
                     className="text-sm font-semibold text-kadesh-700 hover:underline dark:text-kadesh-300"
                   >
-                    Reseñar este producto
+                    Reseñar este producto y ganar huellitas
                   </Link>
                 ) : null}
               </div>
@@ -409,6 +409,14 @@ export default function OrderDetail({
             <dt>Subtotal</dt>
             <dd className="tabular-nums">{formatPrice(order.subtotalCents)}</dd>
           </div>
+          {order.couponCode ? (
+            <div className="flex justify-between gap-4">
+              <dt className="min-w-0 [overflow-wrap:anywhere]">Cupón {order.couponCode}</dt>
+              <dd className="shrink-0 tabular-nums">
+                {order.couponDiscountCents > 0 ? `−${formatPrice(order.couponDiscountCents)}` : 'Envío gratis'}
+              </dd>
+            </div>
+          ) : null}
           <div className="flex justify-between">
             <dt>Envío</dt>
             <dd className="tabular-nums">{order.shippingCents > 0 ? formatPrice(order.shippingCents) : 'Gratis'}</dd>

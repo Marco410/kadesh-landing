@@ -118,8 +118,8 @@ export type StoreCartQuoteResponse = { storeCartQuote: CartQuote };
 
 /** What the cart costs right now. Asked when the cart opens or changes, never on a timer. */
 export const STORE_CART_QUOTE_QUERY = gql`
-  query StoreCartQuote($items: [StoreCartItemInput!]!) {
-    storeCartQuote(items: $items) {
+  query StoreCartQuote($items: [StoreCartItemInput!]!, $couponCode: String) {
+    storeCartQuote(items: $items, couponCode: $couponCode) {
       ${STORE_QUOTE_FIELDS}
     }
   }
@@ -180,6 +180,8 @@ export const MY_STORE_ORDER_QUERY = gql`
       }
       subtotalCents
       shippingCents
+      couponCode
+      couponDiscountCents
       customerNote
       cancelReason
       address {

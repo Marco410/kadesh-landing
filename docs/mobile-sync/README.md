@@ -52,3 +52,4 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-18 | [Perfil público, autor con nivel y ajustes de perfil](2026-11-18-perfil-publico.md) | profile | pendiente |
 | 2026-11-19 | [Tienda: catálogo, ficha, lista de deseos y reseñas](2026-11-19-tienda-catalogo.md) | shared | pendiente |
 | 2026-11-19 | [Tienda: carrito, pago y pedidos](2026-11-19-tienda-carrito-y-pedidos.md) | shared | pendiente |
+| 2026-11-19 | [Tienda: cupones y huellitas por comprar y reseñar](2026-11-19-tienda-cupones-y-huellitas.md) | shared | pendiente |

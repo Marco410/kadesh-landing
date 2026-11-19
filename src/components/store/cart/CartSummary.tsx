@@ -2,14 +2,17 @@ import { cn } from 'kadesh/utils/cn';
 import { formatPrice } from '../format';
 import type { CartQuote } from '../types';
 
-/** Subtotal, shipping and total of a quote. Shared by the cart and the checkout. */
+/** Subtotal, coupon, shipping and total of a quote. Shared by the cart and the checkout. */
 export default function CartSummary({
   quote,
   className,
+  coupon,
   children,
 }: {
   quote: CartQuote;
   className?: string;
+  /** The coupon field, between the total and the action. */
+  coupon?: React.ReactNode;
   /** The action under the total (continue, pay). */
   children?: React.ReactNode;
 }) {
@@ -23,6 +26,14 @@ export default function CartSummary({
           </dt>
           <dd className="tabular-nums">{formatPrice(quote.subtotalCents)}</dd>
         </div>
+        {quote.couponApplied && quote.couponCode ? (
+          <div className="flex justify-between gap-4 text-emerald-700 dark:text-emerald-400">
+            <dt className="min-w-0 [overflow-wrap:anywhere]">Cupón {quote.couponCode}</dt>
+            <dd className="shrink-0 tabular-nums">
+              {quote.couponDiscountCents > 0 ? `−${formatPrice(quote.couponDiscountCents)}` : 'Envío gratis'}
+            </dd>
+          </div>
+        ) : null}
         <div className="flex justify-between gap-4">
           <dt>Envío</dt>
           <dd className="tabular-nums">{quote.shippingCents > 0 ? formatPrice(quote.shippingCents) : 'Gratis'}</dd>
@@ -37,6 +48,7 @@ export default function CartSummary({
           Te faltan {formatPrice(quote.missingForFreeShippingCents)} para que el envío sea gratis.
         </p>
       ) : null}
+      {coupon ? <div className="mt-4">{coupon}</div> : null}
       {children ? <div className="mt-5 flex flex-col gap-3">{children}</div> : null}
     </div>
   );

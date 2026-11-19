@@ -58,6 +58,10 @@ export const STORE_QUOTE_FIELDS = `
   subtotalCents
   shippingCents
   totalCents
+  couponCode
+  couponApplied
+  couponDiscountCents
+  couponMessage
   currency
   freeShippingMinCents
   missingForFreeShippingCents

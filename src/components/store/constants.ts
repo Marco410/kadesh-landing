@@ -52,6 +52,9 @@ export const STORE_NAV_ENABLED = process.env.NEXT_PUBLIC_STORE_ENABLED === 'true
 
 /** localStorage key of the cart (variants and quantities only). */
 export const STORE_CART_STORAGE_KEY = 'kadesh.pet.cart';
+/** localStorage key of the coupon code typed in the cart. Only a code the server accepted stays. */
+export const STORE_COUPON_STORAGE_KEY = 'kadesh.pet.cart.coupon';
+export const STORE_COUPON_CODE_MAX = 40;
 /** Most units of one product per order (the backend enforces it too). */
 export const STORE_CART_MAX_QUANTITY = 20;
 export const STORE_CART_MAX_LINES = 50;

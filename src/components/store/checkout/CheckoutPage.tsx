@@ -13,6 +13,7 @@ import { SESSION_TOKEN_KEY } from 'kadesh/utils/sessionToken';
 import { useUser } from 'kadesh/utils/UserContext';
 import { cart } from '../cart/cartStore';
 import CartSummary from '../cart/CartSummary';
+import CouponField from '../cart/CouponField';
 import { useCartQuote } from '../cart/useCartQuote';
 import { PAYMENT_METHOD_LABELS, STORE_GUEST_MIN_PASSWORD } from '../constants';
 import { formatPrice } from '../format';
@@ -59,7 +60,7 @@ function guestProblem(guest: Guest): string | null {
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, refreshUser } = useUser();
-  const { items, quote, loading, error: quoteError, notices, refresh } = useCartQuote();
+  const { items, quote, loading, error: quoteError, notices, couponNotice, refresh } = useCartQuote();
   const { data: addressData } = useQuery<MyStoreAddressesResponse>(MY_STORE_ADDRESSES_QUERY, {
     skip: !user?.id,
     fetchPolicy: 'cache-and-network',
@@ -116,6 +117,7 @@ export default function CheckoutPage() {
             address: shipTo,
             saveAddress: chosenSaved ? false : saveAddress,
             customerNote: note.trim() || null,
+            couponCode: quote.couponApplied ? quote.couponCode : null,
             expectedTotalCents: quote.totalCents,
             channel: 'web',
             guest: user?.id
@@ -150,6 +152,8 @@ export default function CheckoutPage() {
         if (result.code === 'EMAIL_EXISTS') setEmailExists(true);
         // The cart or its total changed: show what the server says now.
         if (result.code === 'CART_CHANGED' || result.code === 'PRICE_CHANGED') refresh();
+        // The coupon stopped applying (ran out, expired): the cart is quoted again without it.
+        if (result.code === 'COUPON_INVALID') cart.setCoupon('');
         return;
       }
 
@@ -437,7 +441,7 @@ export default function CheckoutPage() {
             </div>
 
             <div className="flex flex-col gap-4 self-start lg:sticky lg:top-28">
-              <CartSummary quote={quote}>
+              <CartSummary quote={quote} coupon={<CouponField quote={quote} notice={couponNotice} busy={loading || submitting} />}>
                 <ul className="flex flex-col gap-1 border-b border-[#ececec] pb-3 text-sm text-[#3a3a3a] dark:border-[#2a2a2a] dark:text-[#d0d0d0]">
                   {quote.lines.map((line) => (
                     <li key={line.variantId} className="flex justify-between gap-3">

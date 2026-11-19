@@ -15,6 +15,19 @@ Formato:
 
 ---
 
+## 2026-11-19 · feat: cupones en la tienda y huellitas por comprar y reseñar
+- Rama: feat/pet-store-coupons
+- Qué cambió y por qué:
+  - **Cupón en el carrito y en el checkout**: «¿Tienes un cupón?» abre un campo; el servidor dice si aplica y cuánto descuenta. El resumen muestra la fila del cupón y el total ya descontado, con «Quitar».
+  - Un código que no aplica muestra el motivo del servidor (venció, se agotó, no llega al mínimo…) y se borra del carrito, para no mandarlo en cada cotización.
+  - **Comprar con cupón**: el checkout manda el código solo si la cotización lo aplicó. Si deja de aplicar justo al comprar (`COUPON_INVALID`), no se crea el pedido, se quita el cupón y se muestra el total sin él.
+  - **El pedido muestra el cupón** que usó y lo que descontó.
+  - **Huellitas**: «Comprar en la tienda de Kadesh» (10) y «Reseñar un producto que compraste» (5) en «Cómo se ganan» (perfil y `/ranking`) y en el historial. El enlace del pedido entregado ahora dice «Reseñar este producto y ganar huellitas».
+  - Comprobado: tipos, lint, las 19 operaciones de la tienda contra el esquema del back, las operaciones reales de punta a punta contra una base de prueba (cotizar con cupón válido y con uno malo, comprar con cupón, cupón agotado, ver el pedido), y el resumen y el campo del cupón pintados en sus cuatro estados. No se probó en el navegador.
+- Archivos: src/components/store/cart/CouponField.tsx (nuevo), src/components/store/cart/{cartStore.ts,useCartQuote.ts,CartSummary.tsx,CartPage.tsx}, src/components/store/checkout/CheckoutPage.tsx, src/components/store/orders/OrderDetail.tsx, src/components/store/{constants.ts,fields.ts,queries.ts,types.ts,README.md}, src/components/paws/constants.ts, docs/mobile-sync/2026-11-19-tienda-cupones-y-huellitas.md (nuevo), docs/mobile-sync/README.md
+- GraphQL: modificadas `StoreCartQuote` (argumento `couponCode` y campos `couponCode`, `couponApplied`, `couponDiscountCents`, `couponMessage`), `PlaceStoreOrder` (`input.couponCode`, código `COUPON_INVALID`, los campos de cupón en `quote`) y `MyStoreOrder` (`couponCode`, `couponDiscountCents`). El back debe publicarse antes que este front.
+- Móvil: [prompt](../mobile-sync/2026-11-19-tienda-cupones-y-huellitas.md)
+
 ## 2026-11-19 · feat: tienda con carrito, pago y pedidos
 - Rama: feat/pet-store-checkout
 - Qué cambió y por qué:

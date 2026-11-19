@@ -124,8 +124,13 @@ export const Routes = {
   store: {
     index: '/tienda',
     product: (slug: string): string => `/tienda/${slug}`,
+    cart: '/tienda/carrito',
+    checkout: '/tienda/pagar',
     /** «Lista de deseos» en el panel. */
     wishlist: '/perfil?tab=deseos',
+    /** «Pedidos» en el panel. */
+    orders: '/perfil?tab=pedidos',
+    order: (number: string): string => `/perfil?tab=pedidos&pedido=${encodeURIComponent(number)}`,
   },
 
   // Espacios de rescate (rescatistas, refugios, hogares temporales, colectivos). Solo los verificados.

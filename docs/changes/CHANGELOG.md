@@ -15,6 +15,20 @@ Formato:
 
 ---
 
+## 2026-11-19 · feat: tienda con carrito, pago y pedidos
+- Rama: feat/pet-store-checkout
+- Qué cambió y por qué:
+  - **Agregar al carrito** en la ficha de los productos que vende Kadesh (variante y cantidad). El carrito vive en el navegador y solo guarda qué y cuánto; el servidor pone precios, envío y total.
+  - **`/tienda/carrito`**: líneas con cantidad, aviso cuando el servidor ajusta algo (se agotó, quedan menos) y «Te faltan $X para envío gratis».
+  - **`/tienda/pagar`**: una página con datos, dirección (guardadas o nueva) y forma de pago. Sin cuenta, pide correo y contraseña y crea la cuenta con el pedido.
+  - **Tarjeta** con el formulario de Stripe en la misma página; **transferencia** con datos bancarios y comprobante.
+  - **Mi cuenta → Pedidos**: lista y detalle con lo que falta (pagar, subir comprobante), paquetes con guía, productos, dirección, línea de tiempo, cancelar y ayuda por WhatsApp.
+  - Carrito en el menú con el número de piezas (solo con `NEXT_PUBLIC_STORE_ENABLED`).
+  - Comprobado: tipos, lint, las 19 operaciones contra el esquema del back, las operaciones reales ejecutadas de punta a punta contra una base de prueba (cotizar, comprar con y sin cuenta, mis pedidos, reanudar pago), y `/tienda/carrito` y `/tienda/pagar` respondiendo en el servidor de desarrollo. No se probó en el navegador un pago real con Stripe ni la subida del comprobante.
+- Archivos: src/app/tienda/carrito/page.tsx (nuevo), src/app/tienda/pagar/page.tsx (nuevo), src/components/store/cart/{cartStore.ts,useCartQuote.ts,CartPage.tsx,CartSummary.tsx,CartLink.tsx} (nuevos), src/components/store/checkout/{CheckoutPage.tsx,AddressFields.tsx,StripePayStep.tsx} (nuevos), src/components/store/orders/{MyOrdersSection.tsx,OrderDetail.tsx} (nuevos), src/components/store/{ProductBuyBox.tsx,constants.ts,fields.ts,queries.ts,types.ts,index.ts,README.md}, src/core/routes.ts, src/components/layout/Navigation.tsx, src/components/profile/shell/profileNav.ts, src/app/(cuenta)/perfil/page.tsx
+- GraphQL: nuevas `StoreCartQuote`, `MyStoreAddresses`, `PlaceStoreOrder`, `MyStoreOrders`, `MyStoreOrder`, `UploadStoreTransferProof`, `ResumeStoreOrderPayment` y `CancelMyStoreOrder`
+- Móvil: [prompt](../mobile-sync/2026-11-19-tienda-carrito-y-pedidos.md)
+
 ## 2026-11-19 · feat: tienda de Kadesh Pet (catálogo, ficha, lista de deseos y reseñas)
 - Rama: feat/pet-store
 - Qué cambió y por qué:

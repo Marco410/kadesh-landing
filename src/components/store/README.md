@@ -1,10 +1,10 @@
 # Store (tienda)
 
-`/tienda` y `/tienda/<slug>`: la tienda de Kadesh Pet. Un catálogo con dos tipos de producto a ojos de la persona:
+`/tienda`, `/tienda/<slug>`, `/tienda/carrito`, `/tienda/pagar` y «Pedidos» en Mi cuenta: la tienda de Kadesh Pet. Un catálogo con dos tipos de producto a ojos de la persona:
 
 | `seller` | Qué ve | Qué puede hacer |
 |---|---|---|
-| `kadesh` | «Vendido por Kadesh» | Ver, guardar en su lista y reseñar. La compra en línea llega con el carrito (fase 2). |
+| `kadesh` | «Vendido por Kadesh» | Agregar al carrito y comprar aquí, guardar en su lista y reseñar. |
 | `mercado_libre` | «En Mercado Libre», precio aproximado con fecha | Ir a Mercado Libre por el enlace de afiliado, guardar y reseñar. |
 
 Los productos de Kadesh pueden ser propios o de un proveedor que surte por nosotros; eso es interno y el API nunca lo dice. No nombrar al proveedor en ningún texto.
@@ -16,7 +16,9 @@ El back está en `kadesh-back/models/Pet/Store/` (ver su README). Se administra 
 Dos interruptores, los dos apagados por defecto:
 
 - `STORE_ENABLED=true` en kadesh-back: abre el API. Apagado, `/tienda` y cada producto responden 404.
-- `NEXT_PUBLIC_STORE_ENABLED=true` aquí: muestra «Tienda» en el menú y «Lista de deseos» en Mi cuenta.
+- `NEXT_PUBLIC_STORE_ENABLED=true` aquí: muestra «Tienda» y el carrito en el menú, y «Pedidos» y «Lista de deseos» en Mi cuenta.
+
+Para cobrar con tarjeta hace falta `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (la misma cuenta de Stripe que el back).
 
 Enciende primero el back, revisa `/tienda` y luego el del menú.
 
@@ -33,6 +35,9 @@ Enciende primero el back, revisa `/tienda` y luego el del menú.
 | Tarjeta | `ProductCard.tsx` |
 | Ficha | `ProductDetail.tsx` (servidor) + `ProductGallery.tsx`, `ProductBuyBox.tsx`, `ProductReviews.tsx` |
 | Lista de deseos | `StoreWishlist.tsx` (proveedor y corazón), `MyWishlistSection.tsx` (`/perfil?tab=deseos`) |
+| Carrito | `cart/cartStore.ts` (en `localStorage`), `cart/useCartQuote.ts` (cotización del servidor), `cart/CartPage.tsx`, `cart/CartSummary.tsx`, `cart/CartLink.tsx` (menú) |
+| Checkout | `checkout/CheckoutPage.tsx`, `checkout/AddressFields.tsx`, `checkout/StripePayStep.tsx` |
+| Pedidos | `orders/MyOrdersSection.tsx` (`/perfil?tab=pedidos`), `orders/OrderDetail.tsx` (`&pedido=<folio>`) |
 | Metadata y JSON-LD | `store-seo.ts` |
 
 ## Reglas
@@ -42,7 +47,14 @@ Enciende primero el back, revisa `/tienda` y luego el del menú.
 - **Una reseña por persona y producto**, de 1 a 5 estrellas; título y texto son opcionales. Se puede editar o borrar. Si el equipo de Kadesh la oculta, su autor ve el aviso y no puede volver a publicarla.
 - **«Compra verificada»** sale cuando el back lo marca (llega con los pedidos).
 - **Enlace de afiliado**: siempre con `rel="sponsored nofollow noopener"`, en pestaña nueva y con el aviso `AFFILIATE_DISCLOSURE` a la vista. El precio dice «aproximado» y la fecha en que se revisó.
-- **Sin botón de compra falso**: mientras no haya carrito, la ficha de un producto de Kadesh lo dice y ofrece guardarlo.
+- **El carrito solo guarda qué y cuánto** (`variantId`, `quantity`), en `localStorage`. Nombres, precios, envío y total salen de `storeCartQuote` cada vez. Si el servidor baja una cantidad o quita una línea, el carrito guardado se corrige y se explica por qué.
+- **El total que se paga lo fija el servidor.** El checkout manda el total que la persona vio (`expectedTotalCents`); si cambió, no se crea el pedido y se muestra el nuevo.
+- **Comprar sin cuenta**: el checkout pide nombre, correo, teléfono y una contraseña, y la cuenta se crea con el pedido, ya con sesión. No hay recuperación de contraseña en el sitio, por eso la contraseña la elige la persona. Si el correo ya tiene cuenta, se le pide iniciar sesión.
+- **Tarjeta**: el pedido se crea primero y luego se paga en el formulario de Stripe, en la misma página. El pedido pasa a pagado cuando Stripe le avisa al back; al llegar del pago, el pedido puede decir unos segundos «Estamos confirmando tu pago» con un botón para actualizar. Si se cierra la página, se paga después desde el pedido.
+- **Transferencia**: el pedido muestra banco, beneficiario, CLABE, monto y concepto (el folio) con botón de copiar, y recibe el comprobante (JPG, PNG o WEBP de hasta 8 MB). Si el equipo lo rechaza, se muestra el motivo y se puede subir otro.
+- **Un pedido sin pagar se cancela solo** a la hora que dice (60 min con tarjeta, 48 h con transferencia) y también lo puede cancelar la persona.
+- **El pedido no nombra a quien surte**: cada paquete dice su estado, paquetería y guía.
+- **Mercado Libre no entra al carrito**: su único botón es el enlace de afiliado.
 - **Agotado**: se muestra, no se oculta. Con stock bajo la ficha dice cuántos quedan.
 - **Filtros en la URL** (`?q=&categoria=&marca=&vende=&oferta=1&orden=`): cambiar uno navega y el servidor pinta de nuevo. Las vistas filtradas llevan `noindex` y su canónica es `/tienda`.
 
@@ -56,6 +68,11 @@ Enciende primero el back, revisa `/tienda` y luego el del menú.
 | Abrir un producto | El servidor pide ficha y primeras reseñas cada 10 min. Con sesión, dos del navegador: los corazones y `StoreProductReviewsList` (trae la reseña propia). |
 | Guardar o quitar de la lista | Una mutación; el corazón se corrige con la respuesta, sin volver a pedir la lista. |
 | Reseñar | Una mutación y una consulta de reseñas. |
+| Agregar al carrito, ver el globo del menú | Ninguna: es `localStorage`. |
+| Abrir el carrito o cambiarlo | Una (`StoreCartQuote`) por pausa de 350 ms. |
+| Abrir el checkout | La cotización y, con sesión, `MyStoreAddresses`. |
+| Comprar | Una mutación (`PlaceStoreOrder`). Con tarjeta, lo demás va directo a Stripe. |
+| Abrir «Pedidos» | Una (`MyStoreOrders`). Abrir un pedido: una (`MyStoreOrder`), sin polling; se vuelve a pedir tras subir el comprobante, pagar o cancelar. |
 
 Sin polling. Las fotos subidas llevan URL firmada por 1 h: por eso la caché es de 10 min y las páginas no se prerenderizan.
 
@@ -75,11 +92,24 @@ Por qué:
 
 Qué no hacer:
 - No pedir datos del producto otra vez en el navegador: ya vienen del servidor.
-- No poner un botón de compra antes de que exista el carrito.
+- No guardar precios en el carrito ni mandar montos al back.
+- No marcar un pedido como pagado en el front: lo dice el back.
+- No consultar el estado del pedido en un temporizador.
 - No subir la caché arriba de 1 h ni prerenderizar fichas mientras las fotos sean firmadas.
+
+### 2026-11-19 — carrito, pago y pedidos
+
+Qué: carrito en el navegador con cotización del servidor, checkout de una página, pago con Stripe Elements o transferencia, y «Pedidos» en Mi cuenta.
+
+Por qué:
+- **Carrito sin proveedor de React ni tabla en el back**: un almacén de módulo leído con `useSyncExternalStore`. Cualquier componente lo usa, el menú muestra el globo sin pedir nada y dos pestañas quedan iguales por el evento `storage`.
+- **Checkout en una sola página**: datos, dirección y pago se ven juntos con el total a un lado. Menos pasos donde abandonar.
+- **Pedidos dentro de Mi cuenta** (`/perfil?tab=pedidos`): ahí ya está la sesión y el resto de lo que la persona sigue. Por eso el checkout espera a que la sesión nueva esté lista antes de mandarla ahí.
+- **Sin polling del estado**: el cambio llega por correo y por la campana; la pantalla se actualiza al abrirla.
 
 ## Pendientes
 
-- Fase 2: carrito, pago y «Mis pedidos».
+- Editar y borrar direcciones guardadas desde Mi cuenta (hoy se guardan al comprar y se eligen en el checkout).
+- Cupones y huellitas por compra (fase 4).
 - Productos en `sitemap.xml` y tarjeta para compartir (`/og`).
 - Registrar los clics al enlace de afiliado (hoy solo los cuenta el portal de Mercado Libre).

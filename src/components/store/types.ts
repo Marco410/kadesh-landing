@@ -123,3 +123,168 @@ export type StoreCatalogInput = {
   take?: number;
   skip?: number;
 };
+
+// ─── Cart and orders ────────────────────────────────────────────────────────────────────────
+
+/** What the browser keeps of the cart: which variant and how many. Prices come from the server. */
+export type CartItem = { variantId: string; quantity: number };
+
+export type CartLineIssue = 'unavailable' | 'out_of_stock' | 'quantity_reduced';
+
+export type CartLine = {
+  variantId: string;
+  productId: string | null;
+  slug: string | null;
+  name: string;
+  variantTitle: string | null;
+  coverUrl: string | null;
+  unitPriceCents: number;
+  compareAtPriceCents: number | null;
+  /** What can actually be bought; lower than `requestedQuantity` when stock is short. */
+  quantity: number;
+  requestedQuantity: number;
+  lineTotalCents: number;
+  maxQuantity: number;
+  issue: CartLineIssue | null;
+};
+
+export type StorePaymentMethod = 'stripe_card' | 'bank_transfer';
+
+export type CartQuote = {
+  lines: CartLine[];
+  itemsCount: number;
+  subtotalCents: number;
+  shippingCents: number;
+  totalCents: number;
+  currency: string;
+  /** 0 = shipping is never free. */
+  freeShippingMinCents: number;
+  missingForFreeShippingCents: number;
+  canCheckout: boolean;
+  messages: string[];
+  paymentMethods: StorePaymentMethod[];
+  returnPolicy: string;
+};
+
+/** A shipping address as the forms send it. */
+export type StoreAddressInput = {
+  label?: string;
+  recipientName: string;
+  phone: string;
+  street: string;
+  exteriorNumber: string;
+  interiorNumber?: string;
+  neighborhood: string;
+  city: string;
+  /** INEGI code of the state ("16"). */
+  state: string;
+  postalCode: string;
+  references?: string;
+};
+
+export type StoreAddress = {
+  id: string | null;
+  label: string | null;
+  recipientName: string;
+  phone: string;
+  street: string;
+  exteriorNumber: string;
+  interiorNumber: string | null;
+  neighborhood: string;
+  city: string;
+  stateCode: string;
+  stateName: string;
+  postalCode: string;
+  references: string | null;
+  isDefault: boolean;
+};
+
+export type StoreTransferInstructions = {
+  bankName: string;
+  beneficiary: string;
+  clabe: string;
+  note: string | null;
+  /** The concept to write on the transfer: the order number. */
+  reference: string;
+  amountCents: number;
+  expiresAt: string | null;
+};
+
+export type PlaceOrderCode =
+  | 'STORE_CLOSED'
+  | 'LOGIN_REQUIRED'
+  | 'EMAIL_EXISTS'
+  | 'INVALID'
+  | 'CART_CHANGED'
+  | 'PRICE_CHANGED'
+  | 'PAYMENT_UNAVAILABLE'
+  | 'PAYMENT_ERROR';
+
+export type PlaceOrderResult = {
+  success: boolean;
+  message: string;
+  code: PlaceOrderCode | null;
+  orderNumber: string | null;
+  totalCents: number | null;
+  stripeClientSecret: string | null;
+  sessionToken: string | null;
+  transfer: StoreTransferInstructions | null;
+  quote: CartQuote | null;
+};
+
+export type StoreOrderSummary = {
+  number: string;
+  createdAt: string | null;
+  status: 'open' | 'completed' | 'cancelled';
+  paymentStatus: 'pending' | 'in_review' | 'paid' | 'failed' | 'refunded';
+  fulfillmentStatus: 'unfulfilled' | 'partial' | 'shipped' | 'delivered' | 'returned';
+  paymentMethod: StorePaymentMethod;
+  totalCents: number;
+  itemsCount: number;
+  firstItemName: string | null;
+  coverUrl: string | null;
+  expiresAt: string | null;
+};
+
+export type StoreOrderLine = {
+  id: string;
+  productId: string | null;
+  productSlug: string | null;
+  name: string;
+  variantTitle: string | null;
+  coverUrl: string | null;
+  quantity: number;
+  unitPriceCents: number;
+  totalCents: number;
+};
+
+export type StoreOrderShipment = {
+  id: string;
+  status: 'preparing' | 'ready' | 'in_transit' | 'delivered' | 'exception' | 'returned' | 'cancelled';
+  statusLabel: string;
+  carrier: string | null;
+  trackingCode: string | null;
+  trackingUrl: string | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  items: string[];
+};
+
+export type StoreOrderDetail = {
+  summary: StoreOrderSummary;
+  subtotalCents: number;
+  shippingCents: number;
+  customerNote: string | null;
+  cancelReason: string | null;
+  address: StoreAddress;
+  items: StoreOrderLine[];
+  shipments: StoreOrderShipment[];
+  timeline: Array<{ type: string; message: string; createdAt: string | null }>;
+  transfer: StoreTransferInstructions | null;
+  proofUploaded: boolean;
+  proofRejectedReason: string | null;
+  canCancel: boolean;
+  canPay: boolean;
+  returnPolicy: string | null;
+  supportWhatsapp: string | null;
+};

@@ -13,6 +13,7 @@ import { useLogout } from "kadesh/components/auth/hooks";
 // Directo (no el barrel): el barrel de notificaciones importa el layout y haría un ciclo.
 import NotificationBell from "kadesh/components/notifications/NotificationBell";
 import { STORE_NAV_ENABLED } from "kadesh/components/store/constants";
+import CartLink from "kadesh/components/store/cart/CartLink";
 import { useUnreadNotifications } from "kadesh/components/notifications/hooks";
 import FontSizeSlider from "./FontSizeSlider";
 import ThemeToggle from "./ThemeToggle";
@@ -141,6 +142,8 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
               Mi perfil
             </Link>
           ) : null}
+
+          {STORE_NAV_ENABLED ? <CartLink className={navLinkClass} /> : null}
 
           <FontSizeSlider tone={atTopLight ? "onLight" : "onDark"} />
 

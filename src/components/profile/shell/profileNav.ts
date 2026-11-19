@@ -11,6 +11,7 @@ import {
   MapsLocation01Icon,
   Megaphone01Icon,
   Notification03Icon,
+  PackageIcon,
   RadarIcon,
   ShoppingBag01Icon,
   Stethoscope02Icon,
@@ -35,6 +36,7 @@ export const PROFILE_TAB_KEYS = [
   "inicio",
   "profile",
   "paws",
+  "pedidos",
   "deseos",
   "pets",
   "posts",
@@ -95,6 +97,13 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
     group: "cuenta",
     href: Routes.profileTab("paws"),
     description: "Lo que has ganado por ayudar: tu nivel, cuánto te falta para el siguiente y tu racha.",
+  },
+  pedidos: {
+    label: "Pedidos",
+    icon: PackageIcon,
+    group: "cuenta",
+    href: Routes.store.orders,
+    description: "Lo que compraste en la tienda: en qué va cada pedido, su guía y cómo pagarlo.",
   },
   deseos: {
     label: "Lista de deseos",
@@ -176,8 +185,8 @@ export const PROFILE_VIEWS: Record<ProfileViewKey, ViewConfig> = {
 };
 
 const GROUP_ORDER: Array<[GroupId, ProfileViewKey[]]> = [
-  // The wishlist only shows once the store is open.
-  ["cuenta", ["inicio", "profile", "paws", ...(STORE_NAV_ENABLED ? (["deseos"] as const) : []), "notifications", "alerts"]],
+  // Orders and the wishlist only show once the store is open.
+  ["cuenta", ["inicio", "profile", "paws", ...(STORE_NAV_ENABLED ? (["pedidos", "deseos"] as const) : []), "notifications", "alerts"]],
   ["animales", ["pets", "appointments", "animals", "adopciones"]],
   ["publicaciones", ["events", "posts"]],
   ["rescate", ["rescate"]],

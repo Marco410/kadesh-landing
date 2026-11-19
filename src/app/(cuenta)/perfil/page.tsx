@@ -19,7 +19,7 @@ import { MyEventsSection } from "kadesh/components/events";
 import RescueSection from "kadesh/components/rescue/RescueSection";
 import { MyAdoptionApplicationsSection } from "kadesh/components/adoption";
 import { PawsSection } from "kadesh/components/paws";
-import { MyWishlistSection } from "kadesh/components/store";
+import { MyOrdersSection, MyWishlistSection } from "kadesh/components/store";
 import PublicProfileSettings from "kadesh/components/public-profile/PublicProfileSettings";
 import { useUser } from "kadesh/utils/UserContext";
 import { cn } from "kadesh/utils/cn";
@@ -29,6 +29,7 @@ const VIEW_WIDTH: Record<ProfileTabKey, string> = {
   inicio: "",
   profile: "",
   paws: "",
+  pedidos: "max-w-3xl",
   deseos: "max-w-5xl",
   pets: "max-w-5xl",
   posts: "max-w-4xl",
@@ -77,6 +78,7 @@ export default function ProfilePage() {
         </div>
       ) : null}
       {view === "paws" ? <PawsSection userId={user.id} /> : null}
+      {view === "pedidos" ? <MyOrdersSection /> : null}
       {view === "deseos" ? <MyWishlistSection /> : null}
       {view === "pets" ? <MyPetsSection userId={user.id} /> : null}
       {view === "posts" ? <UserPostsSection userId={user.id} /> : null}

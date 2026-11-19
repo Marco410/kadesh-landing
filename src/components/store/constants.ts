@@ -47,3 +47,46 @@ export const AFFILIATE_DISCLOSURE =
 
 /** The header link to the store only shows once the store is open. */
 export const STORE_NAV_ENABLED = process.env.NEXT_PUBLIC_STORE_ENABLED === 'true';
+
+// ─── Cart and checkout ──────────────────────────────────────────────────────────────────────
+
+/** localStorage key of the cart (variants and quantities only). */
+export const STORE_CART_STORAGE_KEY = 'kadesh.pet.cart';
+/** Most units of one product per order (the backend enforces it too). */
+export const STORE_CART_MAX_QUANTITY = 20;
+export const STORE_CART_MAX_LINES = 50;
+/** One quote per pause while the person changes quantities. */
+export const STORE_QUOTE_DEBOUNCE_MS = 350;
+export const STORE_ORDERS_PAGE_SIZE = 10;
+export const STORE_GUEST_MIN_PASSWORD = 8;
+/** Proof of a bank transfer: an image of up to 8 MB. */
+export const STORE_PROOF_MAX_BYTES = 8 * 1024 * 1024;
+export const STORE_PROOF_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+export const PAYMENT_METHOD_LABELS: Record<string, { title: string; description: string }> = {
+  stripe_card: { title: 'Tarjeta de crédito o débito', description: 'Pago inmediato y seguro con Stripe.' },
+  bank_transfer: {
+    title: 'Transferencia bancaria',
+    description: 'Te damos los datos, transfieres y subes tu comprobante. Apartamos tu pedido mientras tanto.',
+  },
+};
+
+/** What the buyer reads for the state of an order. */
+export function orderStatusText(order: {
+  status: string;
+  paymentStatus: string;
+  fulfillmentStatus: string;
+  paymentMethod: string;
+}): { label: string; tone: 'neutral' | 'warn' | 'ok' | 'bad' } {
+  if (order.paymentStatus === 'refunded') return { label: 'Reembolsado', tone: 'neutral' };
+  if (order.status === 'cancelled') return { label: 'Cancelado', tone: 'bad' };
+  if (order.paymentStatus === 'in_review') return { label: 'Revisando tu comprobante', tone: 'warn' };
+  if (order.paymentStatus !== 'paid') {
+    return { label: order.paymentMethod === 'bank_transfer' ? 'Falta tu transferencia' : 'Falta el pago', tone: 'warn' };
+  }
+  if (order.fulfillmentStatus === 'delivered') return { label: 'Entregado', tone: 'ok' };
+  if (order.fulfillmentStatus === 'shipped') return { label: 'En camino', tone: 'ok' };
+  if (order.fulfillmentStatus === 'partial') return { label: 'Una parte va en camino', tone: 'ok' };
+  if (order.fulfillmentStatus === 'returned') return { label: 'Devuelto', tone: 'neutral' };
+  return { label: 'Preparando tu pedido', tone: 'ok' };
+}

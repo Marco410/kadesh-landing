@@ -202,8 +202,12 @@ export default function AnimalDetailPage() {
         initial={motionPrefs.panel ? "hidden" : false}
         animate="show"
       >
-        {/* Ocupa la pantalla, pero en laptops bajas no se aplasta: abajo de 48rem la página hace scroll. */}
-        <div className="flex min-h-0 flex-col gap-3 py-3 lg:h-[max(calc(100dvh-72px),48rem)] lg:overflow-hidden">
+        {/*
+          The grid (not this wrapper) gets the fixed height: header + grid fill the screen, and every
+          banner above the grid pushes the page down instead of squeezing and clipping the cards.
+          4.5rem = top padding + header (2.25rem) + gap + bottom padding. Below 48rem the page scrolls.
+        */}
+        <div className="flex flex-col gap-3 py-3">
           <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 lg:flex-nowrap">
             <Link
               href={Routes.animals.index}
@@ -353,7 +357,7 @@ export default function AnimalDetailPage() {
             Sin separación vertical entre filas: la ponen los márgenes, para que la tercera fila
             no deje hueco cuando no hay veterinarias.
           */}
-          <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(17rem,1fr)_minmax(0,1.4fr)] lg:grid-rows-[auto_1fr_auto] lg:gap-y-0">
+          <div className="grid grid-cols-1 gap-3 lg:h-[max(calc(100dvh-72px-4.5rem),43.5rem)] lg:grid-cols-[minmax(17rem,1fr)_minmax(0,1.4fr)] lg:grid-rows-[auto_1fr_auto] lg:gap-y-0">
             <div className="min-h-0 overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-white/10 dark:bg-night-raised lg:col-start-1 lg:row-span-2 lg:row-start-1">
               <AnimalImageGrid
                 images={animal.multimedia}

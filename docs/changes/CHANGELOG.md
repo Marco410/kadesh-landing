@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-19 · fix: ficha del animal recortada cuando hay varios banners
+- Rama: feat/ranking-huellitas
+- Qué cambió y por qué: en escritorio el bloque de arriba tenía alto fijo de pantalla con `overflow-hidden`. Si había banners encima de la cuadrícula (impulsar en Facebook, recompensa, avistamientos…), le quitaban alto a la foto, el historial, el mapa y las veterinarias, que se cortaban justo encima de «Comentarios». Ahora el alto fijo lo lleva la cuadrícula (pantalla menos el encabezado, mínimo 43.5rem) y los banners empujan la página hacia abajo en lugar de aplastarla.
+- Archivos: src/app/animales/[slug]/page.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (layout de escritorio de la web)
+
 ## 2026-11-18 · feat: perfil público, autor con nivel en la ficha y ranking rediseñado
 - Rama: feat/ranking-huellitas
 - Qué cambió y por qué:

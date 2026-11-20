@@ -1,12 +1,12 @@
-import { STORE_REVALIDATE_SECONDS, STORE_REVIEWS_PAGE_SIZE } from './constants';
+import { STORE_BEST_SELLERS_SIZE, STORE_REVALIDATE_SECONDS, STORE_REVIEWS_PAGE_SIZE } from './constants';
 import { STORE_ITEM_FIELDS, STORE_REVIEW_FIELDS } from './fields';
 import { storeCatalogInput } from './searchParams';
-import type { StoreCatalog, StoreFacets, StoreFilters, StoreProduct, StoreReviews } from './types';
+import type { StoreCatalog, StoreFacets, StoreFilters, StoreItem, StoreProduct, StoreReviews } from './types';
 
 /**
- * Store queries from the server (no session): `/tienda` and the product page. Cached for 10
- * minutes, below the 1 h signature of product photos. If the API fails they answer empty so the
- * page does not break.
+ * Store queries from the server (no session): `/tienda` and the product page. Cached for a
+ * minute (`STORE_REVALIDATE_SECONDS`), below the 1 h signature of product photos. If the API
+ * fails they answer empty so the page does not break.
  */
 
 const CATALOG_QUERY = `
@@ -83,6 +83,24 @@ export async function fetchStoreCatalog(filters: StoreFilters): Promise<StoreCat
     input: storeCatalogInput(filters),
   });
   return data?.storeCatalog ?? { total: 0, items: [] };
+}
+
+/**
+ * The «Los más vendidos» box: products sold at least once, most sold first. Before the first sales
+ * it shows the newest instead, so the column is never empty (and never calls something a best
+ * seller that has not sold). One request, cached like the rest of the catalog.
+ */
+export async function fetchStoreBestSellers(): Promise<{ kind: 'best_selling' | 'newest'; items: StoreItem[] }> {
+  const take = STORE_BEST_SELLERS_SIZE;
+  const sold = await queryGraphql<{ storeCatalog: StoreCatalog }>(CATALOG_QUERY, {
+    input: { soldOnly: true, sort: 'best_selling', take, skip: 0 },
+  });
+  const soldItems = sold?.storeCatalog.items ?? [];
+  if (soldItems.length >= 3) return { kind: 'best_selling', items: soldItems };
+  const newest = await queryGraphql<{ storeCatalog: StoreCatalog }>(CATALOG_QUERY, {
+    input: { sort: 'newest', take, skip: 0 },
+  });
+  return { kind: 'newest', items: newest?.storeCatalog.items ?? [] };
 }
 
 const EMPTY_FACETS: StoreFacets = {

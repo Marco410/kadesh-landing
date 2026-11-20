@@ -2,6 +2,8 @@ import type { StoreFilters, StoreSort } from './types';
 
 /** Products per page of `/tienda` (the API caps it at 48). */
 export const STORE_PAGE_SIZE = 24;
+/** Products in the «Los más vendidos» box of `/tienda`. */
+export const STORE_BEST_SELLERS_SIZE = 5;
 export const STORE_REVIEWS_PAGE_SIZE = 10;
 export const STORE_WISHLIST_PAGE_SIZE = 24;
 

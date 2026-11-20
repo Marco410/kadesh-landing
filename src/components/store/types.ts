@@ -125,6 +125,7 @@ export type StoreCatalogInput = {
   brandSlug?: string | null;
   seller?: string | null;
   onSale?: boolean | null;
+  soldOnly?: boolean | null;
   sort?: string | null;
   take?: number;
   skip?: number;

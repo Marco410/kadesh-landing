@@ -15,6 +15,18 @@ Formato:
 
 ---
 
+## 2026-11-20 · feat: tienda — catálogo en tres columnas con «Los más vendidos» y publicidad
+- Rama: feat/pet-store
+- Qué cambió y por qué: el catálogo dejaba mucho espacio vacío a la derecha y los filtros ocupaban una franja arriba. Ahora, en escritorio:
+  - **Izquierda**: buscador y filtros en una columna fija al bajar (categorías con subcategorías y conteos, «Solo en oferta», quién vende y marca, «Quitar filtros»). En el celular quedan detrás de un botón «Filtros (n)».
+  - **Centro**: productos con «Ordenar» arriba. Tres columnas, o dos entre 1280 y 1360 px.
+  - **Derecha** (desde 1280 px; antes va debajo de los productos): «Los más vendidos» (productos con al menos una venta, del más vendido al menos; antes de tener 3 se muestra «Lo más nuevo») y el bloque de publicidad (`AdSlot` con `NEXT_PUBLIC_ADSENSE_SLOT_STORE`, o el del blog si falta; si AdSense no llena, sale un anuncio propio).
+  - El encabezado es más bajo, con el texto a la derecha del título.
+  - Los destacados ya no llevan el borde amarillo: solo la etiqueta «Destacado».
+- Archivos: src/components/store/{StoreIndexClient.tsx,StoreListingPage.tsx,StoreAside.tsx,ProductCard.tsx,StoreStars.tsx,server.ts,types.ts,constants.ts}, src/app/tienda/page.tsx, src/core/ads.ts
+- GraphQL: `storeCatalog` acepta `soldOnly` (back). Consultas: una más por carga de `/tienda` en el servidor (5 productos, en caché 1 min; dos si todavía no hay 3 vendidos). Si el back aún no tiene `soldOnly`, la caja muestra «Lo más nuevo».
+- Móvil: no aplica (acomodo de escritorio; en la app la lista es de una columna. `soldOnly` queda disponible si se quiere una sección de más vendidos)
+
 ## 2026-11-20 · fix: tienda — modales propios en vez de confirm(), enlace al pedido recién hecho
 - Rama: feat/pet-store
 - Qué cambió y por qué (tercera prueba en Chrome):

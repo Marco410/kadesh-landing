@@ -22,11 +22,8 @@ export default function ProductCard({ item, className }: { item: StoreItem; clas
   return (
     <article
       className={cn(
-        'group relative flex flex-col overflow-hidden rounded-2xl border bg-white transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,35,80,0.1)] dark:bg-[#1e1e1e]',
-        // Featured products stand out: amber border and glow, plus the «Destacado» tag.
-        item.isFeatured
-          ? 'border-amber-400 shadow-[0_0_0_1px_rgba(251,191,36,0.6),0_10px_30px_rgba(245,158,11,0.15)] dark:border-amber-400/80'
-          : 'border-[#ececec] dark:border-[#2a2a2a]',
+        // Featured products are told apart by the «Destacado» tag only: same border as the rest.
+        'group relative flex flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,35,80,0.1)] dark:border-[#2a2a2a] dark:bg-[#1e1e1e]',
         className,
       )}
     >

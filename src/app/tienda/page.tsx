@@ -16,8 +16,8 @@ export async function generateMetadata({ searchParams }: { searchParams: SearchP
 /** `/tienda`: the store catalog. 404 while the store is closed (`STORE_ENABLED` off in kadesh-back). */
 export default async function StorePage({ searchParams }: { searchParams: SearchParams }) {
   const filters = parseStoreSearchParams(await searchParams);
-  const { catalog, facets } = await loadStoreListing(filters);
+  const { catalog, facets, top } = await loadStoreListing(filters);
   if (!facets.enabled) notFound();
 
-  return <StoreListingPage filters={filters} catalog={catalog} facets={facets} />;
+  return <StoreListingPage filters={filters} catalog={catalog} facets={facets} top={top} />;
 }

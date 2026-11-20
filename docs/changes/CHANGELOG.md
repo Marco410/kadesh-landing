@@ -15,6 +15,21 @@ Formato:
 
 ---
 
+## 2026-11-20 · fix: cartel — «Imagen para historias» avisa que se está descargando
+- Rama: feat/pet-store
+- Qué cambió y por qué: el botón era un `<a download>` y la imagen (PNG de ~1.7 MB que se dibuja en el servidor) tarda unos 3 s; mientras tanto no pasaba nada en pantalla y la gente volvía a tocar. Ahora el botón pide la imagen él mismo: muestra «Preparando imagen…» con un icono girando (queda deshabilitado para no repetir la descarga), al terminar guarda el archivo, cambia a «Imagen descargada» por 2.5 s y sale un aviso con dónde buscarla. Si falla, aviso de error y el botón vuelve a su estado normal. Misma petición que antes (una por toque).
+- Archivos: src/components/animals/poster/PosterToolbar.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (la app baja la imagen con `expo-file-system` y abre la hoja nativa de compartir; su propio indicador va en su flujo)
+
+## 2026-11-20 · fix: cartel — en el celular se ve la hoja completa a escala
+- Rama: feat/pet-store
+- Qué cambió y por qué: en pantallas angostas el cartel (`/cartel/{slug}`) mantenía la proporción de la hoja pero con letras de tamaño de celular: en vertical la foto desaparecía y en horizontal el texto y el pie con QR quedaban cortados. Ahora el cartel se maqueta siempre al tamaño real de la hoja carta (816 px vertical, 1056 px horizontal, tipografía fija sin `sm:` ni `vw`) y `PosterFit` lo reduce con `zoom` al ancho disponible: en el celular se ve la hoja completa en miniatura, igual que saldrá impresa. Un script en línea aplica la escala antes del primer pintado (sin salto al hidratar) y un `ResizeObserver` la ajusta al girar o cambiar el tamaño. Al imprimir, el zoom vuelve a 1. En escritorio se ve igual que antes.
+  - **Impresión horizontal en dos hojas**: con márgenes iguales, el área imprimible horizontal (10.3 × 7.8 in) no es 11:8.5, así que el cartel quedaba unos píxeles más alto que la hoja y Chrome mandaba el pie (QR y teléfono) a una segunda página. Al imprimir, el cartel ahora llena exactamente el área imprimible (`height: 100%`, sin proporción fija, `break-inside: avoid`). Pasaba también antes de este cambio.
+- Archivos: src/app/cartel/[slug]/page.tsx, src/components/animals/poster/{PosterFit.tsx,fit.ts}
+- GraphQL: ninguna
+- Móvil: no aplica (la app abre esta página web del cartel en el navegador; el arreglo le llega solo)
+
 ## 2026-11-20 · fix: tienda — modales propios en vez de confirm(), enlace al pedido recién hecho
 - Rama: feat/pet-store
 - Qué cambió y por qué (tercera prueba en Chrome):

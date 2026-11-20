@@ -1,11 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { useApolloClient } from '@apollo/client';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { LinkSquare02Icon, ShoppingCartAdd01Icon } from '@hugeicons/core-free-icons';
 import { sileo } from 'sileo';
 import { Routes } from 'kadesh/core/routes';
 import { STORE_CART_MAX_QUANTITY } from '../constants';
+import { STORE_CART_QUOTE_QUERY, type StoreCartQuoteResponse } from '../queries';
 import type { StoreItem } from '../types';
 import { cart, useCart } from './cartStore';
 
@@ -17,9 +20,18 @@ const buttonClass =
  * adds one piece right there, with no request (the cart lives in the browser). Several options:
  * «Elegir opción» opens the product page. Mercado Libre: «Comprar en Mercado Libre», straight to the
  * affiliate link (sponsored, new tab; the card already says it is sold there). Sold out: nothing.
+ *
+ * The card comes from a cached page (up to a minute old), so before adding it asks the server for
+ * this one line (`storeCartQuote`, one request per click). If it sold out meanwhile the card says so
+ * instead of saying «Agregado» and letting the cart drop it later. If that request fails, it adds
+ * anyway: the cart page checks again.
  */
 export default function CardCartButton({ item }: { item: StoreItem }) {
+  const client = useApolloClient();
   const inCart = useCart().find((line) => line.variantId === item.singleVariantId)?.quantity ?? 0;
+  const [checking, setChecking] = useState(false);
+  // What the server said on the last click, newer than the cached card.
+  const [liveMax, setLiveMax] = useState<number | null>(null);
 
   if (item.seller === 'mercado_libre') {
     if (!item.affiliateUrl) return null;
@@ -52,11 +64,38 @@ export default function CardCartButton({ item }: { item: StoreItem }) {
   }
 
   // Never more than its stock: the button stops where the cart page would cut it back.
-  const max = Math.min(item.singleVariantMaxQuantity ?? STORE_CART_MAX_QUANTITY, STORE_CART_MAX_QUANTITY);
-  const full = inCart >= max;
-  const add = () => {
-    if (!item.singleVariantId || full) return;
-    if (!cart.add(item.singleVariantId, 1)) {
+  const max = Math.min(liveMax ?? item.singleVariantMaxQuantity ?? STORE_CART_MAX_QUANTITY, STORE_CART_MAX_QUANTITY);
+  const soldOut = liveMax === 0;
+  const full = !soldOut && inCart >= max;
+
+  const add = async () => {
+    const variantId = item.singleVariantId;
+    if (!variantId || full || soldOut || checking) return;
+    setChecking(true);
+    let available = inCart + 1;
+    try {
+      const { data } = await client.query<StoreCartQuoteResponse>({
+        query: STORE_CART_QUOTE_QUERY,
+        variables: { items: [{ variantId, quantity: inCart + 1 }], couponCode: null },
+        fetchPolicy: 'network-only',
+      });
+      const line = data.storeCartQuote.lines.find((entry) => entry.variantId === variantId);
+      available = line && !(line.issue === 'unavailable' || line.issue === 'out_of_stock') ? line.quantity : 0;
+      setLiveMax(line ? line.maxQuantity : 0);
+    } catch (error) {
+      console.error('Card stock check failed:', error);
+    } finally {
+      setChecking(false);
+    }
+    if (available <= inCart) {
+      sileo.warning(
+        available === 0
+          ? { title: 'Se acaba de agotar', description: item.name }
+          : { title: `Ya tienes todas las que quedan (${inCart})`, description: item.name },
+      );
+      return;
+    }
+    if (!cart.add(variantId, 1)) {
       sileo.warning({ title: 'Tu carrito está lleno.' });
       return;
     }
@@ -69,13 +108,14 @@ export default function CardCartButton({ item }: { item: StoreItem }) {
   return (
     <button
       type="button"
-      onClick={add}
-      disabled={full}
+      onClick={() => void add()}
+      disabled={full || soldOut || checking}
+      aria-busy={checking}
       aria-label={`Agregar ${item.name} al carrito`}
       className={`${buttonClass} bg-kadesh text-white hover:bg-kadesh-600 disabled:opacity-60`}
     >
       <HugeiconsIcon icon={ShoppingCartAdd01Icon} size={18} aria-hidden="true" />
-      {full ? `Ya tienes todas (${inCart}) en tu carrito` : inCart > 0 ? `Agregar otro (${inCart} en tu carrito)` : 'Agregar al carrito'}
+      {soldOut ? 'Agotado' : full ? `Ya tienes todas (${inCart}) en tu carrito` : inCart > 0 ? `Agregar otro (${inCart} en tu carrito)` : 'Agregar al carrito'}
     </button>
   );
 }

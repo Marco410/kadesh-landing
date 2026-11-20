@@ -48,7 +48,7 @@ export const createApolloClient = () => {
       uploadLink,
     ]),
     cache: new InMemoryCache(),
-    credentials: "include",
+    // `credentials` goes on the upload link (above), not here: Apollo warns when it is on the client.
     defaultOptions: {
       watchQuery: {
         fetchPolicy: "cache-and-network",

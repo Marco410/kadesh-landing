@@ -274,6 +274,13 @@ export default function CheckoutPage() {
             >
               Ir a la tienda
             </Link>
+            {/* The cart empties once an order is placed: a reload right then lands here. */}
+            <p className="mt-4 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
+              ¿Acabas de hacer un pedido?{' '}
+              <Link href={Routes.store.orders} className="font-semibold text-kadesh underline-offset-2 hover:underline">
+                Míralo en Mis pedidos
+              </Link>
+            </p>
           </div>
         ) : !quote ? (
           <p className="text-[#5a5a5a] dark:text-[#b0b0b0]" role={quoteError ? 'alert' : 'status'}>

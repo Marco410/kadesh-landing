@@ -15,6 +15,21 @@ Formato:
 
 ---
 
+## 2026-11-20 · fix: tienda — segunda prueba en Chrome
+- Rama: feat/pet-store
+- Qué cambió y por qué:
+  - **Producto agotado desde la tarjeta**: el catálogo viene de caché (hasta 1 min), así que la tarjeta decía «Agregar al carrito» de algo ya agotado; salía «Agregado» y luego el carrito lo quitaba. Ahora, al tocar, la tarjeta pregunta al back por esa línea (`storeCartQuote`, una petición por clic) y, si se agotó, dice «Se acaba de agotar» y queda en «Agotado».
+  - **Clics muy seguidos en «+» y «−»** del carrito ya cuentan todos: suman sobre lo guardado (`cart.step`), no sobre lo último que se pintó.
+  - **«Mandar comprobante» sale verde**: el botón traía el azul de la clase base y ganaba.
+  - **Avisos en tipo oración**: Sileo inyecta su CSS después del nuestro; la regla ahora tiene más especificidad. «Cerrar sesión» e «Iniciar sesión» sin mayúscula de más.
+  - **Historial del pedido**: la hora vuelve a terminar en «a.m.» / «p.m.» (solo se quita el punto dentro de una frase).
+  - **Tarjeta rechazada**: el aviso se borra al cambiar los datos de la tarjeta.
+  - **Checkout vacío** (recargar justo después de pagar): enlace a «Mis pedidos».
+  - **Consola**: el `AbortError` de las consultas que Apollo cancela al salir de una página se marca como manejado; `credentials` solo en el enlace de subida (Apollo avisaba).
+- Archivos: src/components/store/{cart/CardCartButton.tsx,cart/CartPage.tsx,cart/cartStore.ts,checkout/CheckoutPage.tsx,checkout/StripePayStep.tsx,orders/OrderDetail.tsx}, src/app/globals.css, src/components/layout/Navigation.tsx, src/app/auth/login/page.tsx, src/providers/apollo-client.ts, src/utils/activity/useClientErrorListener.ts
+- GraphQL: ninguna nueva (la tarjeta reutiliza `storeCartQuote`). En el back, un cupón de primera compra ya no se acepta si la persona tiene otro pedido sin pagar con ese cupón.
+- Móvil: [prompt](../mobile-sync/2026-11-20-tienda-sin-doble-cobro.md) (puntos 10 a 13)
+
 ## 2026-11-20 · feat: tienda — mandar el comprobante de la transferencia por WhatsApp
 - Rama: feat/pet-store
 - Qué cambió y por qué: los comprobantes se reciben por WhatsApp y un admin confirma el pago. En el pedido con transferencia, el botón principal es «Mandar comprobante»: abre WhatsApp con el número de la tienda (`StoreSettings.supportWhatsapp`) y un mensaje ya escrito con folio, total, concepto, a nombre de quién y los productos; la persona solo adjunta la foto. Subirlo en la página queda como «Prefiero subirlo aquí». Sin número configurado se ve como antes. Los correos de transferencia (pedido apartado y comprobante rechazado) llevan el mismo botón. En Operaciones, «El dinero llegó: confirmar pago» sale también en pedidos sin comprobante subido.

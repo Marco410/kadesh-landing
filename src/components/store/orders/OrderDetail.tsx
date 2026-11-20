@@ -22,8 +22,10 @@ import type { StoreOrderDetail, StoreTransferInstructions } from '../types';
 
 const cardClass = 'rounded-3xl border border-dash-line bg-dash-surface p-5 sm:p-6';
 const titleClass = 'mb-3 text-[15px] font-semibold text-dash-ink';
-const primaryButton =
-  'inline-flex min-h-12 items-center justify-center rounded-full bg-kadesh px-6 font-semibold text-white hover:bg-kadesh-600 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh';
+// `cn` only joins classes, so the color lives apart: a button with another color uses the base.
+const buttonBase =
+  'inline-flex min-h-12 items-center justify-center rounded-full px-6 font-semibold text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh';
+const primaryButton = `${buttonBase} bg-kadesh hover:bg-kadesh-600`;
 const quietButton =
   'inline-flex min-h-11 items-center justify-center rounded-full border border-dash-line-strong px-5 text-sm font-semibold text-dash-ink hover:border-kadesh disabled:opacity-60';
 
@@ -43,14 +45,17 @@ export function OrderStatusPill({ order }: { order: Parameters<typeof orderStatu
   );
 }
 
-function deadline(iso: string | null): string {
+/** "20 de noviembre, 5:23 p.m." */
+function dateTime(iso: string | null): string {
   if (!iso) return '';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '';
-  // "5:23 p.m." already ends in a period: drop it, the sentence adds its own.
-  return date
-    .toLocaleString('es-MX', { day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', timeZone: 'America/Mexico_City' })
-    .replace(/\.$/, '');
+  return date.toLocaleString('es-MX', { day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', timeZone: 'America/Mexico_City' });
+}
+
+/** The same, for the middle of a sentence: "5:23 p.m." already ends in a period and the sentence adds its own. */
+function deadline(iso: string | null): string {
+  return dateTime(iso).replace(/\.$/, '');
 }
 
 function CopyRow({ label, value }: { label: string; value: string }) {
@@ -189,7 +194,7 @@ function TransferBox({
             href={proofWhatsappHref(whatsapp, order)}
             target="_blank"
             rel="noopener noreferrer"
-            className={cn(primaryButton, 'gap-2 self-start bg-[#1fa855] hover:bg-[#178a45]')}
+            className={cn(buttonBase, 'gap-2 self-start bg-[#1fa855] hover:bg-[#178a45]')}
           >
             <HugeiconsIcon icon={WhatsappIcon} size={20} aria-hidden="true" />
             Mandar comprobante
@@ -516,7 +521,7 @@ export default function OrderDetail({
           {order.timeline.map((entry, index) => (
             <li key={`${entry.type}-${index}`} className="border-l-2 border-dash-line pl-3">
               <p className="text-sm text-dash-ink">{entry.message}</p>
-              <p className="text-xs text-dash-muted">{deadline(entry.createdAt)}</p>
+              <p className="text-xs text-dash-muted">{dateTime(entry.createdAt)}</p>
             </li>
           ))}
         </ol>

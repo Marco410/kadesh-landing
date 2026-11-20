@@ -39,7 +39,8 @@ function PayForm({ orderNumber, totalCents, onPaid }: { orderNumber: string; tot
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      <PaymentElement />
+      {/* Changing the card clears the last refusal: it was about the card that is no longer there. */}
+      <PaymentElement onChange={() => setError((current) => (current ? null : current))} />
       {error ? (
         <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:bg-red-500/10 dark:text-red-300">
           {error}

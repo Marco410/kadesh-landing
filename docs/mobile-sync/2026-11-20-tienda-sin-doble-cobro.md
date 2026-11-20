@@ -35,6 +35,10 @@ En la prueba de la tienda web, tres toques casi a la vez en «Continuar al pago�
    ```
 
    Debajo: «Se abre WhatsApp con los datos de tu pedido. Adjunta la foto o captura de tu comprobante y envíalo. Te avisamos por correo en cuanto confirmemos tu pago.» Subir el comprobante en la app queda detrás de «Prefiero subirlo aquí». Sin `supportWhatsapp`, se ve como hoy.
+10. **La tarjeta revisa el stock antes de agregar.** El catálogo puede venir de caché. Al tocar «Agregar al carrito» en una tarjeta, pedir `storeCartQuote(items: [{ variantId, quantity: <en el carrito> + 1 }])` (una petición por toque, nunca al montar). Si la línea no viene, trae `issue` `unavailable` u `out_of_stock`, o su `quantity` no sube, no agregar: avisar «Se acaba de agotar» (o «Ya tienes todas las que quedan (N)») y dejar el botón en «Agotado». Si la petición falla, agregar igual: el carrito vuelve a cotizar.
+11. **«+» y «−» con toques muy seguidos**: calcular desde el valor guardado en ese momento (actualización funcional del estado), no desde el valor que pintó la pantalla.
+12. **Un aviso de tarjeta rechazada se borra al cambiar la tarjeta** (evento `onChange` del formulario de Stripe).
+13. **Checkout con el carrito vacío** (por ejemplo, al volver justo después de pagar): mostrar un enlace a «Mis pedidos» además de «Ir a la tienda».
 
 ## GraphQL
 
@@ -77,6 +81,7 @@ Orden de despliegue: el back con estos campos va antes que la versión de la app
 - [ ] Un reintento tras perder la red responde el mismo pedido.
 - [ ] Tres toques rápidos en «−» bajan tres piezas.
 - [ ] La tarjeta no deja agregar más que el stock.
+- [ ] Un producto que se agotó después de cargar el catálogo dice «Se acaba de agotar» al tocarlo y no entra al carrito.
 - [ ] Al cerrar sesión el carrito queda vacío.
 - [ ] «Mandar comprobante» abre WhatsApp con el mensaje del pedido.
 - [ ] Funciona en iOS y Android, en modo claro y oscuro.

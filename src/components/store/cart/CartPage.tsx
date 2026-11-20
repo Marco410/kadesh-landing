@@ -17,8 +17,8 @@ const stepButtonClass =
   'inline-flex size-11 items-center justify-center rounded-xl border border-[#d8dee8] text-[#121212] hover:border-kadesh disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:border-white/15 dark:text-white';
 
 /**
- * `quantity` is the browser's cart, not the last quote: the quote arrives one pause later, and
- * stepping from it would turn three quick clicks into one.
+ * `quantity` is the browser's cart, not the last quote: the quote arrives one pause later. The
+ * buttons step from the stored value (`cart.step`), so quick taps before a render all count.
  */
 function CartRow({ line, quantity }: { line: CartLine; quantity: number }) {
   const href = line.slug ? Routes.store.product(line.slug) : null;
@@ -51,7 +51,7 @@ function CartRow({ line, quantity }: { line: CartLine; quantity: number }) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => cart.setQuantity(line.variantId, quantity - 1)}
+            onClick={() => (quantity > 1 ? cart.step(line.variantId, -1) : cart.remove(line.variantId))}
             aria-label={`Quitar una pieza de ${line.name}`}
             className={stepButtonClass}
           >
@@ -62,7 +62,7 @@ function CartRow({ line, quantity }: { line: CartLine; quantity: number }) {
           </span>
           <button
             type="button"
-            onClick={() => cart.setQuantity(line.variantId, Math.min(quantity + 1, line.maxQuantity))}
+            onClick={() => cart.step(line.variantId, 1, line.maxQuantity)}
             disabled={quantity >= line.maxQuantity}
             aria-label={`Agregar una pieza de ${line.name}`}
             className={stepButtonClass}

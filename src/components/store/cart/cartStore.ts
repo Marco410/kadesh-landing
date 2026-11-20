@@ -128,6 +128,18 @@ export const cart = {
         : items.map((item) => (item.variantId === variantId ? { ...item, quantity: next } : item)),
     );
   },
+  /**
+   * Adds or takes units from what is stored right now, not from what the screen last showed: two
+   * taps before the next render both count. Stays between 1 and `max` (removing is `remove`).
+   */
+  step(variantId: string, delta: number, max: number = STORE_CART_MAX_QUANTITY) {
+    ensureLoaded();
+    const existing = items.find((item) => item.variantId === variantId);
+    if (!existing) return;
+    const next = Math.max(1, Math.min(existing.quantity + Math.trunc(delta), max, STORE_CART_MAX_QUANTITY));
+    if (next === existing.quantity) return;
+    write(items.map((item) => (item.variantId === variantId ? { ...item, quantity: next } : item)));
+  },
   remove(variantId: string) {
     ensureLoaded();
     write(items.filter((item) => item.variantId !== variantId));

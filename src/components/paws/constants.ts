@@ -60,6 +60,8 @@ export const PAW_WAYS_TO_EARN: Array<{ action: string; label: string; points: nu
   { action: "comment", label: "Comentar un reporte", points: 3, limit: "Uno por reporte, 20+ caracteres" },
   { action: "review", label: "Reseñar una veterinaria", points: 5, limit: "Una por veterinaria" },
   { action: "first_pet", label: "Registrar tu primera mascota", points: 10, limit: "Una vez" },
+  { action: "purchase", label: "Comprar en la tienda de Kadesh", points: 10, limit: "Por producto distinto de $100 o más, al recibirlo. Hasta 3 al día" },
+  { action: "product_review", label: "Reseñar un producto que compraste", points: 5, limit: "Una por producto, con la calificación que sea. Hasta 3 al día" },
   { action: "referral", label: "Alguien que invitaste empieza a ayudar", points: 20, limit: "Una vez por persona" },
 ];
 
@@ -80,6 +82,8 @@ const ACTION_LABELS: Record<string, string> = {
   rescue_verified: "Verificamos tu espacio de rescate",
   place_verified: "Verificamos tu veterinaria",
   referral: "Alguien que invitaste empezó a ayudar",
+  purchase: "Recibiste tu compra de la tienda",
+  product_review: "Reseñaste un producto que compraste",
   streak_bonus: "Bono por tu racha",
   admin_adjust: "Ajuste de Kadesh",
 };

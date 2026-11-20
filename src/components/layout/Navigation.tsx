@@ -12,6 +12,8 @@ import { useUser } from "kadesh/utils/UserContext";
 import { useLogout } from "kadesh/components/auth/hooks";
 // Directo (no el barrel): el barrel de notificaciones importa el layout y haría un ciclo.
 import NotificationBell from "kadesh/components/notifications/NotificationBell";
+import { STORE_NAV_ENABLED } from "kadesh/components/store/constants";
+import CartLink from "kadesh/components/store/cart/CartLink";
 import { useUnreadNotifications } from "kadesh/components/notifications/hooks";
 import FontSizeSlider from "./FontSizeSlider";
 import ThemeToggle from "./ThemeToggle";
@@ -21,6 +23,8 @@ const PRIMARY_NAV = [
   { label: "Veterinarias", href: Routes.veterinaries.index },
   { label: "Animales", href: Routes.animals.index },
   { label: "Eventos", href: Routes.events.index },
+  // Only once the store is open (NEXT_PUBLIC_STORE_ENABLED); closed, `/tienda` is a 404.
+  ...(STORE_NAV_ENABLED ? [{ label: "Tienda", href: Routes.store.index }] : []),
   { label: "Ranking", href: Routes.ranking },
   { label: "Blog", href: Routes.blog.index },
   { label: "Conócenos", href: Routes.conocenos },
@@ -139,6 +143,8 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
             </Link>
           ) : null}
 
+          {STORE_NAV_ENABLED ? <CartLink className={navLinkClass} /> : null}
+
           <FontSizeSlider tone={atTopLight ? "onLight" : "onDark"} />
 
           <ThemeToggle
@@ -202,7 +208,7 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-[#212121] dark:text-[#ffffff] hover:bg-orange-500/10 dark:hover:bg-white/10 transition-colors"
                     >
-                      Cerrar Sesión
+                      Cerrar sesión
                     </button>
                   </motion.div>
                 )}
@@ -217,18 +223,21 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                   : "bg-white/10 hover:bg-white/20 text-white"
               }`}
             >
-              Iniciar Sesión
+              Iniciar sesión
             </Link>
           )}
         </div>
 
-        {user?.id ? (
-          <div className="ml-auto mr-3 lg:hidden">
-            <NotificationBell
-              variant="link"
-              tone={atTopLight ? "onLight" : "onDark"}
-              count={unreadCount}
-            />
+        {user?.id || STORE_NAV_ENABLED ? (
+          <div className="ml-auto mr-3 flex items-center gap-1 lg:hidden">
+            {STORE_NAV_ENABLED ? <CartLink className={navLinkClass} /> : null}
+            {user?.id ? (
+              <NotificationBell
+                variant="link"
+                tone={atTopLight ? "onLight" : "onDark"}
+                count={unreadCount}
+              />
+            ) : null}
           </div>
         ) : null}
 
@@ -386,7 +395,7 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                         }}
                         className="w-full text-left text-white font-semibold text-lg opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
                       >
-                        Cerrar Sesión
+                        Cerrar sesión
                       </button>
                     </div>
                   ) : (
@@ -395,7 +404,7 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                       onClick={() => setOpened(false)}
                       className="text-white font-semibold text-lg opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all text-center"
                     >
-                      Iniciar Sesión
+                      Iniciar sesión
                     </Link>
                   )}
                 </div>

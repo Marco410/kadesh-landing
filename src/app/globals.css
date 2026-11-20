@@ -911,3 +911,9 @@ html:has(.kd-dash) body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Sileo capitalizes every word of a toast title ("Agregado A Tu Carrito"): Spanish uses sentence case.
+   Sileo injects its stylesheet at runtime, after this one, so the rule needs more specificity to win. */
+html body [data-sileo-title] {
+  text-transform: none;
+}

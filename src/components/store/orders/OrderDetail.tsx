@@ -6,6 +6,7 @@ import { useMutation } from '@apollo/client';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowLeft01Icon, Copy01Icon, LinkSquare02Icon, WhatsappIcon } from '@hugeicons/core-free-icons';
 import { sileo } from 'sileo';
+import { ConfirmModal } from 'kadesh/components/shared';
 import { Routes } from 'kadesh/core/routes';
 import { cn } from 'kadesh/utils/cn';
 import StripePayStep from '../checkout/StripePayStep';
@@ -279,6 +280,7 @@ export default function OrderDetail({
 }) {
   const { summary } = order;
   const [busy, setBusy] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const [payment, setPayment] = useState<{ clientSecret: string; totalCents: number } | null>(null);
   const [resumePayment] = useMutation<ResumeStoreOrderPaymentResponse>(RESUME_STORE_ORDER_PAYMENT_MUTATION);
   const [cancelOrder] = useMutation<{ cancelMyStoreOrder: StoreOrderActionResult }>(CANCEL_MY_STORE_ORDER_MUTATION);
@@ -309,7 +311,6 @@ export default function OrderDetail({
   };
 
   const cancel = async () => {
-    if (!window.confirm(`¿Cancelar el pedido ${summary.number}? No se hará ningún cobro.`)) return;
     setBusy(true);
     try {
       const { data } = await cancelOrder({ variables: { orderNumber: summary.number } });
@@ -321,6 +322,7 @@ export default function OrderDetail({
       sileo.error({ title: 'No pudimos cancelar tu pedido. Intenta de nuevo.' });
     } finally {
       setBusy(false);
+      setConfirmCancel(false);
     }
   };
 
@@ -548,13 +550,26 @@ export default function OrderDetail({
         {order.canCancel ? (
           <button
             type="button"
-            onClick={() => void cancel()}
+            onClick={() => setConfirmCancel(true)}
             disabled={busy}
             className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-500/10"
           >
             Cancelar pedido
           </button>
         ) : null}
+        <ConfirmModal
+          isOpen={confirmCancel}
+          onClose={() => {
+            if (!busy) setConfirmCancel(false);
+          }}
+          onConfirm={() => void cancel()}
+          title="Cancelar pedido"
+          message={`¿Cancelar el pedido ${summary.number}? No se hará ningún cobro.`}
+          confirmText="Cancelar pedido"
+          cancelText="Volver"
+          isLoading={busy}
+          confirmButtonColor="red"
+        />
       </div>
     </div>
   );

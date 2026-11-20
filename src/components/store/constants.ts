@@ -54,6 +54,10 @@ export const STORE_NAV_ENABLED = process.env.NEXT_PUBLIC_STORE_ENABLED === 'true
 export const STORE_CART_STORAGE_KEY = 'kadesh.pet.cart';
 /** localStorage key of the coupon code typed in the cart. Only a code the server accepted stays. */
 export const STORE_COUPON_STORAGE_KEY = 'kadesh.pet.cart.coupon';
+/** sessionStorage key of the order just placed: a reload right after lands on an empty checkout. */
+export const STORE_LAST_ORDER_STORAGE_KEY = 'kadesh.pet.lastOrder';
+/** How long the empty checkout offers that order (ms). */
+export const STORE_LAST_ORDER_TTL_MS = 60 * 60 * 1000;
 export const STORE_COUPON_CODE_MAX = 40;
 /** Most units of one product per order (the backend enforces it too). */
 export const STORE_CART_MAX_QUANTITY = 20;

@@ -15,6 +15,17 @@ Formato:
 
 ---
 
+## 2026-11-20 · fix: tienda — modales propios en vez de confirm(), enlace al pedido recién hecho
+- Rama: feat/pet-store
+- Qué cambió y por qué (tercera prueba en Chrome):
+  - **Sin `confirm()` del navegador**: borrar tu reseña y cancelar tu pedido usan `ConfirmModal`. El diálogo nativo congelaba la pestaña.
+  - `ConfirmModal` (versión del sitio público) ahora es un `alertdialog` con título y mensaje enlazados, Esc para cancelar y foco inicial en un botón, que regresa al cerrar.
+  - **Checkout vacío tras recargar**: el enlace abre el pedido recién hecho (`&pedido=KP-…`), guardado en sessionStorage durante 1 h. Sin ese dato, lleva a la lista.
+  - **Aviso de Apollo sobre `onCompleted`**: la bandeja de la campana calcula «hay más» a partir de los datos en vez de usar `onCompleted`.
+- Archivos: src/components/shared/ConfirmModal.tsx, src/components/store/{ProductReviews.tsx,orders/OrderDetail.tsx,checkout/CheckoutPage.tsx,constants.ts}, src/components/notifications/hooks/useNotificationInbox.ts
+- GraphQL: ninguna
+- Móvil: no aplica (la app ya usa diálogos nativos de la plataforma, que no bloquean; el enlace al pedido ya está en el punto 13 del prompt del día)
+
 ## 2026-11-20 · fix: tienda — las estrellas de la ficha siguen a la reseña nueva
 - Rama: feat/pet-store
 - Qué cambió y por qué: al publicar una reseña, la lista se actualizaba pero las estrellas de arriba de la ficha seguían como en la página en caché («Sin reseñas todavía») hasta 2 min. Ahora la sección de reseñas publica las estrellas que respondió el back (al iniciar sesión o reseñar) y el encabezado las sigue, sin petición extra.

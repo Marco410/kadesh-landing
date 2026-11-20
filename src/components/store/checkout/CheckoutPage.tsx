@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@apollo/client';
@@ -15,7 +15,12 @@ import { cart } from '../cart/cartStore';
 import CartSummary from '../cart/CartSummary';
 import CouponField from '../cart/CouponField';
 import { useCartQuote } from '../cart/useCartQuote';
-import { PAYMENT_METHOD_LABELS, STORE_GUEST_MIN_PASSWORD } from '../constants';
+import {
+  PAYMENT_METHOD_LABELS,
+  STORE_GUEST_MIN_PASSWORD,
+  STORE_LAST_ORDER_STORAGE_KEY,
+  STORE_LAST_ORDER_TTL_MS,
+} from '../constants';
 import { formatPrice } from '../format';
 import {
   MY_STORE_ADDRESSES_QUERY,
@@ -77,6 +82,28 @@ function newCheckoutKey(): string {
  * and it is sent back with the order: if it changed in between, nothing is charged and the new
  * total is shown.
  */
+/** Remembers the order just placed for this tab, so an empty checkout can link to it. */
+function rememberLastOrder(orderNumber: string) {
+  try {
+    window.sessionStorage.setItem(STORE_LAST_ORDER_STORAGE_KEY, JSON.stringify({ orderNumber, at: Date.now() }));
+  } catch {
+    // Private mode: the link falls back to the list of orders.
+  }
+}
+
+function readLastOrder(): string | null {
+  try {
+    const saved = JSON.parse(window.sessionStorage.getItem(STORE_LAST_ORDER_STORAGE_KEY) ?? 'null') as {
+      orderNumber?: unknown;
+      at?: unknown;
+    } | null;
+    if (typeof saved?.orderNumber !== 'string' || typeof saved.at !== 'number') return null;
+    return Date.now() - saved.at < STORE_LAST_ORDER_TTL_MS ? saved.orderNumber : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, refreshUser } = useUser();
@@ -104,6 +131,13 @@ export default function CheckoutPage() {
   const [emailExists, setEmailExists] = useState(false);
   // Card: the order exists and waits for its payment.
   const [payment, setPayment] = useState<{ clientSecret: string; orderNumber: string; totalCents: number } | null>(null);
+  // The order just placed, for the empty checkout after a reload. Read after mounting: the server
+  // render has no sessionStorage.
+  const [lastOrder, setLastOrder] = useState<string | null>(null);
+  const cartEmpty = items.length === 0;
+  useEffect(() => {
+    if (cartEmpty) setLastOrder(readLastOrder());
+  }, [cartEmpty]);
 
   const saved = addressData?.myStoreAddresses ?? [];
   // Saved addresses: the default one is chosen until the person picks another or a new one.
@@ -203,6 +237,7 @@ export default function CheckoutPage() {
       }
 
       // The order exists: the cart is done, whatever happens with the payment form.
+      rememberLastOrder(result.orderNumber);
       cart.clear();
       if (result.stripeClientSecret) {
         setPayment({
@@ -277,8 +312,11 @@ export default function CheckoutPage() {
             {/* The cart empties once an order is placed: a reload right then lands here. */}
             <p className="mt-4 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
               ¿Acabas de hacer un pedido?{' '}
-              <Link href={Routes.store.orders} className="font-semibold text-kadesh underline-offset-2 hover:underline">
-                Míralo en Mis pedidos
+              <Link
+                href={lastOrder ? Routes.store.order(lastOrder) : Routes.store.orders}
+                className="font-semibold text-kadesh underline-offset-2 hover:underline"
+              >
+                {lastOrder ? `Abre tu pedido ${lastOrder}` : 'Míralo en Mis pedidos'}
               </Link>
             </p>
           </div>

@@ -8,6 +8,7 @@ import { useApolloClient, useMutation } from '@apollo/client';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { CheckmarkBadge01Icon, StarIcon } from '@hugeicons/core-free-icons';
 import { sileo } from 'sileo';
+import { ConfirmModal } from 'kadesh/components/shared';
 import { Routes } from 'kadesh/core/routes';
 import { cn } from 'kadesh/utils/cn';
 import { useUser } from 'kadesh/utils/UserContext';
@@ -105,6 +106,7 @@ export default function ProductReviews({
   const [body, setBody] = useState('');
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
   const [submitReview] = useMutation<{ submitStoreProductReview: StoreReviewResult }>(SUBMIT_STORE_REVIEW_MUTATION);
@@ -189,7 +191,6 @@ export default function ProductReviews({
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('¿Borrar tu reseña de este producto?')) return;
     setSaving(true);
     try {
       const { data } = await deleteReview({ variables: { productId } });
@@ -209,6 +210,7 @@ export default function ProductReviews({
       sileo.error({ title: 'No pudimos borrar tu reseña. Intenta de nuevo.' });
     } finally {
       setSaving(false);
+      setConfirmDelete(false);
     }
   };
 
@@ -313,7 +315,7 @@ export default function ProductReviews({
                 </button>
                 <button
                   type="button"
-                  onClick={() => void handleDelete()}
+                  onClick={() => setConfirmDelete(true)}
                   disabled={saving}
                   className="inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
                 >
@@ -422,6 +424,19 @@ export default function ProductReviews({
           ) : null}
         </div>
       </div>
+      <ConfirmModal
+        isOpen={confirmDelete}
+        onClose={() => {
+          if (!saving) setConfirmDelete(false);
+        }}
+        onConfirm={() => void handleDelete()}
+        title="Borrar tu reseña"
+        message={`¿Borrar tu reseña de ${productName}? Si te dio huellitas, se descuentan.`}
+        confirmText="Borrar"
+        cancelText="Conservarla"
+        isLoading={saving}
+        confirmButtonColor="red"
+      />
     </section>
   );
 }

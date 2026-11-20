@@ -18,7 +18,8 @@ import type { AppNotification } from '../types';
 
 /** Lista paginada de 20 de la campana, con marcar una o todas como leídas. */
 export function useNotificationInbox({ skip = false }: { skip?: boolean } = {}) {
-  const [hasMore, setHasMore] = useState(true);
+  // A short page from fetchMore says there is nothing after it.
+  const [exhausted, setExhausted] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
   const { data, loading, error, fetchMore, refetch } = useQuery<
@@ -28,12 +29,12 @@ export function useNotificationInbox({ skip = false }: { skip?: boolean } = {}) 
     variables: { take: NOTIFICATIONS_PAGE_SIZE, skip: 0 },
     fetchPolicy: 'cache-and-network',
     skip,
-    onCompleted: (result) => {
-      if (result.notifications.length < NOTIFICATIONS_PAGE_SIZE) setHasMore(false);
-    },
   });
 
   const notifications = data?.notifications ?? [];
+  // Worked out from the data, not in `onCompleted` (Apollo warns about setting state there): a
+  // first page shorter than a full one is everything.
+  const hasMore = !exhausted && (!data || notifications.length >= NOTIFICATIONS_PAGE_SIZE);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;
@@ -45,7 +46,7 @@ export function useNotificationInbox({ skip = false }: { skip?: boolean } = {}) 
           notifications: [...prev.notifications, ...fetchMoreResult.notifications],
         }),
       });
-      if (result.data.notifications.length < NOTIFICATIONS_PAGE_SIZE) setHasMore(false);
+      if (result.data.notifications.length < NOTIFICATIONS_PAGE_SIZE) setExhausted(true);
     } finally {
       setLoadingMore(false);
     }

@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-20 · fix: tienda — las estrellas de la ficha siguen a la reseña nueva
+- Rama: feat/pet-store
+- Qué cambió y por qué: al publicar una reseña, la lista se actualizaba pero las estrellas de arriba de la ficha seguían como en la página en caché («Sin reseñas todavía») hasta 2 min. Ahora la sección de reseñas publica las estrellas que respondió el back (al iniciar sesión o reseñar) y el encabezado las sigue, sin petición extra.
+- Archivos: src/components/store/{LiveStoreStars.tsx,ProductDetail.tsx,ProductReviews.tsx}
+- GraphQL: ninguna
+- Móvil: no aplica (la app pinta encabezado y reseñas desde el mismo estado; ya cubierto en el punto 5 del prompt del día)
+
 ## 2026-11-20 · fix: tienda — segunda prueba en Chrome
 - Rama: feat/pet-store
 - Qué cambió y por qué:

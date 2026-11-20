@@ -9,7 +9,7 @@ import ProductCard from './ProductCard';
 import ProductGallery from './ProductGallery';
 import ProductReviews from './ProductReviews';
 import { storeListingHref } from './searchParams';
-import StoreStars from './StoreStars';
+import LiveStoreStars from './LiveStoreStars';
 import { StoreWishlistProvider } from './StoreWishlist';
 import type { StoreProduct, StoreReviews } from './types';
 
@@ -73,7 +73,7 @@ export default function ProductDetail({ product, reviews }: { product: StoreProd
                   {item.name}
                 </h1>
                 <a href="#resenas" className="mt-3 inline-flex rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-kadesh">
-                  <StoreStars average={item.ratingAverage} count={item.ratingCount} size={18} />
+                  <LiveStoreStars productId={item.id} average={item.ratingAverage} count={item.ratingCount} size={18} />
                 </a>
               </div>
               {item.shortDescription ? (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import { usePublishProductStars } from './LiveStoreStars';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApolloClient, useMutation } from '@apollo/client';
@@ -97,6 +98,8 @@ export default function ProductReviews({
   const [mine, setMine] = useState<StoreReview | null>(null);
   const [average, setAverage] = useState(initialAverage);
   const [count, setCount] = useState(initialCount);
+  // The header stars at the top of the page follow these.
+  usePublishProductStars(productId, average, count);
   const [rating, setRating] = useState(0);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');

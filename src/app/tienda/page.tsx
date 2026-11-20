@@ -5,7 +5,7 @@ import { parseStoreSearchParams } from 'kadesh/components/store/searchParams';
 import { buildStoreListingMetadata } from 'kadesh/components/store/store-seo';
 
 // Product photos have a URL signed for 1 h: this stays well below that.
-export const revalidate = 600;
+export const revalidate = 60;
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 

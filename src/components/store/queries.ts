@@ -32,7 +32,7 @@ export const STORE_CATALOG_QUERY = gql`
   }
 `;
 
-export type StoreReviewsResponse = { storeCatalogReviews: StoreReviews };
+export type StoreReviewsResponse = { storeCatalogReviews: StoreReviews & { ratingAverage: number; ratingCount: number } };
 export type StoreReviewsVariables = { productId: string; take: number; skip: number };
 
 /** With a session it also brings the caller's own review (`mine`). */
@@ -42,6 +42,8 @@ export const STORE_REVIEWS_QUERY = gql`
       total
       items { ${STORE_REVIEW_FIELDS} }
       mine { ${STORE_REVIEW_FIELDS} }
+      ratingAverage
+      ratingCount
     }
   }
 `;

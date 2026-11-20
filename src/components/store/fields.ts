@@ -17,6 +17,7 @@ export const STORE_ITEM_FIELDS = `
   isFeatured
   variantsCount
   singleVariantId
+  singleVariantMaxQuantity
   category { slug name }
   brand { slug name }
   affiliateUrl

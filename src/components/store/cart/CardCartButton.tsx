@@ -51,7 +51,9 @@ export default function CardCartButton({ item }: { item: StoreItem }) {
     );
   }
 
-  const full = inCart >= STORE_CART_MAX_QUANTITY;
+  // Never more than its stock: the button stops where the cart page would cut it back.
+  const max = Math.min(item.singleVariantMaxQuantity ?? STORE_CART_MAX_QUANTITY, STORE_CART_MAX_QUANTITY);
+  const full = inCart >= max;
   const add = () => {
     if (!item.singleVariantId || full) return;
     if (!cart.add(item.singleVariantId, 1)) {
@@ -73,7 +75,7 @@ export default function CardCartButton({ item }: { item: StoreItem }) {
       className={`${buttonClass} bg-kadesh text-white hover:bg-kadesh-600 disabled:opacity-60`}
     >
       <HugeiconsIcon icon={ShoppingCartAdd01Icon} size={18} aria-hidden="true" />
-      {inCart > 0 ? `Agregar otro (${inCart} en tu carrito)` : 'Agregar al carrito'}
+      {full ? `Ya tienes todas (${inCart}) en tu carrito` : inCart > 0 ? `Agregar otro (${inCart} en tu carrito)` : 'Agregar al carrito'}
     </button>
   );
 }

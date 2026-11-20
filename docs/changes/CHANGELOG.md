@@ -15,6 +15,26 @@ Formato:
 
 ---
 
+## 2026-11-20 · feat: tienda — mandar el comprobante de la transferencia por WhatsApp
+- Rama: feat/pet-store
+- Qué cambió y por qué: los comprobantes se reciben por WhatsApp y un admin confirma el pago. En el pedido con transferencia, el botón principal es «Mandar comprobante»: abre WhatsApp con el número de la tienda (`StoreSettings.supportWhatsapp`) y un mensaje ya escrito con folio, total, concepto, a nombre de quién y los productos; la persona solo adjunta la foto. Subirlo en la página queda como «Prefiero subirlo aquí». Sin número configurado se ve como antes. Los correos de transferencia (pedido apartado y comprobante rechazado) llevan el mismo botón. En Operaciones, «El dinero llegó: confirmar pago» sale también en pedidos sin comprobante subido.
+- Archivos: src/components/store/orders/OrderDetail.tsx
+- GraphQL: ninguna (usa `supportWhatsapp` del detalle del pedido)
+- Móvil: [prompt](../mobile-sync/2026-11-20-tienda-sin-doble-cobro.md) (punto 9)
+
+## 2026-11-20 · fix: tienda — sin doble cobro, carrito y checkout que no pierden clics, datos frescos
+- Rama: feat/pet-store
+- Qué cambió y por qué (errores de la prueba en Chrome):
+  - **Doble cobro**: varios clics casi a la vez en «Continuar al pago» creaban varios pedidos y el cobro caía en otro. Ahora el botón se bloquea en el mismo clic y cada intento manda `checkoutKey`: el back responde el mismo pedido y el mismo pago a cada repetición.
+  - **Datos viejos**: catálogo y ficha se cachean 1 min (antes 10). Las estrellas y tu propia reseña llegan con la consulta de reseñas, así que se ven al recargar aunque la ficha esté en caché.
+  - **Carrito**: «−» y «+» parten de lo que hay en el carrito, no de la última cotización: los clics rápidos ya no se pierden. El botón de la tarjeta no agrega más piezas que el stock («Ya tienes todas»).
+  - **Checkout**: todos los campos con problema se marcan en rojo con su mensaje, y el primero recibe el foco. El navegador ya no bloquea el envío por su cuenta. El teléfono acepta «+52 443 123 4567». Cada campo tiene su etiqueta asociada.
+  - **Al cerrar sesión** se vacía el carrito y su cupón.
+  - Textos: los avisos ya no salen con Mayúsculas En Cada Palabra; sin doble punto en «5:23 p.m.».
+- Archivos: src/components/store/{checkout/CheckoutPage.tsx,checkout/AddressFields.tsx,cart/CartPage.tsx,cart/CardCartButton.tsx,ProductReviews.tsx,orders/OrderDetail.tsx,queries.ts,fields.ts,types.ts,constants.ts}, src/app/tienda/{page.tsx,[slug]/page.tsx}, src/components/auth/hooks/useLogout.ts, src/app/globals.css
+- GraphQL: `placeStoreOrder` acepta `checkoutKey`; `StoreCatalogItem.singleVariantMaxQuantity`; `storeCatalogReviews` trae `ratingAverage` y `ratingCount`
+- Móvil: [prompt](../mobile-sync/2026-11-20-tienda-sin-doble-cobro.md)
+
 ## 2026-11-19 · fix: el pago con tarjeta se ve al instante; destacados y Mercado Libre en las tarjetas
 - Rama: feat/pet-store
 - Qué cambió y por qué:

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@apollo/client';
@@ -25,12 +25,17 @@ import {
 } from '../queries';
 import type { StoreAddressInput, StorePaymentMethod } from '../types';
 import AddressFields, {
+  ADDRESS_FIELD_ORDER,
+  CheckoutField,
   EMPTY_ADDRESS,
+  addressErrors,
+  addressFieldId,
   addressLine,
-  addressProblem,
   addressToInput,
   checkoutFieldClass,
-  checkoutLabelClass,
+  checkoutFieldErrorClass,
+  invalidProps,
+  mxPhoneDigits,
 } from './AddressFields';
 import StripePayStep from './StripePayStep';
 
@@ -41,12 +46,27 @@ const stepTitleClass = 'mb-4 text-lg font-bold text-[#121212] dark:text-white';
 type Guest = { name: string; lastName: string; email: string; phone: string; password: string };
 const EMPTY_GUEST: Guest = { name: '', lastName: '', email: '', phone: '', password: '' };
 
-function guestProblem(guest: Guest): string | null {
-  if (guest.name.trim().length < 2) return 'Escribe tu nombre.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest.email.trim())) return 'Escribe un correo válido.';
-  if (guest.phone.replace(/\D/g, '').length !== 10) return 'Tu teléfono debe tener 10 dígitos.';
-  if (guest.password.length < STORE_GUEST_MIN_PASSWORD) return `Tu contraseña debe tener al menos ${STORE_GUEST_MIN_PASSWORD} caracteres.`;
-  return null;
+type GuestErrors = Partial<Record<keyof Guest, string>>;
+const GUEST_FIELD_ORDER: Array<keyof Guest> = ['name', 'email', 'phone', 'password'];
+
+function guestErrors(guest: Guest): GuestErrors {
+  const errors: GuestErrors = {};
+  if (guest.name.trim().length < 2) errors.name = 'Escribe tu nombre.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest.email.trim())) errors.email = 'Escribe un correo válido.';
+  if (mxPhoneDigits(guest.phone).length !== 10) errors.phone = 'Debe tener 10 dígitos.';
+  if (guest.password.length < STORE_GUEST_MIN_PASSWORD) errors.password = `Usa al menos ${STORE_GUEST_MIN_PASSWORD} caracteres.`;
+  return errors;
+}
+
+const guestFieldId = (field: keyof Guest) => `comprador-${field}`;
+
+/** A random key for one attempt to pay: the server answers the same order to every retry of it. */
+function newCheckoutKey(): string {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+  }
 }
 
 /**
@@ -76,6 +96,11 @@ export default function CheckoutPage() {
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
+  // After the first try to pay, every field shows what is missing while the person fixes it.
+  const [attempted, setAttempted] = useState(false);
+  // State updates are not instant: two clicks in the same frame both see `submitting` false.
+  const submittingRef = useRef(false);
+  const checkoutKeyRef = useRef<string | null>(null);
   const [emailExists, setEmailExists] = useState(false);
   // Card: the order exists and waits for its payment.
   const [payment, setPayment] = useState<{ clientSecret: string; orderNumber: string; totalCents: number } | null>(null);
@@ -87,27 +112,44 @@ export default function CheckoutPage() {
   const methods = quote?.paymentMethods ?? [];
   const chosenMethod = method && methods.includes(method) ? method : methods[0] ?? null;
 
+  const fieldsOfGuest = !user?.id && attempted ? guestErrors(guest) : {};
+  const fieldsOfAddress = !chosenSaved && attempted ? addressErrors(address) : {};
+
+  const guestControl = (field: keyof Guest) => ({
+    id: guestFieldId(field),
+    className: cn(checkoutFieldClass, fieldsOfGuest[field] && checkoutFieldErrorClass),
+    ...invalidProps(guestFieldId(field), fieldsOfGuest[field]),
+  });
+
   const goToOrder = (orderNumber: string, paid: boolean) => {
     router.push(`${Routes.store.order(orderNumber)}${paid ? '&pagado=1' : '&nuevo=1'}`);
   };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!quote || submitting) return;
+    if (!quote || submittingRef.current) return;
     setProblem(null);
     setEmailExists(false);
+    setAttempted(true);
 
-    if (!user?.id) {
-      const issue = guestProblem(guest);
-      if (issue) return setProblem(issue);
-      if (TURNSTILE_SITE_KEY && !turnstileToken) return setProblem('Espera a que termine la verificación de seguridad.');
+    // Every field with a problem is marked; the first one gets the focus (and scrolls into view).
+    const guestIssues = user?.id ? {} : guestErrors(guest);
+    const addressIssues = chosenSaved ? {} : addressErrors(address);
+    const firstGuest = GUEST_FIELD_ORDER.find((field) => guestIssues[field]);
+    const firstAddress = ADDRESS_FIELD_ORDER.find((field) => addressIssues[field]);
+    const firstId = firstGuest ? guestFieldId(firstGuest) : firstAddress ? addressFieldId('direccion', firstAddress) : null;
+    if (firstId) {
+      document.getElementById(firstId)?.focus();
+      return setProblem('Revisa los campos marcados en rojo.');
     }
-    const shipTo = chosenSaved ? addressToInput(chosenSaved) : address;
-    const addressIssue = addressProblem(shipTo);
-    if (addressIssue) return setProblem(addressIssue);
+    if (!user?.id && TURNSTILE_SITE_KEY && !turnstileToken) return setProblem('Espera a que termine la verificación de seguridad.');
+    const shipTo = chosenSaved ? addressToInput(chosenSaved) : { ...address, phone: mxPhoneDigits(address.phone) };
     if (!chosenMethod) return setProblem('Por ahora no hay formas de pago disponibles. Intenta más tarde.');
 
+    submittingRef.current = true;
     setSubmitting(true);
+    // Same key for every retry of this attempt (a timeout, a second tab of the same click).
+    checkoutKeyRef.current ??= newCheckoutKey();
     try {
       const { data } = await placeOrder({
         variables: {
@@ -120,13 +162,14 @@ export default function CheckoutPage() {
             couponCode: quote.couponApplied ? quote.couponCode : null,
             expectedTotalCents: quote.totalCents,
             channel: 'web',
+            checkoutKey: checkoutKeyRef.current,
             guest: user?.id
               ? null
               : {
                   name: guest.name.trim(),
                   lastName: guest.lastName.trim(),
                   email: guest.email.trim(),
-                  phone: guest.phone,
+                  phone: mxPhoneDigits(guest.phone),
                   password: guest.password,
                   turnstileToken,
                 },
@@ -148,6 +191,8 @@ export default function CheckoutPage() {
       }
 
       if (!result.success || !result.orderNumber) {
+        // Nothing was placed (or it was cancelled): the next try is a new attempt.
+        checkoutKeyRef.current = null;
         setProblem(result.message);
         if (result.code === 'EMAIL_EXISTS') setEmailExists(true);
         // The cart or its total changed: show what the server says now.
@@ -167,11 +212,14 @@ export default function CheckoutPage() {
         });
         window.scrollTo({ top: 0 });
       } else {
-        goToOrder(result.orderNumber, false);
+        // Transfer, or a card order that was already paid (the same attempt answered twice).
+        goToOrder(result.orderNumber, chosenMethod === 'stripe_card');
       }
     } catch {
+      // The key stays: if the order did get placed, the retry answers that same order.
       setProblem('No pudimos crear tu pedido. Revisa tu conexión e intenta de nuevo.');
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -232,7 +280,7 @@ export default function CheckoutPage() {
             {quoteError ? 'No pudimos calcular tu pedido. Recarga la página para intentar de nuevo.' : 'Calculando tu pedido…'}
           </p>
         ) : (
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <form noValidate onSubmit={handleSubmit} className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
             <div className="flex flex-col gap-6">
               {notices.length > 0 ? (
                 <div role="status" className="rounded-2xl bg-amber-50 px-5 py-4 text-amber-900 dark:bg-amber-900/20 dark:text-amber-200">
@@ -266,62 +314,61 @@ export default function CheckoutPage() {
                       </Link>
                     </p>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <label className={checkoutLabelClass}>
-                        Nombre
+                      <CheckoutField id={guestFieldId('name')} label="Nombre" error={fieldsOfGuest.name}>
                         <input
+                          {...guestControl('name')}
                           value={guest.name}
                           onChange={(event) => setGuest({ ...guest, name: event.target.value })}
                           autoComplete="given-name"
                           maxLength={60}
-                          className={checkoutFieldClass}
                         />
-                      </label>
-                      <label className={checkoutLabelClass}>
-                        Apellido
+                      </CheckoutField>
+                      <CheckoutField id={guestFieldId('lastName')} label="Apellido">
                         <input
+                          {...guestControl('lastName')}
                           value={guest.lastName}
                           onChange={(event) => setGuest({ ...guest, lastName: event.target.value })}
                           autoComplete="family-name"
                           maxLength={60}
-                          className={checkoutFieldClass}
                         />
-                      </label>
-                      <label className={checkoutLabelClass}>
-                        Correo
+                      </CheckoutField>
+                      <CheckoutField id={guestFieldId('email')} label="Correo" error={fieldsOfGuest.email}>
                         <input
+                          {...guestControl('email')}
                           type="email"
                           value={guest.email}
                           onChange={(event) => setGuest({ ...guest, email: event.target.value })}
                           autoComplete="email"
-                          className={checkoutFieldClass}
                         />
-                      </label>
-                      <label className={checkoutLabelClass}>
-                        Teléfono
+                      </CheckoutField>
+                      <CheckoutField id={guestFieldId('phone')} label="Teléfono" error={fieldsOfGuest.phone}>
                         <input
+                          {...guestControl('phone')}
                           value={guest.phone}
                           onChange={(event) => setGuest({ ...guest, phone: event.target.value })}
-                          autoComplete="tel-national"
+                          autoComplete="tel"
                           inputMode="tel"
-                          maxLength={15}
+                          maxLength={20}
                           placeholder="10 dígitos"
-                          className={checkoutFieldClass}
                         />
-                      </label>
-                      <label className={`${checkoutLabelClass} sm:col-span-2`}>
-                        Crea una contraseña
+                      </CheckoutField>
+                      <CheckoutField
+                        id={guestFieldId('password')}
+                        label="Crea una contraseña"
+                        error={fieldsOfGuest.password}
+                        className="sm:col-span-2"
+                      >
                         <input
+                          {...guestControl('password')}
                           type="password"
                           value={guest.password}
                           onChange={(event) => setGuest({ ...guest, password: event.target.value })}
                           autoComplete="new-password"
-                          minLength={STORE_GUEST_MIN_PASSWORD}
-                          className={checkoutFieldClass}
                         />
                         <span className="font-normal text-[#5a5a5a] dark:text-[#9aa3b2]">
                           Al menos {STORE_GUEST_MIN_PASSWORD} caracteres. Con ella entras después a ver tu pedido.
                         </span>
-                      </label>
+                      </CheckoutField>
                     </div>
                     <TurnstileWidget onToken={setTurnstileToken} className="min-h-[65px]" />
                   </div>
@@ -378,7 +425,7 @@ export default function CheckoutPage() {
                 ) : null}
                 {!chosenSaved ? (
                   <>
-                    <AddressFields value={address} onChange={setAddress} />
+                    <AddressFields value={address} onChange={setAddress} errors={fieldsOfAddress} />
                     <label className="mt-4 inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm text-[#3a3a3a] dark:text-[#d0d0d0]">
                       <input
                         type="checkbox"
@@ -390,10 +437,15 @@ export default function CheckoutPage() {
                     </label>
                   </>
                 ) : null}
-                <label className={`${checkoutLabelClass} mt-4`}>
-                  Nota para tu pedido (opcional)
-                  <input value={note} onChange={(event) => setNote(event.target.value)} maxLength={500} className={checkoutFieldClass} />
-                </label>
+                <CheckoutField id="pedido-nota" label="Nota para tu pedido (opcional)" className="mt-4">
+                  <input
+                    id="pedido-nota"
+                    value={note}
+                    onChange={(event) => setNote(event.target.value)}
+                    maxLength={500}
+                    className={checkoutFieldClass}
+                  />
+                </CheckoutField>
               </section>
 
               <section className={cardClass} aria-labelledby="paso-pago">

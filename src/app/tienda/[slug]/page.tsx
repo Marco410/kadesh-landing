@@ -10,7 +10,7 @@ import {
 } from 'kadesh/components/store/store-seo';
 
 // Product photos have a URL signed for 1 h: this stays well below that.
-export const revalidate = 600;
+export const revalidate = 60;
 
 type Params = Promise<{ slug: string }>;
 

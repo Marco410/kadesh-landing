@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useMutation } from '@apollo/client';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowLeft01Icon, Copy01Icon, LinkSquare02Icon } from '@hugeicons/core-free-icons';
+import { ArrowLeft01Icon, Copy01Icon, LinkSquare02Icon, WhatsappIcon } from '@hugeicons/core-free-icons';
 import { sileo } from 'sileo';
 import { Routes } from 'kadesh/core/routes';
 import { cn } from 'kadesh/utils/cn';
@@ -47,7 +47,10 @@ function deadline(iso: string | null): string {
   if (!iso) return '';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleString('es-MX', { day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', timeZone: 'America/Mexico_City' });
+  // "5:23 p.m." already ends in a period: drop it, the sentence adds its own.
+  return date
+    .toLocaleString('es-MX', { day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', timeZone: 'America/Mexico_City' })
+    .replace(/\.$/, '');
 }
 
 function CopyRow({ label, value }: { label: string; value: string }) {
@@ -69,20 +72,50 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** Bank data of a transfer and the form to upload its proof. */
+/**
+ * WhatsApp chat with Kadesh, already written: the order, who receives it, what it carries and the
+ * total. The person only attaches the photo of the proof; an admin checks it and confirms the
+ * payment in Operaciones.
+ */
+export function proofWhatsappHref(phone: string, order: StoreOrderDetail): string {
+  const lines = order.items.map((item) => `• ${item.quantity} × ${item.name}${item.variantTitle ? ` (${item.variantTitle})` : ''}`);
+  const text = [
+    `Hola, te mando el comprobante de mi transferencia del pedido ${order.summary.number}.`,
+    '',
+    `Total: ${formatPrice(order.summary.totalCents)}`,
+    `Concepto: ${order.transfer?.reference ?? order.summary.number}`,
+    `A nombre de: ${order.address.recipientName}`,
+    '',
+    'Productos:',
+    ...lines,
+    '',
+    'Adjunto la foto del comprobante.',
+  ].join('\n');
+  return `https://wa.me/52${phone.replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(text)}`;
+}
+
+/**
+ * Bank data of a transfer and how to send the proof: by WhatsApp when the store has a number
+ * (an admin confirms the payment from there), or uploaded here.
+ */
 function TransferBox({
-  orderNumber,
+  order,
   transfer,
   proofUploaded,
   rejectedReason,
+  whatsapp,
   onDone,
 }: {
-  orderNumber: string;
+  order: StoreOrderDetail;
   transfer: StoreTransferInstructions;
   proofUploaded: boolean;
   rejectedReason: string | null;
+  whatsapp: string | null;
   onDone: () => void;
 }) {
+  const orderNumber = order.summary.number;
+  // With WhatsApp, uploading here is the second way: shown only when asked for.
+  const [showUpload, setShowUpload] = useState(!whatsapp);
   const [file, setFile] = useState<File | null>(null);
   const [reference, setReference] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -132,7 +165,7 @@ function TransferBox({
         </p>
       ) : (
         <p className="mb-3 text-sm text-dash-soft">
-          Transfiere el monto exacto y sube tu comprobante. Tu pedido queda apartado
+          Transfiere el monto exacto y {whatsapp ? 'mándanos tu comprobante por WhatsApp' : 'sube tu comprobante'}. Tu pedido queda apartado
           {transfer.expiresAt ? ` hasta el ${deadline(transfer.expiresAt)}` : ''}.
         </p>
       )}
@@ -150,7 +183,36 @@ function TransferBox({
       </div>
       {transfer.note ? <p className="mt-3 whitespace-pre-line text-sm text-dash-soft">{transfer.note}</p> : null}
 
-      <div className="mt-5 flex flex-col gap-3">
+      {whatsapp ? (
+        <div className="mt-5 flex flex-col gap-2">
+          <a
+            href={proofWhatsappHref(whatsapp, order)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(primaryButton, 'gap-2 self-start bg-[#1fa855] hover:bg-[#178a45]')}
+          >
+            <HugeiconsIcon icon={WhatsappIcon} size={20} aria-hidden="true" />
+            Mandar comprobante
+            <span className="sr-only">por WhatsApp (se abre en otra pestaña)</span>
+          </a>
+          <p className="text-sm text-dash-muted">
+            Se abre WhatsApp con los datos de tu pedido. Adjunta la foto o captura de tu comprobante y envíalo. Te avisamos por correo
+            en cuanto confirmemos tu pago.
+          </p>
+          {!showUpload ? (
+            <button
+              type="button"
+              onClick={() => setShowUpload(true)}
+              className="inline-flex min-h-11 items-center self-start text-sm font-semibold text-kadesh-700 hover:underline dark:text-kadesh-300"
+            >
+              Prefiero subirlo aquí
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {showUpload ? (
+        <div className="mt-5 flex flex-col gap-3">
         <label className={cn(quietButton, 'cursor-pointer self-start')}>
           {file ? file.name : proofUploaded ? 'Elegir otro comprobante' : 'Elegir comprobante'}
           <input
@@ -179,7 +241,8 @@ function TransferBox({
             </button>
           </>
         ) : null}
-      </div>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -301,10 +364,11 @@ export default function OrderDetail({
 
       {order.transfer ? (
         <TransferBox
-          orderNumber={summary.number}
+          order={order}
           transfer={order.transfer}
           proofUploaded={order.proofUploaded}
           rejectedReason={order.proofRejectedReason}
+          whatsapp={order.supportWhatsapp}
           onDone={onChanged}
         />
       ) : null}

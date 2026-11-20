@@ -9,7 +9,7 @@ export const STORE_WISHLIST_PAGE_SIZE = 24;
  * Server cache of store data. Product photos come with a URL signed for 1 h, so this must stay
  * well below that.
  */
-export const STORE_REVALIDATE_SECONDS = 10 * 60;
+export const STORE_REVALIDATE_SECONDS = 60;
 
 export const STORE_SEARCH_DEBOUNCE_MS = 350;
 export const STORE_SEARCH_MIN_LENGTH = 2;

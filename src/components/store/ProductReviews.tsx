@@ -116,11 +116,18 @@ export default function ProductReviews({
     return data.storeCatalogReviews;
   };
 
-  const refresh = async () => {
-    const fresh = await fetchPage(0);
+  const applyPage = (fresh: StoreReviewsResponse['storeCatalogReviews']) => {
     setItems(fresh.items);
     setTotal(fresh.total);
     setMine(fresh.mine);
+    // The product page is cached for a minute: the stars of this answer are the current ones.
+    setAverage(fresh.ratingAverage);
+    setCount(fresh.ratingCount);
+  };
+
+  const refresh = async () => {
+    const fresh = await fetchPage(0);
+    applyPage(fresh);
     return fresh;
   };
 
@@ -130,12 +137,9 @@ export default function ProductReviews({
     let cancelled = false;
     fetchPage(0)
       .then((fresh) => {
-        if (cancelled) return;
-        setItems(fresh.items);
-        setTotal(fresh.total);
-        setMine(fresh.mine);
+        if (!cancelled) applyPage(fresh);
       })
-      .catch(() => undefined);
+      .catch((error) => console.error('Could not load your review:', error));
     return () => {
       cancelled = true;
     };

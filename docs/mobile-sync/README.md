@@ -54,3 +54,4 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-19 | [Tienda: carrito, pago y pedidos](2026-11-19-tienda-carrito-y-pedidos.md) | shared | implementado |
 | 2026-11-19 | [Tienda: cupones y huellitas por comprar y reseñar](2026-11-19-tienda-cupones-y-huellitas.md) | shared | implementado |
 | 2026-11-19 | [Tienda: agregar al carrito desde la tarjeta](2026-11-19-tienda-agregar-desde-tarjeta.md) | shared | pendiente |
+| 2026-11-20 | [Tienda: sin doble cobro, carrito sin clics perdidos y stock en la tarjeta](2026-11-20-tienda-sin-doble-cobro.md) | shared | pendiente |

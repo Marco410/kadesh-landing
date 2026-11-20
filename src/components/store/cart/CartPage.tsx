@@ -16,7 +16,11 @@ import { useCartQuote } from './useCartQuote';
 const stepButtonClass =
   'inline-flex size-11 items-center justify-center rounded-xl border border-[#d8dee8] text-[#121212] hover:border-kadesh disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh dark:border-white/15 dark:text-white';
 
-function CartRow({ line }: { line: CartLine }) {
+/**
+ * `quantity` is the browser's cart, not the last quote: the quote arrives one pause later, and
+ * stepping from it would turn three quick clicks into one.
+ */
+function CartRow({ line, quantity }: { line: CartLine; quantity: number }) {
   const href = line.slug ? Routes.store.product(line.slug) : null;
   return (
     <li className="flex gap-4 py-5">
@@ -47,19 +51,19 @@ function CartRow({ line }: { line: CartLine }) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => cart.setQuantity(line.variantId, line.quantity - 1)}
+            onClick={() => cart.setQuantity(line.variantId, quantity - 1)}
             aria-label={`Quitar una pieza de ${line.name}`}
             className={stepButtonClass}
           >
             <HugeiconsIcon icon={MinusSignIcon} size={18} aria-hidden="true" />
           </button>
           <span className="w-8 text-center font-semibold tabular-nums text-[#121212] dark:text-white" aria-live="polite">
-            {line.quantity}
+            {quantity}
           </span>
           <button
             type="button"
-            onClick={() => cart.setQuantity(line.variantId, line.quantity + 1)}
-            disabled={line.quantity >= line.maxQuantity}
+            onClick={() => cart.setQuantity(line.variantId, Math.min(quantity + 1, line.maxQuantity))}
+            disabled={quantity >= line.maxQuantity}
             aria-label={`Agregar una pieza de ${line.name}`}
             className={stepButtonClass}
           >
@@ -74,7 +78,7 @@ function CartRow({ line }: { line: CartLine }) {
             <HugeiconsIcon icon={Delete02Icon} size={20} aria-hidden="true" />
           </button>
         </div>
-        {line.quantity >= line.maxQuantity ? (
+        {quantity >= line.maxQuantity ? (
           <p className="text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">Es lo más que puedes llevar por ahora.</p>
         ) : null}
       </div>
@@ -146,7 +150,11 @@ export default function CartPage() {
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
             <ul className={`divide-y divide-[#ececec] dark:divide-[#2a2a2a] ${loading ? 'opacity-60' : ''}`} aria-busy={loading}>
               {quote.lines.map((line) => (
-                <CartRow key={line.variantId} line={line} />
+                <CartRow
+                  key={line.variantId}
+                  line={line}
+                  quantity={items.find((item) => item.variantId === line.variantId)?.quantity ?? line.quantity}
+                />
               ))}
             </ul>
             <CartSummary

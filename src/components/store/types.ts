@@ -26,6 +26,8 @@ export type StoreItem = {
   variantsCount: number;
   /** Set when the card can add it straight to the cart (sold by Kadesh, in stock, one variant). */
   singleVariantId: string | null;
+  /** With `singleVariantId`: the most of it one cart may carry (its stock, up to 20). */
+  singleVariantMaxQuantity: number | null;
   category: StoreRef | null;
   brand: StoreRef | null;
   /** Only for `mercado_libre`: the outbound affiliate link. */

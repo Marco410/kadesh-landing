@@ -24,6 +24,8 @@ export default function ProductCard({ item, className }: { item: StoreItem; clas
       className={cn(
         // Featured products are told apart by the «Destacado» tag only: same border as the rest.
         'group relative flex flex-col overflow-hidden rounded-2xl border border-[#ececec] bg-white transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,35,80,0.1)] dark:border-[#2a2a2a] dark:bg-[#1e1e1e]',
+        // The name's link covers the card: when it has keyboard focus, the whole card shows it.
+        'has-[h3_a:focus-visible]:outline has-[h3_a:focus-visible]:outline-2 has-[h3_a:focus-visible]:outline-offset-2 has-[h3_a:focus-visible]:outline-kadesh',
         className,
       )}
     >

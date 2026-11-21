@@ -15,6 +15,22 @@ Formato:
 
 ---
 
+## 2026-11-21 · fix: tienda — columnas fijas al bajar, «Atrás» entre filtros y detalles del catálogo
+- Rama: feat/pet-store
+- Qué cambió y por qué (prueba del catálogo nuevo en Chrome):
+  - **Columnas fijas**: ni los filtros ni «Los más vendidos» se quedaban a la vista al bajar. El `body` tenía `overflow-x: hidden`, que lo vuelve contenedor de scroll y rompe `position: sticky` en todo el sitio. Ahora usa `overflow-x: clip`, que recorta igual sin ese efecto. Arregla también la columna del blog. El panel ya lo tenía resuelto.
+  - **«Atrás»**: cada filtro agrega una entrada al historial (`router.push`), así que «Atrás» regresa al filtro anterior en vez de salir de la tienda.
+  - **Teclado**: la tarjeta marca el foco cuando lo tiene su nombre. «Quién vende» y «Marca» son una sola parada de Tab y se recorren con las flechas, como radios nativos.
+  - **Móvil**:
+    - «Quitar filtros» visible con el panel cerrado.
+    - El encabezado es más bajo, sin el párrafo de introducción.
+    - El botón de Mercado Libre dice «Mercado Libre» en una línea.
+  - **Agotado**: la tarjeta muestra un botón «Agotado» deshabilitado, así que no queda el hueco.
+  - **Entre 768 y 1279 px**: «Los más vendidos» y la publicidad van lado a lado debajo de los productos.
+- Archivos: src/app/globals.css, src/components/store/{StoreIndexClient.tsx,StoreListingPage.tsx,ProductCard.tsx,cart/CardCartButton.tsx}
+- GraphQL: ninguna
+- Móvil: no aplica (son ajustes del acomodo web; en la app no hay columnas fijas ni historial del navegador)
+
 ## 2026-11-20 · feat: tienda — catálogo en tres columnas con «Los más vendidos» y publicidad
 - Rama: feat/pet-store
 - Qué cambió y por qué: el catálogo dejaba mucho espacio vacío a la derecha y los filtros ocupaban una franja arriba. Ahora, en escritorio:

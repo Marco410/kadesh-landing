@@ -756,10 +756,16 @@ html:has(.kd-dash) body {
 
 /*
  * La base del sitio pone `overflow-x: hidden; overflow-y: auto` en html y body. En el body eso lo
- * vuelve contenedor de scroll (aunque nunca se desplace) y rompe `position: sticky` de la barra
- * y del menú. En el panel el body vuelve a `visible`; el recorte horizontal lo sigue haciendo el
- * viewport (el overflow de html se propaga a él).
+ * vuelve contenedor de scroll (aunque nunca se desplace) y rompe `position: sticky` (barra y menú
+ * del panel, columnas de la tienda y del blog). `clip` recorta igual sin crear contenedor de
+ * scroll; el recorte horizontal lo sigue haciendo también el viewport (el overflow de html se
+ * propaga a él). En el panel el body va `visible`, como antes.
  */
+body {
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
 html:has(.kd-dash) body {
   overflow: visible;
 }

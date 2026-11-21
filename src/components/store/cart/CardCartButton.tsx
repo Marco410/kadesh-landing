@@ -19,7 +19,7 @@ const buttonClass =
  * The cart action of a product card. Nothing to choose (one variant, in stock, sold by Kadesh):
  * adds one piece right there, with no request (the cart lives in the browser). Several options:
  * «Elegir opción» opens the product page. Mercado Libre: «Comprar en Mercado Libre», straight to the
- * affiliate link (sponsored, new tab; the card already says it is sold there). Sold out: nothing.
+ * affiliate link (sponsored, new tab; the card already says it is sold there). Sold out: a disabled «Agotado».
  *
  * The card comes from a cached page (up to a minute old), so before adding it asks the server for
  * this one line (`storeCartQuote`, one request per click). If it sold out meanwhile the card says so
@@ -43,13 +43,22 @@ export default function CardCartButton({ item }: { item: StoreItem }) {
         aria-label={`Comprar ${item.name} en Mercado Libre (se abre en otra pestaña)`}
         className={`${buttonClass} bg-[#ffe600] text-[#2d3277] hover:bg-[#f5dc00]`}
       >
-        Comprar en Mercado Libre
+        {/* A narrow card fits the short label on one line. */}
+        <span className="sm:hidden">Mercado Libre</span>
+        <span className="hidden sm:inline">Comprar en Mercado Libre</span>
         <HugeiconsIcon icon={LinkSquare02Icon} size={16} aria-hidden="true" />
       </a>
     );
   }
 
-  if (!item.inStock) return null;
+  // Sold out: a disabled button keeps the card the same height as its neighbours.
+  if (!item.inStock) {
+    return (
+      <button type="button" disabled className={`${buttonClass} border border-[#d8dee8] text-[#5a5a5a] dark:border-white/15 dark:text-[#9aa3b2]`}>
+        Agotado
+      </button>
+    );
+  }
 
   if (!item.singleVariantId) {
     if (item.variantsCount < 2) return null;

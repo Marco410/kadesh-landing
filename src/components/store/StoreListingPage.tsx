@@ -41,7 +41,7 @@ export default function StoreListingPage({
     <div className="min-h-screen bg-white dark:bg-[#121212]">
       <Navigation />
 
-      <header className="bg-kadesh-50 px-4 pt-28 pb-8 dark:bg-kadesh/10 sm:px-6 lg:px-8">
+      <header className="bg-kadesh-50 px-4 pt-24 pb-6 sm:pt-28 sm:pb-8 dark:bg-kadesh/10 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-[1440px] flex-col gap-3 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
           <div className="max-w-2xl">
             <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-kadesh-700 dark:bg-white/10 dark:text-kadesh-300">
@@ -52,7 +52,8 @@ export default function StoreListingPage({
               Productos para tu mascota
             </h1>
           </div>
-          <p className="max-w-xl text-base leading-relaxed text-[#3a3a3a] dark:text-[#d0d0d0] lg:text-right">
+          {/* On phones the products come first: the intro waits for wider screens. */}
+          <p className="hidden max-w-xl text-base leading-relaxed text-[#3a3a3a] dark:text-[#d0d0d0] sm:block lg:text-right">
             Alimento, accesorios y cuidado, elegidos por el equipo de Kadesh. Algunos los vende Kadesh y otros te llevan a
             Mercado Libre. Las estrellas son de personas que los calificaron aquí.
           </p>
@@ -64,7 +65,8 @@ export default function StoreListingPage({
           initialCatalog={catalog}
           facets={facets}
           filters={filters}
-          aside={<StoreAside kind={top.kind} items={top.items} />}
+          // Under the products (before `xl`) the two boxes go side by side, not one long column.
+          aside={<StoreAside kind={top.kind} items={top.items} className="md:grid md:grid-cols-2 md:items-start xl:flex" />}
           affiliateNote={hasAffiliate}
         />
       </main>

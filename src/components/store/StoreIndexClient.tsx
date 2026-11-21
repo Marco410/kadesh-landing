@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApolloClient } from '@apollo/client';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -37,6 +37,22 @@ function optionClass(active: boolean, nested = false) {
       ? 'bg-kadesh-50 font-semibold text-kadesh-700 dark:bg-kadesh/15 dark:text-kadesh-300'
       : 'text-[#3a3a3a] hover:bg-[#f3f5f8] dark:text-[#d0d0d0] dark:hover:bg-white/5',
   );
+}
+
+/**
+ * Arrow keys inside a radio group (quién vende, marca): one Tab stop per group, and the arrows move
+ * to the next or previous option and pick it, like native radio buttons.
+ */
+function onRadioKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
+  const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
+  if (!step) return;
+  const group = event.currentTarget.closest('[role="radiogroup"]');
+  if (!group) return;
+  const radios = Array.from(group.querySelectorAll<HTMLButtonElement>('[role="radio"]'));
+  const next = radios[(radios.indexOf(event.currentTarget) + step + radios.length) % radios.length];
+  event.preventDefault();
+  next.focus();
+  next.click();
 }
 
 function Count({ value }: { value: number }) {
@@ -91,7 +107,8 @@ export default function StoreIndexClient({
   const applyFilters = (patch: Partial<StoreFilters>) => {
     const next = { ...filters, ...patch };
     setNavigating(true);
-    router.replace(storeListingHref(next), { scroll: false });
+    // A new history entry per filter: «Atrás» goes back to the previous filters.
+    router.push(storeListingHref(next), { scroll: false });
   };
 
   // One navigation per pause in typing, not per key.
@@ -179,6 +196,15 @@ export default function StoreIndexClient({
             </button>
             <div className="ml-auto">{sortControl}</div>
           </div>
+          {filtered && !filtersOpen ? (
+            <button
+              type="button"
+              onClick={clearAll}
+              className="self-start text-sm font-semibold text-kadesh underline-offset-2 hover:underline lg:hidden"
+            >
+              Quitar filtros
+            </button>
+          ) : null}
 
           <div
             id="tienda-filtros"
@@ -290,6 +316,8 @@ export default function StoreIndexClient({
                         type="button"
                         role="radio"
                         aria-checked={active}
+                        tabIndex={active ? 0 : -1}
+                        onKeyDown={onRadioKeyDown}
                         onClick={() => applyFilters({ seller: (option.value || null) as StoreSeller | null })}
                         className={optionClass(active)}
                       >
@@ -312,6 +340,8 @@ export default function StoreIndexClient({
                       type="button"
                       role="radio"
                       aria-checked={!filters.brand}
+                      tabIndex={!filters.brand ? 0 : -1}
+                      onKeyDown={onRadioKeyDown}
                       onClick={() => applyFilters({ brand: null })}
                       className={optionClass(!filters.brand)}
                     >
@@ -324,6 +354,8 @@ export default function StoreIndexClient({
                         type="button"
                         role="radio"
                         aria-checked={filters.brand === brand.slug}
+                        tabIndex={filters.brand === brand.slug ? 0 : -1}
+                        onKeyDown={onRadioKeyDown}
                         onClick={() => applyFilters({ brand: brand.slug })}
                         className={optionClass(filters.brand === brand.slug)}
                       >

@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-21 · fix: panel — los campos enfocados no quedan bajo la barra superior
+- Rama: feat/pet-store
+- Qué cambió y por qué: al quitar el `scroll-padding-top` del panel (para que la barra no hiciera saltar la página), un campo que se enfocaba subiendo con Shift+Tab quedaba medio tapado por la barra sticky (por ejemplo, la foto en «Datos del perfil»). Ahora los elementos enfocables del contenido (`#app-content`) llevan `scroll-margin-top: 4.5rem`. La barra no lo lleva, así que sus botones siguen sin mover la página.
+- Archivos: src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
 ## 2026-11-21 · fix: el foco no sale del menú móvil; sin saltos al cerrar el aviso de publicidad ni con Tab en el panel
 - Rama: feat/pet-store
 - Qué cambió y por qué (quinta prueba en Chrome):

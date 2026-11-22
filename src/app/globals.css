@@ -785,6 +785,15 @@ html:has(.kd-dash) {
 }
 
 /*
+ * Sin ese margen, un campo que se enfoca subiendo (Shift+Tab) quedaba bajo la barra sticky. El
+ * margen va solo en lo enfocable del contenido (`#app-content`), no en la barra: así los campos
+ * quedan a la vista y los botones de la barra no desplazan la página.
+ */
+.kd-dash #app-content :is(a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])) {
+  scroll-margin-top: 4.5rem;
+}
+
+/*
  * Modales y menús bloquean el fondo con `body.style.overflow = "hidden"`, pero quien hace scroll es
  * el viewport (toma el overflow de html), así que la página seguía moviéndose detrás. Mientras el
  * body tenga ese bloqueo, html también se bloquea. Sirve para todos los que ya lo hacen así.

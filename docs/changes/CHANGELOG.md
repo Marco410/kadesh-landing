@@ -15,6 +15,16 @@ Formato:
 
 ---
 
+## 2026-11-21 · fix: menús y aviso de publicidad sin saltos al cerrar, foco dentro del menú móvil
+- Rama: feat/pet-store
+- Qué cambió y por qué (tercera prueba en Chrome):
+  - **Menú lateral del perfil**: al cerrarlo, la página saltaba (de 500 a 69). El foco regresaba al botón «Abrir menú» de la barra fija y el navegador desplazaba hasta él. Ahora regresa con `preventScroll`. El botón dice «Cerrar menú» mientras el menú está abierto.
+  - **«¿Por qué ves publicidad?»**: es un `<dialog>` nativo que dejaba desplazar el fondo con la rueda. Ahora bloquea el fondo (`useBodyScrollLock`). Al cerrarlo, el navegador devolvía el foco al «?» de la columna fija y la página saltaba arriba; ahora vuelve a donde estaba.
+  - **Menú hamburguesa**: al abrirlo, el foco entra al menú (botón «Cerrar menú», antes solo «×»). Esc lo cierra y el foco vuelve a la hamburguesa sin mover la página.
+- Archivos: src/components/app-shell/{AppShell.tsx,AppTopBar.tsx}, src/components/shared/AdInfoButton.tsx, src/components/layout/Navigation.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
 ## 2026-11-21 · fix: el fondo no se mueve con un menú o modal abierto; mapa de Inicio sin error de hidratación
 - Rama: feat/pet-store
 - Qué cambió y por qué (segunda prueba del catálogo en Chrome):

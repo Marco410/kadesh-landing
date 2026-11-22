@@ -42,6 +42,29 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
   const [opened, setOpened] = useState(false);
   // The open mobile menu keeps the page behind it still.
   useBodyScrollLock(opened);
+  // Focus goes into the menu when it opens (the burger stays under it) and back to the burger when
+  // it closes, without scrolling the page to the fixed header.
+  const menuCloseRef = useRef<HTMLButtonElement>(null);
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  const wasOpened = useRef(false);
+  useEffect(() => {
+    if (opened) {
+      wasOpened.current = true;
+      const timer = window.setTimeout(() => menuCloseRef.current?.focus({ preventScroll: true }), 50);
+      const onKey = (event: KeyboardEvent) => {
+        if (event.key === "Escape") setOpened(false);
+      };
+      document.addEventListener("keydown", onKey);
+      return () => {
+        window.clearTimeout(timer);
+        document.removeEventListener("keydown", onKey);
+      };
+    }
+    if (wasOpened.current) {
+      wasOpened.current = false;
+      burgerRef.current?.focus({ preventScroll: true });
+    }
+  }, [opened]);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -246,6 +269,8 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
 
         {/* Mobile Burger Menu */}
         <button
+          ref={burgerRef}
+          type="button"
           onClick={() => setOpened(!opened)}
           aria-expanded={opened}
           aria-controls="menu-movil"
@@ -322,10 +347,13 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                       iconClassName="w-6 h-6"
                     />
                     <button
+                      ref={menuCloseRef}
+                      type="button"
                       onClick={() => setOpened(false)}
+                      aria-label="Cerrar menú"
                       className="text-white text-2xl font-bold"
                     >
-                      ×
+                      <span aria-hidden="true">×</span>
                     </button>
                   </div>
                 </div>

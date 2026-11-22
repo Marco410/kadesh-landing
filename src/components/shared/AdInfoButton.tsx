@@ -30,20 +30,33 @@ export default function AdInfoButton() {
   // Al cerrar, el navegador regresa el foco al botón "?" y desplaza la página hasta él (vive en una
   // columna fija). Se guarda dónde estaba y se regresa ahí.
   const scrollBefore = useRef(0);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const open = () => {
     scrollBefore.current = window.scrollY;
     dialogRef.current?.showModal();
     setIsOpen(true);
   };
-  const close = () => dialogRef.current?.close();
+  // Every way of closing (X, Esc, click outside) comes here. The focus goes back to "?" first, with
+  // preventScroll: when the dialog then returns focus there itself, it is already focused and the
+  // page does not move.
+  const close = () => {
+    triggerRef.current?.focus({ preventScroll: true });
+    dialogRef.current?.close();
+  };
   const onClosed = () => {
     setIsOpen(false);
-    window.scrollTo({ top: scrollBefore.current, behavior: "instant" });
+    // Backup: if something still moved the page, put it back where it was.
+    const top = scrollBefore.current;
+    if (window.scrollY !== top) window.scrollTo({ top, behavior: "instant" });
+    requestAnimationFrame(() => {
+      if (window.scrollY !== top) window.scrollTo({ top, behavior: "instant" });
+    });
   };
 
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={open}
         aria-label="¿Por qué ves publicidad?"
@@ -57,6 +70,11 @@ export default function AdInfoButton() {
         aria-labelledby="ad-info-title"
         // También Esc: el evento `close` llega con cualquier forma de cerrar.
         onClose={onClosed}
+        // Esc: the same path as the other ways of closing.
+        onCancel={(event) => {
+          event.preventDefault();
+          close();
+        }}
         // Clic fuera del panel (sobre el backdrop) cierra.
         onClick={(event) => {
           if (event.target === event.currentTarget) close();

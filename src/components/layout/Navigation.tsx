@@ -52,7 +52,33 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
       wasOpened.current = true;
       const timer = window.setTimeout(() => menuCloseRef.current?.focus({ preventScroll: true }), 50);
       const onKey = (event: KeyboardEvent) => {
-        if (event.key === "Escape") setOpened(false);
+        if (event.key === "Escape") {
+          setOpened(false);
+          return;
+        }
+        // Tab stays inside the open menu: past the last control it goes back to the first.
+        if (event.key !== "Tab") return;
+        const menu = document.getElementById("menu-movil");
+        if (!menu) return;
+        const focusable = Array.from(
+          menu.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), input:not([disabled]), select, [tabindex]:not([tabindex="-1"])',
+          ),
+        ).filter((element) => element.offsetParent !== null);
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = document.activeElement as HTMLElement | null;
+        if (!active || !menu.contains(active)) {
+          event.preventDefault();
+          first.focus({ preventScroll: true });
+        } else if (event.shiftKey && active === first) {
+          event.preventDefault();
+          last.focus({ preventScroll: true });
+        } else if (!event.shiftKey && active === last) {
+          event.preventDefault();
+          first.focus({ preventScroll: true });
+        }
       };
       document.addEventListener("keydown", onKey);
       return () => {
@@ -333,6 +359,9 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               id="menu-movil"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menú"
               className="fixed top-0 right-0 h-full w-90 bg-kadesh dark:bg-night-raised z-50 lg:hidden overflow-y-auto shadow-2xl"
             >
               <div className="p-8">

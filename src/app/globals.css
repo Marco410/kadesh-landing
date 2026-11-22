@@ -776,6 +776,15 @@ html:has(.kd-dash) body {
 }
 
 /*
+ * Los 72 px de `scroll-padding-top` son por el header fijo del sitio. En el panel, la barra de arriba
+ * es sticky y vive en el flujo: con ese margen, enfocar un botón de la barra (Shift+Tab hasta «Abrir
+ * menú») hacía que el navegador desplazara la página creyendo que quedaba tapado.
+ */
+html:has(.kd-dash) {
+  scroll-padding-top: 0;
+}
+
+/*
  * Modales y menús bloquean el fondo con `body.style.overflow = "hidden"`, pero quien hace scroll es
  * el viewport (toma el overflow de html), así que la página seguía moviéndose detrás. Mientras el
  * body tenga ese bloqueo, html también se bloquea. Sirve para todos los que ya lo hacen así.

@@ -15,6 +15,16 @@ Formato:
 
 ---
 
+## 2026-11-21 · fix: el foco no sale del menú móvil; sin saltos al cerrar el aviso de publicidad ni con Tab en el panel
+- Rama: feat/pet-store
+- Qué cambió y por qué (quinta prueba en Chrome):
+  - **Menú móvil**: con Tab, el foco salía del menú abierto hacia la página de atrás, y el navegador la desplazaba. Ahora el foco da la vuelta dentro del menú (después de lo último vuelve a lo primero, y al revés con Shift+Tab). El menú es `role="dialog"` con `aria-modal`.
+  - **«¿Por qué ves publicidad?»**: a veces saltaba al cerrarlo tocando fuera. Ahora todas las formas de cerrar (X, Esc y clic fuera) pasan por un mismo camino: primero regresa el foco al «?» sin desplazar y luego cierra. Si algo aún movió la página, se regresa a donde estaba.
+  - **Panel (perfil)**: llegar con Shift+Tab al botón «Abrir menú» subía la página. Los 72 px de `scroll-padding-top` del sitio hacían creer al navegador que la barra sticky tapaba el botón. En el panel ese margen ahora es 0.
+- Archivos: src/components/layout/Navigation.tsx, src/components/shared/AdInfoButton.tsx, src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
 ## 2026-11-21 · fix: anillo de foco visible dentro del menú móvil
 - Rama: feat/pet-store
 - Qué cambió y por qué: en tema claro, el anillo de foco (azul kadesh) era del mismo color que el fondo del menú móvil y no se veía en la X ni en los botones. Dentro de `#menu-movil` el anillo ahora es blanco.

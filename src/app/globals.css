@@ -794,6 +794,16 @@ html:has(.kd-dash) {
 }
 
 /*
+ * Desde `lg` la barra se despega del borde (`lg:top-3`) y termina 0.75rem más abajo: el margen suma
+ * esa separación y un poco de aire.
+ */
+@media (min-width: 1024px) {
+  .kd-dash #app-content :is(a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])) {
+    scroll-margin-top: calc(4.5rem + 0.75rem + 0.5rem);
+  }
+}
+
+/*
  * Modales y menús bloquean el fondo con `body.style.overflow = "hidden"`, pero quien hace scroll es
  * el viewport (toma el overflow de html), así que la página seguía moviéndose detrás. Mientras el
  * body tenga ese bloqueo, html también se bloquea. Sirve para todos los que ya lo hacen así.

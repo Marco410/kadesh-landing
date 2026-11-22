@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-21 · fix: panel — margen de enfoque a 1024 px o más
+- Rama: feat/pet-store
+- Qué cambió y por qué: a 1440 la barra del panel está despegada del borde (`lg:top-3`) y termina en 66 px, pero el margen de 4.5rem dejaba lo enfocado en 61 px: 5 px tapados (botón de la foto, «Ver mi perfil», mapa de «Alertas de zona», avisos del Inicio). Desde `lg`, el margen suma esa separación y un poco de aire (`calc(4.5rem + 0.75rem + 0.5rem)`).
+- Archivos: src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
 ## 2026-11-21 · fix: panel — los campos enfocados no quedan bajo la barra superior
 - Rama: feat/pet-store
 - Qué cambió y por qué: al quitar el `scroll-padding-top` del panel (para que la barra no hiciera saltar la página), un campo que se enfocaba subiendo con Shift+Tab quedaba medio tapado por la barra sticky (por ejemplo, la foto en «Datos del perfil»). Ahora los elementos enfocables del contenido (`#app-content`) llevan `scroll-margin-top: 4.5rem`. La barra no lo lleva, así que sus botones siguen sin mover la página.

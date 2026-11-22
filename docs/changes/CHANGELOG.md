@@ -15,6 +15,19 @@ Formato:
 
 ---
 
+## 2026-11-21 · fix: el fondo no se mueve con un menú o modal abierto; mapa de Inicio sin error de hidratación
+- Rama: feat/pet-store
+- Qué cambió y por qué (segunda prueba del catálogo en Chrome):
+  - **Bloqueo del fondo**: menús y modales bloquean el scroll con `body.style.overflow = "hidden"`, pero quien hace scroll es el viewport (toma el overflow de `html`), así que la página de atrás seguía moviéndose (menú del perfil, hamburguesa, etc.). Una regla en `globals.css` bloquea `html` mientras el body tenga ese estilo. Sirve para todos los que ya lo hacen así.
+  - **Menú hamburguesa**: ahora bloquea el fondo (`useBodyScrollLock`), tiene `aria-expanded`, `aria-controls` y la etiqueta «Abrir menú» / «Cerrar menú».
+  - **Mapa de «Reportes recientes» en Inicio**: la clase del tema (claro u oscuro) se ponía en el HTML del servidor, que no conoce el tema, y en modo oscuro no coincidía con el navegador (error de hidratación). Ahora se pone en un efecto.
+  - **Tienda**:
+    - El buscador sigue a «Atrás» y «Adelante» (antes la lista volvía, pero el texto se quedaba).
+    - El botón de Mercado Libre dice «Mercado Libre» hasta pantallas anchas (`lg`), para que no se parta a 768.
+- Archivos: src/app/globals.css, src/components/layout/Navigation.tsx, src/components/home/RecentReportsMiniMap.tsx, src/components/store/{StoreIndexClient.tsx,cart/CardCartButton.tsx}
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
 ## 2026-11-21 · fix: tienda — columnas fijas al bajar, «Atrás» entre filtros y detalles del catálogo
 - Rama: feat/pet-store
 - Qué cambió y por qué (prueba del catálogo nuevo en Chrome):

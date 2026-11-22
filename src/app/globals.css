@@ -770,6 +770,15 @@ html:has(.kd-dash) body {
   overflow: visible;
 }
 
+/*
+ * Modales y menús bloquean el fondo con `body.style.overflow = "hidden"`, pero quien hace scroll es
+ * el viewport (toma el overflow de html), así que la página seguía moviéndose detrás. Mientras el
+ * body tenga ese bloqueo, html también se bloquea. Sirve para todos los que ya lo hacen así.
+ */
+html:has(> body[style*="overflow: hidden"]) {
+  overflow: hidden;
+}
+
 .dash-grad-accent {
   background-image: var(--dash-grad-accent);
 }

@@ -44,8 +44,8 @@ export default function CardCartButton({ item }: { item: StoreItem }) {
         className={`${buttonClass} bg-[#ffe600] text-[#2d3277] hover:bg-[#f5dc00]`}
       >
         {/* A narrow card fits the short label on one line. */}
-        <span className="sm:hidden">Mercado Libre</span>
-        <span className="hidden sm:inline">Comprar en Mercado Libre</span>
+        <span className="lg:hidden">Mercado Libre</span>
+        <span className="hidden lg:inline">Comprar en Mercado Libre</span>
         <HugeiconsIcon icon={LinkSquare02Icon} size={16} aria-hidden="true" />
       </a>
     );

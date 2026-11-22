@@ -17,6 +17,7 @@ import CartLink from "kadesh/components/store/cart/CartLink";
 import { useUnreadNotifications } from "kadesh/components/notifications/hooks";
 import FontSizeSlider from "./FontSizeSlider";
 import ThemeToggle from "./ThemeToggle";
+import { useBodyScrollLock } from "kadesh/utils/useBodyScrollLock";
 
 const PRIMARY_NAV = [
   { label: "Inicio", href: Routes.home },
@@ -39,6 +40,8 @@ const PRIMARY_NAV = [
  */
 export default function Navigation({ overDarkHero = false }: { overDarkHero?: boolean } = {}) {
   const [opened, setOpened] = useState(false);
+  // The open mobile menu keeps the page behind it still.
+  useBodyScrollLock(opened);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -244,6 +247,8 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
         {/* Mobile Burger Menu */}
         <button
           onClick={() => setOpened(!opened)}
+          aria-expanded={opened}
+          aria-controls="menu-movil"
           className={`lg:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1.5 z-50 ${
             atTopLight
               ? "text-gray-800"
@@ -251,7 +256,7 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                 ? "text-gray-700 dark:text-gray-300"
                 : "text-white"
           }`}
-          aria-label="Toggle menu"
+          aria-label={opened ? "Cerrar menú" : "Abrir menú"}
         >
           <motion.span
             className={`w-6 h-0.5 rounded transition-all ${
@@ -302,6 +307,7 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              id="menu-movil"
               className="fixed top-0 right-0 h-full w-90 bg-kadesh dark:bg-night-raised z-50 lg:hidden overflow-y-auto shadow-2xl"
             >
               <div className="p-8">

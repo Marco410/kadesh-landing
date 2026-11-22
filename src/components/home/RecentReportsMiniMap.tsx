@@ -114,9 +114,17 @@ export default function RecentReportsMiniMap({ reports, coords, href }: RecentRe
   }, [ready, pointsKey, markUnavailable]);
 
   useEffect(() => {
-    if (!ready) return;
-    applyFreeMapThemeClass(containerRef.current, resolvedTheme);
-  }, [ready, resolvedTheme]);
+    const container = containerRef.current;
+    if (!container) return;
+    if (!ready) {
+      // Before the map exists: only the classes (the backdrop color while it loads).
+      const night = isDarkMapTheme(resolvedTheme);
+      container.classList.toggle('kadesh-free-map--night', night);
+      container.classList.toggle('kadesh-free-map--standard', !night);
+      return;
+    }
+    applyFreeMapThemeClass(container, resolvedTheme);
+  }, [ready, resolvedTheme, unavailable]);
 
   useEffect(() => {
     // Por si la sección cambia de tamaño (filtros, ventana) con el mapa ya dibujado.
@@ -143,8 +151,6 @@ export default function RecentReportsMiniMap({ reports, coords, href }: RecentRe
       </div>
     );
   }
-  const dark = isDarkMapTheme(resolvedTheme);
-
   return (
     <div
       ref={wrapperRef}
@@ -154,9 +160,9 @@ export default function RecentReportsMiniMap({ reports, coords, href }: RecentRe
         <div
           ref={containerRef}
           aria-hidden="true"
-          className={`pointer-events-none absolute inset-0 [&_.leaflet-control-attribution]:hidden [&_.maplibregl-ctrl-attrib]:hidden ${
-            dark ? 'kadesh-free-map--night' : 'kadesh-free-map--standard'
-          }`}
+          // The theme class is set in an effect: the server does not know the theme, and a class that
+          // differs between server and browser is a hydration error.
+          className="pointer-events-none absolute inset-0 [&_.leaflet-control-attribution]:hidden [&_.maplibregl-ctrl-attrib]:hidden"
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center text-[#5a5a5a] dark:text-[#9aa3b2]">

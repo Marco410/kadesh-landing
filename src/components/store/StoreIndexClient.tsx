@@ -92,6 +92,12 @@ export default function StoreIndexClient({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // «Atrás» / «Adelante» change the URL's search: the box shows it (unless the person is typing).
+  useEffect(() => {
+    if (searchTimer.current) return;
+    setSearch(filters.search);
+  }, [filters.search]);
+
   // New filters: the server sent another first page.
   useEffect(() => {
     setItems(initialCatalog.items);
@@ -116,6 +122,7 @@ export default function StoreIndexClient({
     setSearch(value);
     if (searchTimer.current) clearTimeout(searchTimer.current);
     searchTimer.current = setTimeout(() => {
+      searchTimer.current = null;
       const term = value.trim();
       const effective = term.length >= STORE_SEARCH_MIN_LENGTH ? term : '';
       if (effective !== filters.search) applyFilters({ search: effective });

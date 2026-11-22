@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-21 · fix: anillo de foco visible dentro del menú móvil
+- Rama: feat/pet-store
+- Qué cambió y por qué: en tema claro, el anillo de foco (azul kadesh) era del mismo color que el fondo del menú móvil y no se veía en la X ni en los botones. Dentro de `#menu-movil` el anillo ahora es blanco.
+- Archivos: src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (estilo web)
+
 ## 2026-11-21 · fix: menús y aviso de publicidad sin saltos al cerrar, foco dentro del menú móvil
 - Rama: feat/pet-store
 - Qué cambió y por qué (tercera prueba en Chrome):

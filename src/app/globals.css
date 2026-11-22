@@ -241,6 +241,11 @@
   }
 }
 
+/* El menú móvil es azul kadesh (y azul noche en oscuro): el anillo de foco azul no se veía. */
+#menu-movil :focus-visible {
+  outline-color: #ffffff;
+}
+
 /* Scrollbar — usa --color-kadesh */
 ::-webkit-scrollbar {
   width: 18px;

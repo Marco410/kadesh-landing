@@ -15,6 +15,22 @@ Formato:
 
 ---
 
+## 2026-11-23 · feat: SEO de la tienda y de las fichas de animales
+- Rama: feat/pet-store
+- Qué cambió y por qué (revisión de SEO y GEO de tienda, blog y animales):
+  - **Sitemap**: no tenía la tienda. Ahora lleva `/tienda` y cada producto a la venta, solo con la tienda abierta y con productos (cerrada responde 404). `fetchStoreProductsForSitemap` pide solo el `slug`, 48 por petición.
+  - **Imagen de producto**: nueva ruta `/tienda/<slug>/og` que sirve la portada vigente (las fotos subidas caducan en 1 h), con tope de 8 MB, igual que `/blog/<url>/og`. La usan `og:image`, la tarjeta de Twitter y el JSON-LD.
+  - **JSON-LD del producto**: suma `image` y migas (Inicio › Tienda › producto). Un producto de Mercado Libre sin reseñas lleva solo las migas, porque Google marca error en un `Product` sin oferta ni estrellas.
+  - **`/tienda`**: `CollectionPage` con la lista de los productos de la primera página y migas, solo sin filtros (las vistas filtradas son noindex).
+  - **`/animales/<slug>/editar`**: ahora es noindex.
+  - **Ficha de animal con `<h1>` en el HTML**: la ficha se carga en el navegador y el HTML del servidor no traía encabezado principal. El layout pasa el nombre (`AnimalServerTitle`) y el estado de carga lo pinta como `<h1>` en vez del bloque gris. Ya cargada, la ficha pinta su propio `<h1>`: nunca hay dos.
+  - **Enlaces a fichas en `/animales`**: el mapa y su lista son de navegador, así que el HTML no enlazaba ninguna ficha. Debajo del mapa va «Reportes recientes» pintado en el servidor, con la misma petición y caché (10 min) que la portada.
+  - **Fecha de las fichas en el sitemap**: era la de creación. Ahora es el último registro del caso (`lastActivityAt`).
+  - El blog ya estaba bien.
+- Archivos: src/app/sitemap.ts, src/app/tienda/page.tsx, src/app/tienda/[slug]/og/route.ts, src/app/animales/page.tsx, src/app/animales/[slug]/layout.tsx, src/app/animales/[slug]/page.tsx, src/app/animales/[slug]/editar/layout.tsx, src/components/animals/AnimalsRecentReports.tsx, src/components/animals/detail/ServerTitle.tsx, src/components/animals/server.ts, src/components/store/store-seo.ts, src/components/store/server.ts, src/core/routes.ts
+- GraphQL: `StoreCatalogSitemap` (nueva, usa `storeCatalog` con `items { slug }`); `AnimalsForSitemap` pide además `lastActivityAt`
+- Móvil: no aplica (SEO de la web)
+
 ## 2026-11-21 · fix: panel — margen de enfoque a 1024 px o más
 - Rama: feat/pet-store
 - Qué cambió y por qué: a 1440 la barra del panel está despegada del borde (`lg:top-3`) y termina en 66 px, pero el margen de 4.5rem dejaba lo enfocado en 61 px: 5 px tapados (botón de la foto, «Ver mi perfil», mapa de «Alertas de zona», avisos del Inicio). Desde `lg`, el margen suma esa separación y un poco de aire (`calc(4.5rem + 0.75rem + 0.5rem)`).

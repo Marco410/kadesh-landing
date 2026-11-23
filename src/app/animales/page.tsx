@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import AnimalsDirectory from 'kadesh/components/animals/AnimalsDirectory';
+import AnimalsRecentReports from 'kadesh/components/animals/AnimalsRecentReports';
 import JsonLd from 'kadesh/components/blog/JsonLd';
 import { Routes } from 'kadesh/core/routes';
 import { SITE_URL } from 'kadesh/core/site';
@@ -55,6 +56,7 @@ export default function AnimalsPage() {
         }}
       />
       <AnimalsDirectory />
+      <AnimalsRecentReports />
     </>
   );
 }

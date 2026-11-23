@@ -133,3 +133,32 @@ export async function fetchStoreReviews(productId: string): Promise<StoreReviews
   });
   return { total: data?.storeCatalogReviews.total ?? 0, items: data?.storeCatalogReviews.items ?? [], mine: null };
 }
+
+const SITEMAP_QUERY = `
+  query StoreCatalogSitemap($input: StoreCatalogInput) {
+    storeCatalog(input: $input) {
+      items { slug }
+    }
+  }
+`;
+
+/** Pages of the catalog's max `take`; the store will not have more products than this for a while. */
+const SITEMAP_PAGE = 48;
+const SITEMAP_MAX = 960;
+
+/**
+ * Slugs of every product on sale, for the sitemap (only the slug, 48 per request). Empty while the
+ * store is closed, so the sitemap does not list pages that answer 404.
+ */
+export async function fetchStoreProductsForSitemap(): Promise<string[]> {
+  const out: string[] = [];
+  for (let skip = 0; skip < SITEMAP_MAX; skip += SITEMAP_PAGE) {
+    const data = await queryGraphql<{ storeCatalog: { items: Array<{ slug: string }> } }>(SITEMAP_QUERY, {
+      input: { sort: 'newest', take: SITEMAP_PAGE, skip },
+    });
+    const rows = data?.storeCatalog.items ?? [];
+    out.push(...rows.map((row) => row.slug).filter(Boolean));
+    if (rows.length < SITEMAP_PAGE) break;
+  }
+  return out;
+}

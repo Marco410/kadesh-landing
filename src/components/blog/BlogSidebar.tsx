@@ -8,6 +8,8 @@ import { Routes } from 'kadesh/core/routes';
 import { BLOG_AD_SLOT } from 'kadesh/core/ads';
 import AdSlot from 'kadesh/components/shared/AdSlot';
 import { cn } from 'kadesh/utils/cn';
+import StoreShowcase from 'kadesh/components/store/StoreShowcase';
+import type { StoreShowcaseItem } from 'kadesh/components/store/types';
 import { formatShortDateMx } from 'kadesh/utils/format-date';
 import { getCategoryLabel } from './constants';
 import type { BlogSidebarCategory, BlogSidebarPost } from './types';
@@ -34,6 +36,8 @@ interface BlogSidebarProps {
   categories?: BlogSidebarCategory[];
   /** URL de la categoría que se está viendo (se marca en la lista). */
   activeCategory?: string | null;
+  /** Productos destacados de la tienda (los trae el servidor); sin ellos no se pinta la caja. */
+  storeProducts?: StoreShowcaseItem[];
   className?: string;
 }
 
@@ -48,6 +52,7 @@ export default function BlogSidebar({
   ranked = false,
   categories = [],
   activeCategory = null,
+  storeProducts = [],
   className,
 }: BlogSidebarProps) {
   const List = ranked ? 'ol' : 'ul';
@@ -115,6 +120,8 @@ export default function BlogSidebar({
           </List>
         </section>
       )}
+
+      <StoreShowcase items={storeProducts} variant="sidebar" />
 
       <div className={cn('flex flex-col gap-10', STICKY_WHEN_TALL)}>
         {/* El mismo bloque de publicidad que el detalle de animal (solo se pinta en el navegador). */}

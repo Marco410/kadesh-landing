@@ -1,7 +1,22 @@
-import { STORE_BEST_SELLERS_SIZE, STORE_REVALIDATE_SECONDS, STORE_REVIEWS_PAGE_SIZE } from './constants';
+import {
+  STORE_BEST_SELLERS_SIZE,
+  STORE_NAV_ENABLED,
+  STORE_REVALIDATE_SECONDS,
+  STORE_REVIEWS_PAGE_SIZE,
+  STORE_SHOWCASE_REVALIDATE_SECONDS,
+  STORE_SHOWCASE_SIZE,
+} from './constants';
 import { STORE_ITEM_FIELDS, STORE_REVIEW_FIELDS } from './fields';
 import { storeCatalogInput } from './searchParams';
-import type { StoreCatalog, StoreFacets, StoreFilters, StoreItem, StoreProduct, StoreReviews } from './types';
+import type {
+  StoreCatalog,
+  StoreFacets,
+  StoreFilters,
+  StoreItem,
+  StoreProduct,
+  StoreReviews,
+  StoreShowcaseItem,
+} from './types';
 
 /**
  * Store queries from the server (no session): `/tienda` and the product page. Cached for a
@@ -61,7 +76,11 @@ const REVIEWS_QUERY = `
 
 type GraphqlResponse<T> = { data?: T; errors?: Array<{ message?: string }> };
 
-async function queryGraphql<T>(query: string, variables: Record<string, unknown>): Promise<T | null> {
+async function queryGraphql<T>(
+  query: string,
+  variables: Record<string, unknown>,
+  revalidate: number = STORE_REVALIDATE_SECONDS,
+): Promise<T | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) return null;
   try {
@@ -69,7 +88,7 @@ async function queryGraphql<T>(query: string, variables: Record<string, unknown>
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query, variables }),
-      next: { revalidate: STORE_REVALIDATE_SECONDS },
+      next: { revalidate },
     });
     if (!response.ok) return null;
     const payload = (await response.json()) as GraphqlResponse<T>;
@@ -104,6 +123,28 @@ export async function fetchStoreBestSellers(): Promise<{ kind: 'best_selling' | 
     input: { sort: 'newest', take, skip: 0 },
   });
   return { kind: 'newest', items: newest?.storeCatalog.items ?? [] };
+}
+
+const SHOWCASE_QUERY = `
+  query StoreShowcase($input: StoreCatalogInput) {
+    storeCatalog(input: $input) {
+      items { id slug name priceCents compareAtPriceCents coverUrl coverAlt }
+    }
+  }
+`;
+
+/**
+ * A few featured products for small boxes outside the store (veterinary page, blog). Only the
+ * fields the box paints; the same cached response for every page that shows it, kept 10 min
+ * (`STORE_SHOWCASE_REVALIDATE_SECONDS`) so it does not shorten the blog's 10 min window. Empty while
+ * the store is closed or hidden from the header (`STORE_NAV_ENABLED`), so no request is made then.
+ */
+export async function fetchStoreShowcase(take = STORE_SHOWCASE_SIZE): Promise<StoreShowcaseItem[]> {
+  if (!STORE_NAV_ENABLED) return [];
+  const data = await queryGraphql<{ storeCatalog: { items: StoreShowcaseItem[] } }>(SHOWCASE_QUERY, {
+    input: { sort: 'featured', take, skip: 0 },
+  }, STORE_SHOWCASE_REVALIDATE_SECONDS);
+  return data?.storeCatalog.items ?? [];
 }
 
 const EMPTY_FACETS: StoreFacets = {

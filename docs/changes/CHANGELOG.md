@@ -15,6 +15,16 @@ Formato:
 
 ---
 
+## 2026-11-23 · feat: productos de la tienda en la ficha de la veterinaria y en el blog
+- Rama: develop
+- Qué cambió y por qué: una caja discreta «De la tienda Kadesh» con 3 productos destacados (miniatura, nombre y precio) y «Ver tienda», para dar a conocer la tienda sin estorbar.
+  - Ficha de veterinaria: al final de la columna derecha, como tarjeta. `page.tsx` ahora es de servidor, trae los productos y se los pasa a la ficha (que sigue en el cliente, movida a `VeterinaryDetailClient.tsx`).
+  - Blog (índice y artículo): en la columna derecha, debajo de «Lo más leído» / «Artículos relacionados» y antes de la publicidad, con el estilo de esa columna (`variant="sidebar"`).
+  - Una sola consulta (`fetchStoreShowcase`) con solo los campos que se pintan, la misma respuesta en caché para todas las páginas. Caché de 10 min (`STORE_SHOWCASE_REVALIDATE_SECONDS`): con 60 s, Next habría regenerado las páginas del blog cada minuto en vez de cada 10. No se consulta si `NEXT_PUBLIC_STORE_ENABLED` está apagado; sin productos o con la API caída, la caja no aparece.
+- Archivos: src/app/veterinarias/[slug]/page.tsx (nuevo, servidor), src/app/veterinarias/[slug]/VeterinaryDetailClient.tsx (antes page.tsx), src/app/blog/page.tsx, src/app/blog/[url]/page.tsx, src/components/blog/{BlogSidebar.tsx,BlogIndexClient.tsx,post/BlogPostDetail.tsx,post/BlogPostPageClient.tsx}, src/components/store/StoreShowcase.tsx (nuevo), src/components/store/{server.ts,constants.ts,types.ts}
+- GraphQL: `StoreShowcase` (nueva, sobre `storeCatalog` existente: `sort: featured`, `take: 3`)
+- Móvil: [prompt](../mobile-sync/2026-11-23-tienda-en-ficha-veterinaria.md)
+
 ## 2026-11-23 · fix: el cartel en iPhone se veía con el texto enorme y sin foto
 - Rama: develop
 - Qué cambió y por qué: el cartel se reducía con CSS `zoom`, pero Safari en iOS no aplica `zoom` a las medidas en `rem` (tamaños de letra, paddings y QR de Tailwind). La caja de la hoja se encogía y el texto no: el título se salía y la foto se quedaba sin alto. En el modo responsive de Chrome se veía bien porque Chrome sí escala los `rem`. Ahora se reduce con `transform: scale` y el alto del contenedor se fija con el de la hoja escalada (en el script previo al pintado y en `PosterFit`, que también vuelve a medir si cambia el alto de la hoja). Al imprimir se quitan la escala y el alto.

@@ -38,6 +38,12 @@ export type StoreItem = {
 
 export type StoreCatalog = { total: number; items: StoreItem[] };
 
+/** A product in the small store box outside the store (`fetchStoreShowcase`, `StoreShowcase`). */
+export type StoreShowcaseItem = Pick<
+  StoreItem,
+  'id' | 'slug' | 'name' | 'priceCents' | 'compareAtPriceCents' | 'coverUrl' | 'coverAlt'
+>;
+
 export type StoreImage = { url: string; alt: string | null };
 
 export type StoreVariant = {

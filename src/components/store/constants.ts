@@ -4,6 +4,13 @@ import type { StoreFilters, StoreSort } from './types';
 export const STORE_PAGE_SIZE = 24;
 /** Products in the «Los más vendidos» box of `/tienda`. */
 export const STORE_BEST_SELLERS_SIZE = 5;
+/** Products in the small store box of other pages (veterinary page). */
+export const STORE_SHOWCASE_SIZE = 3;
+/**
+ * Server cache of that box: 10 min, like the blog's window (a lower value would make Next
+ * regenerate blog pages every minute), and below the 1 h signature of product photos.
+ */
+export const STORE_SHOWCASE_REVALIDATE_SECONDS = 600;
 export const STORE_REVIEWS_PAGE_SIZE = 10;
 export const STORE_WISHLIST_PAGE_SIZE = 24;
 

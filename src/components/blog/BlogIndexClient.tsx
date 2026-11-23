@@ -10,6 +10,7 @@ import { NewsletterSubscription } from 'kadesh/components/newsletter';
 import { useSearchParams } from 'next/navigation';
 import { Routes } from 'kadesh/core/routes';
 import BlogSidebar from './BlogSidebar';
+import type { StoreShowcaseItem } from 'kadesh/components/store/types';
 import type { BlogPost, BlogSidebarCategory, BlogSidebarPost } from './types';
 
 /** Con la columna a la derecha caben 2 tarjetas por fila en lg y 3 en xl. */
@@ -43,6 +44,8 @@ type BlogIndexClientProps = {
   mostViewed?: BlogSidebarPost[];
   /** Categorías del blog, debajo de la publicidad. */
   categories?: BlogSidebarCategory[];
+  /** Productos de la tienda para la columna derecha. */
+  storeProducts?: StoreShowcaseItem[];
 };
 
 export default function BlogIndexClient({
@@ -51,6 +54,7 @@ export default function BlogIndexClient({
   initialCategory = null,
   mostViewed = [],
   categories = [],
+  storeProducts = [],
 }: BlogIndexClientProps) {
   return (
     <div className="min-h-screen bg-[#ffffff] dark:bg-[#121212]">
@@ -114,6 +118,7 @@ export default function BlogIndexClient({
           ranked
           categories={categories}
           activeCategory={initialCategory}
+          storeProducts={storeProducts}
         />
       </div>
 

@@ -35,6 +35,11 @@ export function storeListingHref(filters: StoreFilters): string {
   return query ? `${Routes.store.index}?${query}` : Routes.store.index;
 }
 
+/** Any view other than the clean `/tienda` (a filter or another order): kept out of the index. */
+export function isStoreVariantView(filters: StoreFilters): boolean {
+  return hasStoreFilters(filters) || filters.sort !== DEFAULT_STORE_FILTERS.sort;
+}
+
 export function hasStoreFilters(filters: StoreFilters): boolean {
   return Boolean(filters.search || filters.category || filters.brand || filters.seller || filters.onSale);
 }

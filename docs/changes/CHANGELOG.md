@@ -15,6 +15,22 @@ Formato:
 
 ---
 
+## 2026-11-23 · fix: la tienda ordenada no se indexa; «Reportes recientes» al ancho del mapa
+- Rama: feat/pet-store
+- Qué cambió y por qué (novena prueba en Chrome):
+  - `/tienda?orden=…` seguía indexable y con su `CollectionPage`. Ahora cualquier vista distinta de `/tienda` limpia (filtro u otro orden) es noindex y no lleva JSON-LD (`isStoreVariantView`).
+  - «Reportes recientes» en `/animales` no se alineaba con el mapa a 1440: ahora va a todo el ancho con el mismo margen que el panel lateral (`px-5`) y una línea arriba.
+- Archivos: src/components/store/searchParams.ts, src/components/store/store-seo.ts, src/app/tienda/page.tsx, src/components/animals/AnimalsRecentReports.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (SEO y diseño de la web)
+
+## 2026-11-23 · docs: prompts de móvil para huellitas, perfil público y ranking
+- Rama: feat/pet-store
+- Qué cambió y por qué: los prompts de huellitas y perfil público se escribieron antes del ranking rediseñado, los colores por nivel, la lista de niveles y las huellitas de la tienda. Se reescribieron con lo que hay hoy en la web y se separó el ranking en su propio prompt. Orden: 1) huellitas y sistema visual de niveles (colores, íconos, foto con insignia, lista de niveles), 2) perfil público, autor y ajustes, 3) ranking «Quién apoya más» y su sección de portada.
+- Archivos: docs/mobile-sync/{2026-11-17-huellitas-perfil.md,2026-11-18-perfil-publico.md,2026-11-18-ranking-quien-apoya-mas.md (nuevo),README.md}
+- GraphQL: ninguna
+- Móvil: no aplica (son los prompts para la app)
+
 ## 2026-11-23 · feat: envío y devoluciones en la página y el JSON-LD de cada producto
 - Rama: feat/pet-store
 - Qué cambió y por qué: Google recomienda que la oferta de un producto diga cuánto cuesta el envío y cuál es la política de devoluciones. Regla de la tienda: solo defectuosos, dañados o equivocados, avisar en 5 días, el envío de regreso lo paga quien compra. La oferta del JSON-LD lleva `shippingDetails` (tarifa fija, o 0 si el precio llega al envío gratis; México) y `hasMerchantReturnPolicy` (5 días, por paquetería, el cliente paga el regreso). Lo mismo se ve debajo del botón de compra en los productos que vende Kadesh, porque Google pide que coincida con lo visible.

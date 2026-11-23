@@ -15,12 +15,13 @@ export default async function AnimalsRecentReports() {
   if (reports.length === 0) return null;
 
   return (
-    <div className="bg-[#f7f8fa] dark:bg-night">
-      <section aria-labelledby="reportes-recientes" className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="border-t border-[#ececec] bg-[#f7f8fa] dark:border-white/10 dark:bg-night">
+      {/* Same edges as the directory's side panel (px-5), full width like the map above. */}
+      <section aria-labelledby="reportes-recientes" className="w-full px-5 py-10">
         <h2 id="reportes-recientes" className="text-base font-bold text-[#121212] dark:text-white">
           Reportes recientes
         </h2>
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {reports.map((report) => {
             const name = animalDisplayName({ name: report.name, typeName: report.typeName });
             return (

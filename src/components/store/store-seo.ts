@@ -1,21 +1,21 @@
 import type { Metadata } from 'next';
 import { Routes } from 'kadesh/core/routes';
 import { SITE_URL } from 'kadesh/core/site';
-import { hasStoreFilters } from './searchParams';
+import { isStoreVariantView } from './searchParams';
 import type { StoreFilters, StoreItem, StoreProduct } from './types';
 
 const LISTING_TITLE = 'Tienda Kadesh Pet: productos para tu mascota';
 const LISTING_DESCRIPTION =
   'Alimento, accesorios y cuidado para tu mascota, elegidos por el equipo de Kadesh. Algunos los vende Kadesh y otros te llevan a Mercado Libre.';
 
-/** `/tienda`. Filtered views point their canonical at the clean listing and stay out of the index. */
+/** `/tienda`. Filtered or re-sorted views point their canonical at the clean listing and stay out of the index. */
 export function buildStoreListingMetadata(filters: StoreFilters): Metadata {
   const url = `${SITE_URL}${Routes.store.index}`;
   return {
     title: LISTING_TITLE,
     description: LISTING_DESCRIPTION,
     alternates: { canonical: url },
-    robots: hasStoreFilters(filters) ? { index: false, follow: true } : undefined,
+    robots: isStoreVariantView(filters) ? { index: false, follow: true } : undefined,
     openGraph: { title: LISTING_TITLE, description: LISTING_DESCRIPTION, url, type: 'website', locale: 'es_MX' },
   };
 }

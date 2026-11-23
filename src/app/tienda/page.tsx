@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import JsonLd from 'kadesh/components/blog/JsonLd';
 import StoreListingPage, { loadStoreListing } from 'kadesh/components/store/StoreListingPage';
-import { hasStoreFilters, parseStoreSearchParams } from 'kadesh/components/store/searchParams';
+import { isStoreVariantView, parseStoreSearchParams } from 'kadesh/components/store/searchParams';
 import { buildStoreListingJsonLd, buildStoreListingMetadata } from 'kadesh/components/store/store-seo';
 
 // Product photos have a URL signed for 1 h: this stays well below that.
@@ -22,8 +22,8 @@ export default async function StorePage({ searchParams }: { searchParams: Search
 
   return (
     <>
-      {/* Only the clean listing is indexed (filtered views are noindex). */}
-      {hasStoreFilters(filters) ? null : <JsonLd data={buildStoreListingJsonLd(catalog.items)} />}
+      {/* Only the clean listing is indexed (filtered or re-sorted views are noindex). */}
+      {isStoreVariantView(filters) ? null : <JsonLd data={buildStoreListingJsonLd(catalog.items)} />}
       <StoreListingPage filters={filters} catalog={catalog} facets={facets} top={top} />
     </>
   );

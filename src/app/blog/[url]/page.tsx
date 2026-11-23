@@ -11,6 +11,7 @@ import {
   fetchPublishedPostByUrl,
   fetchRelatedPosts,
 } from 'kadesh/components/blog/server';
+import { fetchStoreShowcase } from 'kadesh/components/store/server';
 import BlogPostPageClient from 'kadesh/components/blog/post/BlogPostPageClient';
 
 // Misma ventana que el caché de datos del blog (`CACHE_WINDOW_SECONDS` en blog/server.ts).
@@ -43,15 +44,21 @@ export default async function BlogPostPage({
     notFound();
   }
 
-  const [related, categories] = await Promise.all([
+  const [related, categories, storeProducts] = await Promise.all([
     fetchRelatedPosts(post),
     fetchBlogCategories(),
+    fetchStoreShowcase(),
   ]);
 
   return (
     <>
       <JsonLd data={buildBlogPostingJsonLd(post)} />
-      <BlogPostPageClient post={post} related={related} categories={categories} />
+      <BlogPostPageClient
+        post={post}
+        related={related}
+        categories={categories}
+        storeProducts={storeProducts}
+      />
     </>
   );
 }

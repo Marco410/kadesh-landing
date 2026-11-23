@@ -16,6 +16,7 @@ import PostActions from './PostActions';
 import AuthorCard from '../../shared/AuthorCard';
 import CommentsSection from './CommentsSection';
 import BlogSidebar from '../BlogSidebar';
+import type { StoreShowcaseItem } from 'kadesh/components/store/types';
 import { dayKeyMx, formatLongDateMx } from 'kadesh/utils/format-date';
 
 interface BlogPostDetailProps {
@@ -24,9 +25,16 @@ interface BlogPostDetailProps {
   related?: RelatedPostsResult;
   /** Categorías del blog, debajo de la publicidad. */
   categories?: BlogSidebarCategory[];
+  /** Productos de la tienda para la columna derecha. */
+  storeProducts?: StoreShowcaseItem[];
 }
 
-export default function BlogPostDetailComponent({ post, related, categories }: BlogPostDetailProps) {
+export default function BlogPostDetailComponent({
+  post,
+  related,
+  categories,
+  storeProducts,
+}: BlogPostDetailProps) {
   const categoryValue = post.category?.name || '';
   const categoryLabel = getCategoryLabel(categoryValue);
   const categoryColors = getCategoryColors(categoryValue);
@@ -164,6 +172,7 @@ export default function BlogPostDetailComponent({ post, related, categories }: B
         posts={related?.posts ?? []}
         categories={categories}
         activeCategory={post.category?.url}
+        storeProducts={storeProducts}
       />
       </div>
     </article>

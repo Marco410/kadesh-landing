@@ -43,6 +43,9 @@ const PRODUCT_QUERY = `
       animalTypes
       ratingBreakdown
       related { ${STORE_ITEM_FIELDS} }
+      shippingFlatCents
+      freeShippingMinCents
+      returnDays
     }
   }
 `;

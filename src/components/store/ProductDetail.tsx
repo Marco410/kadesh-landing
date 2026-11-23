@@ -4,6 +4,7 @@ import { ArrowRight01Icon } from '@hugeicons/core-free-icons';
 import { Footer, Navigation } from 'kadesh/components/layout';
 import { Routes } from 'kadesh/core/routes';
 import { DEFAULT_STORE_FILTERS } from './constants';
+import { formatPrice } from './format';
 import ProductBuyBox from './ProductBuyBox';
 import ProductCard from './ProductCard';
 import ProductGallery from './ProductGallery';
@@ -80,6 +81,7 @@ export default function ProductDetail({ product, reviews }: { product: StoreProd
                 <p className="text-lg leading-relaxed text-[#3a3a3a] dark:text-[#d0d0d0]">{item.shortDescription}</p>
               ) : null}
               <ProductBuyBox item={item} variants={product.variants} />
+              {item.seller === 'kadesh' ? <ShippingAndReturns product={product} /> : null}
             </div>
           </div>
 
@@ -121,6 +123,21 @@ export default function ProductDetail({ product, reviews }: { product: StoreProd
       </StoreWishlistProvider>
 
       <Footer />
+    </div>
+  );
+}
+
+/** What the Product JSON-LD says about shipping and returns, also visible (Google asks for both to match). */
+function ShippingAndReturns({ product }: { product: StoreProduct }) {
+  const free = product.freeShippingMinCents > 0 ? ` · gratis desde ${formatPrice(product.freeShippingMinCents)}` : '';
+  const shipping = product.shippingFlatCents > 0 ? `Envío ${formatPrice(product.shippingFlatCents)}${free}.` : 'Envío gratis.';
+  return (
+    <div className="rounded-2xl border border-[#ececec] bg-white p-4 text-sm leading-relaxed text-[#3a3a3a] dark:border-[#2a2a2a] dark:bg-[#1e1e1e] dark:text-[#d0d0d0]">
+      <p>{shipping}</p>
+      <p className="mt-1">
+        Devoluciones solo si llega defectuoso, dañado o no es lo que pediste: avísanos en los {product.returnDays} días
+        siguientes a recibirlo. El envío de regreso lo pagas tú.
+      </p>
     </div>
   );
 }

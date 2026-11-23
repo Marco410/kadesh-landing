@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-23 · feat: envío y devoluciones en la página y el JSON-LD de cada producto
+- Rama: feat/pet-store
+- Qué cambió y por qué: Google recomienda que la oferta de un producto diga cuánto cuesta el envío y cuál es la política de devoluciones. Regla de la tienda: solo defectuosos, dañados o equivocados, avisar en 5 días, el envío de regreso lo paga quien compra. La oferta del JSON-LD lleva `shippingDetails` (tarifa fija, o 0 si el precio llega al envío gratis; México) y `hasMerchantReturnPolicy` (5 días, por paquetería, el cliente paga el regreso). Lo mismo se ve debajo del botón de compra en los productos que vende Kadesh, porque Google pide que coincida con lo visible.
+- Archivos: src/components/store/ProductDetail.tsx, src/components/store/store-seo.ts, src/components/store/server.ts, src/components/store/types.ts
+- GraphQL: `StoreCatalogProduct` pide `shippingFlatCents`, `freeShippingMinCents` y `returnDays` (nuevos en kadesh-back: desplegar el back primero o la página del producto da 404)
+- Móvil: no aplica (la app puede mostrar la misma línea con esos campos cuando quieras)
+
 ## 2026-11-23 · feat: SEO de la tienda y de las fichas de animales
 - Rama: feat/pet-store
 - Qué cambió y por qué (revisión de SEO y GEO de tienda, blog y animales):

@@ -131,7 +131,41 @@ export function buildProductJsonLd(product: StoreProduct): Record<string, unknow
       price: (item.priceCents / 100).toFixed(2),
       availability: item.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       seller: { '@type': 'Organization', name: 'Kadesh Pet' },
+      shippingDetails: shippingDetails(product),
+      hasMerchantReturnPolicy: returnPolicy(product),
     };
   }
   return { '@context': 'https://schema.org', '@graph': [data, breadcrumb] };
+}
+
+/** Shipping to Mexico for one piece: the flat rate, or 0 when the price alone reaches free shipping. */
+function shippingDetails(product: StoreProduct): Record<string, unknown> {
+  const { priceCents, currency } = product.item;
+  const free =
+    product.shippingFlatCents === 0 ||
+    (product.freeShippingMinCents > 0 && priceCents >= product.freeShippingMinCents);
+  return {
+    '@type': 'OfferShippingDetails',
+    shippingRate: {
+      '@type': 'MonetaryAmount',
+      value: free ? '0' : (product.shippingFlatCents / 100).toFixed(2),
+      currency,
+    },
+    shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'MX' },
+  };
+}
+
+/**
+ * Returns only for a defective, damaged or wrong product, reported within `returnDays` of delivery;
+ * the buyer pays the shipping back (the rule lives in kadesh-back, `STORE_RETURN_DAYS`).
+ */
+function returnPolicy(product: StoreProduct): Record<string, unknown> {
+  return {
+    '@type': 'MerchantReturnPolicy',
+    applicableCountry: 'MX',
+    returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+    merchantReturnDays: product.returnDays,
+    returnMethod: 'https://schema.org/ReturnByMail',
+    returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
+  };
 }

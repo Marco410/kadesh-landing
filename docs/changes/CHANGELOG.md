@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-23 · fix: el cartel en iPhone se veía con el texto enorme y sin foto
+- Rama: develop
+- Qué cambió y por qué: el cartel se reducía con CSS `zoom`, pero Safari en iOS no aplica `zoom` a las medidas en `rem` (tamaños de letra, paddings y QR de Tailwind). La caja de la hoja se encogía y el texto no: el título se salía y la foto se quedaba sin alto. En el modo responsive de Chrome se veía bien porque Chrome sí escala los `rem`. Ahora se reduce con `transform: scale` y el alto del contenedor se fija con el de la hoja escalada (en el script previo al pintado y en `PosterFit`, que también vuelve a medir si cambia el alto de la hoja). Al imprimir se quitan la escala y el alto.
+- Archivos: src/components/animals/poster/fit.ts, src/components/animals/poster/PosterFit.tsx, src/app/cartel/[slug]/page.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (cartel para imprimir de la web; la app lo abre en el navegador)
+
 ## 2026-11-23 · fix: la tienda ordenada no se indexa; «Reportes recientes» al ancho del mapa
 - Rama: feat/pet-store
 - Qué cambió y por qué (novena prueba en Chrome):

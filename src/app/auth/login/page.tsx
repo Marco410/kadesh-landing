@@ -108,7 +108,7 @@ function LoginPageContent() {
                 panel: "mt-6",
               }}
             >
-              <Tab key="login" title="Iniciar Sesión">
+              <Tab key="login" title="Iniciar sesión">
                 <form
                   onSubmit={(e) => {
                     setSuccessMessage("");
@@ -212,7 +212,7 @@ function LoginPageContent() {
                         <span>Iniciando sesión...</span>
                       </>
                     ) : (
-                      "Iniciar Sesión"
+                      "Iniciar sesión"
                     )}
                   </button>
 

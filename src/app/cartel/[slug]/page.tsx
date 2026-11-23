@@ -16,6 +16,12 @@ import {
 } from 'kadesh/components/animals/poster/folio';
 import { folioQrDataUri } from 'kadesh/components/animals/poster/qr';
 import PosterToolbar from 'kadesh/components/animals/poster/PosterToolbar';
+import PosterFit from 'kadesh/components/animals/poster/PosterFit';
+import {
+  POSTER_FIT_INNER_ID,
+  POSTER_WIDTH_PX,
+  posterFitScript,
+} from 'kadesh/components/animals/poster/fit';
 import { normalizeMxPhone } from 'kadesh/utils/phone';
 
 
@@ -28,6 +34,10 @@ const CHANNEL_DISPLAY = `${new URL(SITE_URL).host}${Routes.channel}`;
  * - Teléfono: sale por defecto (ya es público en la ficha y en la calle es lo más rápido para
  *   avisar). `?telefono=0` lo quita para quien no quiera exponerlo.
  * - Formato: vertical por defecto; `?formato=horizontal` para carta horizontal (paredes, vitrinas).
+ *
+ * - Tamaño: el cartel se maqueta siempre al tamaño real de la hoja (tipografía fija, sin `sm:` ni
+ *   `vw`) y `PosterFit` lo reduce para que quepa en pantallas angostas: en el celular se ve la hoja
+ *   completa en miniatura, igual que saldrá impresa.
  *
  * Datos: `fetchAnimalForShare` (la misma consulta que la metadata de la ficha, caché de 60 s), así
  * que la URL firmada de la foto siempre está vigente.
@@ -78,6 +88,7 @@ export default async function AnimalPosterPage({
   const phoneOn = query.telefono !== '0';
   const showPhone = phoneOn && Boolean(phone);
   const landscape = query.formato === 'horizontal';
+  const posterWidth = landscape ? POSTER_WIDTH_PX.landscape : POSTER_WIDTH_PX.portrait;
   const marks = clip(animal.physical_description ?? '', landscape ? MAX_MARKS_LANDSCAPE : MAX_MARKS);
   // Horizontal: otras fotos del reporte (la portada ya va grande) para reconocerlo desde otro ángulo.
   const extraPhotos = landscape
@@ -93,14 +104,14 @@ export default async function AnimalPosterPage({
   const reward = rewardPosterText(animal, facts.status);
   const headline = (
     <header className="shrink-0 text-center">
-      <div className="px-6 py-4 text-white sm:py-6" style={{ backgroundColor: color }}>
-        <p className="text-[clamp(2.25rem,9vw,4.5rem)] font-black leading-none tracking-[-0.03em]">
+      <div className="px-6 py-6 text-white" style={{ backgroundColor: color }}>
+        <p className="text-[4.5rem] font-black leading-none tracking-[-0.03em]">
           {posterHeadline(facts.status)}
         </p>
       </div>
       {/* Recompensa: franja ámbar bajo el título, para que se lea de lejos. */}
       {reward ? (
-        <p className="bg-amber-400 px-6 py-2 text-[clamp(1.25rem,4.5vw,2.25rem)] font-black uppercase leading-tight tracking-[-0.01em] text-[#3d2800]">
+        <p className="bg-amber-400 px-6 py-2 text-[2.25rem] font-black uppercase leading-tight tracking-[-0.01em] text-[#3d2800]">
           {reward}
         </p>
       ) : null}
@@ -116,27 +127,27 @@ export default async function AnimalPosterPage({
 
   // En horizontal todo va más grande: la columna de texto tiene alto de sobra y el cartel se lee de lejos.
   const details = (
-    <div className={landscape ? 'shrink-0 space-y-2 text-left' : 'space-y-2 px-6 pt-4 text-center sm:px-10'}>
+    <div className={landscape ? 'shrink-0 space-y-2 text-left' : 'space-y-2 px-10 pt-4 text-center'}>
       <h1
         className={`font-black leading-tight tracking-[-0.03em] ${
-          landscape ? 'text-[clamp(1.75rem,4.2vw,3.25rem)]' : 'text-[clamp(1.75rem,6vw,3rem)]'
+          landscape ? 'text-[3.25rem]' : 'text-5xl'
         }`}
       >
         {facts.name}
       </h1>
       {kind || facts.shortTraits.length ? (
-        <p className={`font-semibold text-[#3a3a3a] ${landscape ? 'text-base sm:text-xl' : 'text-base sm:text-lg'}`}>
+        <p className={`font-semibold text-[#3a3a3a] ${landscape ? 'text-xl' : 'text-lg'}`}>
           {[kind, ...facts.shortTraits].filter(Boolean).join(' · ')}
         </p>
       ) : null}
       {facts.location ? (
-        <p className={`text-[#3a3a3a] ${landscape ? 'text-base sm:text-lg' : 'text-base sm:text-lg'}`}>
+        <p className="text-lg text-[#3a3a3a]">
           <strong>Último lugar:</strong> {facts.location}
           {facts.seenAt ? ` · ${facts.seenAt}` : ''}
         </p>
       ) : null}
       {marks ? (
-        <p className={`leading-snug text-[#3a3a3a] ${landscape ? 'text-sm sm:text-base' : 'text-sm sm:text-base'}`}>
+        <p className="text-base leading-snug text-[#3a3a3a]">
           {marks}
         </p>
       ) : null}
@@ -158,7 +169,7 @@ export default async function AnimalPosterPage({
 
   const contact = (
     <footer
-      className={`flex items-center gap-4 border-t-4 sm:gap-6 ${landscape ? 'mt-auto shrink-0 pt-3' : 'mt-4 px-6 py-4 sm:px-10'}`}
+      className={`flex items-center gap-6 border-t-4 ${landscape ? 'mt-auto shrink-0 pt-3' : 'mt-4 px-10 py-4'}`}
       style={{ borderColor: color }}
     >
       {folio ? (
@@ -166,24 +177,24 @@ export default async function AnimalPosterPage({
         <img
           src={folioQrDataUri(folio)}
           alt="Código QR del reporte"
-          className={`shrink-0 ${landscape ? 'h-24 w-24 sm:h-32 sm:w-32' : 'h-28 w-28 sm:h-36 sm:w-36'}`}
+          className={`shrink-0 ${landscape ? 'h-32 w-32' : 'h-36 w-36'}`}
         />
       ) : null}
       <div className="min-w-0 flex-1 space-y-1">
-        <p className={`font-bold leading-snug ${landscape ? 'text-base sm:text-xl' : 'text-base sm:text-xl'}`}>
+        <p className="text-xl font-bold leading-snug">
           {posterCallToAction(facts.status)}
         </p>
         {showPhone ? (
-          <p className={`font-black tracking-tight ${landscape ? 'text-xl sm:text-3xl' : 'text-2xl sm:text-3xl'}`}>
+          <p className="text-3xl font-black tracking-tight">
             Llama al {phone}
           </p>
         ) : null}
-        {folio ? <p className="break-all text-sm font-semibold text-[#3a3a3a] sm:text-base">{folioDisplayUrl(folio)}</p> : null}
+        {folio ? <p className="break-all text-base font-semibold text-[#3a3a3a]">{folioDisplayUrl(folio)}</p> : null}
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5a5a5a]">
           {folioLabel ? `Folio ${folioLabel} · ` : ''}KADESH Pet
         </p>
         {/* Canal de WhatsApp: `/canal` y no el enlace de WhatsApp, para no reimprimir si cambia. */}
-        <p className="text-xs text-[#5a5a5a] sm:text-sm">
+        <p className="text-sm text-[#5a5a5a]">
           Más casos de tu zona en WhatsApp: <span className="font-semibold text-[#3a3a3a]">{CHANNEL_DISPLAY}</span>
         </p>
       </div>
@@ -198,7 +209,12 @@ export default async function AnimalPosterPage({
         @media print {
           body * { visibility: hidden; }
           #cartel, #cartel * { visibility: visible; }
-          #cartel { position: absolute; inset: 0; margin: 0; box-shadow: none; border: 0; }
+          #cartel { position: absolute; inset: 0; width: 100%; margin: 0; box-shadow: none; border: 0; }
+          /* Fills the printable area exactly. With equal margins the area is not 11:8.5 (landscape:
+             10.3 × 7.8 in), so keeping the ratio left the sheet a few px taller than the page and
+             Chrome pushed the footer (QR and phone) onto a second page. */
+          #cartel { height: 100%; aspect-ratio: auto; break-inside: avoid; }
+          #${POSTER_FIT_INNER_ID} { zoom: 1 !important; }
           #cartel { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>
@@ -214,32 +230,38 @@ export default async function AnimalPosterPage({
         landscape={landscape}
       />
 
-      {landscape ? (
-        <article
-          id="cartel"
-          className="mx-auto flex aspect-[11/8.5] w-full max-w-[11in] flex-col overflow-hidden bg-white text-[#121212] shadow-[0_16px_40px_rgba(15,35,80,0.18)]"
-        >
-          {headline}
-          <div className="grid min-h-0 flex-1 grid-cols-[55%_1fr]">
-            <div className="relative min-h-0 bg-[#f3f5f8]">{photo}</div>
-            <div className="flex min-h-0 flex-col gap-3 p-5 sm:gap-4 sm:p-7">
+      <div className="px-4 sm:px-6 print:p-0">
+        <PosterFit widthPx={posterWidth}>
+          {landscape ? (
+            <article
+              id="cartel"
+              className="flex aspect-[11/8.5] w-full flex-col overflow-hidden bg-white text-[#121212] shadow-[0_16px_40px_rgba(15,35,80,0.18)]"
+            >
+              {headline}
+              <div className="grid min-h-0 flex-1 grid-cols-[55%_1fr]">
+                <div className="relative min-h-0 bg-[#f3f5f8]">{photo}</div>
+                <div className="flex min-h-0 flex-col gap-4 p-7">
+                  {details}
+                  {morePhotos}
+                  {contact}
+                </div>
+              </div>
+            </article>
+          ) : (
+            <article
+              id="cartel"
+              className="flex aspect-[8.5/11] w-full flex-col overflow-hidden bg-white text-[#121212] shadow-[0_16px_40px_rgba(15,35,80,0.18)]"
+            >
+              {headline}
+              <div className="relative min-h-0 flex-1 bg-[#f3f5f8]">{photo}</div>
               {details}
-              {morePhotos}
               {contact}
-            </div>
-          </div>
-        </article>
-      ) : (
-        <article
-          id="cartel"
-          className="mx-auto flex aspect-[8.5/11] w-full max-w-[8.5in] flex-col overflow-hidden bg-white text-[#121212] shadow-[0_16px_40px_rgba(15,35,80,0.18)]"
-        >
-          {headline}
-          <div className="relative min-h-0 flex-1 bg-[#f3f5f8]">{photo}</div>
-          {details}
-          {contact}
-        </article>
-      )}
+            </article>
+          )}
+        </PosterFit>
+        {/* Escala la hoja antes del primer pintado (sin esperar a que cargue React). */}
+        <script dangerouslySetInnerHTML={{ __html: posterFitScript(posterWidth) }} />
+      </div>
     </main>
   );
 }

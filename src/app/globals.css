@@ -241,6 +241,11 @@
   }
 }
 
+/* El menú móvil es azul kadesh (y azul noche en oscuro): el anillo de foco azul no se veía. */
+#menu-movil :focus-visible {
+  outline-color: #ffffff;
+}
+
 /* Scrollbar — usa --color-kadesh */
 ::-webkit-scrollbar {
   width: 18px;
@@ -756,12 +761,55 @@ html:has(.kd-dash) body {
 
 /*
  * La base del sitio pone `overflow-x: hidden; overflow-y: auto` en html y body. En el body eso lo
- * vuelve contenedor de scroll (aunque nunca se desplace) y rompe `position: sticky` de la barra
- * y del menú. En el panel el body vuelve a `visible`; el recorte horizontal lo sigue haciendo el
- * viewport (el overflow de html se propaga a él).
+ * vuelve contenedor de scroll (aunque nunca se desplace) y rompe `position: sticky` (barra y menú
+ * del panel, columnas de la tienda y del blog). `clip` recorta igual sin crear contenedor de
+ * scroll; el recorte horizontal lo sigue haciendo también el viewport (el overflow de html se
+ * propaga a él). En el panel el body va `visible`, como antes.
  */
+body {
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
 html:has(.kd-dash) body {
   overflow: visible;
+}
+
+/*
+ * Los 72 px de `scroll-padding-top` son por el header fijo del sitio. En el panel, la barra de arriba
+ * es sticky y vive en el flujo: con ese margen, enfocar un botón de la barra (Shift+Tab hasta «Abrir
+ * menú») hacía que el navegador desplazara la página creyendo que quedaba tapado.
+ */
+html:has(.kd-dash) {
+  scroll-padding-top: 0;
+}
+
+/*
+ * Sin ese margen, un campo que se enfoca subiendo (Shift+Tab) quedaba bajo la barra sticky. El
+ * margen va solo en lo enfocable del contenido (`#app-content`), no en la barra: así los campos
+ * quedan a la vista y los botones de la barra no desplazan la página.
+ */
+.kd-dash #app-content :is(a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])) {
+  scroll-margin-top: 4.5rem;
+}
+
+/*
+ * Desde `lg` la barra se despega del borde (`lg:top-3`) y termina 0.75rem más abajo: el margen suma
+ * esa separación y un poco de aire.
+ */
+@media (min-width: 1024px) {
+  .kd-dash #app-content :is(a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])) {
+    scroll-margin-top: calc(4.5rem + 0.75rem + 0.5rem);
+  }
+}
+
+/*
+ * Modales y menús bloquean el fondo con `body.style.overflow = "hidden"`, pero quien hace scroll es
+ * el viewport (toma el overflow de html), así que la página seguía moviéndose detrás. Mientras el
+ * body tenga ese bloqueo, html también se bloquea. Sirve para todos los que ya lo hacen así.
+ */
+html:has(> body[style*="overflow: hidden"]) {
+  overflow: hidden;
 }
 
 .dash-grad-accent {
@@ -910,4 +958,10 @@ html:has(.kd-dash) body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Sileo capitalizes every word of a toast title ("Agregado A Tu Carrito"): Spanish uses sentence case.
+   Sileo injects its stylesheet at runtime, after this one, so the rule needs more specificity to win. */
+html body [data-sileo-title] {
+  text-transform: none;
 }

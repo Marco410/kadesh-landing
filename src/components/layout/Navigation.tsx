@@ -12,15 +12,20 @@ import { useUser } from "kadesh/utils/UserContext";
 import { useLogout } from "kadesh/components/auth/hooks";
 // Directo (no el barrel): el barrel de notificaciones importa el layout y haría un ciclo.
 import NotificationBell from "kadesh/components/notifications/NotificationBell";
+import { STORE_NAV_ENABLED } from "kadesh/components/store/constants";
+import CartLink from "kadesh/components/store/cart/CartLink";
 import { useUnreadNotifications } from "kadesh/components/notifications/hooks";
 import FontSizeSlider from "./FontSizeSlider";
 import ThemeToggle from "./ThemeToggle";
+import { useBodyScrollLock } from "kadesh/utils/useBodyScrollLock";
 
 const PRIMARY_NAV = [
   { label: "Inicio", href: Routes.home },
   { label: "Veterinarias", href: Routes.veterinaries.index },
   { label: "Animales", href: Routes.animals.index },
   { label: "Eventos", href: Routes.events.index },
+  // Only once the store is open (NEXT_PUBLIC_STORE_ENABLED); closed, `/tienda` is a 404.
+  ...(STORE_NAV_ENABLED ? [{ label: "Tienda", href: Routes.store.index }] : []),
   { label: "Ranking", href: Routes.ranking },
   { label: "Blog", href: Routes.blog.index },
   { label: "Conócenos", href: Routes.conocenos },
@@ -35,6 +40,57 @@ const PRIMARY_NAV = [
  */
 export default function Navigation({ overDarkHero = false }: { overDarkHero?: boolean } = {}) {
   const [opened, setOpened] = useState(false);
+  // The open mobile menu keeps the page behind it still.
+  useBodyScrollLock(opened);
+  // Focus goes into the menu when it opens (the burger stays under it) and back to the burger when
+  // it closes, without scrolling the page to the fixed header.
+  const menuCloseRef = useRef<HTMLButtonElement>(null);
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  const wasOpened = useRef(false);
+  useEffect(() => {
+    if (opened) {
+      wasOpened.current = true;
+      const timer = window.setTimeout(() => menuCloseRef.current?.focus({ preventScroll: true }), 50);
+      const onKey = (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+          setOpened(false);
+          return;
+        }
+        // Tab stays inside the open menu: past the last control it goes back to the first.
+        if (event.key !== "Tab") return;
+        const menu = document.getElementById("menu-movil");
+        if (!menu) return;
+        const focusable = Array.from(
+          menu.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), input:not([disabled]), select, [tabindex]:not([tabindex="-1"])',
+          ),
+        ).filter((element) => element.offsetParent !== null);
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = document.activeElement as HTMLElement | null;
+        if (!active || !menu.contains(active)) {
+          event.preventDefault();
+          first.focus({ preventScroll: true });
+        } else if (event.shiftKey && active === first) {
+          event.preventDefault();
+          last.focus({ preventScroll: true });
+        } else if (!event.shiftKey && active === last) {
+          event.preventDefault();
+          first.focus({ preventScroll: true });
+        }
+      };
+      document.addEventListener("keydown", onKey);
+      return () => {
+        window.clearTimeout(timer);
+        document.removeEventListener("keydown", onKey);
+      };
+    }
+    if (wasOpened.current) {
+      wasOpened.current = false;
+      burgerRef.current?.focus({ preventScroll: true });
+    }
+  }, [opened]);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -139,6 +195,8 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
             </Link>
           ) : null}
 
+          {STORE_NAV_ENABLED ? <CartLink className={navLinkClass} /> : null}
+
           <FontSizeSlider tone={atTopLight ? "onLight" : "onDark"} />
 
           <ThemeToggle
@@ -202,7 +260,7 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-[#212121] dark:text-[#ffffff] hover:bg-orange-500/10 dark:hover:bg-white/10 transition-colors"
                     >
-                      Cerrar Sesión
+                      Cerrar sesión
                     </button>
                   </motion.div>
                 )}
@@ -217,24 +275,31 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                   : "bg-white/10 hover:bg-white/20 text-white"
               }`}
             >
-              Iniciar Sesión
+              Iniciar sesión
             </Link>
           )}
         </div>
 
-        {user?.id ? (
-          <div className="ml-auto mr-3 lg:hidden">
-            <NotificationBell
-              variant="link"
-              tone={atTopLight ? "onLight" : "onDark"}
-              count={unreadCount}
-            />
+        {user?.id || STORE_NAV_ENABLED ? (
+          <div className="ml-auto mr-3 flex items-center gap-1 lg:hidden">
+            {STORE_NAV_ENABLED ? <CartLink className={navLinkClass} /> : null}
+            {user?.id ? (
+              <NotificationBell
+                variant="link"
+                tone={atTopLight ? "onLight" : "onDark"}
+                count={unreadCount}
+              />
+            ) : null}
           </div>
         ) : null}
 
         {/* Mobile Burger Menu */}
         <button
+          ref={burgerRef}
+          type="button"
           onClick={() => setOpened(!opened)}
+          aria-expanded={opened}
+          aria-controls="menu-movil"
           className={`lg:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1.5 z-50 ${
             atTopLight
               ? "text-gray-800"
@@ -242,7 +307,7 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                 ? "text-gray-700 dark:text-gray-300"
                 : "text-white"
           }`}
-          aria-label="Toggle menu"
+          aria-label={opened ? "Cerrar menú" : "Abrir menú"}
         >
           <motion.span
             className={`w-6 h-0.5 rounded transition-all ${
@@ -293,6 +358,10 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              id="menu-movil"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menú"
               className="fixed top-0 right-0 h-full w-90 bg-kadesh dark:bg-night-raised z-50 lg:hidden overflow-y-auto shadow-2xl"
             >
               <div className="p-8">
@@ -307,10 +376,13 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                       iconClassName="w-6 h-6"
                     />
                     <button
+                      ref={menuCloseRef}
+                      type="button"
                       onClick={() => setOpened(false)}
+                      aria-label="Cerrar menú"
                       className="text-white text-2xl font-bold"
                     >
-                      ×
+                      <span aria-hidden="true">×</span>
                     </button>
                   </div>
                 </div>
@@ -386,7 +458,7 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                         }}
                         className="w-full text-left text-white font-semibold text-lg opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all"
                       >
-                        Cerrar Sesión
+                        Cerrar sesión
                       </button>
                     </div>
                   ) : (
@@ -395,7 +467,7 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                       onClick={() => setOpened(false)}
                       className="text-white font-semibold text-lg opacity-92 hover:opacity-100 py-4 px-4 rounded-xl bg-white/10 hover:bg-white/15 transition-all text-center"
                     >
-                      Iniciar Sesión
+                      Iniciar sesión
                     </Link>
                   )}
                 </div>

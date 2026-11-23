@@ -7,6 +7,7 @@ import { END_SESSION_MUTATION, EndSessionResponse } from "kadesh/utils/queries";
 import { useUser } from "kadesh/utils/UserContext";
 import { Routes } from "kadesh/core/routes";
 import { trackLogout } from "kadesh/utils/activity";
+import { cart } from "kadesh/components/store/cart/cartStore";
 
 /**
  * Cierra la sesión en Keystone (`endSession`) y luego en el navegador.
@@ -28,6 +29,9 @@ export function useLogout() {
     }
 
     localStorage.removeItem("keystonejs-session-token");
+    // The cart and its coupon belong to whoever was signed in: the next person on this device
+    // starts empty.
+    cart.clear();
     document.cookie.split(";").forEach((c) => {
       document.cookie = c
         .replace(/^ +/, "")

@@ -40,6 +40,7 @@ import {
   ShareAnimalButton,
   NearbyVeterinariesRow,
 } from "kadesh/components/animals/detail";
+import { useAnimalServerTitle } from "kadesh/components/animals/detail/ServerTitle";
 import {
   PromoteReportBanner,
   isPromotableStatus,
@@ -92,6 +93,7 @@ export default function AnimalDetailPage() {
     animalKey || "",
   );
   useAnimalView(animal?.id || "");
+  const serverTitle = useAnimalServerTitle();
   const { action: detailAction, clear: clearDetailAction } = useDetailAction();
 
   useEffect(() => {
@@ -129,7 +131,13 @@ export default function AnimalDetailPage() {
     return (
       <DetailShell>
         <div className="mx-auto flex w-full max-w-[92rem] flex-col gap-3 px-3 py-3 lg:h-[calc(100dvh-72px)] lg:px-4">
-          <div className="h-9 w-56 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10" />
+          {serverTitle ? (
+            <h1 className="text-2xl font-black leading-tight tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6] lg:text-xl">
+              {serverTitle}
+            </h1>
+          ) : (
+            <div className="h-9 w-56 animate-pulse rounded-xl bg-[#e6e9ef] dark:bg-white/10" />
+          )}
           <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-2">
             <div className="min-h-52 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10 lg:min-h-0" />
             <div className="min-h-52 animate-pulse rounded-2xl bg-[#e6e9ef] dark:bg-white/10 lg:min-h-0" />

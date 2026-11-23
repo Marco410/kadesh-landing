@@ -49,9 +49,10 @@ export default function AppShell({
 
   useEffect(() => {
     if (!menuOpen) {
-      // Al cerrar, el foco vuelve al botón que abrió el menú.
+      // Al cerrar, el foco vuelve al botón que abrió el menú, sin desplazar la página: el botón vive
+      // en la barra fija y el navegador subía hasta él.
       if (wasOpen.current) {
-        document.querySelector<HTMLButtonElement>('[aria-controls="app-sidebar"]')?.focus();
+        document.querySelector<HTMLButtonElement>('[aria-controls="app-sidebar"]')?.focus({ preventScroll: true });
       }
       wasOpen.current = false;
       return;

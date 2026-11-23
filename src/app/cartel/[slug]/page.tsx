@@ -18,6 +18,7 @@ import { folioQrDataUri } from 'kadesh/components/animals/poster/qr';
 import PosterToolbar from 'kadesh/components/animals/poster/PosterToolbar';
 import PosterFit from 'kadesh/components/animals/poster/PosterFit';
 import {
+  POSTER_FIT_ID,
   POSTER_FIT_INNER_ID,
   POSTER_WIDTH_PX,
   posterFitScript,
@@ -214,7 +215,8 @@ export default async function AnimalPosterPage({
              10.3 × 7.8 in), so keeping the ratio left the sheet a few px taller than the page and
              Chrome pushed the footer (QR and phone) onto a second page. */
           #cartel { height: 100%; aspect-ratio: auto; break-inside: avoid; }
-          #${POSTER_FIT_INNER_ID} { zoom: 1 !important; }
+          #${POSTER_FIT_INNER_ID} { transform: none !important; }
+          #${POSTER_FIT_ID} { height: auto !important; }
           #cartel { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>

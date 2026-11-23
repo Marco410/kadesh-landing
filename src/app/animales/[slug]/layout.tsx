@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { permanentRedirect } from 'next/navigation';
 import {
+  animalShareFacts,
   animalSummary,
   buildAnimalJsonLd,
   buildAnimalMetadata,
@@ -9,6 +10,7 @@ import {
 } from 'kadesh/components/animals/animal-seo';
 import JsonLd from 'kadesh/components/blog/JsonLd';
 import PageSummary from 'kadesh/components/shared/PageSummary';
+import { AnimalServerTitle } from 'kadesh/components/animals/detail/ServerTitle';
 import { fetchAnimalForShare } from 'kadesh/components/animals/server';
 import { Routes } from 'kadesh/core/routes';
 
@@ -52,7 +54,7 @@ export default async function AnimalDetailLayout({
   return (
     <>
       <JsonLd data={buildAnimalJsonLd(animal)} />
-      {children}
+      <AnimalServerTitle title={animalShareFacts(animal).name}>{children}</AnimalServerTitle>
       <PageSummary id="resumen-reporte" title="Resumen del reporte" text={animalSummary(animal)} />
     </>
   );

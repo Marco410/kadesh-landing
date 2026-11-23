@@ -15,6 +15,127 @@ Formato:
 
 ---
 
+## 2026-11-23 · fix: la tienda ordenada no se indexa; «Reportes recientes» al ancho del mapa
+- Rama: feat/pet-store
+- Qué cambió y por qué (novena prueba en Chrome):
+  - `/tienda?orden=…` seguía indexable y con su `CollectionPage`. Ahora cualquier vista distinta de `/tienda` limpia (filtro u otro orden) es noindex y no lleva JSON-LD (`isStoreVariantView`).
+  - «Reportes recientes» en `/animales` no se alineaba con el mapa a 1440: ahora va a todo el ancho con el mismo margen que el panel lateral (`px-5`) y una línea arriba.
+- Archivos: src/components/store/searchParams.ts, src/components/store/store-seo.ts, src/app/tienda/page.tsx, src/components/animals/AnimalsRecentReports.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (SEO y diseño de la web)
+
+## 2026-11-23 · docs: prompts de móvil para huellitas, perfil público y ranking
+- Rama: feat/pet-store
+- Qué cambió y por qué: los prompts de huellitas y perfil público se escribieron antes del ranking rediseñado, los colores por nivel, la lista de niveles y las huellitas de la tienda. Se reescribieron con lo que hay hoy en la web y se separó el ranking en su propio prompt. Orden: 1) huellitas y sistema visual de niveles (colores, íconos, foto con insignia, lista de niveles), 2) perfil público, autor y ajustes, 3) ranking «Quién apoya más» y su sección de portada.
+- Archivos: docs/mobile-sync/{2026-11-17-huellitas-perfil.md,2026-11-18-perfil-publico.md,2026-11-18-ranking-quien-apoya-mas.md (nuevo),README.md}
+- GraphQL: ninguna
+- Móvil: no aplica (son los prompts para la app)
+
+## 2026-11-23 · feat: envío y devoluciones en la página y el JSON-LD de cada producto
+- Rama: feat/pet-store
+- Qué cambió y por qué: Google recomienda que la oferta de un producto diga cuánto cuesta el envío y cuál es la política de devoluciones. Regla de la tienda: solo defectuosos, dañados o equivocados, avisar en 5 días, el envío de regreso lo paga quien compra. La oferta del JSON-LD lleva `shippingDetails` (tarifa fija, o 0 si el precio llega al envío gratis; México) y `hasMerchantReturnPolicy` (5 días, por paquetería, el cliente paga el regreso). Lo mismo se ve debajo del botón de compra en los productos que vende Kadesh, porque Google pide que coincida con lo visible.
+- Archivos: src/components/store/ProductDetail.tsx, src/components/store/store-seo.ts, src/components/store/server.ts, src/components/store/types.ts
+- GraphQL: `StoreCatalogProduct` pide `shippingFlatCents`, `freeShippingMinCents` y `returnDays` (nuevos en kadesh-back: desplegar el back primero o la página del producto da 404)
+- Móvil: no aplica (la app puede mostrar la misma línea con esos campos cuando quieras)
+
+## 2026-11-23 · feat: SEO de la tienda y de las fichas de animales
+- Rama: feat/pet-store
+- Qué cambió y por qué (revisión de SEO y GEO de tienda, blog y animales):
+  - **Sitemap**: no tenía la tienda. Ahora lleva `/tienda` y cada producto a la venta, solo con la tienda abierta y con productos (cerrada responde 404). `fetchStoreProductsForSitemap` pide solo el `slug`, 48 por petición.
+  - **Imagen de producto**: nueva ruta `/tienda/<slug>/og` que sirve la portada vigente (las fotos subidas caducan en 1 h), con tope de 8 MB, igual que `/blog/<url>/og`. La usan `og:image`, la tarjeta de Twitter y el JSON-LD.
+  - **JSON-LD del producto**: suma `image` y migas (Inicio › Tienda › producto). Un producto de Mercado Libre sin reseñas lleva solo las migas, porque Google marca error en un `Product` sin oferta ni estrellas.
+  - **`/tienda`**: `CollectionPage` con la lista de los productos de la primera página y migas, solo sin filtros (las vistas filtradas son noindex).
+  - **`/animales/<slug>/editar`**: ahora es noindex.
+  - **Ficha de animal con `<h1>` en el HTML**: la ficha se carga en el navegador y el HTML del servidor no traía encabezado principal. El layout pasa el nombre (`AnimalServerTitle`) y el estado de carga lo pinta como `<h1>` en vez del bloque gris. Ya cargada, la ficha pinta su propio `<h1>`: nunca hay dos.
+  - **Enlaces a fichas en `/animales`**: el mapa y su lista son de navegador, así que el HTML no enlazaba ninguna ficha. Debajo del mapa va «Reportes recientes» pintado en el servidor, con la misma petición y caché (10 min) que la portada.
+  - **Fecha de las fichas en el sitemap**: era la de creación. Ahora es el último registro del caso (`lastActivityAt`).
+  - El blog ya estaba bien.
+- Archivos: src/app/sitemap.ts, src/app/tienda/page.tsx, src/app/tienda/[slug]/og/route.ts, src/app/animales/page.tsx, src/app/animales/[slug]/layout.tsx, src/app/animales/[slug]/page.tsx, src/app/animales/[slug]/editar/layout.tsx, src/components/animals/AnimalsRecentReports.tsx, src/components/animals/detail/ServerTitle.tsx, src/components/animals/server.ts, src/components/store/store-seo.ts, src/components/store/server.ts, src/core/routes.ts
+- GraphQL: `StoreCatalogSitemap` (nueva, usa `storeCatalog` con `items { slug }`); `AnimalsForSitemap` pide además `lastActivityAt`
+- Móvil: no aplica (SEO de la web)
+
+## 2026-11-21 · fix: panel — margen de enfoque a 1024 px o más
+- Rama: feat/pet-store
+- Qué cambió y por qué: a 1440 la barra del panel está despegada del borde (`lg:top-3`) y termina en 66 px, pero el margen de 4.5rem dejaba lo enfocado en 61 px: 5 px tapados (botón de la foto, «Ver mi perfil», mapa de «Alertas de zona», avisos del Inicio). Desde `lg`, el margen suma esa separación y un poco de aire (`calc(4.5rem + 0.75rem + 0.5rem)`).
+- Archivos: src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
+## 2026-11-21 · fix: panel — los campos enfocados no quedan bajo la barra superior
+- Rama: feat/pet-store
+- Qué cambió y por qué: al quitar el `scroll-padding-top` del panel (para que la barra no hiciera saltar la página), un campo que se enfocaba subiendo con Shift+Tab quedaba medio tapado por la barra sticky (por ejemplo, la foto en «Datos del perfil»). Ahora los elementos enfocables del contenido (`#app-content`) llevan `scroll-margin-top: 4.5rem`. La barra no lo lleva, así que sus botones siguen sin mover la página.
+- Archivos: src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
+## 2026-11-21 · fix: el foco no sale del menú móvil; sin saltos al cerrar el aviso de publicidad ni con Tab en el panel
+- Rama: feat/pet-store
+- Qué cambió y por qué (quinta prueba en Chrome):
+  - **Menú móvil**: con Tab, el foco salía del menú abierto hacia la página de atrás, y el navegador la desplazaba. Ahora el foco da la vuelta dentro del menú (después de lo último vuelve a lo primero, y al revés con Shift+Tab). El menú es `role="dialog"` con `aria-modal`.
+  - **«¿Por qué ves publicidad?»**: a veces saltaba al cerrarlo tocando fuera. Ahora todas las formas de cerrar (X, Esc y clic fuera) pasan por un mismo camino: primero regresa el foco al «?» sin desplazar y luego cierra. Si algo aún movió la página, se regresa a donde estaba.
+  - **Panel (perfil)**: llegar con Shift+Tab al botón «Abrir menú» subía la página. Los 72 px de `scroll-padding-top` del sitio hacían creer al navegador que la barra sticky tapaba el botón. En el panel ese margen ahora es 0.
+- Archivos: src/components/layout/Navigation.tsx, src/components/shared/AdInfoButton.tsx, src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
+## 2026-11-21 · fix: anillo de foco visible dentro del menú móvil
+- Rama: feat/pet-store
+- Qué cambió y por qué: en tema claro, el anillo de foco (azul kadesh) era del mismo color que el fondo del menú móvil y no se veía en la X ni en los botones. Dentro de `#menu-movil` el anillo ahora es blanco.
+- Archivos: src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (estilo web)
+
+## 2026-11-21 · fix: menús y aviso de publicidad sin saltos al cerrar, foco dentro del menú móvil
+- Rama: feat/pet-store
+- Qué cambió y por qué (tercera prueba en Chrome):
+  - **Menú lateral del perfil**: al cerrarlo, la página saltaba (de 500 a 69). El foco regresaba al botón «Abrir menú» de la barra fija y el navegador desplazaba hasta él. Ahora regresa con `preventScroll`. El botón dice «Cerrar menú» mientras el menú está abierto.
+  - **«¿Por qué ves publicidad?»**: es un `<dialog>` nativo que dejaba desplazar el fondo con la rueda. Ahora bloquea el fondo (`useBodyScrollLock`). Al cerrarlo, el navegador devolvía el foco al «?» de la columna fija y la página saltaba arriba; ahora vuelve a donde estaba.
+  - **Menú hamburguesa**: al abrirlo, el foco entra al menú (botón «Cerrar menú», antes solo «×»). Esc lo cierra y el foco vuelve a la hamburguesa sin mover la página.
+- Archivos: src/components/app-shell/{AppShell.tsx,AppTopBar.tsx}, src/components/shared/AdInfoButton.tsx, src/components/layout/Navigation.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
+## 2026-11-21 · fix: el fondo no se mueve con un menú o modal abierto; mapa de Inicio sin error de hidratación
+- Rama: feat/pet-store
+- Qué cambió y por qué (segunda prueba del catálogo en Chrome):
+  - **Bloqueo del fondo**: menús y modales bloquean el scroll con `body.style.overflow = "hidden"`, pero quien hace scroll es el viewport (toma el overflow de `html`), así que la página de atrás seguía moviéndose (menú del perfil, hamburguesa, etc.). Una regla en `globals.css` bloquea `html` mientras el body tenga ese estilo. Sirve para todos los que ya lo hacen así.
+  - **Menú hamburguesa**: ahora bloquea el fondo (`useBodyScrollLock`), tiene `aria-expanded`, `aria-controls` y la etiqueta «Abrir menú» / «Cerrar menú».
+  - **Mapa de «Reportes recientes» en Inicio**: la clase del tema (claro u oscuro) se ponía en el HTML del servidor, que no conoce el tema, y en modo oscuro no coincidía con el navegador (error de hidratación). Ahora se pone en un efecto.
+  - **Tienda**:
+    - El buscador sigue a «Atrás» y «Adelante» (antes la lista volvía, pero el texto se quedaba).
+    - El botón de Mercado Libre dice «Mercado Libre» hasta pantallas anchas (`lg`), para que no se parta a 768.
+- Archivos: src/app/globals.css, src/components/layout/Navigation.tsx, src/components/home/RecentReportsMiniMap.tsx, src/components/store/{StoreIndexClient.tsx,cart/CardCartButton.tsx}
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
+## 2026-11-21 · fix: tienda — columnas fijas al bajar, «Atrás» entre filtros y detalles del catálogo
+- Rama: feat/pet-store
+- Qué cambió y por qué (prueba del catálogo nuevo en Chrome):
+  - **Columnas fijas**: ni los filtros ni «Los más vendidos» se quedaban a la vista al bajar. El `body` tenía `overflow-x: hidden`, que lo vuelve contenedor de scroll y rompe `position: sticky` en todo el sitio. Ahora usa `overflow-x: clip`, que recorta igual sin ese efecto. Arregla también la columna del blog. El panel ya lo tenía resuelto.
+  - **«Atrás»**: cada filtro agrega una entrada al historial (`router.push`), así que «Atrás» regresa al filtro anterior en vez de salir de la tienda.
+  - **Teclado**: la tarjeta marca el foco cuando lo tiene su nombre. «Quién vende» y «Marca» son una sola parada de Tab y se recorren con las flechas, como radios nativos.
+  - **Móvil**:
+    - «Quitar filtros» visible con el panel cerrado.
+    - El encabezado es más bajo, sin el párrafo de introducción.
+    - El botón de Mercado Libre dice «Mercado Libre» en una línea.
+  - **Agotado**: la tarjeta muestra un botón «Agotado» deshabilitado, así que no queda el hueco.
+  - **Entre 768 y 1279 px**: «Los más vendidos» y la publicidad van lado a lado debajo de los productos.
+- Archivos: src/app/globals.css, src/components/store/{StoreIndexClient.tsx,StoreListingPage.tsx,ProductCard.tsx,cart/CardCartButton.tsx}
+- GraphQL: ninguna
+- Móvil: no aplica (son ajustes del acomodo web; en la app no hay columnas fijas ni historial del navegador)
+
+## 2026-11-20 · feat: tienda — catálogo en tres columnas con «Los más vendidos» y publicidad
+- Rama: feat/pet-store
+- Qué cambió y por qué: el catálogo dejaba mucho espacio vacío a la derecha y los filtros ocupaban una franja arriba. Ahora, en escritorio:
+  - **Izquierda**: buscador y filtros en una columna fija al bajar (categorías con subcategorías y conteos, «Solo en oferta», quién vende y marca, «Quitar filtros»). En el celular quedan detrás de un botón «Filtros (n)».
+  - **Centro**: productos con «Ordenar» arriba. Tres columnas, o dos entre 1280 y 1360 px.
+  - **Derecha** (desde 1280 px; antes va debajo de los productos): «Los más vendidos» (productos con al menos una venta, del más vendido al menos; antes de tener 3 se muestra «Lo más nuevo») y el bloque de publicidad (`AdSlot` con `NEXT_PUBLIC_ADSENSE_SLOT_STORE`, o el del blog si falta; si AdSense no llena, sale un anuncio propio).
+  - El encabezado es más bajo, con el texto a la derecha del título.
+  - Los destacados ya no llevan el borde amarillo: solo la etiqueta «Destacado».
+- Archivos: src/components/store/{StoreIndexClient.tsx,StoreListingPage.tsx,StoreAside.tsx,ProductCard.tsx,StoreStars.tsx,server.ts,types.ts,constants.ts}, src/app/tienda/page.tsx, src/core/ads.ts
+- GraphQL: `storeCatalog` acepta `soldOnly` (back). Consultas: una más por carga de `/tienda` en el servidor (5 productos, en caché 1 min; dos si todavía no hay 3 vendidos). Si el back aún no tiene `soldOnly`, la caja muestra «Lo más nuevo».
+- Móvil: no aplica (acomodo de escritorio; en la app la lista es de una columna. `soldOnly` queda disponible si se quiere una sección de más vendidos)
+
 ## 2026-11-20 · fix: cartel — «Imagen para historias» avisa que se está descargando
 - Rama: feat/pet-store
 - Qué cambió y por qué: el botón era un `<a download>` y la imagen (PNG de ~1.7 MB que se dibuja en el servidor) tarda unos 3 s; mientras tanto no pasaba nada en pantalla y la gente volvía a tocar. Ahora el botón pide la imagen él mismo: muestra «Preparando imagen…» con un icono girando (queda deshabilitado para no repetir la descarga), al terminar guarda el archivo, cambia a «Imagen descargada» por 2.5 s y sale un aviso con dónde buscarla. Si falla, aviso de error y el botón vuelve a su estado normal. Misma petición que antes (una por toque).

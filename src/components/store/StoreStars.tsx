@@ -38,7 +38,7 @@ export default function StoreStars({
   className?: string;
 }) {
   return (
-    <span className={cn('inline-flex items-center gap-1.5 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]', className)}>
+    <span className={cn('inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-[#5a5a5a] dark:text-[#b0b0b0]', className)}>
       <StarRow rating={count > 0 ? average : 0} size={size} />
       <span>
         {count > 0 ? (

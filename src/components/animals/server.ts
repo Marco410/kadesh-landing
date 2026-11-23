@@ -169,6 +169,7 @@ const SITEMAP_ANIMALS_QUERY = `
       id
       slug
       createdAt
+      lastActivityAt
     }
   }
 `;
@@ -176,7 +177,8 @@ const SITEMAP_ANIMALS_QUERY = `
 const SITEMAP_PAGE = 1000;
 const SITEMAP_MAX = 10000;
 
-export type SitemapAnimal = { path: string; createdAt: string | null };
+/** `updatedAt`: the last entry of the case (`lastActivityAt`), or its creation. */
+export type SitemapAnimal = { path: string; updatedAt: string | null };
 
 /** Fichas de animales para el sitemap (sin los reportes unidos a otro). Solo servidor. */
 export async function fetchAnimalsForSitemap(): Promise<SitemapAnimal[]> {
@@ -193,10 +195,22 @@ export async function fetchAnimalsForSitemap(): Promise<SitemapAnimal[]> {
       });
       if (!response.ok) break;
       const payload = (await response.json()) as {
-        data?: { animals: Array<{ id: string; slug: string | null; createdAt: string | null }> | null };
+        data?: {
+          animals: Array<{
+            id: string;
+            slug: string | null;
+            createdAt: string | null;
+            lastActivityAt: string | null;
+          }> | null;
+        };
       };
       const rows = payload.data?.animals ?? [];
-      out.push(...rows.map((row) => ({ path: `/animales/${row.slug || row.id}`, createdAt: row.createdAt })));
+      out.push(
+        ...rows.map((row) => ({
+          path: `/animales/${row.slug || row.id}`,
+          updatedAt: row.lastActivityAt || row.createdAt,
+        })),
+      );
       if (rows.length < SITEMAP_PAGE) break;
     }
   } catch (error) {

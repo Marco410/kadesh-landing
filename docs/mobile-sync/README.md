@@ -47,9 +47,10 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-17 | [«Lo vi» en el mapa (últimas 72 h)](2026-11-17-lo-vi-en-el-mapa.md) | animals | pendiente |
 | 2026-11-17 | [Animales paginados en el servidor y mapa con pines ligeros](2026-11-17-animales-paginados-y-pines.md) | animals | pendiente |
 | 2026-11-17 | [Paleta de mapas de Kadesh (claro y oscuro)](2026-11-17-paleta-de-mapas.md) | shared | pendiente |
-| 2026-11-17 | [Huellitas en el perfil: nivel, progreso y racha](2026-11-17-huellitas-perfil.md) | profile | pendiente |
+| 2026-11-17 | [Huellitas (nivel, progreso, racha) y sistema visual de niveles](2026-11-17-huellitas-perfil.md) | profile | pendiente |
 | 2026-11-17 | [Recompensa en reportes de mascota perdida](2026-11-17-recompensa.md) | animals | pendiente |
 | 2026-11-18 | [Perfil público, autor con nivel y ajustes de perfil](2026-11-18-perfil-publico.md) | profile | pendiente |
+| 2026-11-18 | [Ranking «Quién apoya más»](2026-11-18-ranking-quien-apoya-mas.md) | profile | pendiente |
 | 2026-11-19 | [Tienda: catálogo, ficha, lista de deseos y reseñas](2026-11-19-tienda-catalogo.md) | shared | implementado |
 | 2026-11-19 | [Tienda: carrito, pago y pedidos](2026-11-19-tienda-carrito-y-pedidos.md) | shared | implementado |
 | 2026-11-19 | [Tienda: cupones y huellitas por comprar y reseñar](2026-11-19-tienda-cupones-y-huellitas.md) | shared | implementado |

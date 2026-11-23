@@ -124,6 +124,8 @@ export const Routes = {
   store: {
     index: '/tienda',
     product: (slug: string): string => `/tienda/${slug}`,
+    /** Stable cover of a product, for share cards and JSON-LD. */
+    productImage: (slug: string): string => `/tienda/${slug}/og`,
     cart: '/tienda/carrito',
     checkout: '/tienda/pagar',
     /** «Lista de deseos» en el panel. */

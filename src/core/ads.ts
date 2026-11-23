@@ -10,4 +10,7 @@ export const BLOG_AD_SLOT =
   process.env.NEXT_PUBLIC_ADSENSE_SLOT_BLOG ||
   process.env.NEXT_PUBLIC_ADSENSE_SLOT_ANIMAL_DETAIL;
 
+/** Bloque de la tienda (columna derecha del catálogo). Sin uno propio, usa el del blog. */
+export const STORE_AD_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_STORE || BLOG_AD_SLOT;
+
 export const ADSENSE_SCRIPT_SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;

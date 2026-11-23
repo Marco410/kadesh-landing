@@ -62,6 +62,11 @@ export type StoreProduct = {
   /** Published reviews with 1, 2, 3, 4 and 5 stars, in that order. */
   ratingBreakdown: number[];
   related: StoreItem[];
+  /** Flat shipping of an order; free from `freeShippingMinCents` (0 = never). */
+  shippingFlatCents: number;
+  freeShippingMinCents: number;
+  /** Days after delivery to report a defective product (`STORE_RETURN_DAYS` in kadesh-back). */
+  returnDays: number;
 };
 
 export type StoreFacetCategory = {
@@ -125,6 +130,7 @@ export type StoreCatalogInput = {
   brandSlug?: string | null;
   seller?: string | null;
   onSale?: boolean | null;
+  soldOnly?: boolean | null;
   sort?: string | null;
   take?: number;
   skip?: number;

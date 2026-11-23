@@ -1,12 +1,12 @@
-import { STORE_REVALIDATE_SECONDS, STORE_REVIEWS_PAGE_SIZE } from './constants';
+import { STORE_BEST_SELLERS_SIZE, STORE_REVALIDATE_SECONDS, STORE_REVIEWS_PAGE_SIZE } from './constants';
 import { STORE_ITEM_FIELDS, STORE_REVIEW_FIELDS } from './fields';
 import { storeCatalogInput } from './searchParams';
-import type { StoreCatalog, StoreFacets, StoreFilters, StoreProduct, StoreReviews } from './types';
+import type { StoreCatalog, StoreFacets, StoreFilters, StoreItem, StoreProduct, StoreReviews } from './types';
 
 /**
- * Store queries from the server (no session): `/tienda` and the product page. Cached for 10
- * minutes, below the 1 h signature of product photos. If the API fails they answer empty so the
- * page does not break.
+ * Store queries from the server (no session): `/tienda` and the product page. Cached for a
+ * minute (`STORE_REVALIDATE_SECONDS`), below the 1 h signature of product photos. If the API
+ * fails they answer empty so the page does not break.
  */
 
 const CATALOG_QUERY = `
@@ -43,6 +43,9 @@ const PRODUCT_QUERY = `
       animalTypes
       ratingBreakdown
       related { ${STORE_ITEM_FIELDS} }
+      shippingFlatCents
+      freeShippingMinCents
+      returnDays
     }
   }
 `;
@@ -85,6 +88,24 @@ export async function fetchStoreCatalog(filters: StoreFilters): Promise<StoreCat
   return data?.storeCatalog ?? { total: 0, items: [] };
 }
 
+/**
+ * The «Los más vendidos» box: products sold at least once, most sold first. Before the first sales
+ * it shows the newest instead, so the column is never empty (and never calls something a best
+ * seller that has not sold). One request, cached like the rest of the catalog.
+ */
+export async function fetchStoreBestSellers(): Promise<{ kind: 'best_selling' | 'newest'; items: StoreItem[] }> {
+  const take = STORE_BEST_SELLERS_SIZE;
+  const sold = await queryGraphql<{ storeCatalog: StoreCatalog }>(CATALOG_QUERY, {
+    input: { soldOnly: true, sort: 'best_selling', take, skip: 0 },
+  });
+  const soldItems = sold?.storeCatalog.items ?? [];
+  if (soldItems.length >= 3) return { kind: 'best_selling', items: soldItems };
+  const newest = await queryGraphql<{ storeCatalog: StoreCatalog }>(CATALOG_QUERY, {
+    input: { sort: 'newest', take, skip: 0 },
+  });
+  return { kind: 'newest', items: newest?.storeCatalog.items ?? [] };
+}
+
 const EMPTY_FACETS: StoreFacets = {
   enabled: false,
   total: 0,
@@ -114,4 +135,33 @@ export async function fetchStoreReviews(productId: string): Promise<StoreReviews
     skip: 0,
   });
   return { total: data?.storeCatalogReviews.total ?? 0, items: data?.storeCatalogReviews.items ?? [], mine: null };
+}
+
+const SITEMAP_QUERY = `
+  query StoreCatalogSitemap($input: StoreCatalogInput) {
+    storeCatalog(input: $input) {
+      items { slug }
+    }
+  }
+`;
+
+/** Pages of the catalog's max `take`; the store will not have more products than this for a while. */
+const SITEMAP_PAGE = 48;
+const SITEMAP_MAX = 960;
+
+/**
+ * Slugs of every product on sale, for the sitemap (only the slug, 48 per request). Empty while the
+ * store is closed, so the sitemap does not list pages that answer 404.
+ */
+export async function fetchStoreProductsForSitemap(): Promise<string[]> {
+  const out: string[] = [];
+  for (let skip = 0; skip < SITEMAP_MAX; skip += SITEMAP_PAGE) {
+    const data = await queryGraphql<{ storeCatalog: { items: Array<{ slug: string }> } }>(SITEMAP_QUERY, {
+      input: { sort: 'newest', take: SITEMAP_PAGE, skip },
+    });
+    const rows = data?.storeCatalog.items ?? [];
+    out.push(...rows.map((row) => row.slug).filter(Boolean));
+    if (rows.length < SITEMAP_PAGE) break;
+  }
+  return out;
 }

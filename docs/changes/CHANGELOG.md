@@ -15,6 +15,241 @@ Formato:
 
 ---
 
+## 2026-11-23 · fix: la tienda ordenada no se indexa; «Reportes recientes» al ancho del mapa
+- Rama: feat/pet-store
+- Qué cambió y por qué (novena prueba en Chrome):
+  - `/tienda?orden=…` seguía indexable y con su `CollectionPage`. Ahora cualquier vista distinta de `/tienda` limpia (filtro u otro orden) es noindex y no lleva JSON-LD (`isStoreVariantView`).
+  - «Reportes recientes» en `/animales` no se alineaba con el mapa a 1440: ahora va a todo el ancho con el mismo margen que el panel lateral (`px-5`) y una línea arriba.
+- Archivos: src/components/store/searchParams.ts, src/components/store/store-seo.ts, src/app/tienda/page.tsx, src/components/animals/AnimalsRecentReports.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (SEO y diseño de la web)
+
+## 2026-11-23 · docs: prompts de móvil para huellitas, perfil público y ranking
+- Rama: feat/pet-store
+- Qué cambió y por qué: los prompts de huellitas y perfil público se escribieron antes del ranking rediseñado, los colores por nivel, la lista de niveles y las huellitas de la tienda. Se reescribieron con lo que hay hoy en la web y se separó el ranking en su propio prompt. Orden: 1) huellitas y sistema visual de niveles (colores, íconos, foto con insignia, lista de niveles), 2) perfil público, autor y ajustes, 3) ranking «Quién apoya más» y su sección de portada.
+- Archivos: docs/mobile-sync/{2026-11-17-huellitas-perfil.md,2026-11-18-perfil-publico.md,2026-11-18-ranking-quien-apoya-mas.md (nuevo),README.md}
+- GraphQL: ninguna
+- Móvil: no aplica (son los prompts para la app)
+
+## 2026-11-23 · feat: envío y devoluciones en la página y el JSON-LD de cada producto
+- Rama: feat/pet-store
+- Qué cambió y por qué: Google recomienda que la oferta de un producto diga cuánto cuesta el envío y cuál es la política de devoluciones. Regla de la tienda: solo defectuosos, dañados o equivocados, avisar en 5 días, el envío de regreso lo paga quien compra. La oferta del JSON-LD lleva `shippingDetails` (tarifa fija, o 0 si el precio llega al envío gratis; México) y `hasMerchantReturnPolicy` (5 días, por paquetería, el cliente paga el regreso). Lo mismo se ve debajo del botón de compra en los productos que vende Kadesh, porque Google pide que coincida con lo visible.
+- Archivos: src/components/store/ProductDetail.tsx, src/components/store/store-seo.ts, src/components/store/server.ts, src/components/store/types.ts
+- GraphQL: `StoreCatalogProduct` pide `shippingFlatCents`, `freeShippingMinCents` y `returnDays` (nuevos en kadesh-back: desplegar el back primero o la página del producto da 404)
+- Móvil: no aplica (la app puede mostrar la misma línea con esos campos cuando quieras)
+
+## 2026-11-23 · feat: SEO de la tienda y de las fichas de animales
+- Rama: feat/pet-store
+- Qué cambió y por qué (revisión de SEO y GEO de tienda, blog y animales):
+  - **Sitemap**: no tenía la tienda. Ahora lleva `/tienda` y cada producto a la venta, solo con la tienda abierta y con productos (cerrada responde 404). `fetchStoreProductsForSitemap` pide solo el `slug`, 48 por petición.
+  - **Imagen de producto**: nueva ruta `/tienda/<slug>/og` que sirve la portada vigente (las fotos subidas caducan en 1 h), con tope de 8 MB, igual que `/blog/<url>/og`. La usan `og:image`, la tarjeta de Twitter y el JSON-LD.
+  - **JSON-LD del producto**: suma `image` y migas (Inicio › Tienda › producto). Un producto de Mercado Libre sin reseñas lleva solo las migas, porque Google marca error en un `Product` sin oferta ni estrellas.
+  - **`/tienda`**: `CollectionPage` con la lista de los productos de la primera página y migas, solo sin filtros (las vistas filtradas son noindex).
+  - **`/animales/<slug>/editar`**: ahora es noindex.
+  - **Ficha de animal con `<h1>` en el HTML**: la ficha se carga en el navegador y el HTML del servidor no traía encabezado principal. El layout pasa el nombre (`AnimalServerTitle`) y el estado de carga lo pinta como `<h1>` en vez del bloque gris. Ya cargada, la ficha pinta su propio `<h1>`: nunca hay dos.
+  - **Enlaces a fichas en `/animales`**: el mapa y su lista son de navegador, así que el HTML no enlazaba ninguna ficha. Debajo del mapa va «Reportes recientes» pintado en el servidor, con la misma petición y caché (10 min) que la portada.
+  - **Fecha de las fichas en el sitemap**: era la de creación. Ahora es el último registro del caso (`lastActivityAt`).
+  - El blog ya estaba bien.
+- Archivos: src/app/sitemap.ts, src/app/tienda/page.tsx, src/app/tienda/[slug]/og/route.ts, src/app/animales/page.tsx, src/app/animales/[slug]/layout.tsx, src/app/animales/[slug]/page.tsx, src/app/animales/[slug]/editar/layout.tsx, src/components/animals/AnimalsRecentReports.tsx, src/components/animals/detail/ServerTitle.tsx, src/components/animals/server.ts, src/components/store/store-seo.ts, src/components/store/server.ts, src/core/routes.ts
+- GraphQL: `StoreCatalogSitemap` (nueva, usa `storeCatalog` con `items { slug }`); `AnimalsForSitemap` pide además `lastActivityAt`
+- Móvil: no aplica (SEO de la web)
+
+## 2026-11-21 · fix: panel — margen de enfoque a 1024 px o más
+- Rama: feat/pet-store
+- Qué cambió y por qué: a 1440 la barra del panel está despegada del borde (`lg:top-3`) y termina en 66 px, pero el margen de 4.5rem dejaba lo enfocado en 61 px: 5 px tapados (botón de la foto, «Ver mi perfil», mapa de «Alertas de zona», avisos del Inicio). Desde `lg`, el margen suma esa separación y un poco de aire (`calc(4.5rem + 0.75rem + 0.5rem)`).
+- Archivos: src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
+## 2026-11-21 · fix: panel — los campos enfocados no quedan bajo la barra superior
+- Rama: feat/pet-store
+- Qué cambió y por qué: al quitar el `scroll-padding-top` del panel (para que la barra no hiciera saltar la página), un campo que se enfocaba subiendo con Shift+Tab quedaba medio tapado por la barra sticky (por ejemplo, la foto en «Datos del perfil»). Ahora los elementos enfocables del contenido (`#app-content`) llevan `scroll-margin-top: 4.5rem`. La barra no lo lleva, así que sus botones siguen sin mover la página.
+- Archivos: src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
+## 2026-11-21 · fix: el foco no sale del menú móvil; sin saltos al cerrar el aviso de publicidad ni con Tab en el panel
+- Rama: feat/pet-store
+- Qué cambió y por qué (quinta prueba en Chrome):
+  - **Menú móvil**: con Tab, el foco salía del menú abierto hacia la página de atrás, y el navegador la desplazaba. Ahora el foco da la vuelta dentro del menú (después de lo último vuelve a lo primero, y al revés con Shift+Tab). El menú es `role="dialog"` con `aria-modal`.
+  - **«¿Por qué ves publicidad?»**: a veces saltaba al cerrarlo tocando fuera. Ahora todas las formas de cerrar (X, Esc y clic fuera) pasan por un mismo camino: primero regresa el foco al «?» sin desplazar y luego cierra. Si algo aún movió la página, se regresa a donde estaba.
+  - **Panel (perfil)**: llegar con Shift+Tab al botón «Abrir menú» subía la página. Los 72 px de `scroll-padding-top` del sitio hacían creer al navegador que la barra sticky tapaba el botón. En el panel ese margen ahora es 0.
+- Archivos: src/components/layout/Navigation.tsx, src/components/shared/AdInfoButton.tsx, src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
+## 2026-11-21 · fix: anillo de foco visible dentro del menú móvil
+- Rama: feat/pet-store
+- Qué cambió y por qué: en tema claro, el anillo de foco (azul kadesh) era del mismo color que el fondo del menú móvil y no se veía en la X ni en los botones. Dentro de `#menu-movil` el anillo ahora es blanco.
+- Archivos: src/app/globals.css
+- GraphQL: ninguna
+- Móvil: no aplica (estilo web)
+
+## 2026-11-21 · fix: menús y aviso de publicidad sin saltos al cerrar, foco dentro del menú móvil
+- Rama: feat/pet-store
+- Qué cambió y por qué (tercera prueba en Chrome):
+  - **Menú lateral del perfil**: al cerrarlo, la página saltaba (de 500 a 69). El foco regresaba al botón «Abrir menú» de la barra fija y el navegador desplazaba hasta él. Ahora regresa con `preventScroll`. El botón dice «Cerrar menú» mientras el menú está abierto.
+  - **«¿Por qué ves publicidad?»**: es un `<dialog>` nativo que dejaba desplazar el fondo con la rueda. Ahora bloquea el fondo (`useBodyScrollLock`). Al cerrarlo, el navegador devolvía el foco al «?» de la columna fija y la página saltaba arriba; ahora vuelve a donde estaba.
+  - **Menú hamburguesa**: al abrirlo, el foco entra al menú (botón «Cerrar menú», antes solo «×»). Esc lo cierra y el foco vuelve a la hamburguesa sin mover la página.
+- Archivos: src/components/app-shell/{AppShell.tsx,AppTopBar.tsx}, src/components/shared/AdInfoButton.tsx, src/components/layout/Navigation.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
+## 2026-11-21 · fix: el fondo no se mueve con un menú o modal abierto; mapa de Inicio sin error de hidratación
+- Rama: feat/pet-store
+- Qué cambió y por qué (segunda prueba del catálogo en Chrome):
+  - **Bloqueo del fondo**: menús y modales bloquean el scroll con `body.style.overflow = "hidden"`, pero quien hace scroll es el viewport (toma el overflow de `html`), así que la página de atrás seguía moviéndose (menú del perfil, hamburguesa, etc.). Una regla en `globals.css` bloquea `html` mientras el body tenga ese estilo. Sirve para todos los que ya lo hacen así.
+  - **Menú hamburguesa**: ahora bloquea el fondo (`useBodyScrollLock`), tiene `aria-expanded`, `aria-controls` y la etiqueta «Abrir menú» / «Cerrar menú».
+  - **Mapa de «Reportes recientes» en Inicio**: la clase del tema (claro u oscuro) se ponía en el HTML del servidor, que no conoce el tema, y en modo oscuro no coincidía con el navegador (error de hidratación). Ahora se pone en un efecto.
+  - **Tienda**:
+    - El buscador sigue a «Atrás» y «Adelante» (antes la lista volvía, pero el texto se quedaba).
+    - El botón de Mercado Libre dice «Mercado Libre» hasta pantallas anchas (`lg`), para que no se parta a 768.
+- Archivos: src/app/globals.css, src/components/layout/Navigation.tsx, src/components/home/RecentReportsMiniMap.tsx, src/components/store/{StoreIndexClient.tsx,cart/CardCartButton.tsx}
+- GraphQL: ninguna
+- Móvil: no aplica (comportamiento del navegador)
+
+## 2026-11-21 · fix: tienda — columnas fijas al bajar, «Atrás» entre filtros y detalles del catálogo
+- Rama: feat/pet-store
+- Qué cambió y por qué (prueba del catálogo nuevo en Chrome):
+  - **Columnas fijas**: ni los filtros ni «Los más vendidos» se quedaban a la vista al bajar. El `body` tenía `overflow-x: hidden`, que lo vuelve contenedor de scroll y rompe `position: sticky` en todo el sitio. Ahora usa `overflow-x: clip`, que recorta igual sin ese efecto. Arregla también la columna del blog. El panel ya lo tenía resuelto.
+  - **«Atrás»**: cada filtro agrega una entrada al historial (`router.push`), así que «Atrás» regresa al filtro anterior en vez de salir de la tienda.
+  - **Teclado**: la tarjeta marca el foco cuando lo tiene su nombre. «Quién vende» y «Marca» son una sola parada de Tab y se recorren con las flechas, como radios nativos.
+  - **Móvil**:
+    - «Quitar filtros» visible con el panel cerrado.
+    - El encabezado es más bajo, sin el párrafo de introducción.
+    - El botón de Mercado Libre dice «Mercado Libre» en una línea.
+  - **Agotado**: la tarjeta muestra un botón «Agotado» deshabilitado, así que no queda el hueco.
+  - **Entre 768 y 1279 px**: «Los más vendidos» y la publicidad van lado a lado debajo de los productos.
+- Archivos: src/app/globals.css, src/components/store/{StoreIndexClient.tsx,StoreListingPage.tsx,ProductCard.tsx,cart/CardCartButton.tsx}
+- GraphQL: ninguna
+- Móvil: no aplica (son ajustes del acomodo web; en la app no hay columnas fijas ni historial del navegador)
+
+## 2026-11-20 · feat: tienda — catálogo en tres columnas con «Los más vendidos» y publicidad
+- Rama: feat/pet-store
+- Qué cambió y por qué: el catálogo dejaba mucho espacio vacío a la derecha y los filtros ocupaban una franja arriba. Ahora, en escritorio:
+  - **Izquierda**: buscador y filtros en una columna fija al bajar (categorías con subcategorías y conteos, «Solo en oferta», quién vende y marca, «Quitar filtros»). En el celular quedan detrás de un botón «Filtros (n)».
+  - **Centro**: productos con «Ordenar» arriba. Tres columnas, o dos entre 1280 y 1360 px.
+  - **Derecha** (desde 1280 px; antes va debajo de los productos): «Los más vendidos» (productos con al menos una venta, del más vendido al menos; antes de tener 3 se muestra «Lo más nuevo») y el bloque de publicidad (`AdSlot` con `NEXT_PUBLIC_ADSENSE_SLOT_STORE`, o el del blog si falta; si AdSense no llena, sale un anuncio propio).
+  - El encabezado es más bajo, con el texto a la derecha del título.
+  - Los destacados ya no llevan el borde amarillo: solo la etiqueta «Destacado».
+- Archivos: src/components/store/{StoreIndexClient.tsx,StoreListingPage.tsx,StoreAside.tsx,ProductCard.tsx,StoreStars.tsx,server.ts,types.ts,constants.ts}, src/app/tienda/page.tsx, src/core/ads.ts
+- GraphQL: `storeCatalog` acepta `soldOnly` (back). Consultas: una más por carga de `/tienda` en el servidor (5 productos, en caché 1 min; dos si todavía no hay 3 vendidos). Si el back aún no tiene `soldOnly`, la caja muestra «Lo más nuevo».
+- Móvil: no aplica (acomodo de escritorio; en la app la lista es de una columna. `soldOnly` queda disponible si se quiere una sección de más vendidos)
+
+## 2026-11-20 · fix: tienda — modales propios en vez de confirm(), enlace al pedido recién hecho
+- Rama: feat/pet-store
+- Qué cambió y por qué (tercera prueba en Chrome):
+  - **Sin `confirm()` del navegador**: borrar tu reseña y cancelar tu pedido usan `ConfirmModal`. El diálogo nativo congelaba la pestaña.
+  - `ConfirmModal` (versión del sitio público) ahora es un `alertdialog` con título y mensaje enlazados, Esc para cancelar y foco inicial en un botón, que regresa al cerrar.
+  - **Checkout vacío tras recargar**: el enlace abre el pedido recién hecho (`&pedido=KP-…`), guardado en sessionStorage durante 1 h. Sin ese dato, lleva a la lista.
+  - **Aviso de Apollo sobre `onCompleted`**: la bandeja de la campana calcula «hay más» a partir de los datos en vez de usar `onCompleted`.
+- Archivos: src/components/shared/ConfirmModal.tsx, src/components/store/{ProductReviews.tsx,orders/OrderDetail.tsx,checkout/CheckoutPage.tsx,constants.ts}, src/components/notifications/hooks/useNotificationInbox.ts
+- GraphQL: ninguna
+- Móvil: no aplica (la app ya usa diálogos nativos de la plataforma, que no bloquean; el enlace al pedido ya está en el punto 13 del prompt del día)
+
+## 2026-11-20 · fix: tienda — las estrellas de la ficha siguen a la reseña nueva
+- Rama: feat/pet-store
+- Qué cambió y por qué: al publicar una reseña, la lista se actualizaba pero las estrellas de arriba de la ficha seguían como en la página en caché («Sin reseñas todavía») hasta 2 min. Ahora la sección de reseñas publica las estrellas que respondió el back (al iniciar sesión o reseñar) y el encabezado las sigue, sin petición extra.
+- Archivos: src/components/store/{LiveStoreStars.tsx,ProductDetail.tsx,ProductReviews.tsx}
+- GraphQL: ninguna
+- Móvil: no aplica (la app pinta encabezado y reseñas desde el mismo estado; ya cubierto en el punto 5 del prompt del día)
+
+## 2026-11-20 · fix: tienda — segunda prueba en Chrome
+- Rama: feat/pet-store
+- Qué cambió y por qué:
+  - **Producto agotado desde la tarjeta**: el catálogo viene de caché (hasta 1 min), así que la tarjeta decía «Agregar al carrito» de algo ya agotado; salía «Agregado» y luego el carrito lo quitaba. Ahora, al tocar, la tarjeta pregunta al back por esa línea (`storeCartQuote`, una petición por clic) y, si se agotó, dice «Se acaba de agotar» y queda en «Agotado».
+  - **Clics muy seguidos en «+» y «−»** del carrito ya cuentan todos: suman sobre lo guardado (`cart.step`), no sobre lo último que se pintó.
+  - **«Mandar comprobante» sale verde**: el botón traía el azul de la clase base y ganaba.
+  - **Avisos en tipo oración**: Sileo inyecta su CSS después del nuestro; la regla ahora tiene más especificidad. «Cerrar sesión» e «Iniciar sesión» sin mayúscula de más.
+  - **Historial del pedido**: la hora vuelve a terminar en «a.m.» / «p.m.» (solo se quita el punto dentro de una frase).
+  - **Tarjeta rechazada**: el aviso se borra al cambiar los datos de la tarjeta.
+  - **Checkout vacío** (recargar justo después de pagar): enlace a «Mis pedidos».
+  - **Consola**: el `AbortError` de las consultas que Apollo cancela al salir de una página se marca como manejado; `credentials` solo en el enlace de subida (Apollo avisaba).
+- Archivos: src/components/store/{cart/CardCartButton.tsx,cart/CartPage.tsx,cart/cartStore.ts,checkout/CheckoutPage.tsx,checkout/StripePayStep.tsx,orders/OrderDetail.tsx}, src/app/globals.css, src/components/layout/Navigation.tsx, src/app/auth/login/page.tsx, src/providers/apollo-client.ts, src/utils/activity/useClientErrorListener.ts
+- GraphQL: ninguna nueva (la tarjeta reutiliza `storeCartQuote`). En el back, un cupón de primera compra ya no se acepta si la persona tiene otro pedido sin pagar con ese cupón.
+- Móvil: [prompt](../mobile-sync/2026-11-20-tienda-sin-doble-cobro.md) (puntos 10 a 13)
+
+## 2026-11-20 · feat: tienda — mandar el comprobante de la transferencia por WhatsApp
+- Rama: feat/pet-store
+- Qué cambió y por qué: los comprobantes se reciben por WhatsApp y un admin confirma el pago. En el pedido con transferencia, el botón principal es «Mandar comprobante»: abre WhatsApp con el número de la tienda (`StoreSettings.supportWhatsapp`) y un mensaje ya escrito con folio, total, concepto, a nombre de quién y los productos; la persona solo adjunta la foto. Subirlo en la página queda como «Prefiero subirlo aquí». Sin número configurado se ve como antes. Los correos de transferencia (pedido apartado y comprobante rechazado) llevan el mismo botón. En Operaciones, «El dinero llegó: confirmar pago» sale también en pedidos sin comprobante subido.
+- Archivos: src/components/store/orders/OrderDetail.tsx
+- GraphQL: ninguna (usa `supportWhatsapp` del detalle del pedido)
+- Móvil: [prompt](../mobile-sync/2026-11-20-tienda-sin-doble-cobro.md) (punto 9)
+
+## 2026-11-20 · fix: tienda — sin doble cobro, carrito y checkout que no pierden clics, datos frescos
+- Rama: feat/pet-store
+- Qué cambió y por qué (errores de la prueba en Chrome):
+  - **Doble cobro**: varios clics casi a la vez en «Continuar al pago» creaban varios pedidos y el cobro caía en otro. Ahora el botón se bloquea en el mismo clic y cada intento manda `checkoutKey`: el back responde el mismo pedido y el mismo pago a cada repetición.
+  - **Datos viejos**: catálogo y ficha se cachean 1 min (antes 10). Las estrellas y tu propia reseña llegan con la consulta de reseñas, así que se ven al recargar aunque la ficha esté en caché.
+  - **Carrito**: «−» y «+» parten de lo que hay en el carrito, no de la última cotización: los clics rápidos ya no se pierden. El botón de la tarjeta no agrega más piezas que el stock («Ya tienes todas»).
+  - **Checkout**: todos los campos con problema se marcan en rojo con su mensaje, y el primero recibe el foco. El navegador ya no bloquea el envío por su cuenta. El teléfono acepta «+52 443 123 4567». Cada campo tiene su etiqueta asociada.
+  - **Al cerrar sesión** se vacía el carrito y su cupón.
+  - Textos: los avisos ya no salen con Mayúsculas En Cada Palabra; sin doble punto en «5:23 p.m.».
+- Archivos: src/components/store/{checkout/CheckoutPage.tsx,checkout/AddressFields.tsx,cart/CartPage.tsx,cart/CardCartButton.tsx,ProductReviews.tsx,orders/OrderDetail.tsx,queries.ts,fields.ts,types.ts,constants.ts}, src/app/tienda/{page.tsx,[slug]/page.tsx}, src/components/auth/hooks/useLogout.ts, src/app/globals.css
+- GraphQL: `placeStoreOrder` acepta `checkoutKey`; `StoreCatalogItem.singleVariantMaxQuantity`; `storeCatalogReviews` trae `ratingAverage` y `ratingCount`
+- Móvil: [prompt](../mobile-sync/2026-11-20-tienda-sin-doble-cobro.md)
+
+## 2026-11-19 · fix: el pago con tarjeta se ve al instante; destacados y Mercado Libre en las tarjetas
+- Rama: feat/pet-store
+- Qué cambió y por qué:
+  - **Pago con tarjeta**: tras pagar, el pedido podía seguir diciendo «sin pagar» hasta que llegara el aviso de Stripe al back (en local nunca llega sin `stripe listen`), y «Pagar» terminaba en un aviso de «ya estaba pagado». Ahora el back le pregunta a Stripe al abrir el pedido y lo marca pagado en ese momento; si aun así se pulsa «Pagar» sobre un pedido cobrado, se muestra como pagado sin aviso de error.
+  - **Destacados**: etiqueta «Destacado» y borde ámbar en la tarjeta.
+  - **Mercado Libre**: botón «Comprar en Mercado Libre» en la tarjeta, directo al enlace de afiliado (`rel="sponsored nofollow noopener"`, pestaña nueva).
+- Archivos: src/components/store/{ProductCard.tsx,cart/CardCartButton.tsx,orders/OrderDetail.tsx}
+- GraphQL: ninguna nueva (el back cambió por dentro `myStoreOrder` y `resumeStoreOrderPayment`)
+- Móvil: [prompt](../mobile-sync/2026-11-19-tienda-agregar-desde-tarjeta.md) (actualizado)
+
+## 2026-11-19 · feat: agregar al carrito desde la tarjeta y carrito en el menú móvil
+- Rama: feat/pet-store
+- Qué cambió y por qué:
+  - **Tarjetas de producto** (catálogo, relacionados, lista de deseos): «Agregar al carrito» cuando el producto lo vende Kadesh, hay stock y tiene una sola opción; «Elegir opción» lleva a la ficha cuando tiene varias. Mercado Libre y agotados, sin botón. Agregar no hace ninguna petición.
+  - **Menú en el celular**: el carrito con su globo sale junto a la campana (antes solo estaba en el menú de escritorio).
+  - Comprobado: tipos, lint y `/tienda` en el servidor de desarrollo con los productos del seed (5 tarjetas con «Agregar al carrito», 3 con «Elegir opción»).
+- Archivos: src/components/store/cart/CardCartButton.tsx (nuevo), src/components/store/{ProductCard.tsx,types.ts,fields.ts}, src/components/layout/Navigation.tsx
+- GraphQL: `StoreCatalogItem` gana `variantsCount` y `singleVariantId` (en `StoreCatalog`, `StoreCatalogProduct` y `MyStoreWishlist`). El back debe publicarse antes.
+- Móvil: [prompt](../mobile-sync/2026-11-19-tienda-agregar-desde-tarjeta.md)
+
+## 2026-11-19 · feat: cupones en la tienda y huellitas por comprar y reseñar
+- Rama: feat/pet-store-coupons
+- Qué cambió y por qué:
+  - **Cupón en el carrito y en el checkout**: «¿Tienes un cupón?» abre un campo; el servidor dice si aplica y cuánto descuenta. El resumen muestra la fila del cupón y el total ya descontado, con «Quitar».
+  - Un código que no aplica muestra el motivo del servidor (venció, se agotó, no llega al mínimo…) y se borra del carrito, para no mandarlo en cada cotización.
+  - **Comprar con cupón**: el checkout manda el código solo si la cotización lo aplicó. Si deja de aplicar justo al comprar (`COUPON_INVALID`), no se crea el pedido, se quita el cupón y se muestra el total sin él.
+  - **El pedido muestra el cupón** que usó y lo que descontó.
+  - **Huellitas**: «Comprar en la tienda de Kadesh» (10) y «Reseñar un producto que compraste» (5) en «Cómo se ganan» (perfil y `/ranking`) y en el historial. El enlace del pedido entregado ahora dice «Reseñar este producto y ganar huellitas».
+  - Comprobado: tipos, lint, las 19 operaciones de la tienda contra el esquema del back, las operaciones reales de punta a punta contra una base de prueba (cotizar con cupón válido y con uno malo, comprar con cupón, cupón agotado, ver el pedido), y el resumen y el campo del cupón pintados en sus cuatro estados. No se probó en el navegador.
+- Archivos: src/components/store/cart/CouponField.tsx (nuevo), src/components/store/cart/{cartStore.ts,useCartQuote.ts,CartSummary.tsx,CartPage.tsx}, src/components/store/checkout/CheckoutPage.tsx, src/components/store/orders/OrderDetail.tsx, src/components/store/{constants.ts,fields.ts,queries.ts,types.ts,README.md}, src/components/paws/constants.ts, docs/mobile-sync/2026-11-19-tienda-cupones-y-huellitas.md (nuevo), docs/mobile-sync/README.md
+- GraphQL: modificadas `StoreCartQuote` (argumento `couponCode` y campos `couponCode`, `couponApplied`, `couponDiscountCents`, `couponMessage`), `PlaceStoreOrder` (`input.couponCode`, código `COUPON_INVALID`, los campos de cupón en `quote`) y `MyStoreOrder` (`couponCode`, `couponDiscountCents`). El back debe publicarse antes que este front.
+- Móvil: [prompt](../mobile-sync/2026-11-19-tienda-cupones-y-huellitas.md)
+
+## 2026-11-19 · feat: tienda con carrito, pago y pedidos
+- Rama: feat/pet-store-checkout
+- Qué cambió y por qué:
+  - **Agregar al carrito** en la ficha de los productos que vende Kadesh (variante y cantidad). El carrito vive en el navegador y solo guarda qué y cuánto; el servidor pone precios, envío y total.
+  - **`/tienda/carrito`**: líneas con cantidad, aviso cuando el servidor ajusta algo (se agotó, quedan menos) y «Te faltan $X para envío gratis».
+  - **`/tienda/pagar`**: una página con datos, dirección (guardadas o nueva) y forma de pago. Sin cuenta, pide correo y contraseña y crea la cuenta con el pedido.
+  - **Tarjeta** con el formulario de Stripe en la misma página; **transferencia** con datos bancarios y comprobante.
+  - **Mi cuenta → Pedidos**: lista y detalle con lo que falta (pagar, subir comprobante), paquetes con guía, productos, dirección, línea de tiempo, cancelar y ayuda por WhatsApp.
+  - Carrito en el menú con el número de piezas (solo con `NEXT_PUBLIC_STORE_ENABLED`).
+  - Comprobado: tipos, lint, las 19 operaciones contra el esquema del back, las operaciones reales ejecutadas de punta a punta contra una base de prueba (cotizar, comprar con y sin cuenta, mis pedidos, reanudar pago), y `/tienda/carrito` y `/tienda/pagar` respondiendo en el servidor de desarrollo. No se probó en el navegador un pago real con Stripe ni la subida del comprobante.
+- Archivos: src/app/tienda/carrito/page.tsx (nuevo), src/app/tienda/pagar/page.tsx (nuevo), src/components/store/cart/{cartStore.ts,useCartQuote.ts,CartPage.tsx,CartSummary.tsx,CartLink.tsx} (nuevos), src/components/store/checkout/{CheckoutPage.tsx,AddressFields.tsx,StripePayStep.tsx} (nuevos), src/components/store/orders/{MyOrdersSection.tsx,OrderDetail.tsx} (nuevos), src/components/store/{ProductBuyBox.tsx,constants.ts,fields.ts,queries.ts,types.ts,index.ts,README.md}, src/core/routes.ts, src/components/layout/Navigation.tsx, src/components/profile/shell/profileNav.ts, src/app/(cuenta)/perfil/page.tsx
+- GraphQL: nuevas `StoreCartQuote`, `MyStoreAddresses`, `PlaceStoreOrder`, `MyStoreOrders`, `MyStoreOrder`, `UploadStoreTransferProof`, `ResumeStoreOrderPayment` y `CancelMyStoreOrder`
+- Móvil: [prompt](../mobile-sync/2026-11-19-tienda-carrito-y-pedidos.md)
+
+## 2026-11-19 · feat: tienda de Kadesh Pet (catálogo, ficha, lista de deseos y reseñas)
+- Rama: feat/pet-store
+- Qué cambió y por qué:
+  - **`/tienda`**: catálogo pintado por el servidor, con buscador, categorías en dos niveles, marca, «Quién vende», «En oferta», orden y «Ver más». Los filtros viven en la URL.
+  - **`/tienda/<slug>`**: galería, precio, opciones, disponibilidad, descripción, reseñas y relacionados, con JSON-LD de producto.
+  - **Dos tipos de producto**: «Vendido por Kadesh» (la compra en línea llega con el carrito; la ficha lo dice en vez de mostrar un botón que no hace nada) y «En Mercado Libre» (botón al enlace de afiliado con `rel="sponsored nofollow noopener"`, precio aproximado con su fecha y aviso de afiliado).
+  - **Lista de deseos**: corazón en tarjetas y ficha, y vista «Lista de deseos» en Mi cuenta (`/perfil?tab=deseos`). Una sola consulta pinta todos los corazones.
+  - **Reseñas**: todo producto empieza sin estrellas; solo cuentan las escritas aquí. Una por persona y producto, editable y borrable.
+  - **Apagada por defecto**: sin `STORE_ENABLED` en el back, `/tienda` responde 404; sin `NEXT_PUBLIC_STORE_ENABLED` aquí, no sale en el menú ni en Mi cuenta.
+  - Comprobado: tipos, lint, las 11 operaciones contra el esquema del back, 404 con la tienda cerrada en el servidor de desarrollo y un render de tarjeta, compra, galería y JSON-LD con datos de prueba. No se vio el catálogo con productos reales en el navegador (la tienda está cerrada en dev).
+- Archivos: src/app/tienda/page.tsx (nuevo), src/app/tienda/[slug]/page.tsx (nuevo), src/components/store/{MyWishlistSection.tsx,ProductBuyBox.tsx,ProductCard.tsx,ProductDetail.tsx,ProductGallery.tsx,ProductReviews.tsx,StoreIndexClient.tsx,StoreListingPage.tsx,StoreStars.tsx,StoreWishlist.tsx,constants.ts,fields.ts,format.ts,index.ts,queries.ts,searchParams.ts,server.ts,store-seo.ts,types.ts,README.md} (nuevos), src/core/routes.ts, src/components/layout/Navigation.tsx, src/components/profile/shell/profileNav.ts, src/app/(cuenta)/perfil/page.tsx, CLAUDE.md
+- GraphQL: nuevas `StoreCatalog`, `StoreCatalogFacets`, `StoreCatalogProduct`, `StoreCatalogReviews`, `StoreCatalogMore`, `StoreProductReviewsList`, `MyStoreWishlistIds`, `MyStoreWishlist`, `SetStoreWishlist`, `SubmitStoreProductReview` y `DeleteMyStoreProductReview`
+- Móvil: [prompt](../mobile-sync/2026-11-19-tienda-catalogo.md)
+
 ## 2026-11-19 · fix: ficha del animal recortada cuando hay varios banners
 - Rama: feat/ranking-huellitas
 - Qué cambió y por qué: en escritorio el bloque de arriba tenía alto fijo de pantalla con `overflow-hidden`. Si había banners encima de la cuadrícula (impulsar en Facebook, recompensa, avistamientos…), le quitaban alto a la foto, el historial, el mapa y las veterinarias, que se cortaban justo encima de «Comentarios». Ahora el alto fijo lo lleva la cuadrícula (pantalla menos el encabezado, mínimo 43.5rem) y los banners empujan la página hacia abajo en lugar de aplastarla.

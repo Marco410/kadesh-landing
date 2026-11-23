@@ -46,7 +46,7 @@ export default function AppTopBar({
       <button
         type="button"
         onClick={onOpenMenu}
-        aria-label="Abrir menú"
+        aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
         aria-controls="app-sidebar"
         aria-expanded={menuOpen}
         className="-ml-2 flex size-11 shrink-0 items-center justify-center rounded-full text-dash-ink transition-colors hover:bg-dash-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-kadesh-400 lg:hidden"

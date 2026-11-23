@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Cancel01Icon,
@@ -8,6 +8,7 @@ import {
   WhatsappIcon,
 } from "@hugeicons/core-free-icons";
 import { kadeshWhatsAppUrl } from "kadesh/utils/kadeshWhatsApp";
+import { useBodyScrollLock } from "kadesh/utils/useBodyScrollLock";
 
 const PRIVACY_URL = "https://kadesh.com.mx/privacidad";
 const GOOGLE_ADS_SETTINGS_URL = "https://adssettings.google.com";
@@ -23,12 +24,39 @@ const linkClass = "font-semibold text-kadesh underline-offset-2 hover:underline"
 export default function AdInfoButton() {
   // <dialog> nativo con showModal(): Esc, foco, fondo inerte y backdrop los da el navegador.
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const open = () => dialogRef.current?.showModal();
-  const close = () => dialogRef.current?.close();
+  const [isOpen, setIsOpen] = useState(false);
+  // showModal() deja el fondo inerte pero no quieto: la rueda lo seguía desplazando.
+  useBodyScrollLock(isOpen);
+  // Al cerrar, el navegador regresa el foco al botón "?" y desplaza la página hasta él (vive en una
+  // columna fija). Se guarda dónde estaba y se regresa ahí.
+  const scrollBefore = useRef(0);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const open = () => {
+    scrollBefore.current = window.scrollY;
+    dialogRef.current?.showModal();
+    setIsOpen(true);
+  };
+  // Every way of closing (X, Esc, click outside) comes here. The focus goes back to "?" first, with
+  // preventScroll: when the dialog then returns focus there itself, it is already focused and the
+  // page does not move.
+  const close = () => {
+    triggerRef.current?.focus({ preventScroll: true });
+    dialogRef.current?.close();
+  };
+  const onClosed = () => {
+    setIsOpen(false);
+    // Backup: if something still moved the page, put it back where it was.
+    const top = scrollBefore.current;
+    if (window.scrollY !== top) window.scrollTo({ top, behavior: "instant" });
+    requestAnimationFrame(() => {
+      if (window.scrollY !== top) window.scrollTo({ top, behavior: "instant" });
+    });
+  };
 
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={open}
         aria-label="¿Por qué ves publicidad?"
@@ -40,6 +68,13 @@ export default function AdInfoButton() {
       <dialog
         ref={dialogRef}
         aria-labelledby="ad-info-title"
+        // También Esc: el evento `close` llega con cualquier forma de cerrar.
+        onClose={onClosed}
+        // Esc: the same path as the other ways of closing.
+        onCancel={(event) => {
+          event.preventDefault();
+          close();
+        }}
         // Clic fuera del panel (sobre el backdrop) cierra.
         onClick={(event) => {
           if (event.target === event.currentTarget) close();

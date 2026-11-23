@@ -4,6 +4,7 @@ import { fetchEventFacets, fetchEventsForSitemap } from 'kadesh/components/event
 import { fetchAnimalsForSitemap } from 'kadesh/components/animals/server';
 import { fetchPetPlacesForSitemap } from 'kadesh/components/veterinaries/server';
 import { fetchRescueOrgsForSitemap } from 'kadesh/components/rescue/server';
+import { fetchStoreProductsForSitemap } from 'kadesh/components/store/server';
 import { Routes } from 'kadesh/core/routes';
 import { SITE_URL } from 'kadesh/core/site';
 
@@ -83,14 +84,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   // Fichas de animales (sin los unidos a otro reporte), de veterinarias y de espacios de rescate verificados.
-  const [animals, petPlaces, rescueOrgs] = await Promise.all([
+  const [animals, petPlaces, rescueOrgs, storeSlugs] = await Promise.all([
     fetchAnimalsForSitemap(),
     fetchPetPlacesForSitemap(),
     fetchRescueOrgsForSitemap(),
+    fetchStoreProductsForSitemap(),
   ]);
   const animalEntries: MetadataRoute.Sitemap = animals.map((animal) => ({
     url: `${SITE_URL}${animal.path}`,
-    lastModified: toLastModified(animal.createdAt),
+    lastModified: toLastModified(animal.updatedAt),
     changeFrequency: 'weekly',
     priority: 0.6,
   }));
@@ -107,6 +109,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
+  // The store only goes in when it is open and has products (closed, `/tienda` answers 404).
+  const storeEntries: MetadataRoute.Sitemap =
+    storeSlugs.length > 0
+      ? [
+          { url: `${SITE_URL}${Routes.store.index}`, changeFrequency: 'daily', priority: 0.7 },
+          ...storeSlugs.map((slug) => ({
+            url: `${SITE_URL}${Routes.store.product(slug)}`,
+            changeFrequency: 'weekly' as const,
+            priority: 0.6,
+          })),
+        ]
+      : [];
+
   return [
     ...staticEntries,
     ...postEntries,
@@ -115,5 +130,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...animalEntries,
     ...petPlaceEntries,
     ...rescueOrgEntries,
+    ...storeEntries,
   ];
 }

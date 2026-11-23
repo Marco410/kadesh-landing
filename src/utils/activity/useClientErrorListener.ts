@@ -111,6 +111,12 @@ function onRejection(event: PromiseRejectionEvent) {
   const reason = event.reason as { name?: string; message?: string; stack?: string } | string | null;
   const message =
     typeof reason === "string" ? reason : typeof reason?.message === "string" ? reason.message : "";
+  // Apollo cancels the queries of a page you leave, and that rejection reaches nobody: it is not
+  // an error. Marking it handled keeps it out of the console.
+  if (typeof reason === "object" && reason?.name === "AbortError") {
+    event.preventDefault();
+    return;
+  }
   if (isNoise(message) || NETWORK.test(message)) return;
   if (typeof reason === "object" && reason?.name === "ApolloError") return;
   reportClientError({

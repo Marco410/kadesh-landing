@@ -4,6 +4,8 @@ import Link from 'next/link';
 import Logo from '../shared/Logo';
 import { Routes } from 'kadesh/core/routes';
 import { currentYearMx } from 'kadesh/utils/format-date';
+import { KADESH_SOCIAL_LINKS } from 'kadesh/core/social';
+import { HugeiconsIcon } from '@hugeicons/react';
 
 /** Otros productos de la familia Kadesh (Pet es este sitio, así que no se lista). */
 const KADESH_FAMILY = [
@@ -69,6 +71,21 @@ export default function Footer() {
             <p className="text-gray-400 text-sm leading-relaxed">
               Santuario digital para el bienestar animal. Tecnología, compasión y comunidad.
             </p>
+            <ul className="mt-4 flex items-center gap-2" aria-label="Redes sociales de Kadesh Pet">
+              {KADESH_SOCIAL_LINKS.map((social) => (
+                <li key={social.href}>
+                  <a
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${social.label} de Kadesh Pet (se abre en otra pestaña)`}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 text-gray-300 transition-colors hover:border-orange-500 hover:text-orange-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
+                  >
+                    <HugeiconsIcon icon={social.icon} size={18} aria-hidden="true" />
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {FOOTER_COLUMNS.map((column) => (

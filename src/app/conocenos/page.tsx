@@ -16,6 +16,7 @@ import {
 import { WhatIsKadesh } from 'kadesh/components/home';
 import { ContactForm } from 'kadesh/components/contact';
 import { SITE_URL } from 'kadesh/core/site';
+import { KADESH_SOCIAL_LINKS, KADESH_SOCIAL_URLS } from 'kadesh/core/social';
 
 export default function ConocenosPage() {
   const fadeInUp = {
@@ -85,6 +86,7 @@ export default function ConocenosPage() {
         'Veterinarias',
         'Donaciones para animales',
       ],
+      sameAs: KADESH_SOCIAL_URLS,
     },
   };
 
@@ -355,6 +357,25 @@ export default function ConocenosPage() {
                   </Link>
                 </div>
               </nav>
+              <div className="mt-12">
+                <h3 className="text-lg font-bold text-white mb-4">Síguenos en redes</h3>
+                <ul className="flex flex-wrap justify-center gap-3" aria-label="Redes sociales de Kadesh Pet">
+                  {KADESH_SOCIAL_LINKS.map((social) => (
+                    <li key={social.href}>
+                      <a
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${social.label}: ${social.handle} (se abre en otra pestaña)`}
+                        className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white/15 px-4 text-sm font-semibold text-white ring-1 ring-white/30 transition-colors hover:bg-white hover:text-orange-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      >
+                        <HugeiconsIcon icon={social.icon} size={18} aria-hidden="true" />
+                        <span>{social.handle}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </motion.div>
           </div>
         </section>

@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Navigation, Footer } from 'kadesh/components/layout';
 import { ContactForm } from 'kadesh/components/contact';
 import { SITE_URL } from 'kadesh/core/site';
+import { KADESH_SOCIAL_LINKS, KADESH_SOCIAL_URLS } from 'kadesh/core/social';
+import { HugeiconsIcon } from '@hugeicons/react';
 
 export default function ContactPage() {
   const fadeInUp = {
@@ -30,6 +32,7 @@ export default function ContactPage() {
         areaServed: 'MX',
         availableLanguage: 'Spanish',
       },
+      sameAs: KADESH_SOCIAL_URLS,
     },
   };
 
@@ -96,6 +99,22 @@ export default function ContactPage() {
               <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
                 También puedes encontrarnos en nuestras redes sociales o visitar nuestra página de información para conocer más sobre KADESH y cómo trabajamos por el bienestar animal en México.
               </p>
+              <ul className="flex flex-wrap justify-center gap-3 mb-8" aria-label="Redes sociales de Kadesh Pet">
+                {KADESH_SOCIAL_LINKS.map((social) => (
+                  <li key={social.href}>
+                    <a
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${social.label}: ${social.handle} (se abre en otra pestaña)`}
+                      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#e0e0e0] bg-white px-4 text-sm font-semibold text-gray-900 transition-colors hover:border-orange-500 hover:text-orange-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 dark:border-[#3a3a3a] dark:bg-[#1e1e1e] dark:text-white dark:hover:text-orange-400"
+                    >
+                      <HugeiconsIcon icon={social.icon} size={18} aria-hidden="true" />
+                      <span>{social.handle}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
               <nav aria-label="Enlaces de contacto adicionales">
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a

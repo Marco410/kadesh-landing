@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import Link from "next/link";
+import RecordedViews from "kadesh/components/shared/RecordedViews";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@apollo/client";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -502,6 +503,7 @@ export default function VeterinaryDetailClient({
                   </span>
                 )}
                 {!isVerified && <UnverifiedChip />}
+                <RecordedViews kind="petPlace" id={place.id} />
               </div>
             </div>
           </div>

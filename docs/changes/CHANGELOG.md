@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-24 · fix: el build fallaba por importar código `server-only` desde `/perfil`
+- Rama: feat/pet-ads
+- Qué cambió y por qué: `/perfil` (componente cliente) importa `MyOrdersSection` y `MyWishlistSection` del barrel `kadesh/components/store`, que también reexportaba `StoreListingPage`. Desde que `StoreListingPage` envuelve el listado en `WithAds` (que lee `ads/server.ts` con `import 'server-only'`), webpack metía ese módulo en el bundle cliente y `next build` fallaba. Se quita la reexportación de `StoreListingPage`/`loadStoreListing` del barrel; su único consumidor, `app/tienda/page.tsx`, ya lo importaba directo del archivo.
+- Archivos: src/components/store/index.ts
+- GraphQL: ninguna
+- Móvil: no aplica (arreglo de empaquetado de Next.js, sin cambio de comportamiento)
+
 ## 2026-11-24 · feat: redes sociales de Kadesh Pet en el footer, Conócenos y Contacto
 - Rama: develop
 - Qué cambió y por qué: las redes oficiales (Facebook, Instagram, LinkedIn y X) viven ahora en un solo lugar, `src/core/social.ts` (`KADESH_SOCIAL_LINKS`, `KADESH_SOCIAL_URLS`). El footer compartido (portada, Conócenos y el resto del sitio) muestra los cuatro íconos bajo el logo; Conócenos agrega «Síguenos en redes» con el usuario de cada red en el bloque «Únete a Nuestra Comunidad», y Contacto los muestra en «Otras formas de contactarnos» (el texto ya mencionaba las redes, pero no había enlaces). El `sameAs` del JSON-LD de la portada, Conócenos y Contacto usa la misma lista. Se corrige el Facebook viejo (`id=61576878181992` → `id=61594166402735`) y se quita `SOCIAL_LINKS` de `constants/constans.ts`; la página antigua `/landing` usa la lista nueva con íconos de Hugeicons.

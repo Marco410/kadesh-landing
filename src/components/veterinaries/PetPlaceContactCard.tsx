@@ -1,10 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  ArrowRight01Icon,
   Call02Icon,
-  Calendar02Icon,
-  Car01Icon,
   Facebook01Icon,
   Globe02Icon,
   InstagramIcon,
@@ -16,17 +16,13 @@ import {
   TiktokIcon,
   WhatsappIcon,
 } from "@hugeicons/core-free-icons";
+import VeterinariesMap from "./VeterinariesMap";
+import { detailToMapPlace } from "./detail/mapPlace";
+import { hasCoords, httpUrl, type PlaceLinks } from "./detail/placeLinks";
 import type { PetPlaceDetail } from "./types";
 
-function digits(value: string): string {
-  return value.replace(/\D/g, "");
-}
-
-function httpUrl(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed) return "";
-  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-}
+/** Close enough to read the streets around the clinic. */
+const PLACE_MAP_ZOOM = 16;
 
 function socialIcon(network: string | null) {
   switch (network) {
@@ -45,249 +41,136 @@ function socialIcon(network: string | null) {
   }
 }
 
-function OutboundIconLink({
-  href,
-  icon,
-  label,
-}: {
-  href: string;
-  icon: typeof MapPinIcon;
-  label: string;
-}) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={label}
-      title={label}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-kadesh transition-colors hover:bg-kadesh-50 sm:h-11 sm:w-11 dark:hover:bg-kadesh/15"
-    >
-      <HugeiconsIcon
-        icon={icon}
-        size={20}
-        strokeWidth={1.5}
-        aria-hidden="true"
-      />
-    </a>
-  );
-}
-
-function directionsUrl(lat: string, lng: string) {
-  const destination = `${lat},${lng}`;
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=driving`;
-}
-
-function ContactRow({
+function ContactLine({
   icon,
   label,
   value,
   href,
-  action,
   external,
 }: {
   icon: typeof MapPinIcon;
   label: string;
   value: string;
-  href?: string | null;
-  action?: string;
+  href: string;
   external?: boolean;
 }) {
-  const body = (
-    <>
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-kadesh-50 text-kadesh dark:bg-kadesh/15">
-        <HugeiconsIcon
-          icon={icon}
-          size={20}
-          strokeWidth={1.5}
-          aria-hidden="true"
-        />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-xs font-semibold uppercase tracking-wide text-[#5a5a5a] dark:text-[#9aa3b2]">
-          {label}
-        </span>
-        <span className="mt-0.5 block break-words text-base font-semibold leading-snug text-[#121212] dark:text-white">
-          {value}
-        </span>
-      </span>
-      {action ? (
-        <span className="shrink-0 self-center text-sm font-semibold text-kadesh">
-          {action}
-        </span>
-      ) : null}
-    </>
-  );
-
-  const className =
-    "flex min-h-[4.25rem] items-start gap-3 rounded-2xl border border-[#ececec] bg-white px-3 py-3 transition-colors dark:border-white/10 dark:bg-night";
-
-  if (!href) {
-    return <div className={className}>{body}</div>;
-  }
-
   return (
-    <a
-      href={href}
-      target={external ? "_blank" : undefined}
-      rel={external ? "noopener noreferrer" : undefined}
-      className={`${className} hover:border-kadesh hover:bg-kadesh-50 dark:hover:bg-kadesh/10`}
-    >
-      {body}
-    </a>
+    <li>
+      <a
+        href={href}
+        target={external ? "_blank" : undefined}
+        rel={external ? "noopener noreferrer" : undefined}
+        className="group flex min-h-12 items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-[#f2f4f7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-kadesh dark:hover:bg-white/[0.06]"
+      >
+        <HugeiconsIcon icon={icon} size={20} strokeWidth={1.5} className="shrink-0 text-kadesh dark:text-kadesh-300" aria-hidden />
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">{label}</span>
+          <span className="block truncate text-[0.9375rem] font-semibold text-[#121212] dark:text-white">{value}</span>
+        </span>
+        <HugeiconsIcon
+          icon={ArrowRight01Icon}
+          size={16}
+          strokeWidth={2}
+          className="shrink-0 text-[#9aa3b2] transition-transform group-hover:translate-x-0.5 group-hover:text-kadesh"
+          aria-hidden
+        />
+      </a>
+    </li>
   );
 }
 
-export default function PetPlaceContactCard({
-  place,
-}: {
-  place: PetPlaceDetail;
-}) {
-  const street = place.street?.trim() || "";
-  const address = place.address?.trim() || "";
-  const locality = [place.municipality, place.state].filter(Boolean).join(", ");
-  const postal = place.cp?.trim() ? `C.P. ${place.cp.trim()}` : "";
-  const addressValue = [street || address, locality, postal]
-    .filter(Boolean)
-    .join(" · ");
-  const hasCoords =
-    !Number.isNaN(parseFloat(place.lat)) &&
-    !Number.isNaN(parseFloat(place.lng));
-  const howToGetHref = hasCoords ? directionsUrl(place.lat, place.lng) : null;
-  const phone = place.phone?.trim() || "";
-  const phoneHref = phone ? `tel:${phone.replace(/\s/g, "")}` : null;
-  const whatsapp = place.whatsapp?.trim() || "";
-  const whatsappHref = whatsapp ? `https://wa.me/${digits(whatsapp)}` : null;
-  const email = place.email?.trim() || "";
-  const website = place.website?.trim() || "";
-  const websiteHref = website ? httpUrl(website) : null;
-  const socials = (place.pet_place_social_media ?? []).filter((social) =>
-    social.link?.trim(),
-  );
-  const badges = [
-    place.emergencies ? "Urgencias 24/7" : null,
-    place.appointmentRequired ? "Solo con cita" : null,
-    place.parking ? "Estacionamiento" : null,
-  ].filter((badge): badge is string => Boolean(badge));
-
-  const hasContact =
-    Boolean(addressValue) ||
-    Boolean(phone) ||
-    Boolean(whatsapp) ||
-    Boolean(email) ||
-    Boolean(websiteHref) ||
-    socials.length > 0;
+/**
+ * Where it is and how to reach it: a close map, the address with «Cómo llegar», then phone,
+ * WhatsApp, email, website and social networks. Only what the clinic has.
+ */
+export default function PetPlaceContactCard({ place, links }: { place: PetPlaceDetail; links: PlaceLinks }) {
+  const mapPlaces = useMemo(() => [detailToMapPlace(place)], [place]);
+  const socials = (place.pet_place_social_media ?? []).filter((social) => social.link?.trim());
+  const addressLines = [links.street, [links.locality, links.postal].filter(Boolean).join(" · ")].filter(Boolean);
+  const hasContact = Boolean(links.phone || links.whatsapp || links.email || links.websiteHref || socials.length);
 
   return (
-    <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border-2 border-[#ececec] bg-white p-4 shadow-sm dark:border-white/15 dark:bg-night-raised lg:p-5">
-      <div className="flex shrink-0 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-        <h2 className="text-lg font-bold tracking-[-0.02em] text-[#121212] dark:text-white">
-          Contacto
+    <section
+      aria-labelledby="ubicacion-titulo"
+      className="overflow-hidden rounded-3xl border border-[#e6e9ee] bg-white shadow-[0_10px_30px_-12px_rgba(15,35,80,0.18)] dark:border-white/10 dark:bg-night-raised dark:shadow-none"
+    >
+      {hasCoords(place) ? (
+        <div className="h-56 border-b border-[#e6e9ee] dark:border-white/10">
+          <VeterinariesMap places={mapPlaces} selectedPlace={null} onPlaceClick={() => {}} height="100%" focusZoom={PLACE_MAP_ZOOM} />
+        </div>
+      ) : null}
+
+      <div className="p-5">
+        <h2 id="ubicacion-titulo" className="sr-only">
+          Ubicación y contacto
         </h2>
-        {websiteHref || socials.length > 0 ? (
-          <nav
-            aria-label="Sitio y redes"
-            className="-ml-1.5 flex flex-wrap items-center sm:ml-0 sm:justify-end"
-          >
-            {websiteHref ? (
-              <OutboundIconLink
-                href={websiteHref}
+        {addressLines.length > 0 ? (
+          <div className="flex items-start gap-3 px-2">
+            <HugeiconsIcon icon={MapPinIcon} size={20} strokeWidth={1.5} className="mt-0.5 shrink-0 text-kadesh dark:text-kadesh-300" aria-hidden />
+            <div className="min-w-0">
+              <address className="not-italic text-[0.9375rem] leading-snug text-[#121212] dark:text-white">
+                {addressLines.map((line) => (
+                  <span key={line} className="block first:font-semibold">
+                    {line}
+                  </span>
+                ))}
+              </address>
+              {links.directionsHref ? (
+                <a
+                  href={links.directionsHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-kadesh underline-offset-4 hover:underline dark:text-kadesh-300 lg:min-h-0"
+                >
+                  Cómo llegar
+                  <HugeiconsIcon icon={ArrowRight01Icon} size={14} strokeWidth={2} aria-hidden />
+                </a>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        {hasContact ? (
+          <ul className={`flex flex-col ${addressLines.length > 0 ? "mt-4 border-t border-[#eef0f3] pt-3 dark:border-white/10" : ""}`}>
+            {links.phone && links.phoneHref ? <ContactLine icon={Call02Icon} label="Teléfono" value={links.phone} href={links.phoneHref} /> : null}
+            {links.whatsapp && links.whatsappHref ? (
+              <ContactLine icon={WhatsappIcon} label="WhatsApp" value={links.whatsapp} href={links.whatsappHref} external />
+            ) : null}
+            {links.email && links.emailHref ? <ContactLine icon={Mail01Icon} label="Correo" value={links.email} href={links.emailHref} /> : null}
+            {links.website && links.websiteHref ? (
+              <ContactLine
                 icon={Globe02Icon}
                 label="Sitio web"
+                value={links.website.replace(/^https?:\/\//i, "").replace(/\/$/, "")}
+                href={links.websiteHref}
+                external
               />
             ) : null}
+          </ul>
+        ) : (
+          <p className="mt-4 px-2 text-sm leading-relaxed text-[#5a5a5a] dark:text-[#9aa3b2]">
+            Aún no hay teléfono ni redes. Si es tu clínica, reclámala para agregarlos.
+          </p>
+        )}
+
+        {socials.length > 0 ? (
+          <nav aria-label="Redes sociales" className="mt-3 flex flex-wrap gap-1 px-1">
             {socials.map((social, index) => (
-              <OutboundIconLink
+              <a
                 key={`${social.social_media}-${social.link}-${index}`}
                 href={httpUrl(social.link || "")}
-                icon={socialIcon(social.social_media)}
-                label={social.social_media || "Red social"}
-              />
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.social_media || "Red social"}
+                title={social.social_media || "Red social"}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-[#3a3a3a] transition-colors hover:bg-[#f2f4f7] hover:text-kadesh dark:text-[#c3c9d3] dark:hover:bg-white/[0.06] dark:hover:text-kadesh-300"
+              >
+                <HugeiconsIcon icon={socialIcon(social.social_media)} size={20} strokeWidth={1.5} aria-hidden />
+              </a>
             ))}
           </nav>
         ) : null}
       </div>
-
-      {badges.length > 0 ? (
-        <ul className="mt-3 flex flex-wrap gap-1.5">
-          {badges.map((badge) => (
-            <li
-              key={badge}
-              className="rounded-full bg-kadesh-50 px-2.5 py-1 text-xs font-semibold text-kadesh-700 dark:bg-kadesh/15 dark:text-kadesh-300"
-            >
-              {badge}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
-      <div className="mt-4 flex min-h-0 flex-1 flex-col gap-2 lg:overflow-y-auto">
-        {addressValue ? (
-          <ContactRow
-            icon={MapPinIcon}
-            label="Dirección"
-            value={addressValue}
-            href={howToGetHref}
-            action={howToGetHref ? "Cómo llegar" : undefined}
-            external
-          />
-        ) : null}
-        {phone ? (
-          <ContactRow
-            icon={Call02Icon}
-            label="Teléfono"
-            value={phone}
-            href={phoneHref}
-            action="Llamar"
-          />
-        ) : null}
-        {whatsapp ? (
-          <ContactRow
-            icon={WhatsappIcon}
-            label="WhatsApp"
-            value={whatsapp}
-            href={whatsappHref}
-            action="Escribir"
-            external
-          />
-        ) : null}
-        {email ? (
-          <ContactRow
-            icon={Mail01Icon}
-            label="Correo"
-            value={email}
-            href={`mailto:${email}`}
-            action="Enviar"
-          />
-        ) : null}
-        {!hasContact ? (
-          <p className="text-sm text-[#5a5a5a] dark:text-[#b0b0b0]">
-            Aún no hay datos de contacto. Si es tu clínica, reclámala para
-            agregar teléfono, WhatsApp, correo y redes.
-          </p>
-        ) : null}
-      </div>
-
-      {place.appointmentRequired || place.parking ? (
-        <p className="mt-3 flex flex-wrap gap-3 text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">
-          {place.appointmentRequired ? (
-            <span className="inline-flex items-center gap-1">
-              <HugeiconsIcon
-                icon={Calendar02Icon}
-                size={14}
-                strokeWidth={1.5}
-              />
-              Conviene agendar antes de ir
-            </span>
-          ) : null}
-          {place.parking ? (
-            <span className="inline-flex items-center gap-1">
-              <HugeiconsIcon icon={Car01Icon} size={14} strokeWidth={1.5} />
-              Hay estacionamiento
-            </span>
-          ) : null}
-        </p>
-      ) : null}
     </section>
   );
 }

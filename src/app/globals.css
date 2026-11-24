@@ -965,3 +965,10 @@ html:has(> body[style*="overflow: hidden"]) {
 html body [data-sileo-title] {
   text-transform: none;
 }
+
+/* A page with a fixed bottom action bar on phones (`PlaceMobileActions`) lifts the help button above it. */
+@media (max-width: 1023.98px) {
+  html[data-bottom-bar] .kadesh-help-fab {
+    bottom: calc(5.75rem + env(safe-area-inset-bottom));
+  }
+}

@@ -92,7 +92,7 @@ Radios 12–16px en controles y tarjetas; CTAs primarios de listado pueden ser `
 - Home, veterinarias: tarjeta con recuadro-mapa (pin de marca), no avatar de letra.
 - Directorio `/veterinarias`: herramienta lista + mapa, sin franja de héroe; ficha de fila con el mismo pin.
 - Directorio `/animales`: misma herramienta (H1 en el panel, chips de radio). Filtros: Perdido / Encontrado / En adopción (color del pin) + tipo; el vacío nombra la búsqueda.
-- Ficha `/veterinarias/[id]`: una pantalla en escritorio (mapa + contacto + horarios + reseñas); reseñas con scroll interno.
+- Ficha `/veterinarias/[id]` (2026-11-23): encabezado con nombre grande, tipo y ciudad, estrellas, «abierto ahora · hoy» y acciones. Columna principal en orden de lectura, secciones separadas por una línea (sin tarjetas): Acerca de, Servicios, Horario de la semana con hoy resaltado, Reseñas con promedio y reparto de estrellas (el formulario se abre con «Escribir una reseña»), ¿Es tu clínica? A la derecha, tarjeta con mapa cercano (zoom 16), dirección y contacto; luego publicidad y tienda. Lo vacío no se pinta: un solo aviso dice qué falta. En celular, barra fija abajo con Reservar / Llamar / Cómo llegar (el botón de ayuda sube con `html[data-bottom-bar]`).
 - Ficha `/animales/[id]`: herramienta (foto para reconocer, hechos, historial + mapa, comentarios). Sin héroe azul ni footer. Llamar y Cómo llegar en el encabezado. Lat/lng no se muestran.
 - Alta `/animales/nuevo`: herramienta de 3 pasos (foto+tipo, cómo es, dónde), círculos 1–2–3 con check al completar, pie fijo Continuar/Publicar. El borrador sobrevive a un recarga. Sin héroe azul.
 

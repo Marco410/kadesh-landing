@@ -15,9 +15,22 @@ import { useUiMotion } from "kadesh/components/shared/motion";
 
 interface PetPlaceBookCtaProps {
   place: PetPlaceDetail;
+  /** Replaces the button's look (size and width); the brand fill stays. */
+  className?: string;
+  /**
+   * Opens the booking from `?reservar=1`. Only one instance per page may do it (the header's), or
+   * the mobile action bar would open a second modal.
+   */
+  handleDeepLink?: boolean;
 }
 
-export default function PetPlaceBookCta({ place }: PetPlaceBookCtaProps) {
+const DEFAULT_CLASS = "min-h-11 w-full px-3 sm:px-5 lg:w-auto";
+
+export default function PetPlaceBookCta({
+  place,
+  className = DEFAULT_CLASS,
+  handleDeepLink = true,
+}: PetPlaceBookCtaProps) {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
   const [open, setOpen] = useState(false);
@@ -40,7 +53,7 @@ export default function PetPlaceBookCta({ place }: PetPlaceBookCtaProps) {
   };
 
   useEffect(() => {
-    if (!mode || userLoading) return;
+    if (!handleDeepLink || !mode || userLoading) return;
     if (typeof window === "undefined") return;
     if (new URLSearchParams(window.location.search).get("reservar") !== "1") {
       return;
@@ -51,7 +64,7 @@ export default function PetPlaceBookCta({ place }: PetPlaceBookCtaProps) {
     }
     setOpen(true);
     router.replace(veterinaryDetailHref(place), { scroll: false });
-  }, [mode, user, userLoading, goToLogin, place, router]);
+  }, [handleDeepLink, mode, user, userLoading, goToLogin, place, router]);
 
   if (!mode) return null;
 
@@ -61,7 +74,7 @@ export default function PetPlaceBookCta({ place }: PetPlaceBookCtaProps) {
         type="button"
         onClick={openBooking}
         whileTap={motionPrefs.tap}
-        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-kadesh px-3 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 sm:px-5 lg:w-auto"
+        className={`inline-flex items-center justify-center gap-2 rounded-xl bg-kadesh text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh ${className}`}
       >
         <HugeiconsIcon
           icon={Calendar02Icon}

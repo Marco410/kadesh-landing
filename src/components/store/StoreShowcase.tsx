@@ -34,7 +34,8 @@ export default function StoreShowcase({
     <section
       aria-labelledby="tienda-escaparate-titulo"
       className={cn(
-        !sidebar && 'rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised',
+        // A container: in a narrow column (the clinic page's side) the three products stack.
+        !sidebar && '@container rounded-2xl border border-[#ececec] bg-white p-4 dark:border-white/10 dark:bg-night-raised',
         className,
       )}
     >
@@ -62,7 +63,7 @@ export default function StoreShowcase({
         className={
           sidebar
             ? 'divide-y divide-[#e0e0e0] dark:divide-[#3a3a3a]'
-            : 'grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3'
+            : 'grid grid-cols-1 gap-2 @xl:grid-cols-3 @xl:gap-3'
         }
       >
         {items.map((item) => {

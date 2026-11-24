@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-23 · feat: contador de vistas en productos de la tienda y en veterinarias
+- Rama: feat/page-views
+- Qué cambió y por qué: la página de un producto y la de una veterinaria cuentan sus vistas y muestran «👁 N vistas» junto a las estrellas (producto) o junto a «Abierto/Cerrado» (veterinaria). Un componente compartido (`RecordedViews`) manda una sola mutación al abrir la página y pinta el total que devuelve el back; el número no está en la consulta del servidor, así que la página cacheada no depende de él. El back cuenta una vista por persona cada 30 min, no cuenta admins, bots ni al dueño de la veterinaria, y al público solo le devuelve el número desde 10 vistas. Sin número o con error, no se muestra nada.
+- Archivos: src/components/shared/RecordedViews.tsx (nuevo), src/components/store/ProductDetail.tsx, src/app/veterinarias/[slug]/VeterinaryDetailClient.tsx
+- GraphQL: `recordStoreProductView`, `recordPetPlaceView` (nuevas, mutaciones)
+- Móvil: [prompt](../mobile-sync/2026-11-23-vistas-producto-y-veterinaria.md)
+
 ## 2026-11-23 · feat: productos de la tienda en la ficha de la veterinaria y en el blog
 - Rama: develop
 - Qué cambió y por qué: una caja discreta «De la tienda Kadesh» con 3 productos destacados (miniatura, nombre y precio) y «Ver tienda», para dar a conocer la tienda sin estorbar.

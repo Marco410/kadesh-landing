@@ -5,6 +5,7 @@ import { Footer, Navigation } from 'kadesh/components/layout';
 import { Routes } from 'kadesh/core/routes';
 import { DEFAULT_STORE_FILTERS } from './constants';
 import { formatPrice } from './format';
+import RecordedViews from 'kadesh/components/shared/RecordedViews';
 import ProductBuyBox from './ProductBuyBox';
 import ProductCard from './ProductCard';
 import ProductGallery from './ProductGallery';
@@ -73,9 +74,12 @@ export default function ProductDetail({ product, reviews }: { product: StoreProd
                 <h1 className="text-3xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-4xl">
                   {item.name}
                 </h1>
-                <a href="#resenas" className="mt-3 inline-flex rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-kadesh">
-                  <LiveStoreStars productId={item.id} average={item.ratingAverage} count={item.ratingCount} size={18} />
-                </a>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <a href="#resenas" className="inline-flex rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-kadesh">
+                    <LiveStoreStars productId={item.id} average={item.ratingAverage} count={item.ratingCount} size={18} />
+                  </a>
+                  <RecordedViews kind="product" id={item.id} />
+                </div>
               </div>
               {item.shortDescription ? (
                 <p className="text-lg leading-relaxed text-[#3a3a3a] dark:text-[#d0d0d0]">{item.shortDescription}</p>

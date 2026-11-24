@@ -15,7 +15,7 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | Fecha | Prompt | Feature | Estado |
 |---|---|---|---|
 | 2026-10-23 | [Cartilla digital de la mascota](2026-10-23-cartilla-mascotas.md) | profile | pendiente |
-| 2026-10-28 | [Pedir cuenta al reportar sin salir de la pantalla](2026-10-28-cuenta-al-reportar.md) | auth | pendiente |
+| 2026-10-28 | [Pedir cuenta al reportar sin salir de la pantalla](2026-10-28-cuenta-al-reportar.md) | auth | implementado |
 | 2026-10-28 | [Reportes parecidos, comentar en vez de duplicar y pedir el reporte](2026-10-28-reportes-duplicados-y-reclamos.md) | animals | pendiente |
 | 2026-11-03 | [Inicio del perfil: resumen, "Requiere atención" y KPIs](2026-11-03-inicio-perfil.md) | profile | pendiente |
 | 2026-11-03 | [Chip «No verificada» en la ficha de veterinaria](2026-11-03-chip-no-verificada.md) | veterinaries | pendiente |
@@ -31,7 +31,7 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-05 | [Traspasar una mascota a otra cuenta con un código](2026-11-05-traspaso-de-mascotas-con-codigo.md) | profile | pendiente |
 | 2026-11-06 | [Mensajes de error legibles (nunca el texto crudo de GraphQL)](2026-11-06-errores-legibles.md) | shared | pendiente |
 | 2026-11-06 | [«Adopciones» en el perfil: ver, seguir y editar mis solicitudes](2026-11-06-mis-solicitudes-de-adopcion.md) | profile | pendiente |
-| 2026-11-09 | [Difusión pagada del reporte en Facebook e Instagram (por WhatsApp)](2026-11-09-difusion-pagada.md) | animals | pendiente |
+| 2026-11-09 | [Difusión pagada del reporte en Facebook e Instagram (por WhatsApp)](2026-11-09-difusion-pagada.md) | animals | implementado |
 | 2026-11-09 | [La sesión y las consultas aguantan cortes de red](2026-11-09-sesion-y-red-resilientes.md) | shared | pendiente |
 | 2026-11-10 | [Blog: «Lo más leído», relacionados, categorías y fechas en hora de México](2026-11-10-blog-mas-leidos-y-categorias.md) | blog | pendiente |
 | 2026-11-10 | [Enlaces del correo «Tu reporte ya está publicado» (`?accion=registro` o `impulsar`, ajustes de avisos)](2026-11-10-correo-reporte-publicado.md) | animals | pendiente |
@@ -39,7 +39,7 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-10 | [Eventos: vistas de la ficha y fotos en pantalla completa](2026-11-10-eventos-vistas-y-foto-completa.md) | events | pendiente |
 | 2026-11-12 | [Menos peticiones al backend: campana cada 5 min, blog sin listas completas, animales sin consulta doble](2026-11-12-menos-carga-al-backend.md) | shared | pendiente |
 | 2026-11-12 | [«Cerrar caso» con «¿volvió a casa?» y «¿Kadesh ayudó?»](2026-11-12-cerrar-caso-y-reencuentros.md) | animals | pendiente |
-| 2026-11-12 | [Seguimiento de casos: recordatorios, casos inactivos y WhatsApp al reportar](2026-11-12-seguimiento-de-casos.md) | animals | pendiente |
+| 2026-11-12 | [Seguimiento de casos: recordatorios, casos inactivos y WhatsApp al reportar](2026-11-12-seguimiento-de-casos.md) | animals | implementado |
 | 2026-11-12 | [Botón «Cartel» (cartel con QR e imagen para historias)](2026-11-12-cartel-qr.md) | animals | pendiente |
 | 2026-11-13 | [Nombre desconocido (vacío) en lugar de «Sin nombre»](2026-11-13-nombre-desconocido.md) | animals | pendiente |
 | 2026-11-13 | [«Agregar registro» más simple](2026-11-13-agregar-registro-simple.md) | animals | pendiente |

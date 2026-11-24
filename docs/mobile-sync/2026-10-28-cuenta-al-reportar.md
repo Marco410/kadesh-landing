@@ -1,5 +1,5 @@
 ---
-estado: pendiente
+estado: implementado
 fecha: 2026-10-28
 origen: kadesh-landing@feat/report-auth-modal (sin commit)
 feature: auth

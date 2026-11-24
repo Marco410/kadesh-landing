@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-23 · fix: el cartel se imprime en A4 y la imagen para historias se guarda bien en el celular
+- Rama: develop
+- Qué cambió y por qué: (1) El cartel imprimía en carta (US Letter) y en México se usa A4: `@page` pasa a `A4` con margen de 9 mm, y la hoja se maqueta a 794 × 1123 px (proporción 210:297) para que la vista previa siga igual a lo impreso. (2) «Imagen para historias» descargaba con un enlace `blob:` y `download`; los navegadores dentro de apps (Facebook, Instagram, Messenger…) lo ignoran y abren `blob:https://…` como página, sin poder guardarla. Ahora en celular abre la hoja nativa de compartir con el archivo (en iOS es la que tiene «Guardar imagen» a la galería y deja mandarla directo a Instagram o WhatsApp). Si Safari rechaza la hoja porque pasó mucho tiempo desde el toque (dibujar la imagen tarda), el botón cambia a «Guardar imagen» y el segundo toque la abre al instante. En un navegador dentro de una app sin hoja de compartir, abre la URL real del PNG (no un `blob:`) con un aviso de mantenerla presionada. En computadora sigue la descarga directa.
+- Archivos: src/app/cartel/[slug]/page.tsx, src/components/animals/poster/{PosterToolbar.tsx,fit.ts}
+- GraphQL: ninguna
+- Móvil: no aplica (la app abre el cartel en la web para imprimir y comparte la historia con `expo-sharing`, sin `blob:`)
+
 ## 2026-11-23 · fix: la tienda ya no muestra el aviso de enlace de afiliado
 - Rama: feat/vet-detail-redesign
 - Qué cambió y por qué: se quitan el aviso «Enlace de afiliado: si compras, Kadesh recibe una comisión…» del producto de Mercado Libre y la nota equivalente al pie del listado. Decisión de producto: no se le explica a quien compra. Se queda la etiqueta «En Mercado Libre», el precio aproximado con fecha y el `rel="sponsored"` del enlace (es para buscadores, no se ve).

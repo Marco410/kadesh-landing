@@ -29,12 +29,12 @@ import { normalizeMxPhone } from 'kadesh/utils/phone';
 /** «pet.kadesh.com.mx/canal», como se lee impreso. */
 const CHANNEL_DISPLAY = `${new URL(SITE_URL).host}${Routes.channel}`;
 /**
- * Cartel para imprimir (carta) con foto, datos, QR al enlace corto y folio. Lo puede imprimir
+ * Cartel para imprimir (A4) con foto, datos, QR al enlace corto y folio. Lo puede imprimir
  * cualquiera (dueños y voluntarios que pegan carteles).
  *
  * - Teléfono: sale por defecto (ya es público en la ficha y en la calle es lo más rápido para
  *   avisar). `?telefono=0` lo quita para quien no quiera exponerlo.
- * - Formato: vertical por defecto; `?formato=horizontal` para carta horizontal (paredes, vitrinas).
+ * - Formato: vertical por defecto; `?formato=horizontal` para A4 horizontal (paredes, vitrinas).
  *
  * - Tamaño: el cartel se maqueta siempre al tamaño real de la hoja (tipografía fija, sin `sm:` ni
  *   `vw`) y `PosterFit` lo reduce para que quepa en pantallas angostas: en el celular se ve la hoja
@@ -206,13 +206,13 @@ export default async function AnimalPosterPage({
     <main className="min-h-dvh bg-[#e9edf2] pb-10 print:bg-white print:p-0 dark:bg-night">
       {/* Solo se imprime el cartel: ni la barra ni lo que agrega el layout raíz (botón de ayuda). */}
       <style>{`
-        @page { size: letter ${landscape ? 'landscape' : 'portrait'}; margin: 0.35in; }
+        @page { size: A4 ${landscape ? 'landscape' : 'portrait'}; margin: 9mm; }
         @media print {
           body * { visibility: hidden; }
           #cartel, #cartel * { visibility: visible; }
           #cartel { position: absolute; inset: 0; width: 100%; margin: 0; box-shadow: none; border: 0; }
-          /* Fills the printable area exactly. With equal margins the area is not 11:8.5 (landscape:
-             10.3 × 7.8 in), so keeping the ratio left the sheet a few px taller than the page and
+          /* Fills the printable area exactly. With equal margins the area is not 297:210 (landscape:
+             279 × 192 mm), so keeping the ratio left the sheet a few px taller than the page and
              Chrome pushed the footer (QR and phone) onto a second page. */
           #cartel { height: 100%; aspect-ratio: auto; break-inside: avoid; }
           #${POSTER_FIT_INNER_ID} { transform: none !important; }
@@ -237,7 +237,7 @@ export default async function AnimalPosterPage({
           {landscape ? (
             <article
               id="cartel"
-              className="flex aspect-[11/8.5] w-full flex-col overflow-hidden bg-white text-[#121212] shadow-[0_16px_40px_rgba(15,35,80,0.18)]"
+              className="flex aspect-[297/210] w-full flex-col overflow-hidden bg-white text-[#121212] shadow-[0_16px_40px_rgba(15,35,80,0.18)]"
             >
               {headline}
               <div className="grid min-h-0 flex-1 grid-cols-[55%_1fr]">
@@ -252,7 +252,7 @@ export default async function AnimalPosterPage({
           ) : (
             <article
               id="cartel"
-              className="flex aspect-[8.5/11] w-full flex-col overflow-hidden bg-white text-[#121212] shadow-[0_16px_40px_rgba(15,35,80,0.18)]"
+              className="flex aspect-[210/297] w-full flex-col overflow-hidden bg-white text-[#121212] shadow-[0_16px_40px_rgba(15,35,80,0.18)]"
             >
               {headline}
               <div className="relative min-h-0 flex-1 bg-[#f3f5f8]">{photo}</div>

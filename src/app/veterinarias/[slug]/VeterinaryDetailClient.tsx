@@ -17,6 +17,7 @@ import {
 } from "kadesh/components/shared";
 import { useUiMotion } from "kadesh/components/shared/motion";
 import { Routes } from "kadesh/core/routes";
+import { AD_PLACEMENT } from "kadesh/components/ads/types";
 import { useUser } from "kadesh/utils/UserContext";
 import { GET_PET_PLACE } from "kadesh/components/veterinaries/queries";
 import {
@@ -45,11 +46,6 @@ import type {
   PetPlaceDetail,
   PetPlaceWhereUniqueInput,
 } from "kadesh/components/veterinaries/types";
-
-// Si no hay un bloque propio para veterinarias, se reutiliza el del detalle del animal.
-const VETERINARY_DETAIL_AD_SLOT =
-  process.env.NEXT_PUBLIC_ADSENSE_SLOT_VETERINARY_DETAIL ||
-  process.env.NEXT_PUBLIC_ADSENSE_SLOT_ANIMAL_DETAIL;
 
 function DetailShell({ children }: { children: ReactNode }) {
   return (
@@ -151,6 +147,14 @@ export default function VeterinaryDetailClient({
   );
   const schedules = place.pet_place_schedules ?? [];
   const links = placeLinks(place);
+  // Zone ads are measured from the clinic; its own ad never shows on its page.
+  const placeLat = Number.parseFloat(String(place.lat ?? ""));
+  const placeLng = Number.parseFloat(String(place.lng ?? ""));
+  const adContext = {
+    targetId: place.id,
+    lat: Number.isFinite(placeLat) ? placeLat : null,
+    lng: Number.isFinite(placeLng) ? placeLng : null,
+  };
   const isBookable = getPetPlaceBookingMode(place.types) !== null;
   const typeLine = formatPetPlaceTypeLabels(place.types);
   // Same rule as ClaimPetPlaceSection: while unverified that section always shows and the
@@ -204,7 +208,7 @@ export default function VeterinaryDetailClient({
             </div>
             <div className="order-4 flex min-w-0 flex-col gap-6">
               <ClaimPetPlaceSection place={place} onClaimed={() => refetch()} />
-              <AdSlot slot={VETERINARY_DETAIL_AD_SLOT} media={AD_INLINE_MEDIA} />
+              <AdSlot placement={AD_PLACEMENT.VET_DETAIL} context={adContext} media={AD_INLINE_MEDIA} />
             </div>
           </div>
 
@@ -213,7 +217,7 @@ export default function VeterinaryDetailClient({
               <PetPlaceContactCard place={place} links={links} />
             </div>
             <div className="order-5 flex flex-col gap-6">
-              <AdSlot slot={VETERINARY_DETAIL_AD_SLOT} media={AD_SIDE_MEDIA} className={AD_SIDE_CLASS} />
+              <AdSlot placement={AD_PLACEMENT.VET_DETAIL} context={adContext} media={AD_SIDE_MEDIA} className={AD_SIDE_CLASS} />
               {storeShowcase}
             </div>
           </aside>

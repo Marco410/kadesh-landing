@@ -1,5 +1,5 @@
 ---
-estado: pendiente
+estado: implementado
 fecha: 2026-11-04
 origen: kadesh-landing@feat/eventos (backend: kadesh-back@feat/pet-events)
 feature: events

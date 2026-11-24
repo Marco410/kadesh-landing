@@ -1,5 +1,5 @@
 ---
-estado: pendiente
+estado: implementado
 fecha: 2026-11-03
 origen: kadesh-landing@feat/panel-cuenta
 feature: notifications

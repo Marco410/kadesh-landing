@@ -14,6 +14,8 @@ import { useUiMotion } from "kadesh/components/shared/motion";
 interface PetPlaceLikeButtonProps {
   petPlaceId: string;
   initialCount?: number;
+  /** `quiet`: neutral outline, for the row of small actions in the page header. */
+  variant?: "brand" | "quiet";
 }
 
 /**
@@ -22,6 +24,7 @@ interface PetPlaceLikeButtonProps {
 export default function PetPlaceLikeButton({
   petPlaceId,
   initialCount = 0,
+  variant = "brand",
 }: PetPlaceLikeButtonProps) {
   const router = useRouter();
   const { user } = useUser();
@@ -60,10 +63,14 @@ export default function PetPlaceLikeButton({
           isLiked ? "Quitar me gusta de esta veterinaria" : "Me gusta esta veterinaria"
         }
         whileTap={isBusy ? undefined : motionPrefs.tapDay}
-        className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border-2 px-3 text-sm font-semibold tabular-nums transition-colors disabled:cursor-wait disabled:opacity-60 ${
-          isLiked
-            ? "border-kadesh bg-kadesh text-white hover:bg-kadesh-600"
-            : "border-kadesh text-kadesh hover:bg-kadesh hover:text-white"
+        className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold tabular-nums transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh disabled:cursor-wait disabled:opacity-60 ${
+          variant === "quiet"
+            ? isLiked
+              ? "border border-kadesh/40 bg-kadesh-50 text-kadesh dark:bg-kadesh/15 dark:text-kadesh-300"
+              : "border border-[#dfe3e8] text-[#3a3a3a] hover:border-kadesh hover:text-kadesh dark:border-white/15 dark:text-[#d0d0d0] dark:hover:border-kadesh-300 dark:hover:text-kadesh-300"
+            : isLiked
+              ? "border-2 border-kadesh bg-kadesh text-white hover:bg-kadesh-600"
+              : "border-2 border-kadesh text-kadesh hover:bg-kadesh hover:text-white"
         }`}
       >
         <HugeiconsIcon

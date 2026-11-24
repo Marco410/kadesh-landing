@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
@@ -22,6 +23,10 @@ export default function PetPlaceBookingModal({
 }: PetPlaceBookingModalProps) {
   const mode = getPetPlaceBookingMode(place.types);
   const motionPrefs = useUiMotion();
+  // Rendered in <body>: the button may sit inside a hidden or fixed container (the page header on
+  // phones, the bottom action bar), which would hide or clip the dialog.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -37,11 +42,11 @@ export default function PetPlaceBookingModal({
     };
   }, [isOpen, onClose]);
 
-  if (!mode) return null;
+  if (!mode || !mounted) return null;
 
   const title = mode === "stay" ? "Agendar estancia" : "Reservar cita";
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen ? (
         <motion.div
@@ -93,6 +98,7 @@ export default function PetPlaceBookingModal({
           </motion.div>
         </motion.div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

@@ -38,7 +38,7 @@ query StoreShowcase($input: StoreCatalogInput) {
 }
 ```
 
-Variables: `{ "input": { "sort": "featured", "take": 3, "skip": 0 } }`
+Variables: `{ "input": { "featured": true, "sort": "featured", "take": 3, "skip": 0 } }` (solo productos marcados como destacados; sin destacados, la caja no se muestra)
 
 ```ts
 type StoreShowcaseItem = {
@@ -53,7 +53,7 @@ type StoreShowcaseItem = {
 ```
 
 ## Reglas y constantes
-- 3 productos, orden `featured` (los mismos destacados que abren la tienda).
+- Hasta 3 productos, solo los marcados como destacados en el admin (`featured: true`).
 - Título fijo: «De la tienda Kadesh». Enlace: «Ver tienda».
 - Si `compareAtPriceCents > priceCents`, el lector de pantalla debe oír «(en oferta)» después del precio; visualmente no cambia nada (es una caja discreta).
 

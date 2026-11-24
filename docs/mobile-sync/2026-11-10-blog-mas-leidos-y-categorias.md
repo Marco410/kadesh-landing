@@ -1,5 +1,5 @@
 ---
-estado: pendiente
+estado: implementado
 fecha: 2026-11-10
 origen: kadesh-landing@fix/blog
 feature: blog

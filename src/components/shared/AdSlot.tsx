@@ -1,30 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "kadesh/utils/cn";
-import { ADSENSE_CLIENT } from "kadesh/core/ads";
+import AdCarousel from "kadesh/components/ads/AdCarousel";
+import { useActiveAds } from "kadesh/components/ads/AdsProvider";
+import { contextPoint, needsVisitorLocation, pickAds } from "kadesh/components/ads/pick";
+import type { AdContext, AdPlacement } from "kadesh/components/ads/types";
+import { getVisitorLocation, type VisitorLocation } from "kadesh/components/ads/visitorLocation";
 import AdInfoButton from "./AdInfoButton";
-import HouseAd from "./HouseAd";
 
-/** Bloque lateral de 300×250 (rectángulo mediano) + padding; solo cabe a partir de xl. */
+/** Side block of 300×250 (medium rectangle) + padding; it only fits from xl up. */
 export const AD_SIDE_CLASS = "w-[316px] shrink-0";
 export const AD_SIDE_MEDIA = "(min-width: 1280px)";
 export const AD_INLINE_MEDIA = "(max-width: 1279px)";
 
-/** Si AdSense no llena el hueco en este tiempo, se muestra un anuncio propio. */
-const ADSENSE_TIMEOUT_MS = 5000;
-
-declare global {
-  interface Window {
-    adsbygoogle?: unknown[];
-  }
-}
-
 interface AdSlotProps {
-  /** ID del bloque de anuncios en AdSense (data-ad-slot). */
-  slot: string | undefined;
-  /** Solo se monta si coincide; evita pedir dos anuncios cuando hay una versión móvil y otra de escritorio. */
+  /** Which screen it is: decides which ads may show (Operaciones picks it per ad). */
+  placement: AdPlacement;
+  /** The animal or clinic on screen: its own ad is skipped and zone ads are measured from it. */
+  context?: AdContext;
+  /** Only mounts when it matches; avoids two slots when there is a phone and a desktop version. */
   media?: string;
   className?: string;
 }
@@ -45,66 +41,46 @@ function useMediaQuery(query: string | undefined) {
   return matches;
 }
 
-function AdSkeleton() {
-  const bar = "rounded-md bg-[#e6e9ef] dark:bg-white/10";
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 flex flex-col rounded-xl bg-[#f7f8fa] p-4 motion-safe:animate-pulse dark:bg-night"
-    >
-      <div className={`h-3 w-28 ${bar}`} />
-      <div className={`mt-4 h-5 w-11/12 ${bar}`} />
-      <div className={`mt-2 h-5 w-2/3 ${bar}`} />
-      <div className={`mt-4 h-3 w-full ${bar}`} />
-      <div className={`mt-2 h-3 w-full ${bar}`} />
-      <div className={`mb-3 mt-2 h-3 w-1/2 ${bar}`} />
-      <div className={`mt-auto h-8 w-28 ${bar}`} />
-    </div>
-  );
+/** Small seeded generator: the same page view keeps the same order on every render. */
+function seededRandom(seed: number) {
+  let state = Math.floor(seed * 2 ** 32) >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
-function AdUnit({
-  client,
-  slot,
-  placement,
-  className,
-}: {
-  client: string;
-  slot: string;
-  placement: string;
-  className?: string;
-}) {
-  const insRef = useRef<HTMLModElement>(null);
-  const [fallback, setFallback] = useState(false);
-  const [filled, setFilled] = useState(false);
+function AdUnit({ placement, context, pageKey, className }: AdSlotProps & { pageKey: string }) {
+  const ads = useActiveAds();
+  const [seed] = useState(() => Math.random());
+  const [visitor, setVisitor] = useState<VisitorLocation>(null);
+  const pagePoint = contextPoint(context ?? {});
+  // Blog and store have no place of their own: zone ads use the visitor's city, asked only if one could show.
+  const wantsVisitor = !pagePoint && needsVisitorLocation(ads, placement);
 
   useEffect(() => {
-    const ins = insRef.current;
-    if (!ins) return;
-    if (!ins.getAttribute("data-adsbygoogle-status")) {
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (error) {
-        console.error("[ads] no se pudo pedir el anuncio", error);
-        setFallback(true);
-        return;
-      }
-    }
-    // Sin anuncio de Google (sitio sin aprobar, sin inventario o bloqueador): anuncio propio.
-    const observer = new MutationObserver(() => {
-      const status = ins.getAttribute("data-ad-status");
-      if (status === "filled") setFilled(true);
-      if (status === "unfilled") setFallback(true);
+    if (!wantsVisitor) return;
+    let alive = true;
+    void getVisitorLocation().then((value) => {
+      if (alive) setVisitor(value);
     });
-    observer.observe(ins, { attributes: true, attributeFilter: ["data-ad-status"] });
-    const timeout = window.setTimeout(() => {
-      if (ins.getAttribute("data-ad-status") !== "filled") setFallback(true);
-    }, ADSENSE_TIMEOUT_MS);
     return () => {
-      observer.disconnect();
-      window.clearTimeout(timeout);
+      alive = false;
     };
-  }, []);
+  }, [wantsVisitor]);
+
+  const targetId = context?.targetId ?? null;
+  const picked = useMemo(
+    () => pickAds(ads, placement, { targetId }, pagePoint ?? visitor, seededRandom(seed)),
+    // `pagePoint` is rebuilt every render: its numbers are the dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ads, placement, targetId, pagePoint?.lat, pagePoint?.lng, visitor, seed],
+  );
+
+  if (picked.length === 0) return null;
 
   return (
     <aside
@@ -115,35 +91,23 @@ function AdUnit({
       )}
     >
       <div className="mb-1 flex shrink-0 items-center justify-between gap-2 pl-1">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-[#9aa3b2]">
-          Publicidad
-        </span>
+        <span className="text-[10px] font-medium uppercase tracking-wider text-[#9aa3b2]">Publicidad</span>
         <AdInfoButton />
       </div>
-        <HouseAd placement={placement} />
+      <AdCarousel ads={picked} placement={placement} pageKey={pageKey} />
     </aside>
   );
 }
 
 /**
- * Bloque de AdSense discreto. No renderiza nada si falta el slot;
- * si Google no tiene anuncio que mostrar, enseña uno de Kadesh Business o Kadesh Food.
+ * The "Publicidad" card. Shows the ads Operaciones set for this placement (rotating); Kadesh's own
+ * ads fill it when no paid one applies, and with no ad at all it renders nothing. The list comes
+ * from the server once (`AdsProvider`): showing it never asks the backend.
  */
-export default function AdSlot({ slot, media, className }: AdSlotProps) {
+export default function AdSlot({ placement, context, media, className }: AdSlotProps) {
   const pathname = usePathname();
   const matches = useMediaQuery(media);
-
-  if (!slot || !matches) return null;
-
-  // La key pide un anuncio nuevo al navegar entre animales sin recargar.
-  // El script de AdSense ya lo carga el layout raíz.
-  return (
-    <AdUnit
-      key={pathname}
-      client={ADSENSE_CLIENT}
-      slot={slot}
-      placement={pathname.split("/")[1] || "inicio"}
-      className={className}
-    />
-  );
+  if (!matches) return null;
+  // The key picks again when moving between animals without reloading.
+  return <AdUnit key={pathname} placement={placement} context={context} pageKey={pathname} className={className} />;
 }

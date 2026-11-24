@@ -8,6 +8,7 @@ import {
   WhatsappIcon,
 } from "@hugeicons/core-free-icons";
 import { kadeshWhatsAppUrl } from "kadesh/utils/kadeshWhatsApp";
+import { Routes } from "kadesh/core/routes";
 import { useBodyScrollLock } from "kadesh/utils/useBodyScrollLock";
 
 const PRIVACY_URL = "https://kadesh.com.mx/privacidad";
@@ -133,6 +134,12 @@ export default function AdInfoButton() {
               >
                 <HugeiconsIcon icon={WhatsappIcon} size={18} strokeWidth={1.75} />
                 Envíanos un mensaje
+              </a>
+              <a
+                href={Routes.advertise}
+                className="ml-3 mt-3 inline-flex h-10 items-center text-sm font-semibold text-[#121212] underline underline-offset-2 dark:text-white"
+              >
+                Ver paquetes
               </a>
             </div>
           </div>

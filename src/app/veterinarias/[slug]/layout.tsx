@@ -9,6 +9,7 @@ import {
   petPlaceSummary,
 } from 'kadesh/components/veterinaries/pet-place-seo';
 import { fetchPetPlaceForShare } from 'kadesh/components/veterinaries/server';
+import WithAds from 'kadesh/components/ads/WithAds';
 
 export async function generateMetadata({
   params,
@@ -38,13 +39,13 @@ export default async function VeterinaryDetailLayout({
 }) {
   const { slug } = await params;
   const place = await fetchPetPlaceForShare(slug);
-  if (!place) return children;
+  if (!place) return <WithAds>{children}</WithAds>;
 
   return (
-    <>
+    <WithAds>
       <JsonLd data={buildPetPlaceJsonLd(place)} />
       {children}
       <PageSummary id="resumen-veterinaria" title="Datos de la veterinaria" text={petPlaceSummary(place)} />
-    </>
+    </WithAds>
   );
 }

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ShoppingBag01Icon } from '@hugeicons/core-free-icons';
-import { STORE_AD_SLOT } from 'kadesh/core/ads';
+import { AD_PLACEMENT } from 'kadesh/components/ads/types';
 import { Routes } from 'kadesh/core/routes';
 import AdSlot from 'kadesh/components/shared/AdSlot';
 import { cn } from 'kadesh/utils/cn';
@@ -69,7 +69,7 @@ export default function StoreAside({
         </section>
       ) : null}
 
-      <AdSlot slot={STORE_AD_SLOT} />
+      <AdSlot placement={AD_PLACEMENT.STORE} />
     </aside>
   );
 }

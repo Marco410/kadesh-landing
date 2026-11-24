@@ -21,6 +21,8 @@ import {
   AD_SIDE_MEDIA,
 } from "kadesh/components/shared";
 import { Routes } from "kadesh/core/routes";
+import { useActiveAds } from "kadesh/components/ads/AdsProvider";
+import { AD_PLACEMENT } from "kadesh/components/ads/types";
 import { canEditAnimal } from "kadesh/components/animals/canEditAnimal";
 import { useUser } from "kadesh/utils/UserContext";
 import { motion } from "framer-motion";
@@ -64,8 +66,6 @@ import {
 import { SightingBanner, SightingsSection } from "kadesh/components/animals/sightings";
 import RewardBanner from "kadesh/components/animals/detail/RewardBanner";
 
-const ANIMAL_DETAIL_AD_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ANIMAL_DETAIL;
-
 function directionsUrl(lat: string | number, lng: string | number) {
   const destination = `${lat},${lng}`;
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=driving`;
@@ -95,6 +95,7 @@ export default function AnimalDetailPage() {
   useAnimalView(animal?.id || "");
   const serverTitle = useAnimalServerTitle();
   const { action: detailAction, clear: clearDetailAction } = useDetailAction();
+  const hasAds = useActiveAds().some((ad) => ad.placements.includes(AD_PLACEMENT.ANIMAL_DETAIL));
 
   useEffect(() => {
     // Un reporte unido a otro manda al principal (el servidor ya redirige; esto cubre la caché).
@@ -201,6 +202,12 @@ export default function AnimalDetailPage() {
   const howToGetHref = hasCoords
     ? directionsUrl(lastLog.lat as number, lastLog.lng as number)
     : null;
+  // Zone ads are measured from where the animal was last seen; its own ad never shows here.
+  const adContext = {
+    targetId: animal.id,
+    lat: hasCoords ? Number(lastLog.lat) : null,
+    lng: hasCoords ? Number(lastLog.lng) : null,
+  };
 
   return (
     <DetailShell>
@@ -378,7 +385,7 @@ export default function AnimalDetailPage() {
             <div
               className={`flex min-w-0 gap-3 lg:col-start-2 lg:row-start-1 lg:mb-3 lg:min-h-0 ${
                 // El anuncio lateral mide al menos 284px: la fila no puede encogerse por debajo.
-                ANIMAL_DETAIL_AD_SLOT ? "xl:min-h-[284px]" : ""
+                hasAds ? "xl:min-h-[284px]" : ""
               }`}
             >
               <div className="min-w-0 flex-1 overflow-hidden rounded-2xl border border-[#ececec] bg-white dark:border-white/10 dark:bg-night-raised">
@@ -387,7 +394,8 @@ export default function AnimalDetailPage() {
                 </div>
               </div>
               <AdSlot
-                slot={ANIMAL_DETAIL_AD_SLOT}
+                placement={AD_PLACEMENT.ANIMAL_DETAIL}
+                context={adContext}
                 media={AD_SIDE_MEDIA}
                 className={AD_SIDE_CLASS}
               />
@@ -415,7 +423,8 @@ export default function AnimalDetailPage() {
         </div>
 
         <AdSlot
-          slot={ANIMAL_DETAIL_AD_SLOT}
+          placement={AD_PLACEMENT.ANIMAL_DETAIL}
+          context={adContext}
           media={AD_INLINE_MEDIA}
           className="mb-3"
         />

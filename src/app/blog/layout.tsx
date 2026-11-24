@@ -5,6 +5,7 @@ import {
   BLOG_INDEX_TITLE,
   BLOG_OG_IMAGE,
 } from 'kadesh/components/blog/blog-seo';
+import WithAds from 'kadesh/components/ads/WithAds';
 
 export const metadata: Metadata = {
   title: BLOG_INDEX_TITLE,
@@ -48,5 +49,5 @@ export default function BlogLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <WithAds>{children}</WithAds>;
 }

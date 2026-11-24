@@ -72,14 +72,11 @@ export default function StoreIndexClient({
   facets,
   filters,
   aside,
-  affiliateNote = false,
 }: {
   initialCatalog: StoreCatalog;
   facets: StoreFacets;
   filters: StoreFilters;
   aside?: ReactNode;
-  /** Some product of the page is sold on Mercado Libre: say what the affiliate link means. */
-  affiliateNote?: boolean;
 }) {
   const router = useRouter();
   const client = useApolloClient();
@@ -454,12 +451,6 @@ export default function StoreIndexClient({
             </div>
           ) : null}
 
-          {affiliateNote ? (
-            <p className="mt-10 max-w-3xl text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
-              Los productos marcados «En Mercado Libre» llevan un enlace de afiliado: si compras, Kadesh recibe una comisión
-              de Mercado Libre sin costo extra para ti.
-            </p>
-          ) : null}
         </section>
 
         {/* Right: «Los más vendidos» and the ad. Under the products before `xl`. */}

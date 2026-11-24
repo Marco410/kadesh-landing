@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-23 · fix: la tienda ya no muestra el aviso de enlace de afiliado
+- Rama: feat/vet-detail-redesign
+- Qué cambió y por qué: se quitan el aviso «Enlace de afiliado: si compras, Kadesh recibe una comisión…» del producto de Mercado Libre y la nota equivalente al pie del listado. Decisión de producto: no se le explica a quien compra. Se queda la etiqueta «En Mercado Libre», el precio aproximado con fecha y el `rel="sponsored"` del enlace (es para buscadores, no se ve).
+- Archivos: src/components/store/{ProductBuyBox.tsx,StoreIndexClient.tsx,StoreListingPage.tsx,constants.ts,README.md}
+- GraphQL: ninguna
+- Móvil: [prompt](../mobile-sync/2026-11-23-tienda-sin-aviso-afiliado.md)
+
 ## 2026-11-23 · fix: la caja de la tienda solo muestra productos destacados
 - Rama: feat/vet-detail-redesign
 - Qué cambió y por qué: la caja «De la tienda Kadesh» (ficha de veterinaria y blog) ordenaba los destacados primero, pero si había menos de 3 completaba con cualquier producto. Ahora pide solo los marcados como «Destacado» en el admin (`featured: true`); sin destacados, la caja no aparece.

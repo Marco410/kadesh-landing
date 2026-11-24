@@ -46,7 +46,7 @@ Enciende primero el back, revisa `/tienda` y luego el del menú.
 - **Estrellas**: todo producto empieza en cero. Solo cuentan las reseñas escritas aquí; no se muestran calificaciones de otros sitios.
 - **Una reseña por persona y producto**, de 1 a 5 estrellas; título y texto son opcionales. Se puede editar o borrar. Si el equipo de Kadesh la oculta, su autor ve el aviso y no puede volver a publicarla.
 - **«Compra verificada»** sale cuando el back lo marca (llega con los pedidos).
-- **Enlace de afiliado**: siempre con `rel="sponsored nofollow noopener"`, en pestaña nueva y con el aviso `AFFILIATE_DISCLOSURE` a la vista. El precio dice «aproximado» y la fecha en que se revisó.
+- **Enlace de afiliado**: siempre con `rel="sponsored nofollow noopener"` y en pestaña nueva. Sin aviso de comisión a la vista (decisión 2026-11-23). El precio dice «aproximado» y la fecha en que se revisó.
 - **El carrito solo guarda qué y cuánto** (`variantId`, `quantity`), en `localStorage`. Nombres, precios, envío y total salen de `storeCartQuote` cada vez. Si el servidor baja una cantidad o quita una línea, el carrito guardado se corrige y se explica por qué.
 - **Cupón**: uno por pedido. El código vive junto al carrito (`cart.setCoupon`) y viaja en cada cotización; el servidor dice si aplica (`couponApplied`), cuánto descuenta y por qué (`couponMessage`). Aquí no se calcula ningún descuento ni se revisan fechas o límites.
 - **Un código que no aplica no se guarda**: se muestra el motivo y se borra del carrito, así la siguiente cotización va sin él. El back cuenta los códigos que no aplicaron (20 cada 10 min por IP).

@@ -28,6 +28,8 @@ interface VeterinariesMapProps {
   selectedPlace: PetPlace | null;
   onPlaceClick: (place: PetPlace | null) => void;
   height?: string;
+  /** With a single place (its page), the zoom to show it at; without it, the city-level default. */
+  focusZoom?: number;
 }
 
 function escapeHtml(value: string) {
@@ -70,6 +72,7 @@ function VeterinariesMapView({
   selectedPlace,
   onPlaceClick,
   height = '100%',
+  focusZoom,
 }: VeterinariesMapProps) {
   const { resolvedTheme } = useTheme();
   const { ready, unavailable, markUnavailable } = useFreeMapStack();
@@ -223,8 +226,12 @@ function VeterinariesMapView({
       points.push(coords);
     });
 
-    fitMapToPoints(map, points);
-  }, [places, ready]);
+    if (focusZoom && points.length === 1) {
+      map.setView([points[0].lat, points[0].lng], focusZoom);
+    } else {
+      fitMapToPoints(map, points);
+    }
+  }, [places, ready, focusZoom]);
 
   useEffect(() => {
     const map = mapRef.current;

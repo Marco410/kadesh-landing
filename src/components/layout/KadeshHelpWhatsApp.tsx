@@ -45,7 +45,7 @@ export default function KadeshHelpWhatsApp() {
       ref={rootRef}
       // El cajón del menú del panel lo vuelve inerte mientras está abierto (vive fuera del shell).
       data-dash-outside=""
-      className="fixed right-4 bottom-4 z-40 flex flex-col items-end sm:right-6 sm:bottom-6"
+      className="kadesh-help-fab fixed right-4 bottom-4 z-40 flex flex-col items-end sm:right-6 sm:bottom-6"
     >
       {open ? (
         <div

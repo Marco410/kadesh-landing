@@ -142,7 +142,8 @@ const SHOWCASE_QUERY = `
 export async function fetchStoreShowcase(take = STORE_SHOWCASE_SIZE): Promise<StoreShowcaseItem[]> {
   if (!STORE_NAV_ENABLED) return [];
   const data = await queryGraphql<{ storeCatalog: { items: StoreShowcaseItem[] } }>(SHOWCASE_QUERY, {
-    input: { sort: 'featured', take, skip: 0 },
+    // Only products marked «Destacado» in the admin: with none, the box does not show.
+    input: { featured: true, sort: 'featured', take, skip: 0 },
   }, STORE_SHOWCASE_REVALIDATE_SECONDS);
   return data?.storeCatalog.items ?? [];
 }

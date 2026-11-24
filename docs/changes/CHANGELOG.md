@@ -15,6 +15,20 @@ Formato:
 
 ---
 
+## 2026-11-23 · fix: la caja de la tienda solo muestra productos destacados
+- Rama: feat/vet-detail-redesign
+- Qué cambió y por qué: la caja «De la tienda Kadesh» (ficha de veterinaria y blog) ordenaba los destacados primero, pero si había menos de 3 completaba con cualquier producto. Ahora pide solo los marcados como «Destacado» en el admin (`featured: true`); sin destacados, la caja no aparece.
+- Archivos: src/components/store/server.ts
+- GraphQL: `StoreShowcase` manda además `featured: true` (filtro que `storeCatalog` ya aceptaba)
+- Móvil: [prompt](../mobile-sync/2026-11-23-tienda-en-ficha-veterinaria.md) (actualizado: la consulta lleva `featured: true`)
+
+## 2026-11-23 · feat: rediseño de la ficha de veterinaria
+- Rama: feat/vet-detail-redesign
+- Qué cambió y por qué: la ficha se veía básica y escondía información. Ahora tiene un encabezado con jerarquía (nombre grande, tipo y ciudad, estrellas, «Abierto ahora · Hoy 9:00–20:00», vistas y acciones), una columna principal en orden de lectura (Acerca de con la descripción que antes no se mostraba y las comodidades; Servicios con su descripción; Horario de la semana con hoy resaltado; Reseñas con promedio, reparto por estrellas y el formulario detrás de «Escribir una reseña»; ¿Es tu clínica?) y a la derecha una tarjeta con el mapa cerca (antes se veía todo el estado), la dirección y el contacto, seguida de la publicidad y la tienda. Las secciones vacías ya no ocupan cajas: un solo aviso dice qué falta y lleva a reclamar la ficha. La descripción automática de Google («Place located at…») no se muestra. En celular, una barra fija abajo con Reservar / Llamar / Cómo llegar; el botón de ayuda de WhatsApp sube para no taparla. El modal de reserva ahora se pinta en `<body>` para poder abrirse desde la barra.
+- Archivos: src/app/veterinarias/[slug]/VeterinaryDetailClient.tsx, src/components/veterinaries/detail/ (nuevo: PlaceHeader, PlaceSections, PlaceMobileActions, SharePlaceButton, placeLinks, schedule, mapPlace), src/components/veterinaries/{PetPlaceContactCard,PetPlaceReviewsSection,PetPlaceDetailSkeleton,PetPlaceBookCta,PetPlaceBookingModal,PetPlaceLikeButton,VeterinariesMap}.tsx, src/components/store/StoreShowcase.tsx (se apila en columnas angostas), src/components/layout/KadeshHelpWhatsApp.tsx, src/app/globals.css, DESIGN.md
+- GraphQL: ninguna (usa los campos que ya pedía `GET_PET_PLACE`)
+- Móvil: no aplica (rediseño visual de la web; la app tiene su propia pantalla de veterinaria y no cambia ningún dato)
+
 ## 2026-11-23 · feat: contador de vistas en productos de la tienda y en veterinarias
 - Rama: feat/page-views
 - Qué cambió y por qué: la página de un producto y la de una veterinaria cuentan sus vistas y muestran «👁 N vistas» junto a las estrellas (producto) o junto a «Abierto/Cerrado» (veterinaria). Un componente compartido (`RecordedViews`) manda una sola mutación al abrir la página y pinta el total que devuelve el back; el número no está en la consulta del servidor, así que la página cacheada no depende de él. El back cuenta una vista por persona cada 30 min, no cuenta admins, bots ni al dueño de la veterinaria, y al público solo le devuelve el número desde 10 vistas. Sin número o con error, no se muestra nada.

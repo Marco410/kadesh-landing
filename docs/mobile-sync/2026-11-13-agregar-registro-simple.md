@@ -1,5 +1,5 @@
 ---
-estado: pendiente
+estado: implementado
 fecha: 2026-11-13
 origen: kadesh-landing@feat/cerrar-caso-reencuentros
 feature: animals

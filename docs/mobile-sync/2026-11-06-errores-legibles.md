@@ -1,5 +1,5 @@
 ---
-estado: pendiente
+estado: implementado
 fecha: 2026-11-06
 origen: kadesh-landing@feat/espacios-de-rescate
 feature: shared

@@ -18,44 +18,44 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-10-28 | [Pedir cuenta al reportar sin salir de la pantalla](2026-10-28-cuenta-al-reportar.md) | auth | pendiente |
 | 2026-10-28 | [Reportes parecidos, comentar en vez de duplicar y pedir el reporte](2026-10-28-reportes-duplicados-y-reclamos.md) | animals | pendiente |
 | 2026-11-03 | [Inicio del perfil: resumen, "Requiere atención" y KPIs](2026-11-03-inicio-perfil.md) | profile | pendiente |
-| 2026-11-03 | [Chip «No verificada» en la ficha de veterinaria](2026-11-03-chip-no-verificada.md) | veterinaries | pendiente |
+| 2026-11-03 | [Chip «No verificada» en la ficha de veterinaria](2026-11-03-chip-no-verificada.md) | veterinaries | implementado |
 | 2026-11-03 | [Avisos por WhatsApp (opt-in y por tipo)](2026-11-03-avisos-whatsapp.md) | notifications | pendiente |
-| 2026-11-04 | [Publicar reporte se ve ocupado y no se publica dos veces](2026-11-04-publicar-reporte-ocupado.md) | animals | pendiente |
+| 2026-11-04 | [Publicar reporte se ve ocupado y no se publica dos veces](2026-11-04-publicar-reporte-ocupado.md) | animals | implementado |
 | 2026-11-04 | [App y pantalla en cada petición, reporte de errores, actividad y límites contra abuso](2026-11-04-errores-contexto-y-abuso.md) | shared | pendiente |
 | 2026-11-04 | [Eventos: ver, «Me interesa / Asistiré» y avisos](2026-11-04-eventos-ver-y-asistir.md) | events | pendiente |
 | 2026-11-04 | [Eventos: publicar, «Mis eventos», editar y cancelar](2026-11-04-eventos-publicar.md) | events | pendiente |
 | 2026-11-05 | [Espacios de rescate: activar, equipo y publicar a nombre de la organización](2026-11-05-espacios-de-rescate.md) | profile | pendiente |
-| 2026-11-05 | [Señas particulares recortadas con «Ver más» en la ficha del animal](2026-11-05-senas-ver-mas.md) | animals | pendiente |
+| 2026-11-05 | [Señas particulares recortadas con «Ver más» en la ficha del animal](2026-11-05-senas-ver-mas.md) | animals | implementado |
 | 2026-11-05 | [Fichas de rescate, «Se quedó conmigo» y adopción con cartilla](2026-11-05-fichas-de-rescate-y-adopcion.md) | profile | pendiente |
 | 2026-11-05 | [Solicitudes de adopción («Quiero adoptarlo»)](2026-11-05-solicitudes-de-adopcion.md) | animals | pendiente |
 | 2026-11-05 | [Traspasar una mascota a otra cuenta con un código](2026-11-05-traspaso-de-mascotas-con-codigo.md) | profile | pendiente |
-| 2026-11-06 | [Mensajes de error legibles (nunca el texto crudo de GraphQL)](2026-11-06-errores-legibles.md) | shared | pendiente |
+| 2026-11-06 | [Mensajes de error legibles (nunca el texto crudo de GraphQL)](2026-11-06-errores-legibles.md) | shared | implementado |
 | 2026-11-06 | [«Adopciones» en el perfil: ver, seguir y editar mis solicitudes](2026-11-06-mis-solicitudes-de-adopcion.md) | profile | pendiente |
 | 2026-11-09 | [Difusión pagada del reporte en Facebook e Instagram (por WhatsApp)](2026-11-09-difusion-pagada.md) | animals | pendiente |
-| 2026-11-09 | [La sesión y las consultas aguantan cortes de red](2026-11-09-sesion-y-red-resilientes.md) | shared | pendiente |
+| 2026-11-09 | [La sesión y las consultas aguantan cortes de red](2026-11-09-sesion-y-red-resilientes.md) | shared | implementado |
 | 2026-11-10 | [Blog: «Lo más leído», relacionados, categorías y fechas en hora de México](2026-11-10-blog-mas-leidos-y-categorias.md) | blog | pendiente |
 | 2026-11-10 | [Enlaces del correo «Tu reporte ya está publicado» (`?accion=registro` o `impulsar`, ajustes de avisos)](2026-11-10-correo-reporte-publicado.md) | animals | pendiente |
 | 2026-11-10 | [Eventos: «Para qué animales» con los tipos de animal (adiós «Otros»)](2026-11-10-eventos-especies-tipos-de-animal.md) | events | pendiente |
 | 2026-11-10 | [Eventos: vistas de la ficha y fotos en pantalla completa](2026-11-10-eventos-vistas-y-foto-completa.md) | events | pendiente |
-| 2026-11-12 | [Menos peticiones al backend: campana cada 5 min, blog sin listas completas, animales sin consulta doble](2026-11-12-menos-carga-al-backend.md) | shared | pendiente |
+| 2026-11-12 | [Menos peticiones al backend: campana cada 5 min, blog sin listas completas, animales sin consulta doble](2026-11-12-menos-carga-al-backend.md) | shared | implementado |
 | 2026-11-12 | [«Cerrar caso» con «¿volvió a casa?» y «¿Kadesh ayudó?»](2026-11-12-cerrar-caso-y-reencuentros.md) | animals | pendiente |
 | 2026-11-12 | [Seguimiento de casos: recordatorios, casos inactivos y WhatsApp al reportar](2026-11-12-seguimiento-de-casos.md) | animals | pendiente |
-| 2026-11-12 | [Botón «Cartel» (cartel con QR e imagen para historias)](2026-11-12-cartel-qr.md) | animals | pendiente |
-| 2026-11-13 | [Nombre desconocido (vacío) en lugar de «Sin nombre»](2026-11-13-nombre-desconocido.md) | animals | pendiente |
-| 2026-11-13 | [«Agregar registro» más simple](2026-11-13-agregar-registro-simple.md) | animals | pendiente |
+| 2026-11-12 | [Botón «Cartel» (cartel con QR e imagen para historias)](2026-11-12-cartel-qr.md) | animals | implementado |
+| 2026-11-13 | [Nombre desconocido (vacío) en lugar de «Sin nombre»](2026-11-13-nombre-desconocido.md) | animals | implementado |
+| 2026-11-13 | [«Agregar registro» más simple](2026-11-13-agregar-registro-simple.md) | animals | implementado |
 | 2026-11-13 | [«Lo vi»: avistamientos sin cuenta](2026-11-13-lo-vi-avistamientos.md) | animals | pendiente |
 | 2026-11-17 | [«Lo vi» en el mapa (últimas 72 h)](2026-11-17-lo-vi-en-el-mapa.md) | animals | pendiente |
 | 2026-11-17 | [Animales paginados en el servidor y mapa con pines ligeros](2026-11-17-animales-paginados-y-pines.md) | animals | pendiente |
 | 2026-11-17 | [Paleta de mapas de Kadesh (claro y oscuro)](2026-11-17-paleta-de-mapas.md) | shared | pendiente |
 | 2026-11-17 | [Huellitas (nivel, progreso, racha) y sistema visual de niveles](2026-11-17-huellitas-perfil.md) | profile | pendiente |
-| 2026-11-17 | [Recompensa en reportes de mascota perdida](2026-11-17-recompensa.md) | animals | pendiente |
+| 2026-11-17 | [Recompensa en reportes de mascota perdida](2026-11-17-recompensa.md) | animals | implementado |
 | 2026-11-18 | [Perfil público, autor con nivel y ajustes de perfil](2026-11-18-perfil-publico.md) | profile | pendiente |
 | 2026-11-18 | [Ranking «Quién apoya más»](2026-11-18-ranking-quien-apoya-mas.md) | profile | pendiente |
 | 2026-11-19 | [Tienda: catálogo, ficha, lista de deseos y reseñas](2026-11-19-tienda-catalogo.md) | shared | implementado |
 | 2026-11-19 | [Tienda: carrito, pago y pedidos](2026-11-19-tienda-carrito-y-pedidos.md) | shared | implementado |
 | 2026-11-19 | [Tienda: cupones y huellitas por comprar y reseñar](2026-11-19-tienda-cupones-y-huellitas.md) | shared | implementado |
-| 2026-11-19 | [Tienda: agregar al carrito desde la tarjeta](2026-11-19-tienda-agregar-desde-tarjeta.md) | shared | pendiente |
-| 2026-11-20 | [Tienda: sin doble cobro, carrito sin clics perdidos y stock en la tarjeta](2026-11-20-tienda-sin-doble-cobro.md) | shared | pendiente |
-| 2026-11-23 | [Productos de la tienda en la ficha de la veterinaria y en el blog](2026-11-23-tienda-en-ficha-veterinaria.md) | veterinaries | pendiente |
-| 2026-11-23 | [Contador de vistas en productos de la tienda y en veterinarias](2026-11-23-vistas-producto-y-veterinaria.md) | shared | pendiente |
-| 2026-11-23 | [Tienda: quitar el aviso de enlace de afiliado](2026-11-23-tienda-sin-aviso-afiliado.md) | shared | pendiente |
+| 2026-11-19 | [Tienda: agregar al carrito desde la tarjeta](2026-11-19-tienda-agregar-desde-tarjeta.md) | shared | implementado |
+| 2026-11-20 | [Tienda: sin doble cobro, carrito sin clics perdidos y stock en la tarjeta](2026-11-20-tienda-sin-doble-cobro.md) | shared | implementado |
+| 2026-11-23 | [Productos de la tienda en la ficha de la veterinaria y en el blog](2026-11-23-tienda-en-ficha-veterinaria.md) | veterinaries | implementado |
+| 2026-11-23 | [Contador de vistas en productos de la tienda y en veterinarias](2026-11-23-vistas-producto-y-veterinaria.md) | shared | implementado |
+| 2026-11-23 | [Tienda: quitar el aviso de enlace de afiliado](2026-11-23-tienda-sin-aviso-afiliado.md) | shared | implementado |

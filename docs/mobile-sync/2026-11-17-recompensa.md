@@ -1,5 +1,5 @@
 ---
-estado: pendiente
+estado: implementado
 fecha: 2026-11-17
 origen: kadesh-landing@fix/cartel-horizontal-y-recompensa
 feature: animals

@@ -1,5 +1,5 @@
 ---
-estado: pendiente
+estado: implementado
 fecha: 2026-11-09
 origen: kadesh-landing@develop
 feature: shared

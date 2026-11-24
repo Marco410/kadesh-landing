@@ -1,5 +1,5 @@
 ---
-estado: pendiente
+estado: implementado
 fecha: 2026-11-23
 origen: kadesh-landing@feat/vet-detail-redesign
 feature: shared

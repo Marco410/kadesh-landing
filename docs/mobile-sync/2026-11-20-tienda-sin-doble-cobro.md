@@ -1,5 +1,5 @@
 ---
-estado: pendiente
+estado: implementado
 fecha: 2026-11-20
 origen: kadesh-landing@feat/pet-store
 feature: shared

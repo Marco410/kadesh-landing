@@ -1,5 +1,5 @@
-/** Real size of a letter sheet in CSS px (96 px per inch). */
-export const POSTER_WIDTH_PX = { portrait: 816, landscape: 1056 } as const;
+/** Real size of an A4 sheet (210 × 297 mm) in CSS px (96 px per inch). */
+export const POSTER_WIDTH_PX = { portrait: 794, landscape: 1123 } as const;
 
 export const POSTER_FIT_ID = 'poster-fit';
 export const POSTER_FIT_INNER_ID = 'poster-fit-inner';

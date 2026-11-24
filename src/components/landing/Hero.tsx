@@ -2,7 +2,8 @@
 import Image from 'next/image';
 import { motion, useScroll, AnimatePresence } from 'framer-motion';
 import { useRef, useState } from 'react';
-import { SOCIAL_LINKS } from 'kadesh/constants/constans';
+import { KADESH_SOCIAL_LINKS } from 'kadesh/core/social';
+import { HugeiconsIcon } from '@hugeicons/react';
 import Navigation from './Navigation';
 
 const MOCKUP_IMAGES = [
@@ -302,15 +303,16 @@ export default function Hero() {
         </div>
 
         <div className="w-full flex items-center justify-center gap-8 z-10 mt-12 mb-8">
-          {SOCIAL_LINKS.map(s => (
+          {KADESH_SOCIAL_LINKS.map(s => (
             <a
               key={s.label}
               href={s.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[32px] text-white opacity-90 no-underline flex items-center hover:opacity-100 transition-opacity"
+              aria-label={`${s.label} de Kadesh Pet`}
+              className="text-white opacity-90 no-underline flex items-center hover:opacity-100 transition-opacity"
             >
-              <Image src={s.icon} alt={s.label} width={32} height={32} className="block" />
+              <HugeiconsIcon icon={s.icon} size={32} aria-hidden="true" />
             </a>
           ))}
         </div>

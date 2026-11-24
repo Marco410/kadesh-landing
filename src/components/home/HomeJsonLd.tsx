@@ -1,4 +1,5 @@
 import { HOME_DEFINITION, HOME_FAQS, SITE_URL } from 'kadesh/components/home/constants';
+import { KADESH_SOCIAL_URLS } from 'kadesh/core/social';
 
 const graph = {
   '@context': 'https://schema.org',
@@ -34,10 +35,7 @@ const graph = {
         'Veterinarias',
         'Donaciones para animales',
       ],
-      sameAs: [
-        'https://www.facebook.com/profile.php?id=61576878181992',
-        'https://www.instagram.com/kadesh.pet/',
-      ],
+      sameAs: KADESH_SOCIAL_URLS,
       contactPoint: {
         '@type': 'ContactPoint',
         contactType: 'Soporte al cliente',

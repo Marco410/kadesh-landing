@@ -15,6 +15,13 @@ Formato:
 
 ---
 
+## 2026-11-24 · feat: redes sociales de Kadesh Pet en el footer, Conócenos y Contacto
+- Rama: develop
+- Qué cambió y por qué: las redes oficiales (Facebook, Instagram, LinkedIn y X) viven ahora en un solo lugar, `src/core/social.ts` (`KADESH_SOCIAL_LINKS`, `KADESH_SOCIAL_URLS`). El footer compartido (portada, Conócenos y el resto del sitio) muestra los cuatro íconos bajo el logo; Conócenos agrega «Síguenos en redes» con el usuario de cada red en el bloque «Únete a Nuestra Comunidad», y Contacto los muestra en «Otras formas de contactarnos» (el texto ya mencionaba las redes, pero no había enlaces). El `sameAs` del JSON-LD de la portada, Conócenos y Contacto usa la misma lista. Se corrige el Facebook viejo (`id=61576878181992` → `id=61594166402735`) y se quita `SOCIAL_LINKS` de `constants/constans.ts`; la página antigua `/landing` usa la lista nueva con íconos de Hugeicons.
+- Archivos: src/core/social.ts, src/components/layout/Footer.tsx, src/app/conocenos/page.tsx, src/app/contacto/page.tsx, src/components/home/HomeJsonLd.tsx, src/components/landing/{Hero.tsx,Footer.tsx}, src/constants/constans.ts
+- GraphQL: ninguna
+- Móvil: no aplica (footer, Conócenos y Contacto son páginas web de marketing; la app las abre en el navegador)
+
 ## 2026-11-23 · fix: el cartel se imprime en A4 y la imagen para historias se guarda bien en el celular
 - Rama: develop
 - Qué cambió y por qué: (1) El cartel imprimía en carta (US Letter) y en México se usa A4: `@page` pasa a `A4` con margen de 9 mm, y la hoja se maqueta a 794 × 1123 px (proporción 210:297) para que la vista previa siga igual a lo impreso. (2) «Imagen para historias» descargaba con un enlace `blob:` y `download`; los navegadores dentro de apps (Facebook, Instagram, Messenger…) lo ignoran y abren `blob:https://…` como página, sin poder guardarla. Ahora en celular abre la hoja nativa de compartir con el archivo (en iOS es la que tiene «Guardar imagen» a la galería y deja mandarla directo a Instagram o WhatsApp). Si Safari rechaza la hoja porque pasó mucho tiempo desde el toque (dibujar la imagen tarda), el botón cambia a «Guardar imagen» y el segundo toque la abre al instante. En un navegador dentro de una app sin hoja de compartir, abre la URL real del PNG (no un `blob:`) con un aviso de mantenerla presionada. En computadora sigue la descarga directa.

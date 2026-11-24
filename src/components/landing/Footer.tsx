@@ -1,7 +1,7 @@
 "use client";
 
-import { SOCIAL_LINKS } from 'kadesh/constants/constans';
-import Image from 'next/image';
+import { KADESH_SOCIAL_LINKS } from 'kadesh/core/social';
+import { HugeiconsIcon } from '@hugeicons/react';
 
 export default function Footer() {
   return (
@@ -9,15 +9,16 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-6">
-            {SOCIAL_LINKS.map(s => (
+            {KADESH_SOCIAL_LINKS.map(s => (
               <a
                 key={s.label}
                 href={s.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[32px] text-[#f7945e] opacity-90 no-underline flex items-center hover:opacity-100 transition-opacity"
+                aria-label={`${s.label} de Kadesh Pet`}
+                className="text-[#f7945e] opacity-90 no-underline flex items-center hover:opacity-100 transition-opacity"
               >
-                <Image src={s.icon} alt={s.label} width={32} height={32} className="block" />
+                <HugeiconsIcon icon={s.icon} size={32} aria-hidden="true" />
               </a>
             ))}
           </div>

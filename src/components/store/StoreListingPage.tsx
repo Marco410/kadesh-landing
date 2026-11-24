@@ -35,8 +35,6 @@ export default function StoreListingPage({
   facets: StoreFacets;
   top: StoreTop;
 }) {
-  const hasAffiliate = catalog.items.some((item) => item.seller === 'mercado_libre');
-
   return (
     <div className="min-h-screen bg-white dark:bg-[#121212]">
       <Navigation />
@@ -67,7 +65,6 @@ export default function StoreListingPage({
           filters={filters}
           // Under the products (before `xl`) the two boxes go side by side, not one long column.
           aside={<StoreAside kind={top.kind} items={top.items} className="md:grid md:grid-cols-2 md:items-start xl:flex" />}
-          affiliateNote={hasAffiliate}
         />
       </main>
 

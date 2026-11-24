@@ -58,3 +58,4 @@ Los prompts se crean con [`_TEMPLATE.md`](_TEMPLATE.md) y se nombran `YYYY-MM-DD
 | 2026-11-20 | [Tienda: sin doble cobro, carrito sin clics perdidos y stock en la tarjeta](2026-11-20-tienda-sin-doble-cobro.md) | shared | pendiente |
 | 2026-11-23 | [Productos de la tienda en la ficha de la veterinaria y en el blog](2026-11-23-tienda-en-ficha-veterinaria.md) | veterinaries | pendiente |
 | 2026-11-23 | [Contador de vistas en productos de la tienda y en veterinarias](2026-11-23-vistas-producto-y-veterinaria.md) | shared | pendiente |
+| 2026-11-23 | [Tienda: quitar el aviso de enlace de afiliado](2026-11-23-tienda-sin-aviso-afiliado.md) | shared | pendiente |

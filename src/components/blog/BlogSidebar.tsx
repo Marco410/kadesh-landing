@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Image01Icon, ViewIcon } from '@hugeicons/core-free-icons';
 import { Routes } from 'kadesh/core/routes';
-import { BLOG_AD_SLOT } from 'kadesh/core/ads';
+import { AD_PLACEMENT } from 'kadesh/components/ads/types';
 import AdSlot from 'kadesh/components/shared/AdSlot';
 import { cn } from 'kadesh/utils/cn';
 import StoreShowcase from 'kadesh/components/store/StoreShowcase';
@@ -125,7 +125,7 @@ export default function BlogSidebar({
 
       <div className={cn('flex flex-col gap-10', STICKY_WHEN_TALL)}>
         {/* El mismo bloque de publicidad que el detalle de animal (solo se pinta en el navegador). */}
-        <AdSlot slot={BLOG_AD_SLOT} />
+        <AdSlot placement={AD_PLACEMENT.BLOG} />
 
         {categories.length > 0 && (
           <nav aria-label="Categorías del blog">

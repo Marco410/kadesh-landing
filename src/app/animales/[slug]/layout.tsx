@@ -13,6 +13,7 @@ import PageSummary from 'kadesh/components/shared/PageSummary';
 import { AnimalServerTitle } from 'kadesh/components/animals/detail/ServerTitle';
 import { fetchAnimalForShare } from 'kadesh/components/animals/server';
 import { Routes } from 'kadesh/core/routes';
+import WithAds from 'kadesh/components/ads/WithAds';
 
 export async function generateMetadata({
   params,
@@ -47,15 +48,15 @@ export default async function AnimalDetailLayout({
     permanentRedirect(Routes.animals.detail(main.slug || main.id));
   }
 
-  if (!animal) return children;
+  if (!animal) return <WithAds>{children}</WithAds>;
 
   // JSON-LD y un resumen del servidor: la ficha se pinta en el navegador y sin esto el HTML
   // llegaba vacío para buscadores e IA.
   return (
-    <>
+    <WithAds>
       <JsonLd data={buildAnimalJsonLd(animal)} />
       <AnimalServerTitle title={animalShareFacts(animal).name}>{children}</AnimalServerTitle>
       <PageSummary id="resumen-reporte" title="Resumen del reporte" text={animalSummary(animal)} />
-    </>
+    </WithAds>
   );
 }

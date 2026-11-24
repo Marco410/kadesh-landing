@@ -8,7 +8,7 @@ import { sileo } from 'sileo';
 import { Routes } from 'kadesh/core/routes';
 import { cn } from 'kadesh/utils/cn';
 import { cart, useCart } from './cart/cartStore';
-import { AFFILIATE_DISCLOSURE, STORE_CART_MAX_QUANTITY } from './constants';
+import { STORE_CART_MAX_QUANTITY } from './constants';
 import { discountPercent, formatPrice, formatStoreDate } from './format';
 import { StoreWishlistButton } from './StoreWishlist';
 import type { StoreItem, StoreVariant } from './types';
@@ -171,9 +171,7 @@ export default function ProductBuyBox({ item, variants }: { item: StoreItem; var
         <StoreWishlistButton productId={item.id} productName={item.name} variant="button" />
       </div>
 
-      {affiliate ? (
-        <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">{AFFILIATE_DISCLOSURE}</p>
-      ) : (
+      {affiliate ? null : (
         <p className="text-sm text-[#5a5a5a] dark:text-[#9aa3b2]">
           Lo vende y lo envía Kadesh.
           {inCart > 0 ? (

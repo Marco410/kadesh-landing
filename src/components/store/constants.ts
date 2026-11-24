@@ -50,9 +50,6 @@ export const DEFAULT_STORE_FILTERS: StoreFilters = {
   sort: 'featured',
 };
 
-/** Shown next to every outbound affiliate link. */
-export const AFFILIATE_DISCLOSURE =
-  'Enlace de afiliado: si compras, Kadesh recibe una comisión de Mercado Libre sin costo extra para ti.';
 
 /** The header link to the store only shows once the store is open. */
 export const STORE_NAV_ENABLED = process.env.NEXT_PUBLIC_STORE_ENABLED === 'true';

@@ -14,6 +14,7 @@ import renderers from 'kadesh/utils/renderes';
 import { DocumentRenderer } from '@keystone-6/document-renderer';
 import PostActions from './PostActions';
 import AuthorCard from '../../shared/AuthorCard';
+import { DonationNote } from 'kadesh/components/donations';
 import CommentsSection from './CommentsSection';
 import BlogSidebar from '../BlogSidebar';
 import type { StoreShowcaseItem } from 'kadesh/components/store/types';
@@ -150,6 +151,13 @@ export default function BlogPostDetailComponent({
             postTitle={post.title}
           />
         </div>
+
+        <DonationNote
+          source="blog_post"
+          sourceRef={post.url}
+          lead="¿Te sirvió este artículo?"
+          className="-mt-2 mb-8"
+        />
 
         {post.tags && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-8 pb-8 border-b border-[#e0e0e0] dark:border-[#3a3a3a]">

@@ -80,6 +80,7 @@ export default function CloseCaseBanner({
         animalId={animal.id}
         animalName={name}
         status={status}
+        animalSlug={animal.slug ?? null}
       />
     </div>
   );

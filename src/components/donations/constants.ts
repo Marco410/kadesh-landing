@@ -1,5 +1,63 @@
+/**
+ * Old payment link. Used only while «Dame una patita» is off (`DONATIONS_ENABLED` false), so
+ * nothing breaks before the backend is deployed.
+ */
 export const STRIPE_DONATE_URL =
   'https://donate.stripe.com/6oU7sL6467dtdrY9FZgUM00';
+
+// ─── «Dame una patita» ───────────────────────────────────────────────────────────────────────
+// A patita is the donation unit. Not to be confused with huellitas (`components/paws`, points).
+
+/** `true` once kadesh-back has `DONATIONS_ENABLED=true`. Off: every button opens the old link. */
+export const DONATIONS_ENABLED = process.env.NEXT_PUBLIC_DONATIONS_ENABLED === 'true';
+
+/** Same values as `models/Pet/Donation/constants.ts` in kadesh-back. */
+export const DONATION_UNIT_PRICE_CENTS = 2500;
+export const DONATION_UNIT_PRESETS = [1, 3, 5] as const;
+export const MAX_DONATION_UNITS = 400;
+export const DONATION_NAME_MAX = 60;
+export const DONATION_MESSAGE_MAX = 280;
+
+/** Wall of messages and donor top: server fetch every 10 min (the backend caches the same). */
+export const DONATIONS_REVALIDATE_SECONDS = 600;
+export const DONATION_WALL_PAGE = 20;
+export const DONATION_WALL_HOME = 3;
+export const DONOR_RANKING_TAKE = 10;
+
+/**
+ * An empty wall says «nobody donates». The wall page and its links show from this many paid
+ * donations with a visible message (`donationSummary.wallMessages`); before that, only the button.
+ */
+export const WALL_MIN_MESSAGES = 5;
+/** The podium shows from this many donors with a name in the period; below it, a plain list. */
+export const PODIUM_MIN_NAMED = 3;
+/** Name the back gives anonymous donors (never counted as «with a name»). */
+export const ANONYMOUS_DONOR_NAME = 'Alguien anónimo';
+
+export function isWallReady(summary: { wallMessages?: number | null } | null | undefined): boolean {
+  return DONATIONS_ENABLED && (summary?.wallMessages ?? 0) >= WALL_MIN_MESSAGES;
+}
+
+export function namedDonors(rows: Array<{ displayName: string }>): number {
+  return rows.filter((row) => row.displayName !== ANONYMOUS_DONOR_NAME).length;
+}
+
+/** A dismissed in-page strip stays hidden this long (per browser). */
+export const DONATION_STRIP_DISMISS_MS = 30 * 24 * 60 * 60 * 1000;
+export const DONATION_STRIP_DISMISS_KEY = 'kadesh-donation-strip-dismissed';
+
+export const DONATION_CTA_LABEL = 'Dame una patita';
+
+const MXN = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+
+/** «$75 MXN»: always with the currency, so nobody reads dollars. */
+export function formatDonationAmount(units: number): string {
+  return `${MXN.format((units * DONATION_UNIT_PRICE_CENTS) / 100)} MXN`;
+}
+
+export function patitasLabel(units: number): string {
+  return `${units} ${units === 1 ? 'patita' : 'patitas'}`;
+}
 
 export const DONATIONS_UPDATED_LABEL = 'Actualizado en septiembre de 2026.';
 

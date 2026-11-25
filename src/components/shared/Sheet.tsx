@@ -16,6 +16,10 @@ interface SheetProps {
   busy?: boolean;
   /** Botones fijos abajo; sin ellos el contenido llega hasta el borde. */
   footer?: ReactNode;
+  /** `md` para formularios cortos (una columna); `lg` (por defecto) para el resto. */
+  size?: 'md' | 'lg';
+  /** Ícono junto al título. */
+  icon?: ReactNode;
   children: ReactNode;
 }
 
@@ -24,7 +28,7 @@ interface SheetProps {
  * `AddLogModal` y la cartilla (`PetSheet`), sin formulario propio. Se monta en `body` para que
  * ningún contenedor con transform la recorte.
  */
-export default function Sheet({ isOpen, title, onClose, busy = false, footer, children }: SheetProps) {
+export default function Sheet({ isOpen, title, onClose, busy = false, footer, size = 'lg', icon, children }: SheetProps) {
   const motionPrefs = useUiMotion();
   const titleId = useId();
   const [mounted, setMounted] = useState(false);
@@ -59,7 +63,7 @@ export default function Sheet({ isOpen, title, onClose, busy = false, footer, ch
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="flex max-h-[92dvh] w-full max-w-2xl flex-col rounded-t-2xl border border-[#ececec] bg-white shadow-[0_16px_40px_rgba(15,35,80,0.18)] sm:max-h-[90vh] sm:rounded-2xl dark:border-white/10 dark:bg-night-raised"
+            className={`flex max-h-[92dvh] w-full ${size === 'md' ? 'max-w-md' : 'max-w-2xl'} flex-col rounded-t-2xl border border-[#ececec] bg-white shadow-[0_16px_40px_rgba(15,35,80,0.18)] sm:max-h-[90vh] sm:rounded-2xl dark:border-white/10 dark:bg-night-raised`}
             onClick={(event) => event.stopPropagation()}
             variants={motionPrefs.sheet}
             initial={motionPrefs.sheet ? 'hidden' : false}
@@ -67,12 +71,15 @@ export default function Sheet({ isOpen, title, onClose, busy = false, footer, ch
             exit="exit"
           >
             <div className="flex items-center justify-between gap-3 border-b border-[#ececec] p-4 dark:border-white/10">
-              <h2
-                id={titleId}
-                className="min-w-0 break-words text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]"
-              >
-                {title}
-              </h2>
+              <div className="flex min-w-0 items-center gap-3">
+                {icon}
+                <h2
+                  id={titleId}
+                  className="min-w-0 break-words text-lg font-black tracking-[-0.03em] text-[#121212] dark:text-[#eef1f6]"
+                >
+                  {title}
+                </h2>
+              </div>
               <button
                 type="button"
                 onClick={onClose}

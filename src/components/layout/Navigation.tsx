@@ -178,7 +178,9 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
           <Logo size={48} className={atTopLight ? "invert" : ""} />
         </Link>
 
-        <div className="hidden lg:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-5">
+          {/* Sections on one side, account and tools on the other, split by a thin line. */}
+          <div className="flex items-center gap-5 xl:gap-6">
           {PRIMARY_NAV.map((item) => (
             <Link
               key={item.href}
@@ -190,15 +192,12 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
             </Link>
           ))}
 
-          {user?.id ? (
-            <Link
-              href={Routes.profile}
-              className={`font-semibold text-sm ${navLinkClass}`}
-            >
-              Mi perfil
-            </Link>
-          ) : null}
+          </div>
 
+          <div
+            className={`flex items-center gap-2 border-l pl-5 ${atTopLight ? "border-black/10" : "border-white/20"}`}
+          >
+          {/* «Mi perfil» lives in the avatar menu only (it used to show twice). */}
           {STORE_NAV_ENABLED ? <CartLink className={navLinkClass} /> : null}
 
           {/* «Dame una patita»: visible but quiet, an outlined pill (never a popup). */}
@@ -206,8 +205,9 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
             source="header"
             ariaLabel={DONATION_CTA_LABEL}
             className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-sm font-semibold transition-colors duration-200 xl:px-3 ${
+              // Same ink as the menu links: kadesh blue vanished over the blue heroes (Contacto).
               atTopLight
-                ? "border-kadesh/30 text-kadesh hover:bg-kadesh/10"
+                ? "border-gray-800/30 text-gray-800 hover:bg-black/5"
                 : "border-white/40 text-white hover:bg-white/10"
             }`}
           >
@@ -234,8 +234,12 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
           {user?.id ? (
             <div className="relative" ref={avatarDropdownRef}>
               <button
+                type="button"
                 onClick={() => setAvatarDropdownOpen(!avatarDropdownOpen)}
-                className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors overflow-hidden ${atTopLight ? "bg-gray-200 hover:bg-gray-300 text-gray-800" : "bg-white/10 hover:bg-white/20 text-white"}`}
+                aria-haspopup="menu"
+                aria-expanded={avatarDropdownOpen}
+                aria-label="Tu cuenta"
+                className={`ml-1 flex items-center justify-center w-10 h-10 rounded-full transition-colors overflow-hidden ring-2 ring-offset-0 focus-visible:outline-none focus-visible:ring-kadesh ${atTopLight ? "bg-gray-200 hover:bg-gray-300 text-gray-800 ring-transparent" : "bg-white/10 hover:bg-white/20 text-white ring-transparent"}`}
               >
                 {user.profileImage?.url ? (
                   <Image
@@ -259,8 +263,17 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full right-0 mt-2 bg-white dark:bg-[#1e1e1e] rounded-lg shadow-lg py-2 min-w-[180px] z-50"
+                    role="menu"
+                    className="absolute top-full right-0 mt-2 bg-white dark:bg-[#1e1e1e] rounded-xl border border-[#ececec] dark:border-white/10 shadow-lg py-2 w-64 z-50"
                   >
+                    <div className="px-4 pb-2 mb-1 border-b border-[#ececec] dark:border-white/10">
+                      <p className="truncate text-sm font-semibold text-[#121212] dark:text-white">
+                        {[user.name, user.lastName].filter(Boolean).join(" ") || "Tu cuenta"}
+                      </p>
+                      {user.email ? (
+                        <p className="truncate text-xs text-[#5a5a5a] dark:text-[#9aa3b2]">{user.email}</p>
+                      ) : null}
+                    </div>
                     <Link
                       href={Routes.profile}
                       onClick={() => setAvatarDropdownOpen(false)}
@@ -275,7 +288,9 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                     >
                       Mis citas
                     </Link>
+                    <div className="my-1 border-t border-[#ececec] dark:border-white/10" />
                     <button
+                      type="button"
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-[#212121] dark:text-[#ffffff] hover:bg-orange-500/10 dark:hover:bg-white/10 transition-colors"
                     >
@@ -297,6 +312,7 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
               Iniciar sesión
             </Link>
           )}
+          </div>
         </div>
 
         {user?.id || STORE_NAV_ENABLED ? (

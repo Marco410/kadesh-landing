@@ -8,7 +8,7 @@ Quien llega debe poder responder: qué salió, cuándo, y qué cambió para repo
 
 ## Datos
 
-Las entradas viven en `SystemRelease` (Keystone). Esta página pide `product` **pet** o **all**. KADESH Negocios usa `saas`. `all` aparece en ambos. El backend oculta lo no publicado (`isPublished`) salvo admin.
+Las entradas viven en `SystemRelease` (Keystone). Esta página pide `product` **pet** o **all**. KADESH Negocios usa `saas`. `all` aparece en ambos. La consulta pide solo `isPublished: true`: el backend también le muestra los borradores a un admin con sesión, y aquí no deben salir para nadie.
 
 Cuerpo: párrafos, listas con `-` / `*` / `•` y **negritas**. Si pasa de 480 caracteres, se pliega.
 

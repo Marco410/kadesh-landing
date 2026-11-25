@@ -23,8 +23,10 @@ están en kadesh-back `models/Pet/Ad/README.md`.
      Cloudflare por IP. Se pide una vez al día por navegador (localStorage) y solo si algún anuncio
      de zona podría salir ahí. Nunca se pide el GPS.
    - Sin punto de referencia, solo salen los nacionales.
-4. Hasta 4 rotando cada 10 s, barajados por peso; uno de zona que coincide pesa el doble. Los de
-   Kadesh (`house`) solo salen si no aplica ninguno pagado. Sin ninguno, el hueco no se pinta.
+4. Hasta 4, barajados por peso; uno de zona que coincide pesa el doble. El peso también reparte el
+   tiempo: cada turno dura 10 s y cada anuncio tiene tantos turnos por vuelta como su peso,
+   intercalados (`rotationSequence`; pesos 5 y 1 → 5 de cada 6 turnos). Los de Kadesh (`house`)
+   entran igual que los demás. Sin ninguno, el hueco no se pinta.
 
 ## Medición (`track.ts`)
 

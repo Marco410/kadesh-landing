@@ -9,6 +9,7 @@ import { useTheme } from "next-themes";
 import KadeshHelpWhatsApp from "kadesh/components/layout/KadeshHelpWhatsApp";
 import { useClientErrorListener } from "kadesh/utils/activity";
 import PetActivityTracker from "kadesh/components/shared/PetActivityTracker";
+import { DonationProvider } from "kadesh/components/donations/checkout/DonationProvider";
 
 function ThemedToaster() {
   const { resolvedTheme } = useTheme();
@@ -32,11 +33,14 @@ export default function ClientProviders({
       <HeroUIProvider>
         <ApolloProviderWrapper>
           <UserProvider>
-            {children}
-            {/* Pantallas que abre y tiempo activo, solo con sesión. */}
-            <PetActivityTracker />
-            <KadeshHelpWhatsApp />
-            <ThemedToaster />
+            {/* «Dame una patita»: any page opens the donation form with useDonation().open(). */}
+            <DonationProvider>
+              {children}
+              {/* Pantallas que abre y tiempo activo, solo con sesión. */}
+              <PetActivityTracker />
+              <KadeshHelpWhatsApp />
+              <ThemedToaster />
+            </DonationProvider>
           </UserProvider>
         </ApolloProviderWrapper>
       </HeroUIProvider>

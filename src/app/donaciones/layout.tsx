@@ -4,7 +4,6 @@ import {
   DONATIONS_META_DESCRIPTION,
   DONATIONS_OG_DESCRIPTION,
   DONATIONS_PAGE_TITLE,
-  buildDonationsJsonLd,
 } from 'kadesh/components/donations';
 
 export const metadata: Metadata = {
@@ -37,20 +36,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function DonacionesLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildDonationsJsonLd()),
-        }}
-      />
-      {children}
-    </>
-  );
+export default function DonacionesLayout({ children }: { children: React.ReactNode }) {
+  return children;
 }

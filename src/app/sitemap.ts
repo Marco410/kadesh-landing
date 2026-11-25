@@ -5,6 +5,8 @@ import { fetchAnimalsForSitemap } from 'kadesh/components/animals/server';
 import { fetchPetPlacesForSitemap } from 'kadesh/components/veterinaries/server';
 import { fetchRescueOrgsForSitemap } from 'kadesh/components/rescue/server';
 import { fetchStoreProductsForSitemap } from 'kadesh/components/store/server';
+import { fetchDonationsHome } from 'kadesh/components/donations/server';
+import { isWallReady } from 'kadesh/components/donations/constants';
 import { Routes } from 'kadesh/core/routes';
 import { SITE_URL } from 'kadesh/core/site';
 
@@ -17,6 +19,8 @@ function toLastModified(value?: string | null): Date | undefined {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Same request (and fetch cache) as the home page: the wall is listed only once it shows.
+  const donations = await fetchDonationsHome();
   const staticPaths = [
     '/',
     Routes.blog.index,
@@ -32,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     Routes.contact,
     Routes.novedades,
     Routes.donations,
+    ...(isWallReady(donations.summary) ? [Routes.donationsWall] : []),
     Routes.advertise,
     Routes.terms,
     Routes.privacy,

@@ -6,6 +6,10 @@ import { Routes } from 'kadesh/core/routes';
 import { currentYearMx } from 'kadesh/utils/format-date';
 import { KADESH_SOCIAL_LINKS } from 'kadesh/core/social';
 import { HugeiconsIcon } from '@hugeicons/react';
+// By file, not the donations barrel, to avoid an import cycle with the layout (same as Navigation).
+import DonateTrigger from 'kadesh/components/donations/DonateTrigger';
+import { DONATION_CTA_LABEL } from 'kadesh/components/donations/constants';
+import DonationIcon from 'kadesh/components/shared/icons/DonationIcon';
 
 /** Otros productos de la familia Kadesh (Pet es este sitio, así que no se lista). */
 const KADESH_FAMILY = [
@@ -86,6 +90,13 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
+            <DonateTrigger
+              source="footer"
+              className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-kadesh px-5 text-sm font-semibold text-white transition-colors hover:bg-kadesh-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kadesh"
+            >
+              <DonationIcon size={18} />
+              {DONATION_CTA_LABEL}
+            </DonateTrigger>
           </div>
 
           {FOOTER_COLUMNS.map((column) => (

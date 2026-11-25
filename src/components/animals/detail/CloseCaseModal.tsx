@@ -20,6 +20,9 @@ import {
   type CloseAnimalReportVariables,
 } from '../queries';
 import { capitalizeFirst } from '../animalName';
+import DonateTrigger from 'kadesh/components/donations/DonateTrigger';
+import { DONATION_CTA_LABEL } from 'kadesh/components/donations/constants';
+import DonationIcon from 'kadesh/components/shared/icons/DonationIcon';
 
 const MAX_STORY = 1000;
 /** Desenlaces con hogar: solo en esos tiene sentido contar la historia para la portada. */
@@ -34,6 +37,8 @@ interface CloseCaseModalProps {
   animalName: string;
   /** `lost`: la pregunta es «¿volvió a casa?»; en los demás, «¿encontró hogar?». */
   status: string;
+  /** Slug of the report, saved with a donation made from the thank-you step. */
+  animalSlug?: string | null;
 }
 
 function Question({ title, children }: { title: string; children: React.ReactNode }) {
@@ -57,6 +62,7 @@ export default function CloseCaseModal({
   animalId,
   animalName,
   status,
+  animalSlug = null,
 }: CloseCaseModalProps) {
   const motionPrefs = useUiMotion();
   const [outcome, setOutcome] = useState<AnimalOutcome | null>(null);
@@ -65,6 +71,8 @@ export default function CloseCaseModal({
   const [story, setStory] = useState('');
   const [storyConsent, setStoryConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Case closed with a home and Kadesh helped: one thank-you step with «Dame una patita».
+  const [thanked, setThanked] = useState(false);
   const [closeReport, { loading }] = useMutation<CloseAnimalReportResponse, CloseAnimalReportVariables>(
     CLOSE_ANIMAL_REPORT_MUTATION,
   );
@@ -85,10 +93,22 @@ export default function CloseCaseModal({
     setStory('');
     setStoryConsent(false);
     setError(null);
+    setThanked(false);
+  };
+
+  // After the thank-you step the page refreshes (the banner that holds this modal goes away).
+  const finish = async () => {
+    reset();
+    onClose();
+    await onClosed();
   };
 
   const handleClose = () => {
     if (loading) return;
+    if (thanked) {
+      void finish();
+      return;
+    }
     reset();
     onClose();
   };
@@ -118,9 +138,11 @@ export default function CloseCaseModal({
         return;
       }
       sileo.success({ title: payload.message });
-      reset();
-      onClose();
-      await onClosed();
+      if (hasHome && helped === 'yes') {
+        setThanked(true);
+        return;
+      }
+      await finish();
     } catch (err) {
       setError(friendlyErrorText(err, 'No se pudo cerrar el caso. Intenta de nuevo.'));
     }
@@ -133,6 +155,26 @@ export default function CloseCaseModal({
       onClose={handleClose}
       busy={loading}
       footer={
+        thanked ? (
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="min-h-11 flex-1 rounded-xl bg-[#f3f5f8] px-4 text-sm font-semibold text-[#121212] hover:bg-[#e6e9ef] dark:bg-night dark:text-[#eef1f6] dark:hover:bg-white/10"
+            >
+              Listo
+            </button>
+            <DonateTrigger
+              source="reunited"
+              sourceRef={animalSlug}
+              onClick={() => void finish()}
+              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-kadesh px-4 text-sm font-semibold text-white hover:bg-kadesh-600"
+            >
+              <DonationIcon size={16} />
+              {DONATION_CTA_LABEL}
+            </DonateTrigger>
+          </div>
+        ) : (
         <div className="flex gap-3">
           <motion.button
             type="button"
@@ -153,8 +195,21 @@ export default function CloseCaseModal({
             {loading ? 'Guardando…' : 'Cerrar caso'}
           </motion.button>
         </div>
+        )
       }
     >
+      {thanked ? (
+        <div className="flex flex-col items-center gap-3 py-4 text-center">
+          <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-kadesh/10 text-kadesh">
+            <DonationIcon size={30} />
+          </span>
+          <p className="text-base font-semibold text-[#121212] dark:text-[#eef1f6]">¡Qué alegría por {name}!</p>
+          <p className="max-w-sm text-sm leading-relaxed text-[#3a3a3a] dark:text-[#d0d0d0]">
+            Gracias por contarnos que Kadesh ayudó. Si quieres, dame una patita para que siga gratis para la próxima
+            familia que busque a su mascota. Es opcional.
+          </p>
+        </div>
+      ) : (
       <div className="space-y-6">
         {error ? (
           <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
@@ -229,6 +284,7 @@ export default function CloseCaseModal({
           </>
         ) : null}
       </div>
+      )}
     </Sheet>
   );
 }

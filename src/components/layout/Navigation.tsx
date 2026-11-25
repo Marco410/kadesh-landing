@@ -16,6 +16,10 @@ import { STORE_NAV_ENABLED } from "kadesh/components/store/constants";
 import CartLink from "kadesh/components/store/cart/CartLink";
 import { useUnreadNotifications } from "kadesh/components/notifications/hooks";
 import FontSizeSlider from "./FontSizeSlider";
+// By file, not the donations barrel: that barrel re-exports DonationsPage, which renders this header.
+import DonateTrigger from "kadesh/components/donations/DonateTrigger";
+import { DONATION_CTA_LABEL } from "kadesh/components/donations/constants";
+import DonationIcon from "kadesh/components/shared/icons/DonationIcon";
 import ThemeToggle from "./ThemeToggle";
 import { useBodyScrollLock } from "kadesh/utils/useBodyScrollLock";
 
@@ -196,6 +200,21 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
           ) : null}
 
           {STORE_NAV_ENABLED ? <CartLink className={navLinkClass} /> : null}
+
+          {/* «Dame una patita»: visible but quiet, an outlined pill (never a popup). */}
+          <DonateTrigger
+            source="header"
+            ariaLabel={DONATION_CTA_LABEL}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-sm font-semibold transition-colors duration-200 xl:px-3 ${
+              atTopLight
+                ? "border-kadesh/30 text-kadesh hover:bg-kadesh/10"
+                : "border-white/40 text-white hover:bg-white/10"
+            }`}
+          >
+            <DonationIcon size={16} />
+            {/* Between lg and xl the menu is tight: only the paw (the name stays in aria-label). */}
+            <span className="hidden xl:inline">{DONATION_CTA_LABEL}</span>
+          </DonateTrigger>
 
           <FontSizeSlider tone={atTopLight ? "onLight" : "onDark"} />
 
@@ -410,6 +429,15 @@ export default function Navigation({ overDarkHero = false }: { overDarkHero?: bo
                       Mi perfil
                     </Link>
                   ) : null}
+
+                  <DonateTrigger
+                    source="header"
+                    onClick={() => setOpened(false)}
+                    className="flex items-center gap-2 text-left text-white font-semibold text-lg opacity-92 hover:opacity-100 py-4 px-4 rounded-xl border border-white/30 hover:bg-white/10 transition-all"
+                  >
+                    <DonationIcon size={20} />
+                    {DONATION_CTA_LABEL}
+                  </DonateTrigger>
 
                   {/* User Avatar or Login Button Mobile */}
                   {user?.id ? (

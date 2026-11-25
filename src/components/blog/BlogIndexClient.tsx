@@ -119,6 +119,7 @@ export default function BlogIndexClient({
           categories={categories}
           activeCategory={initialCategory}
           storeProducts={storeProducts}
+          showDonation
         />
       </div>
 

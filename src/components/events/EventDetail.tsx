@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { DonationCard } from 'kadesh/components/donations';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Alert02Icon,
@@ -323,6 +324,14 @@ export default function EventDetail({
               </Link>
               .
             </p>
+            {!preview ? (
+              <DonationCard
+                source="event"
+                sourceRef={event.slug ?? null}
+                className="mt-5"
+                body="Difundir eventos y campañas en Kadesh Pet es gratis. Si te sirve, ayúdanos a mantenerlo."
+              />
+            ) : null}
           </aside>
         </div>
       </main>

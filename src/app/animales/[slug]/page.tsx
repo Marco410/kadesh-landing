@@ -65,6 +65,7 @@ import {
 } from "kadesh/components/animals/animalName";
 import { SightingBanner, SightingsSection } from "kadesh/components/animals/sightings";
 import RewardBanner from "kadesh/components/animals/detail/RewardBanner";
+import { DonationStrip } from "kadesh/components/donations";
 
 function directionsUrl(lat: string | number, lng: string | number) {
   const destination = `${lat},${lng}`;
@@ -439,6 +440,15 @@ export default function AnimalDetailPage() {
         <div className="pb-6">
           <AnimalCommentsSection animal={animal} />
         </div>
+
+        {/* «Dame una patita» at the very end: never above the sightings or comments. Can be closed. */}
+        <DonationStrip
+          source="animal"
+          sourceRef={animal.slug || animalKey}
+          title="Apoya a Kadesh Pet con una donación"
+          text="Reportar y buscar mascotas aquí es gratis. Con una patita de $25 MXN nos ayudas a pagar servidores y difusión para que siga así."
+          className="mb-8"
+        />
       </motion.div>
     </DetailShell>
   );

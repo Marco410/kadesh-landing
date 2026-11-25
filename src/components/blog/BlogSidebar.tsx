@@ -8,6 +8,7 @@ import { Routes } from 'kadesh/core/routes';
 import { AD_PLACEMENT } from 'kadesh/components/ads/types';
 import AdSlot from 'kadesh/components/shared/AdSlot';
 import { cn } from 'kadesh/utils/cn';
+import { DonationCard } from 'kadesh/components/donations';
 import StoreShowcase from 'kadesh/components/store/StoreShowcase';
 import type { StoreShowcaseItem } from 'kadesh/components/store/types';
 import { formatShortDateMx } from 'kadesh/utils/format-date';
@@ -38,6 +39,11 @@ interface BlogSidebarProps {
   activeCategory?: string | null;
   /** Productos destacados de la tienda (los trae el servidor); sin ellos no se pinta la caja. */
   storeProducts?: StoreShowcaseItem[];
+  /**
+   * «Dame una patita» card above the ad. Only on the blog index: a post already ends with its own
+   * line (one donation call per page besides the header).
+   */
+  showDonation?: boolean;
   className?: string;
 }
 
@@ -53,6 +59,7 @@ export default function BlogSidebar({
   categories = [],
   activeCategory = null,
   storeProducts = [],
+  showDonation = false,
   className,
 }: BlogSidebarProps) {
   const List = ranked ? 'ol' : 'ul';
@@ -124,6 +131,13 @@ export default function BlogSidebar({
       <StoreShowcase items={storeProducts} variant="sidebar" />
 
       <div className={cn('flex flex-col gap-10', STICKY_WHEN_TALL)}>
+        {showDonation ? (
+          <DonationCard
+            source="blog"
+            body="El blog y las guías de Kadesh Pet son gratis. Si te sirven, ayúdanos a mantenerlos."
+          />
+        ) : null}
+
         {/* El mismo bloque de publicidad que el detalle de animal (solo se pinta en el navegador). */}
         <AdSlot placement={AD_PLACEMENT.BLOG} />
 

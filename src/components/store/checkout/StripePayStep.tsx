@@ -2,13 +2,11 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { useTheme } from 'next-themes';
-import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { Routes } from 'kadesh/core/routes';
 import { SITE_URL } from 'kadesh/core/site';
+import { getStripe } from 'kadesh/utils/stripe';
 import { formatPrice } from '../format';
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '');
 
 function PayForm({ orderNumber, totalCents, onPaid }: { orderNumber: string; totalCents: number; onPaid: () => void }) {
   const stripe = useStripe();
@@ -87,7 +85,7 @@ export default function StripePayStep({
   );
 
   return (
-    <Elements stripe={stripePromise} options={options}>
+    <Elements stripe={getStripe()} options={options}>
       <PayForm orderNumber={orderNumber} totalCents={totalCents} onPaid={onPaid} />
     </Elements>
   );

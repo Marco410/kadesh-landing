@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Routes } from 'kadesh/core/routes';
-import { DONATIONS_LEAD, STRIPE_DONATE_URL } from 'kadesh/components/donations/constants';
+import { DONATIONS_LEAD, DONATION_CTA_LABEL } from 'kadesh/components/donations/constants';
+import DonateTrigger from 'kadesh/components/donations/DonateTrigger';
 
 export default function Donate() {
   return (
@@ -15,14 +16,12 @@ export default function Donate() {
             {DONATIONS_LEAD}
           </p>
           <div className="flex flex-col gap-3 w-full lg:flex-row">
-            <Link
-              href={STRIPE_DONATE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+            <DonateTrigger
+              source="home"
               className="inline-flex min-h-11 items-center justify-center px-8 py-3 bg-kadesh text-white font-bold text-lg rounded-xl hover:bg-kadesh-600 transition-colors"
             >
-              Apoyar el proyecto
-            </Link>
+              {DONATION_CTA_LABEL}
+            </DonateTrigger>
             <Link
               href={Routes.donations}
               className="inline-flex min-h-11 items-center justify-center px-8 py-3 border-2 border-kadesh text-kadesh font-bold text-lg rounded-xl hover:bg-kadesh/5 transition-colors"

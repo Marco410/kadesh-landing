@@ -15,6 +15,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { WhatIsKadesh } from 'kadesh/components/home';
 import { ContactForm } from 'kadesh/components/contact';
+import { DonationSection } from 'kadesh/components/donations';
 import { SITE_URL } from 'kadesh/core/site';
 import { KADESH_SOCIAL_LINKS, KADESH_SOCIAL_URLS } from 'kadesh/core/social';
 
@@ -379,6 +380,9 @@ export default function ConocenosPage() {
             </motion.div>
           </div>
         </section>
+
+        {/* «Dame una patita»: after the community call, before the contact form */}
+        <DonationSection source="about" className="bg-[#f5f5f5] dark:bg-[#0a0a0a]" />
 
         {/* Contact Form Section */}
         <section 

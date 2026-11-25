@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Navigation, Footer } from 'kadesh/components/layout';
 import { ContactForm } from 'kadesh/components/contact';
+import { DonationSection } from 'kadesh/components/donations';
 import { SITE_URL } from 'kadesh/core/site';
 import { KADESH_SOCIAL_LINKS, KADESH_SOCIAL_URLS } from 'kadesh/core/social';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -129,6 +130,13 @@ export default function ContactPage() {
             </motion.div>
           </div>
         </section>
+
+        {/* «Dame una patita»: last, after the ways to reach us */}
+        <DonationSection
+          source="contact"
+          title="¿Quieres apoyar de otra forma?"
+          className="bg-white dark:bg-[#121212]"
+        />
 
         <Footer />
       </main>

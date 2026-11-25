@@ -46,6 +46,7 @@ import type {
   PetPlaceDetail,
   PetPlaceWhereUniqueInput,
 } from "kadesh/components/veterinaries/types";
+import { DonationCard } from "kadesh/components/donations";
 
 function DetailShell({ children }: { children: ReactNode }) {
   return (
@@ -219,6 +220,11 @@ export default function VeterinaryDetailClient({
             <div className="order-5 flex flex-col gap-6">
               <AdSlot placement={AD_PLACEMENT.VET_DETAIL} context={adContext} media={AD_SIDE_MEDIA} className={AD_SIDE_CLASS} />
               {storeShowcase}
+              <DonationCard
+                source="veterinary"
+                sourceRef={place.slug ?? placeKey}
+                body="El directorio de veterinarias es gratis. Si te sirvió, ayúdanos a mantenerlo."
+              />
             </div>
           </aside>
         </div>

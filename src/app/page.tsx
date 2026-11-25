@@ -27,6 +27,7 @@ import {
 import { fetchHomeEvents } from "kadesh/components/events/server";
 import { fetchRescueAllies } from "kadesh/components/rescue/server";
 import { fetchPawLeaderboard } from "kadesh/components/paws/server";
+import { fetchDonationsHome } from "kadesh/components/donations/server";
 import { HOME_DEFINITION } from "kadesh/components/home/constants";
 import { Footer, Navigation } from "kadesh/components/layout";
 import { NewsletterSubscription } from "kadesh/components/newsletter";
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [stats, recentReports, zoneAlerts, events, allies, reunionStories, rankingMonth, rankingAllTime] = await Promise.all([
+  const [stats, recentReports, zoneAlerts, events, allies, reunionStories, rankingMonth, rankingAllTime, donations] = await Promise.all([
     fetchPetLandingStats(),
     fetchRecentReports(),
     fetchRecentZoneAlerts(),
@@ -50,6 +51,8 @@ export default async function HomePage() {
     // Mismos argumentos que /ranking: las dos páginas comparten la caché de Next.
     fetchPawLeaderboard("month"),
     fetchPawLeaderboard("all_time"),
+    // «Dame una patita»: latest messages of the wall (10 min; nothing when donations are off).
+    fetchDonationsHome(),
   ]);
 
   return (
@@ -81,7 +84,7 @@ export default async function HomePage() {
         <VeterinariansSection />
         <StoriesSection />
         <UpcomingEventsSection events={events} />
-        <DonationsSection />
+        <DonationsSection wall={donations.wall} summary={donations.summary} />
         <BusinessStrip />
         <ClosingSection />
         <NewsletterSubscription description="Recibe consejos y reencuentros de la comunidad, una vez por semana." />

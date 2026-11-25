@@ -1,13 +1,25 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { Footer, Navigation } from 'kadesh/components/layout';
+import DonationIcon from 'kadesh/components/shared/icons/DonationIcon';
 import { Routes } from 'kadesh/core/routes';
 import {
+  DONATION_CTA_LABEL,
   DONATION_DESTINATIONS,
   DONATIONS_FAQS,
   DONATIONS_LEAD,
   DONATIONS_UPDATED_LABEL,
-  STRIPE_DONATE_URL,
+  isWallReady,
+  patitasLabel,
 } from './constants';
+import DonateTrigger from './DonateTrigger';
+import DonationReturnNotice from './DonationReturnNotice';
+import type { DonationsBoard } from './types';
+import { DonationWallCard } from './wall/DonationWall';
+
+// Bands alternate; the wall (gray) sits between the breakdown and the sponsorships when it is on.
+const BAND_WHITE = 'bg-white dark:bg-night';
+const BAND_GRAY = 'bg-[#f7f8fa] dark:bg-night-raised';
 
 const CTA_PRIMARY =
   'inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-white px-8 py-4 text-lg font-bold text-kadesh shadow-[0_10px_28px_rgba(15,35,80,0.2)] transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 lg:w-auto';
@@ -21,10 +33,16 @@ const CTA_ON_LIGHT =
 const CTA_OUTLINE_LIGHT =
   'inline-flex min-h-11 w-full items-center justify-center rounded-xl border-2 border-kadesh px-8 py-4 text-lg font-bold text-kadesh transition-colors hover:bg-kadesh/5 lg:w-auto';
 
-export default function DonationsPage() {
+export default function DonationsPage({ preview }: { preview: Pick<DonationsBoard, 'wall' | 'summary'> }) {
+  const { supporters, units } = preview.summary;
+  const latest = preview.wall.items.slice(0, 3);
+  const wallReady = isWallReady(preview.summary);
   return (
     <main className="min-h-screen bg-[#f7f8fa] dark:bg-night">
       <Navigation />
+      <Suspense fallback={null}>
+        <DonationReturnNotice />
+      </Suspense>
 
       <header className="w-full bg-kadesh py-16 text-white dark:bg-kadesh-800 sm:py-20 lg:py-24">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -38,14 +56,10 @@ export default function DonationsPage() {
             {DONATIONS_LEAD}
           </p>
           <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap">
-            <Link
-              href={STRIPE_DONATE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={CTA_PRIMARY}
-            >
-              Apoyar el proyecto
-            </Link>
+            <DonateTrigger source="donations_page" className={`${CTA_PRIMARY} gap-2`}>
+              <DonationIcon size={22} />
+              {DONATION_CTA_LABEL}
+            </DonateTrigger>
             <a href="#desglose" className={CTA_SECONDARY}>
               Ver el desglose
             </a>
@@ -92,10 +106,48 @@ export default function DonationsPage() {
         </div>
       </section>
 
+      {wallReady ? (
+        <section
+          id="muro"
+          aria-labelledby="muro-heading"
+          className="w-full scroll-mt-20 bg-[#f7f8fa] py-16 dark:bg-night-raised sm:py-20 lg:py-24"
+        >
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2
+                  id="muro-heading"
+                  className="mb-3 text-3xl font-black tracking-[-0.03em] text-[#121212] dark:text-white sm:text-4xl"
+                >
+                  Muro de patitas
+                </h2>
+                <p className="max-w-[60ch] text-base leading-relaxed text-[#3a3a3a] dark:text-[#d0d0d0]">
+                  Cada patita es una donación de $25 MXN.
+                  {supporters > 0
+                    ? ` Ya ${supporters === 1 ? 'una persona dio' : `${supporters} personas dieron`} ${patitasLabel(units)}. Gracias.`
+                    : ' Ahí están quienes la dan y sus mensajes.'}
+                </p>
+              </div>
+              <Link href={Routes.donationsWall} className={`${CTA_ON_LIGHT} shrink-0 gap-2 lg:w-auto`}>
+                <DonationIcon size={20} />
+                Ver el muro y el top
+              </Link>
+            </div>
+            {latest.length > 0 ? (
+              <ul className="mt-8 grid gap-3 sm:grid-cols-3">
+                {latest.map((entry) => (
+                  <DonationWallCard key={entry.id} entry={entry} />
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
       <section
         id="patrocinios"
         aria-labelledby="patrocinios-heading"
-        className="w-full bg-[#f7f8fa] py-16 dark:bg-night-raised sm:py-20 lg:py-24"
+        className={`w-full py-16 sm:py-20 lg:py-24 ${wallReady ? BAND_WHITE : BAND_GRAY}`}
       >
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h2
@@ -148,7 +200,7 @@ export default function DonationsPage() {
 
       <section
         aria-labelledby="donaciones-faq-heading"
-        className="w-full bg-white py-16 dark:bg-night sm:py-20 lg:py-24"
+        className={`w-full py-16 sm:py-20 lg:py-24 ${wallReady ? BAND_GRAY : BAND_WHITE}`}
       >
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h2
@@ -181,14 +233,10 @@ export default function DonationsPage() {
             Cada aportación paga operación, difusión y, cuando hace falta,
             un caso urgente. Gracias por leer a qué se destina antes de donar.
           </p>
-          <Link
-            href={STRIPE_DONATE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${CTA_PRIMARY} lg:inline-flex`}
-          >
-            Apoyar el proyecto
-          </Link>
+          <DonateTrigger source="donations_page" className={`${CTA_PRIMARY} gap-2 lg:inline-flex`}>
+            <DonationIcon size={22} />
+            {DONATION_CTA_LABEL}
+          </DonateTrigger>
         </div>
       </section>
 

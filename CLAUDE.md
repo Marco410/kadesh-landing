@@ -44,6 +44,7 @@ Required in `.env.local` (all client-exposed, hence `NEXT_PUBLIC_` prefix):
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` — Cloudflare Turnstile site key for «Lo vi» (sightings without an account). Optional: without it the widget does not render; pair it with `TURNSTILE_SECRET_KEY` in kadesh-back (set both or neither).
 - `NEXT_PUBLIC_STORE_ENABLED` — `true` shows «Tienda» and the cart in the header, and «Pedidos» and «Lista de deseos» in the account panel. Optional: the pages themselves depend on `STORE_ENABLED` in kadesh-back (closed = 404).
 - `NEXT_PUBLIC_ADSENSE_SLOT_BLOG` — AdSense ad unit ID for the blog sidebar (index and post). Optional: falls back to the animal detail slot (`BLOG_AD_SLOT` in `src/core/ads.ts`).
+- `NEXT_PUBLIC_DONATIONS_ENABLED` — `true` turns on «Dame una patita» (own donation form, wall and donor top; see `src/components/donations/README.md`). Pair it with `DONATIONS_ENABLED=true` in kadesh-back. Optional: off, every donation button opens the old payment link (`STRIPE_DONATE_URL`).
 
 
 Note: the README references `NEXT_PUBLIC_GRAPHQL_ENDPOINT`, but the code actually reads `NEXT_PUBLIC_API_URL` — trust the code.
@@ -116,6 +117,7 @@ Aterriza en este repo las reglas generales de "Rendimiento y costo de infraestru
 | Animales y veterinarias (servidor) | 60 s; datos para compartir 1 h | `src/components/{animals,veterinaries}/server.ts` |
 | Tienda (catálogo, ficha y reseñas) | 10 min (`STORE_REVALIDATE_SECONDS`; `revalidate = 600` en las páginas) | `src/components/store/constants.ts`, `src/app/tienda/**/page.tsx` |
 | Carrito de la tienda | una cotización por pausa de 350 ms al cambiarlo; sin polling del carrito ni de los pedidos | `STORE_QUOTE_DEBOUNCE_MS` en `src/components/store/constants.ts` |
+| Donaciones «Dame una patita» (muro, top y resumen) | 10 min, una sola consulta por página (`revalidate = 600`); el formulario y Stripe.js se cargan al abrirlo; «Ver más» de 20 en 20 solo al hacer clic | `src/components/donations/server.ts`, `src/app/donaciones/page.tsx`, `src/app/donaciones/muro/page.tsx` |
 | Organizaciones y aliados | 30 min | `src/components/rescue/server.ts`, `src/app/{organizaciones,aliados}/page.tsx` |
 | Imágenes OG | `max-age=300`; tarjetas `s-maxage=600` | `src/app/*/[slug]/og/route.tsx`, `src/core/og-card.tsx` |
 | URLs firmadas de imágenes | caducan a 1 h | `kadesh-back/keystone.ts` (`signed.expiry: 3600`) |

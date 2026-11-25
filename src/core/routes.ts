@@ -36,6 +36,9 @@ export const Routes = {
   roadmap: '/novedades#roadmap',
   advertise: '/anunciate',
   donations: '/donaciones',
+  /** «Dame una patita»: its own page with the donor podium and the messages (not huellitas). */
+  donationsWall: '/donaciones/muro',
+  donationsDonors: '/donaciones/muro#donantes',
   
   // Landing
   landing: '/landing',

@@ -15,6 +15,17 @@ Formato:
 
 ---
 
+## 2026-11-25 · fix: header de escritorio sin «Mi perfil» repetido
+- Rama: feat/header-desktop
+- Qué cambió y por qué: con sesión, «Mi perfil» salía como enlace del menú y otra vez en el menú del avatar.
+  - Se quita el enlace del menú; «Mi perfil» queda solo en el menú del avatar.
+  - El header se divide en dos grupos, secciones y herramientas (carrito, «Dame una patita», tamaño de letra, tema, campana, cuenta), separados por una línea delgada.
+  - El menú del avatar muestra arriba el nombre y el correo de la cuenta y separa «Cerrar sesión». El botón del avatar ahora tiene `aria-haspopup`, `aria-expanded` y nombre accesible.
+  - La pastilla «Dame una patita» usa el mismo color que los enlaces; en azul Kadesh desaparecía sobre los encabezados azules (Contacto).
+- Archivos: src/components/layout/Navigation.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (estilos exclusivos del header de escritorio)
+
 ## 2026-11-25 · feat: «Dame una patita», donaciones propias con muro y top de donantes
 - Rama: feat/donations-patita
 - Qué cambió y por qué: el enlace externo de donación pasa a ser un formulario propio con la marca de Kadesh, inspirado en los botones de «invítame un café».

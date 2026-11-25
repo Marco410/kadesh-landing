@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
@@ -13,10 +13,11 @@ import {
 } from '@hugeicons/core-free-icons';
 import { cn } from 'kadesh/utils/cn';
 import { CUSTOM_TONE_RE, customToneColors } from './customTone';
+import { rotationSequence } from './pick';
 import { trackAdClick, trackAdImpression } from './track';
 import type { AdPlacement, PublicAd } from './types';
 
-/** How often the card changes when there are several ads. */
+/** How long one turn lasts; an ad gets as many turns per round as its weight. */
 const ROTATE_MS = 10_000;
 /** The card must stay at least half on screen this long to count as seen. */
 const IMPRESSION_MS = 1_000;
@@ -108,8 +109,8 @@ function withUtm(href: string, placement: AdPlacement, adId: string) {
 }
 
 /**
- * The ads of one slot, one at a time. Rotates every 10 s (stops on hover or focus) and counts an
- * impression when the visible card stays at least half on screen for 1 s.
+ * The ads of one slot, one at a time. Each turn lasts 10 s and each ad gets turns by its weight
+ * (stops on hover or focus); counts an impression when the visible card stays at least half on screen for 1 s.
  */
 export default function AdCarousel({
   ads,
@@ -124,7 +125,9 @@ export default function AdCarousel({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
+  const turns = useMemo(() => rotationSequence(ads), [ads]);
+  const [turn, setTurn] = useState(0);
+  const active = turns[turn % turns.length] ?? 0;
   const [paused, setPaused] = useState(false);
   const [onScreen, setOnScreen] = useState(false);
   const current = ads[Math.min(active, ads.length - 1)];
@@ -147,10 +150,21 @@ export default function AdCarousel({
   }, [onScreen, current, placement, pageKey]);
 
   useEffect(() => {
-    if (paused || ads.length < 2) return;
-    const id = window.setInterval(() => setActive((index) => (index + 1) % ads.length), ROTATE_MS);
+    if (paused || turns.length < 2) return;
+    const id = window.setInterval(() => setTurn((value) => (value + 1) % turns.length), ROTATE_MS);
     return () => window.clearInterval(id);
-  }, [paused, active, ads.length]);
+  }, [paused, turn, turns.length]);
+
+  /** A dot jumps to that ad's next turn, so the round goes on from there. */
+  const showAd = (index: number) => {
+    for (let step = 1; step <= turns.length; step++) {
+      const next = (turn + step) % turns.length;
+      if (turns[next] === index) {
+        setTurn(next);
+        return;
+      }
+    }
+  };
 
   if (!current) return null;
   const currentTone = toneOf(current.tone);
@@ -237,7 +251,7 @@ export default function AdCarousel({
             <button
               key={ad.id}
               type="button"
-              onClick={() => setActive(index)}
+              onClick={() => showAd(index)}
               aria-label={`Ver anuncio ${index + 1} de ${ads.length}`}
               aria-current={index === active}
               className={cn(

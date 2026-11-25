@@ -30,8 +30,9 @@ type Eligible = { ad: PublicAd; score: number };
  * The ads one slot may show, in rotation order:
  * 1. the ones with this placement, never the ad of the page on screen;
  * 2. zone ads only within their radius of `reference` (the page's place, or the visitor's);
- * 3. paid ones first, shuffled by weight (a zone match counts double); Kadesh's own only when
- *    nothing else applies.
+ * 3. shuffled by weight (a zone match counts double), Kadesh's own included.
+ * Each one comes back with its effective weight (zone boost applied): `rotationSequence` turns it
+ * into its share of the slot's time.
  */
 export function pickAds(
   ads: PublicAd[],
@@ -53,14 +54,32 @@ export function pickAds(
     }
     // Weighted shuffle (Efraimidis–Spirakis): higher weight, more likely to come first.
     const weight = Math.max(1, ad.weight) * boost;
-    eligible.push({ ad, score: Math.pow(random(), 1 / weight) });
+    eligible.push({ ad: { ...ad, weight }, score: Math.pow(random(), 1 / weight) });
   }
-  const paid = eligible.filter((entry) => entry.ad.kind !== 'house');
-  const pool = paid.length > 0 ? paid : eligible;
-  return pool
-    .sort((a, b) => b.score - a.score)
-    .slice(0, MAX_ADS_PER_SLOT)
-    .map((entry) => entry.ad);
+  eligible.sort((a, b) => b.score - a.score);
+  return eligible.slice(0, MAX_ADS_PER_SLOT).map((entry) => entry.ad);
+}
+
+/**
+ * The rotation turns (indexes into `ads`), 10 s each: every ad gets as many turns as its weight,
+ * spread out (smooth weighted round-robin, so weights 2 and 1 give A B A, not A A B).
+ */
+export function rotationSequence(ads: readonly { weight: number }[]): number[] {
+  if (ads.length < 2) return ads.map((_, index) => index);
+  const weights = ads.map((ad) => Math.max(1, Math.round(ad.weight)));
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  const credit = weights.map(() => 0);
+  const turns: number[] = [];
+  for (let turn = 0; turn < total; turn++) {
+    let best = 0;
+    for (let index = 0; index < weights.length; index++) {
+      credit[index] += weights[index];
+      if (credit[index] > credit[best]) best = index;
+    }
+    credit[best] -= total;
+    turns.push(best);
+  }
+  return turns;
 }
 
 /** The point zone ads are measured from on this screen, if the page knows one. */

@@ -100,8 +100,8 @@ function AdUnit({ placement, context, pageKey, className }: AdSlotProps & { page
 }
 
 /**
- * The "Publicidad" card. Shows the ads Operaciones set for this placement (rotating); Kadesh's own
- * ads fill it when no paid one applies, and with no ad at all it renders nothing. The list comes
+ * The "Publicidad" card. Shows the ads Operaciones set for this placement, rotating with the time
+ * split by weight (Kadesh's own included); with no ad at all it renders nothing. The list comes
  * from the server once (`AdsProvider`): showing it never asks the backend.
  */
 export default function AdSlot({ placement, context, media, className }: AdSlotProps) {

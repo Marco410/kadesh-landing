@@ -15,6 +15,17 @@ Formato:
 
 ---
 
+## 2026-11-26 · fix(seo): fichas de animal sin noindex por fallas del back, login con canonical y sitemap limpio
+- Rama: fix/seo-indexing
+- Qué cambió y por qué: Search Console marcó 144 duplicadas, 84 noindex, 2 bloqueadas y 1 error 5xx en pet.kadesh.com.mx.
+  - Fichas de animal: `fetchAnimalForShare` devolvía `null` igual si el animal no existía que si el back fallaba, y la ficha respondía 200 «Animal no encontrado» con `noindex, nofollow`; si Googlebot pasaba en ese momento, sacaba del índice un reporte vivo. Ahora una falla del back lanza `AnimalUnavailableError` (la página responde 5xx y Google reintenta) y solo un animal que no existe da 404 real. Las imágenes (`/og`, historia del cartel) usan `fetchAnimalForShareOrNull` y caen a la imagen genérica.
+  - `/auth/login`: `noindex, follow` y un solo canonical (`/auth/login`), para las 144 variantes `?redirect=…`. Sale del sitemap. No se bloquea en robots.txt, para que Google vea el noindex.
+  - Sitemap de eventos: solo los que no han terminado (ventana de 10 min); los pasados llevan noindex y Search Console los marcaba.
+  - Blog: la sección de categorías ya no enlaza a `?category=undefined` (omite categorías sin `url` y codifica el valor), y el índice ignora ese valor.
+- Archivos: src/components/animals/server.ts, src/app/animales/[slug]/layout.tsx, src/app/animales/[slug]/og/route.tsx, src/app/cartel/[slug]/historia/route.tsx, src/app/auth/login/layout.tsx, src/app/sitemap.ts, src/components/events/server.ts, src/components/blog/CategorySection.tsx, src/components/blog/BlogIndexClient.tsx
+- GraphQL: ninguna
+- Móvil: no aplica (SEO, metadata y sitemap)
+
 ## 2026-11-25 · fix: header de escritorio sin «Mi perfil» repetido
 - Rama: feat/header-desktop
 - Qué cambió y por qué: con sesión, «Mi perfil» salía como enlace del menú y otra vez en el menú del avatar.

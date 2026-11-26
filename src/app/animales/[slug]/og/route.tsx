@@ -20,7 +20,7 @@ import { getStatusColor } from 'kadesh/components/animals/constants';
 import { animalShareFacts } from 'kadesh/components/animals/animal-seo';
 import {
   animalCoverUrl,
-  fetchAnimalForShare,
+  fetchAnimalForShareOrNull,
 } from 'kadesh/components/animals/server';
 
 /**
@@ -172,7 +172,7 @@ async function renderCard(facts: Facts, photo: OgPhoto | null, variant: OgVarian
 }
 
 async function buildCardResponse(slug: string, variant: OgVariant): Promise<Response> {
-  const animal = await fetchAnimalForShare(slug);
+  const animal = await fetchAnimalForShareOrNull(slug);
   if (!animal) {
     return fallbackResponse();
   }

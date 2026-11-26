@@ -9,8 +9,8 @@ import type { EventFeedItem, EventsFeed, EventsFeedFilters, EventStateFacet, Pet
  */
 
 const REVALIDATE_SECONDS = 60;
-const SITEMAP_PAST_DAYS = 30;
-const DAY_MS = 24 * 60 * 60 * 1000;
+/** Sitemap «now», rounded down to 10 min so the cached query does not change on every request. */
+const SITEMAP_WINDOW_MS = 10 * 60 * 1000;
 
 const FEED_QUERY = `
   query PetEventsFeed($input: PetEventsFeedInput!) {
@@ -116,8 +116,9 @@ export type SitemapEvent = { slug: string; updatedAt: string | null };
 
 /** Eventos publicados que no han terminado o terminaron hace menos de 30 días. */
 export async function fetchEventsForSitemap(): Promise<SitemapEvent[]> {
-  const since = new Date(Date.now() - SITEMAP_PAST_DAYS * DAY_MS);
-  since.setUTCHours(0, 0, 0, 0);
+  // Only events that have not ended: a past (or cancelled) event page carries noindex
+  // (`events-seo.ts`), and listing it in the sitemap got it flagged in Search Console.
+  const since = new Date(Math.floor(Date.now() / SITEMAP_WINDOW_MS) * SITEMAP_WINDOW_MS);
   const data = await queryGraphql<{ petEvents: Array<{ slug: string | null; updatedAt: string | null }> }>(
     SITEMAP_QUERY,
     { since: since.toISOString() },

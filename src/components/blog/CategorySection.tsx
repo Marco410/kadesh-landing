@@ -68,7 +68,8 @@ export default function CategorySection() {
         </div>
 
         <div className="flex gap-6 overflow-x-auto pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {categories.map((category, index) => {
+          {/* A category without `url` used to link to `/blog?category=undefined`, which Google crawled. */}
+          {categories.filter((category) => Boolean(category.url)).map((category, index) => {
             const categoryValue = category.name || '';
             const categoryLabel = getCategoryLabel(categoryValue);
             const categoryColors = getCategoryColors(categoryValue);
@@ -76,7 +77,7 @@ export default function CategorySection() {
             return (
               <Link
                 key={category.id}
-                href={`${Routes.blog.index}?category=${category.url}`}
+                href={`${Routes.blog.index}?category=${encodeURIComponent(category.url)}`}
                 className="flex flex-col items-center gap-4 min-w-[140px] cursor-pointer group"
               >
                 <motion.div

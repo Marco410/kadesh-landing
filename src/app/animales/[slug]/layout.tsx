@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
-import { permanentRedirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import {
   animalShareFacts,
   animalSummary,
@@ -21,6 +21,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  // If the backend fails this throws: the page answers 5xx (Google retries later) instead of a
+  // 200 «Animal no encontrado» with noindex, which dropped live reports from the index.
   const animal = await fetchAnimalForShare(slug);
 
   if (!animal) {
@@ -48,7 +50,8 @@ export default async function AnimalDetailLayout({
     permanentRedirect(Routes.animals.detail(main.slug || main.id));
   }
 
-  if (!animal) return <WithAds>{children}</WithAds>;
+  // Only a report that really does not exist gets the 404 (with noindex from the metadata).
+  if (!animal) notFound();
 
   // JSON-LD y un resumen del servidor: la ficha se pinta en el navegador y sin esto el HTML
   // llegaba vacío para buscadores e IA.

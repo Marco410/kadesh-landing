@@ -6,7 +6,7 @@ import { ogFonts } from 'kadesh/core/og-fonts';
 import { OG_CACHE_CONTROL, fetchOgPhoto, ogPhotoSrc, withOgEdgeCache, type OgPhoto } from 'kadesh/core/og-card';
 import { getStatusColor } from 'kadesh/components/animals/constants';
 import { animalShareFacts } from 'kadesh/components/animals/animal-seo';
-import { animalCoverUrl, fetchAnimalForShare, type AnimalShareData } from 'kadesh/components/animals/server';
+import { animalCoverUrl, fetchAnimalForShareOrNull, type AnimalShareData } from 'kadesh/components/animals/server';
 import {
   folioDisplayUrl,
   formatFolio,
@@ -189,7 +189,7 @@ function png(bytes: ArrayBuffer) {
 }
 
 async function buildStory(slug: string): Promise<Response> {
-  const animal = await fetchAnimalForShare(slug);
+  const animal = await fetchAnimalForShareOrNull(slug);
   if (!animal) {
     return NextResponse.redirect(`${SITE_URL}/og-image.png`, 302);
   }

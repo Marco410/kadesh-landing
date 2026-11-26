@@ -18,7 +18,9 @@ const GRID_WITH_SIDEBAR = 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3'
 
 function BlogFilters() {
   const searchParams = useSearchParams();
-  const categoryUrl = searchParams.get('category');
+  // Old links could carry `?category=undefined`: treat it as no category.
+  const rawCategory = searchParams.get('category');
+  const categoryUrl = rawCategory && rawCategory !== 'undefined' ? rawCategory : null;
 
   return (
     categoryUrl && (

@@ -86,15 +86,35 @@ type AnimalShareResponse = {
   errors?: Array<{ message?: string }>;
 };
 
-/** Datos mínimos para compartir un animal; solo servidor. */
+/**
+ * The backend could not answer (network, 5xx, GraphQL errors). Not the same as «this animal does
+ * not exist»: a page must not turn a passing outage into a 200 «Animal no encontrado» + noindex,
+ * which made Google drop live reports.
+ */
+export class AnimalUnavailableError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = 'AnimalUnavailableError';
+  }
+}
+
+/**
+ * Datos mínimos para compartir un animal; solo servidor. `null` solo cuando el back responde que
+ * no existe; si el back falla, lanza `AnimalUnavailableError` (la página responde 5xx y Google
+ * vuelve a intentar, en lugar de quitarla del índice).
+ */
 export async function fetchAnimalForShare(
   key: string,
 ): Promise<AnimalShareData | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!apiUrl || !key) {
+  if (!key) {
     return null;
   }
+  if (!apiUrl) {
+    throw new AnimalUnavailableError('NEXT_PUBLIC_API_URL is not set');
+  }
 
+  let payload: AnimalShareResponse;
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -109,18 +129,27 @@ export async function fetchAnimalForShare(
     });
 
     if (!response.ok) {
-      return null;
+      throw new AnimalUnavailableError(`Animal fetch answered ${response.status}`);
     }
-
-    const payload = (await response.json()) as AnimalShareResponse;
-    if (payload.errors?.length) {
-      console.error('Animal GraphQL errors:', payload.errors);
-      return null;
-    }
-
-    return payload.data?.animal ?? null;
+    payload = (await response.json()) as AnimalShareResponse;
   } catch (error) {
     console.error('Animal GraphQL fetch failed:', error);
+    if (error instanceof AnimalUnavailableError) throw error;
+    throw new AnimalUnavailableError('Animal fetch failed', { cause: error });
+  }
+
+  if (payload.errors?.length) {
+    console.error('Animal GraphQL errors:', payload.errors);
+    throw new AnimalUnavailableError('Animal GraphQL errors');
+  }
+  return payload.data?.animal ?? null;
+}
+
+/** For images and side routes: a backend outage is treated like a missing animal (generic image). */
+export async function fetchAnimalForShareOrNull(key: string): Promise<AnimalShareData | null> {
+  try {
+    return await fetchAnimalForShare(key);
+  } catch {
     return null;
   }
 }
